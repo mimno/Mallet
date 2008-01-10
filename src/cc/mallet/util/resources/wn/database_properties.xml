@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jwnl_properties language="en">
+	<version publisher="Princeton" number="2.0" language="en"/>
+	<dictionary class="net.didion.jwnl.dictionary.DatabaseBackedDictionary">
+		<param name="morphological_processor" value="net.didion.jwnl.dictionary.morph.DefaultMorphologicalProcessor">
+			<param name="operations">
+				<param value="net.didion.jwnl.dictionary.morph.LookupExceptionsOperation"/>
+				<param value="net.didion.jwnl.dictionary.morph.DetachSuffixesOperation">
+					<param name="noun" value="|s=|ses=s|xes=x|zes=z|ches=ch|shes=sh|men=man|ies=y|"/>
+					<param name="verb" value="|s=|ies=y|es=e|es=|ed=e|ed=|ing=e|ing=|"/>
+					<param name="adjective" value="|er=|est=|er=e|est=e|"/>
+                    <param name="operations">
+                        <param value="net.didion.jwnl.dictionary.morph.LookupIndexWordOperation"/>
+                        <param value="net.didion.jwnl.dictionary.morph.LookupExceptionsOperation"/>
+                    </param>
+				</param>
+				<param value="net.didion.jwnl.dictionary.morph.TokenizerOperation">
+					<param name="delimiters">
+						<param value=" "/>
+						<param value="-"/>
+					</param>
+					<param name="token_operations">
+                        <param value="net.didion.jwnl.dictionary.morph.LookupIndexWordOperation"/>
+						<param value="net.didion.jwnl.dictionary.morph.LookupExceptionsOperation"/>
+						<param value="net.didion.jwnl.dictionary.morph.DetachSuffixesOperation">
+							<param name="noun" value="|s=|ses=s|xes=x|zes=z|ches=ch|shes=sh|men=man|ies=y|"/>
+							<param name="verb" value="|s=|ies=y|es=e|es=|ed=e|ed=|ing=e|ing=|"/>
+							<param name="adjective" value="|er=|est=|er=e|est=e|"/>
+                            <param name="operations">
+                                <param value="net.didion.jwnl.dictionary.morph.LookupIndexWordOperation"/>
+                                <param value="net.didion.jwnl.dictionary.morph.LookupExceptionsOperation"/>
+                            </param>
+						</param>
+					</param>
+				</param>
+			</param>
+		</param>
+		<param name="dictionary_element_factory" value="net.didion.jwnl.princeton.data.PrincetonWN17DatabaseDictionaryElementFactory"/>
+		<param name="database_manager" value="net.didion.jwnl.dictionary.database.DatabaseManagerImpl">
+			<param name="driver" value="com.mysql.jdbc.Driver"/>
+			<param name="url" value="jdbc:mysql://localhost/jwnl?user=jwnl&amp;password=jwnl"/>
+		</param>
+	</dictionary>
+	<resource class="PrincetonResource"/>
+</jwnl_properties>

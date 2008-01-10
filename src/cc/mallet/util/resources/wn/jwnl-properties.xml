@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+ 
+<jwnl_properties language="en">  
+        <version publisher="Princeton" number="1.7"
+        path="file:/usr/col/tmp1/culotta/WordNet/dict" language="en"/>  
+        <dictionary class="net.didion.jwnl.dictionary.FileBackedDictionary">  
+                <param name="morphological_processor" value="net.didion.jwnl.dictionary.DefaultMorphologicalProcessor"/>  
+                <param name="file_manager" value="net.didion.jwnl.dictionary.file_manager.FileManagerImpl">  
+                        <param name="file_type" value="net.didion.jwnl.princeton.file.PrincetonRandomAccessDictionaryFile"/>  
+                        <param name="dictionary_path" value="/usr/col/tmp1/culotta/WordNet/dict/"/>  
+                </param>  
+        </dictionary>  
+        <dictionary_element_factory class="net.didion.jwnl.princeton.data.PrincetonWN17DictionaryElementFactory"/>  
+        <resource class="PrincetonResource"/>  
+</jwnl_properties>  
+

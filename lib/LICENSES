@@ -1,0 +1,30 @@
+ant.jar - http://ant.apache.org - Apache
+
+bsh.jar - http://www.beanshell.org - LGPL
+
+common-logging-1.0.4.jar - http://logging.apache.org - Apache
+
+crimson.jar - http://xml.apache.org/crimson - Apache
+
+distributions-1.0.jar - http://www.dcs.ed.ac.uk/home/simjava/distributions/ - Unknown
+
+googleapi.jar - http://www.google.com/apis/ - Non-commercial
+
+jdom-1.0.jar - http:///www.jdom.org - Apache
+
+junit-3.8.1.jar - http://www.junit.org - CPL
+
+jwnl-1.3.jar - http://sourceforge.net/projects/jwordnet/ - BSD
+
+lucene-1.5-rc1-dev.jar - http://lucene.apache.org - Apache
+
+secondstring.jar - http://secondstring.sourceforge.net - University of Illinois/NCSA Open Source License (OSI-Approved)
+
+openjgraph.jar - http://openjgraph.sourceforge.net - LGPL
+
+xml-apis.jar - http://xerces.apache.org/xerces2-j - Apache
+
+xmlParserAPIs.jar - jaxp - http://java.sun.com/webservices/jaxp - Apache
+
+jython.jar - http://www.jython.org/ - various, see lib/jython/Lib/LICENSE.txt
+

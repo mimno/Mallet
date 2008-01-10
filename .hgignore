@@ -1,0 +1,11 @@
+syntax: glob
+*.class
+*~
+CVS
+unpack
+mallet.jar
+*.diff
+.cvsignore
+lib/jython/Lib/test/output/
+doc
+class

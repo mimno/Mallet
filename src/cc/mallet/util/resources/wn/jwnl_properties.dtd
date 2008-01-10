@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!ELEMENT jwnl_properties (dictionary , version , dictionary_element_factory , resource*)>
+<!ATTLIST jwnl_properties language  CDATA  #IMPLIED
+                          country   CDATA  #IMPLIED >
+
+<!ELEMENT dictionary (param*)>
+<!ATTLIST dictionary  class CDATA  #IMPLIED >
+
+<!ELEMENT param (param*)>
+<!ATTLIST param  name  CDATA  #IMPLIED
+                 value CDATA  #IMPLIED >
+
+<!ELEMENT version EMPTY>
+<!ATTLIST version  publisher CDATA  #IMPLIED
+                   number    CDATA  #IMPLIED
+                   language  CDATA  #IMPLIED
+                   country   CDATA  #IMPLIED >
+
+<!ELEMENT dictionary_element_factory (param*)>
+<!ATTLIST dictionary_element_factory  class CDATA  #IMPLIED >
+
+<!ELEMENT resource EMPTY>
+<!ATTLIST resource  class CDATA  #IMPLIED >
