@@ -508,6 +508,18 @@ public class CRF extends Transducer implements Serializable
 		weightsValueChangeStamp++;
 	}
 
+	// This method can be over-ridden in subclasses of CRF to return subclasses of CRF.State
+	protected CRF.State newState (String name, int index,
+			double initialWeight, double finalWeight,
+			String[] destinationNames,
+			String[] labelNames,
+			String[][] weightNames,
+			CRF crf)
+	{
+		return new State (name, index, initialWeight, finalWeight,
+				destinationNames, labelNames, weightNames, crf);
+	}
+
 
 	public void addState (String name, double initialWeight, double finalWeight,
 			String[] destinationNames,
@@ -521,7 +533,7 @@ public class CRF extends Transducer implements Serializable
 			throw new IllegalArgumentException ("State with name `"+name+"' already exists.");
 		parameters.initialWeights = MatrixOps.append(parameters.initialWeights, initialWeight);
 		parameters.finalWeights = MatrixOps.append(parameters.finalWeights, finalWeight);
-		State s = new State (name, states.size(), initialWeight, finalWeight,
+		State s = newState (name, states.size(), initialWeight, finalWeight,
 				destinationNames, labelNames, weightNames, this);
 		s.print ();
 		states.add (s);
@@ -1146,6 +1158,10 @@ public class CRF extends Transducer implements Serializable
 		weightsStructureChanged(); // Is this necessary? -akm 11/2007
 	}
 
+	public void setWeightsDimensionAsIn (InstanceList trainingData) {
+		setWeightsDimensionAsIn(trainingData, false);
+	}
+	
 	public void setWeightsDimensionAsIn (InstanceList trainingData, boolean useSomeUnsupportedTrick)
 	{
 		final BitSet[] weightsPresent;

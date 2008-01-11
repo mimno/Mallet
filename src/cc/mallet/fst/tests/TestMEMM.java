@@ -8,10 +8,10 @@ import java.io.*;
 
 import cc.mallet.extract.StringSpan;
 import cc.mallet.extract.StringTokenization;
+import cc.mallet.fst.MEMMTrainer;
 import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.MEMM;
 import cc.mallet.fst.Transducer;
-import cc.mallet.fst.ViterbiPath;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.tests.TestOptimizable;
 import cc.mallet.pipe.*;
@@ -75,8 +75,9 @@ public class TestMEMM extends TestCase {
 	  for (int i = 0; i < numStates; i++)
 	    stateNames[i] = "state" + i;
 	  memm.addFullyConnectedStates(stateNames);
-	  MEMM.OptimizableCRF mcrf = memm.getMaximizableCRF(new InstanceList(null));
-	  TestOptimizable.testGetSetParameters(mcrf);
+	  MEMMTrainer memmt = new MEMMTrainer (memm);
+	  MEMMTrainer.MEMMOptimizableByLabelLikelihood omemm = memmt.getOptimizableMEMM (new InstanceList(null));
+	  TestOptimizable.testGetSetParameters(omemm);
 	}
 
   public void testSpaceMaximizable ()
@@ -91,15 +92,17 @@ public class TestMEMM extends TestCase {
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
     memm.addStartState();
+	  MEMMTrainer memmt = new MEMMTrainer (memm);
+
 //    memm.gatherTrainingSets (training); // ANNOYING: Need to set up per-instance training sets
-    memm.train (training, null, null, null, 1);  // Set weights dimension, gathers training sets, etc.
+    memmt.train (training, 1);  // Set weights dimension, gathers training sets, etc.
 
 //    memm.print();
 //    memm.printGradient = true;
 //    memm.printInstanceLists();
 
 //    memm.setGaussianPriorVariance (Double.POSITIVE_INFINITY);
-    Optimizable.ByGradientValue mcrf = memm.getMaximizableCRF(training);
+    Optimizable.ByGradientValue mcrf = memmt.getOptimizableMEMM(training);
     TestOptimizable.setNumComponents (150);
     TestOptimizable.testValueAndGradient (mcrf);
   }
@@ -113,13 +116,14 @@ public class TestMEMM extends TestCase {
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
     memm.addStartState();
-    memm.train (training, null, null, null, 10);
+	  MEMMTrainer memmt = new MEMMTrainer (memm);
+    memmt.train (training, 10);
 
     MEMM memm2 = (MEMM) TestSerializable.cloneViaSerialization (memm);
 
-    Optimizable.ByGradientValue mcrf1 = memm.getMaximizableCRF(training);
+    Optimizable.ByGradientValue mcrf1 = memmt.getOptimizableMEMM(training);
     double val1 = mcrf1.getValue ();
-    Optimizable.ByGradientValue mcrf2 = memm2.getMaximizableCRF(training);
+    Optimizable.ByGradientValue mcrf2 = memmt.getOptimizableMEMM(training);
     double val2 = mcrf2.getValue ();
 
     assertEquals (val1, val2, 1e-5);
@@ -147,6 +151,7 @@ public class TestMEMM extends TestCase {
 	    System.err.println("Output dictionary null.");
 	  }
 	  MEMM crf = new MEMM(inputAlphabet, outputAlphabet);
+	  MEMMTrainer memmt = new MEMMTrainer (crf);
 
 	  String[] stateNames = new String[numStates];
 	  for (int i = 0; i < numStates; i++)
@@ -173,7 +178,6 @@ public class TestMEMM extends TestCase {
 	    System.err.println("Exception writing file: " + e);
 	  }
 	  System.err.println("Wrote out CRF");
-	  System.err.println("CRF parameters. hyperbolicPriorSlope: " + crf.getUseHyperbolicPriorSlope() + ". hyperbolicPriorSharpness: " + crf.getUseHyperbolicPriorSharpness() + ". gaussianPriorVariance: " + crf.getGaussianPriorVariance());
 	  // And read it back in
 	  crf = null;
 	  try {
@@ -186,7 +190,6 @@ public class TestMEMM extends TestCase {
 	    System.err.println("Cound not find class reading in object: " + cnfe);
 	  }
 	  System.err.println("Read in CRF.");
-	  System.err.println("CRF parameters. hyperbolicPriorSlope: " + crf.getUseHyperbolicPriorSlope() + ". hyperbolicPriorSharpness: " + crf.getUseHyperbolicPriorSharpness() + ". gaussianPriorVariance: " + crf.getGaussianPriorVariance());
 
 	  try {
 	    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f2));
@@ -199,9 +202,11 @@ public class TestMEMM extends TestCase {
 	  if (useSave == 1) {
 	    crf = saveCRF;
 	  }
-	  MEMM.OptimizableCRF mcrf = crf.getMaximizableCRF(ilist);
-	  double unconstrainedCost = new SumLatticeDefault (crf, fvs).getCost();
-	  double constrainedCost = new SumLatticeDefault (crf, fvs, ss).getCost();
+//	  MEMM.OptimizableCRF mcrf = crf.getMaximizableCRF(ilist);
+    Optimizable.ByGradientValue mcrf = memmt.getOptimizableMEMM(ilist);
+
+	  double unconstrainedCost = new SumLatticeDefault (crf, fvs).getTotalWeight();
+	  double constrainedCost = new SumLatticeDefault (crf, fvs, ss).getTotalWeight();
 	  double minimizableCost = 0, minimizableGradientNorm = 0;
 	  double[] gradient = new double [mcrf.getNumParameters()];
 	  //System.out.println ("unconstrainedCost="+unconstrainedCost+" constrainedCost="+constrainedCost);
@@ -209,8 +214,8 @@ public class TestMEMM extends TestCase {
 	    for (int j = 0; j < numStates; j++)
 	      for (int k = 0; k < inputVocabSize; k++) {
 	        crf.setParameter(i, j, k, (k + i + j) * (k * i + i * j));
-	        unconstrainedCost = new SumLatticeDefault (crf, fvs).getCost();
-	        constrainedCost = new SumLatticeDefault (crf, fvs, ss).getCost();
+	        unconstrainedCost = new SumLatticeDefault (crf, fvs).getTotalWeight();
+	        constrainedCost = new SumLatticeDefault (crf, fvs, ss).getTotalWeight();
 	        minimizableCost = mcrf.getValue ();
 					mcrf.getValueGradient (gradient);
 	        minimizableGradientNorm = MatrixOps.oneNorm (gradient);
@@ -297,8 +302,7 @@ public class TestMEMM extends TestCase {
 	  {
 	    StringBuffer sb = new StringBuffer();
 	    String source = (String) carrier.getSource();
-	    ViterbiPath vp = (ViterbiPath) carrier.getTarget();
-	    ArraySequence as = (ArraySequence) vp.output();
+	    Sequence as = (Sequence) carrier.getTarget();
 	    //int startLabelIndex = as.getAlphabet().lookupIndex("start");
 	    for (int i = 0; i < source.length(); i++) {
 	      System.out.println("target[" + i + "]=" + as.get(i).toString());
@@ -339,14 +343,15 @@ public class TestMEMM extends TestCase {
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM memm = new MEMM(p, p2);
 	  memm.addFullyConnectedStatesForLabels();
+	  MEMMTrainer memmt = new MEMMTrainer (memm);
 	  if (testValueAndGradient) {
-	    Optimizable.ByGradientValue minable = memm.getMaximizableCRF(lists[0]);
+	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
 	    TestOptimizable.testValueAndGradient(minable);
 	  } else {
 	    System.out.println("Training Accuracy before training = " + memm.averageTokenAccuracy(lists[0]));
 	    System.out.println("Testing  Accuracy before training = " + memm.averageTokenAccuracy(lists[1]));
 	    System.out.println("Training...");
-	    memm.trainIncremental(lists[0]);
+	    memmt.train(lists[0], 1);
 	    System.out.println("Training Accuracy after training = " + memm.averageTokenAccuracy(lists[0]));
 	    System.out.println("Testing  Accuracy after training = " + memm.averageTokenAccuracy(lists[1]));
 	    System.out.println("Training results:");
@@ -380,16 +385,18 @@ public class TestMEMM extends TestCase {
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM crf = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
 	  crf.addFullyConnectedStatesForLabels();
-		crf.setUseSparseWeights (useSparseWeights);
+	  MEMMTrainer memmt = new MEMMTrainer (crf);
+	  
+		memmt.setUseSparseWeights (useSparseWeights);
 	  if (testValueAndGradient) {
-	    Optimizable.ByGradientValue minable = crf.getMaximizableCRF(lists[0]);
+	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
 	    TestOptimizable.testValueAndGradient(minable);
 	  } else {
 	    System.out.println("Training Accuracy before training = " + crf.averageTokenAccuracy(lists[0]));
 	    System.out.println("Testing  Accuracy before training = " + crf.averageTokenAccuracy(lists[1]));
 	    savedCRF = crf;
 	    System.out.println("Training serialized crf.");
-	    crf.trainIncremental(lists[0]);
+	    memmt.train(lists[0], 100);
 	    double preTrainAcc = crf.averageTokenAccuracy(lists[0]);
 	    double preTestAcc = crf.averageTokenAccuracy(lists[1]);
 	    System.out.println("Training Accuracy after training = " + preTrainAcc);
@@ -402,7 +409,6 @@ public class TestMEMM extends TestCase {
 	      System.err.println("Exception writing file: " + e);
 	    }
 	    System.err.println("Wrote out CRF");
-	    System.err.println("CRF parameters. hyperbolicPriorSlope: " + crf.getUseHyperbolicPriorSlope() + ". hyperbolicPriorSharpness: " + crf.getUseHyperbolicPriorSharpness() + ". gaussianPriorVariance: " + crf.getGaussianPriorVariance());
 	    // And read it back in
 	    if (useSaved) {
 	      crf = null;
@@ -470,7 +476,8 @@ public class TestMEMM extends TestCase {
 												 null,
 												 null,
 												 false);
-		crf1.trainIncremental (lists [0]);
+	  MEMMTrainer memmt1 = new MEMMTrainer (crf1);
+		memmt1.train(lists [0]);
 
 
 	  MEMM crf2 = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
@@ -481,7 +488,8 @@ public class TestMEMM extends TestCase {
 													 null,
 													 null,
 													 false);
-		crf2.trainIncremental (lists [0]);
+	  MEMMTrainer memmt2 = new MEMMTrainer (crf2);
+		memmt2.train(lists [0]);
 
 
 	  MEMM crf3 = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
@@ -492,12 +500,13 @@ public class TestMEMM extends TestCase {
 												 null,
 												 null,
 												 false);
-		crf3.trainIncremental (lists [0]);
+	  MEMMTrainer memmt3 = new MEMMTrainer (crf3);
+		memmt3.train(lists [0]);
 
 		// Prevent cached values
-		double lik1 = getLikelihood (crf1, lists[0]);
-		double lik2 = getLikelihood (crf2, lists[0]);
-		double lik3 = getLikelihood (crf3, lists[0]);
+		double lik1 = getLikelihood (memmt1, lists[0]);
+		double lik2 = getLikelihood (memmt2, lists[0]);
+		double lik3 = getLikelihood (memmt3, lists[0]);
 
 		System.out.println("CRF1 likelihood "+lik1);
 
@@ -511,8 +520,8 @@ public class TestMEMM extends TestCase {
 		assertEquals ( -90.386005741, lik3, 0.0001);
 	}
 
-	double getLikelihood (MEMM crf, InstanceList data) {
-		Optimizable.ByGradientValue mcrf = crf.getMaximizableCRF (data);
+	double getLikelihood (MEMMTrainer memmt, InstanceList data) {
+		Optimizable.ByGradientValue mcrf = memmt.getOptimizableMEMM(data);
 		// Do this elaborate thing so that crf.cachedValueStale is forced true
 		double[] params = new double [mcrf.getNumParameters()];
 		mcrf.getParameters (params);
@@ -561,8 +570,9 @@ public class TestMEMM extends TestCase {
 		one.add (new ArrayIterator (data));
 		MEMM crf = new MEMM (p, null);
 		crf.addFullyConnectedStatesForLabels();
-		crf.setWeightsDimensionAsIn (one);
-		MEMM.OptimizableCRF mcrf = crf.getMaximizableCRF(one);
+		crf.setWeightsDimensionAsIn (one, false);
+		MEMMTrainer memmt = new MEMMTrainer (crf);
+		MEMMTrainer.MEMMOptimizableByLabelLikelihood mcrf = memmt.getOptimizableMEMM(one);
 		double[] params = new double[mcrf.getNumParameters()];
 		for (int i = 0; i < params.length; i++) {
 			params [i] = i;
