@@ -9,3 +9,8 @@ mallet.jar
 lib/jython/Lib/test/output/
 doc
 class
+
+# Eclipse config files
+.project
+.classpath
+.settings
