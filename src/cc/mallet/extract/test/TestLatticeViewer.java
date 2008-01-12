@@ -18,7 +18,9 @@ import cc.mallet.extract.LatticeViewer;
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByLikelihood;
 import cc.mallet.fst.MEMM;
+import cc.mallet.fst.MEMMTrainer;
 import cc.mallet.fst.TokenAccuracyEvaluator;
+import cc.mallet.fst.TransducerEvaluator;
 import cc.mallet.fst.tests.TestCRF;
 import cc.mallet.fst.tests.TestMEMM;
 import cc.mallet.pipe.Pipe;
@@ -124,7 +126,10 @@ public class TestLatticeViewer extends TestCase {
 
     MEMM memm = new MEMM (pipe2, null);
     memm.addFullyConnectedStatesForLabels ();
-    memm.train (training2, null, testing2, new TokenAccuracyEvaluator (new InstanceList[] {training2, testing2}, new String[] {"Training2", "Testing2"}), 5);
+    MEMMTrainer memmt = new MEMMTrainer (memm);
+    TransducerEvaluator memmeval = new TokenAccuracyEvaluator (new InstanceList[] {training2, testing2}, new String[] {"Training2", "Testing2"});
+    memmt.train (training2, 5);
+    memmeval.evaluate(memmt);
 
     CRFExtractor extor2 = hackCrfExtor (memm);
     Extraction e2 = extor2.extract (new ArrayIterator (data1));
