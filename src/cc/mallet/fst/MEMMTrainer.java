@@ -110,6 +110,7 @@ public class MEMMTrainer extends TransducerTrainer
 			try {
 				converged = maximizer.optimize (1);
 				logger.info ("CRF finished one iteration of maximizer, i="+i);
+				runEvaluators();
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");

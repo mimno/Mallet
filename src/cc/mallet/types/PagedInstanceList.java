@@ -22,11 +22,9 @@ import java.lang.Runtime;
 
 import cc.mallet.pipe.FeatureSequence2FeatureVector;
 import cc.mallet.pipe.Pipe;
-import cc.mallet.pipe.PipeOutputAccumulator;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.Target2Label;
 import cc.mallet.pipe.TokenSequence2FeatureSequence;
-import cc.mallet.pipe.iterator.PipeInputIterator;
 import cc.mallet.pipe.iterator.RandomTokenSequenceIterator;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Labeling;
@@ -36,7 +34,7 @@ import cc.mallet.util.PropertyList;
 import cc.mallet.util.Randoms;
 
 /**
-	 xxx .split() methods still unreliable
+	 TODO .split() methods still unreliable
 
 	 An InstanceList which avoids OutOfMemoryErrors by saving Instances
 	 to disk when there is not enough memory to create a new
@@ -81,7 +79,7 @@ import cc.mallet.util.Randoms;
 
 	 Or This
 
-	 PipeInputIterator iter = ...;
+	 Instance.Iterator iter = ...;
 	 Pipe p = ...;
 	 PagedInstanceList ilist = new PagedInstanceList (p);
 	 ilist.add (iter);
@@ -191,7 +189,7 @@ public class PagedInstanceList extends InstanceList
    */
 	public InstanceList[] split (java.util.Random r, double[] proportions)
 	{
-    ArrayList shuffled = new ArrayList (size());
+    ArrayList<Integer> shuffled = new ArrayList<Integer> (size());
 		for (int i=0; i < size(); i++)
 			shuffled.add (new Integer (i));
 		Collections.shuffle (shuffled, r);
@@ -203,19 +201,19 @@ public class PagedInstanceList extends InstanceList
 		return split (new java.util.Random(System.currentTimeMillis()), proportions);
 	}
 
-  private static InstanceList[] splitInOrder (List instanceIndices, double[] proportions,
+  private static InstanceList[] splitInOrder (List<Integer> instanceIndices, double[] proportions,
                                               PagedInstanceList cloneMe) {
     double[] maxind = new double[proportions.length];
  		System.arraycopy (proportions, 0, maxind, 0, proportions.length);
 		PagedInstanceList[] ret = new PagedInstanceList[proportions.length];
-		ArrayList[] splitIndices = new ArrayList[proportions.length];
+		ArrayList<Integer>[] splitIndices = new ArrayList[proportions.length];
 		DenseVector.normalize(maxind);
 		// Fill maxind[] with the highest instance index that should go in
 		// each corresponding returned InstanceList.
 		for (int i = 0; i < maxind.length; i++) {
 			// xxx Is it dangerous to share the featureSelection that comes with cloning?
 			ret[i] = (PagedInstanceList)cloneMe.cloneEmpty();
-			splitIndices[i] = new ArrayList();
+			splitIndices[i] = new ArrayList<Integer>();
 			if (i > 0)
 				maxind[i] += maxind[i-1];
 		}
@@ -291,9 +289,9 @@ public class PagedInstanceList extends InstanceList
 		ret[1] = (PagedInstanceList)this.cloneEmpty();
 		for (int i = 0; i < this.size(); i++) {
 			if (i % m == 0)
-				ret[0].instances.add (this.get(i));
+				ret[0].add (this.get(i));
 			else
-				ret[1].instances.add (this.get(i));
+				ret[1].add (this.get(i));
 		}
 		return ret;
 	}
@@ -308,7 +306,7 @@ public class PagedInstanceList extends InstanceList
 			indices.add (new Integer (r.nextInt(size())));
 		Collections.sort (indices);
 		for (int i = 0; i < indices.size(); i++)
-			ret.instances.add (this.get(((Integer)indices.get(i)).intValue()));
+			ret.add (this.get(((Integer)indices.get(i)).intValue()));
 		return ret;
 	}
 
@@ -391,7 +389,7 @@ public class PagedInstanceList extends InstanceList
 					inst.lock();
 					if (inMemory.get(newIndex))
 						throw new IllegalStateException (newIndex + " already in memory! ");
-					instances.set (newIndex, inst);
+					this.set (newIndex, inst);
 					inMemory.set (newIndex);
 					if (newIndex == size()-1) // for last bin
 						break;
@@ -439,7 +437,7 @@ public class PagedInstanceList extends InstanceList
 					try {
 						ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream (f));
 						for (int bi=beginIndex; bi <= endIndex; bi++) {
-							Instance inst = (Instance)instances.get(bi);
+							Instance inst = this.get(bi);
 							
 							if (inst.getDataAlphabet() != null) 
 								inst.getDataAlphabet().setInstanceId (new VMID());
@@ -461,7 +459,7 @@ public class PagedInstanceList extends InstanceList
 				}
 			
 			for (int bi=beginIndex; bi <= endIndex; bi++) {
-				instances.set(bi, null);
+				this.set(bi, null);
 				inMemory.set (bi, false);
 			}
 			logger.fine ("Swapping out page " + i);
@@ -491,17 +489,17 @@ public class PagedInstanceList extends InstanceList
 	{
 		if (!inMemory.get(index))
 			swapIn (index);
-		return (Instance) instances.get (index);
+		return (Instance) this.get (index);
 	}
     
   /** Replaces the <code>Instance</code> at position
    * <code>index</code> with a new one. Note that this is the only
    * sanctioned way of changing an Instance. */
-  public void setInstance(int index, Instance instance)
+  public Instance set (int index, Instance instance)
   {
 		if (!inMemory.get(index))
 			swapIn (index);
-    instances.set(index, instance);
+    return this.set(index, instance);
   }
 
   /** Appends the instance to this list. Note that since memory for
@@ -511,38 +509,11 @@ public class PagedInstanceList extends InstanceList
    */
 	public boolean add (Instance instance)
 	{
-		// Removed a check here for notYetSetPipe -AKM 9/2007
-		if (!Alphabet.alphabetsMatch(instance, this))
-			// Making sure that the Instance has the same Alphabets as us.
-			// xxx This also is a good time check that the constituent data is
-			// of a consistent type?
-			throw new IllegalArgumentException ("Alphabets don't match: instance: "+
-																					instance.getAlphabets()+" Instance.list: "+
-																					this.pipe.getAlphabets());
-		if (dataClass == null) {
-			dataClass = instance.data.getClass();
-      if (pipe != null && pipe.isTargetProcessing())
-        targetClass = instance.target.getClass();
-		}
-		instance.lock();
-		boolean ret = instances.add (instance);
+		boolean ret = super.add (instance);
 		inMemory.set(size()-1);
 		logger.finer ("Added instance " + (size()-1) + ". Free memory remaining (bytes): " +
 								 Runtime.getRuntime().freeMemory());
  		return ret;
-	}
-
-
-  /** Adds to this list every instance generated by the iterator,
-   * passing each one through this list's pipe. Checks are made to
-   * ensure an OutOfMemoryError is not thrown when instantiating a new
-   * Instance. */
-	public void add (PipeInputIterator pi)
-	{
-		while (pi.hasNext()) {
-			Instance carrier = pi.next();
-			add (carrier.getData(), carrier.getTarget(), carrier.name, carrier.getSource());
-		}
 	}
 
 	/** Constructs and appends an instance to this list, passing it through this
@@ -551,7 +522,11 @@ public class PagedInstanceList extends InstanceList
    * Instance.
    * @return <code>true</code>
    */
-	public boolean add (Object data, Object target, Object name, Object source, double instanceWeight)
+	/* This no longer works because this method is deprecated.  
+	 * We could try to re-implement this behavior in add(Iterator<Instance>), but I'm not
+	 * sure how re-entrant all those nested pipes would be after throwing an exception!?
+	 *  
+	public boolean add (Object data, Object target, Object name, Object source, double instanceWeight)fff
 	{
 		Instance inst = null;
 		logger.fine ("Trying to add instance...");
@@ -589,34 +564,22 @@ public class PagedInstanceList extends InstanceList
 
     return retVal;
 	}
+	*/
 
 	public void setCollectGarbage (boolean b) { this.collectGarbage = b; }
 	public boolean collectGarbage () { return this.collectGarbage; }
 
 	public InstanceList shallowClone ()
 	{
-		PagedInstanceList ret = new PagedInstanceList (pipe, instances.size(), -1, swapDir);
-		for (int i = 0; i < instances.size(); i++)
+		PagedInstanceList ret = (PagedInstanceList) this.cloneEmpty();
+		for (int i = 0; i < this.size(); i++)
 			ret.add (get(i));
-		if (instanceWeights == null)
-			ret.instanceWeights = null;
-		else
-			ret.instanceWeights = instanceWeights.cloneDoubleList();
 		return ret;
 	}
 
 	public InstanceList cloneEmpty ()
 	{
-		PagedInstanceList ret = new PagedInstanceList (pipe, size(), instancesPerPage, swapDir );
-		ret.instanceWeights = instanceWeights == null ? null : (DoubleList) instanceWeights.clone();
-		// xxx Should the featureSelection and perLabel... be cloned?
-		// Note that RoostingTrainer currently depends on not cloning its splitting.
-		ret.featureSelection = this.featureSelection;
-		ret.perLabelFeatureSelection = this.perLabelFeatureSelection;
-		ret.dataClass = this.dataClass;
-		ret.targetClass = this.targetClass;
-		ret.dataAlphabet = this.dataAlphabet;
-		ret.targetAlphabet = this.targetAlphabet;
+		PagedInstanceList ret = (PagedInstanceList) super.cloneEmptyInto(new PagedInstanceList (pipe, size(), instancesPerPage, swapDir)); 
 		ret.collectGarbage = this.collectGarbage;
 		return ret;
 	}
@@ -650,8 +613,6 @@ public class PagedInstanceList extends InstanceList
 		int i, size;
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeObject (id);
-		out.writeObject (instances);
-		out.writeObject(instanceWeights);
 		out.writeObject(pipe);
 		// memory attributes
 		out.writeInt (instancesPerPage);
@@ -665,8 +626,6 @@ public class PagedInstanceList extends InstanceList
 		int i, size;
 		int version = in.readInt ();
 		id = (VMID) in.readObject ();
-		instances = (ArrayList) in.readObject();
-		instanceWeights = (DoubleList) in.readObject();
 		pipe = (Pipe) in.readObject();
 		// memory attributes
 		instancesPerPage = in.readInt ();

@@ -151,6 +151,7 @@ public class CRFTrainerByLikelihood extends TransducerTrainer implements Transdu
 				converged = opt.optimize (1);
 				iterationCount++;
 				logger.info ("CRF finished one iteration of maximizer, i="+i);
+				runEvaluators();
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");
