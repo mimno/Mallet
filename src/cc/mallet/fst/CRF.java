@@ -433,8 +433,29 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 		
+		// Serialization for Factors
+		private static final long serialVersionUID = 1;
+		private static final int CURRENT_SERIAL_VERSION = 1;
+		private void writeObject (ObjectOutputStream out) throws IOException {
+			out.writeInt (CURRENT_SERIAL_VERSION);
+			out.writeObject (weightAlphabet);
+			out.writeObject (weights);
+			out.writeObject (defaultWeights);
+			out.writeObject (weightsFrozen);
+			out.writeObject (initialWeights);
+			out.writeObject (finalWeights);
+		}
 		
-		
+		private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+			int version = in.readInt ();
+			weightAlphabet = (Alphabet) in.readObject ();
+			weights = (SparseVector[]) in.readObject ();
+			defaultWeights = (double[]) in.readObject ();
+			weightsFrozen = (boolean[]) in.readObject ();
+			initialWeights = (double[]) in.readObject ();
+			finalWeights = (double[]) in.readObject ();
+		}
+
 	}
 
 	
@@ -1537,153 +1558,43 @@ public class CRF extends Transducer implements Serializable
 	}
 
 
-	// Serialization
-	// For CRF class
+	// Serialization for CRF class
 	
-	// TODO Make Factors Serializable, and use it
-
 	private static final long serialVersionUID = 1;
-	// Serial versions
-	//  3: Add transduction type.
-	//  4: Add weightsFrozen
-	private static final int CURRENT_SERIAL_VERSION = 4;
-	static final int NULL_INTEGER = -1;
+	private static final int CURRENT_SERIAL_VERSION = 1;
 
-	/* Need to check for null pointers. */
 	private void writeObject (ObjectOutputStream out) throws IOException {
-		int i, size;
 		out.writeInt (CURRENT_SERIAL_VERSION);
-		out.writeObject(inputPipe);
-		out.writeObject(outputPipe);
+		out.writeInt (numParameters);
+		out.writeInt (weightsValueChangeStamp);
+		out.writeInt (weightsStructureChangeStamp);
+		out.writeInt (cachedNumParametersStamp);
 		out.writeObject (inputAlphabet);
 		out.writeObject (outputAlphabet);
-		size = states.size();
-		out.writeInt(size);
-		for (i = 0; i<size; i++)
-			out.writeObject(states.get(i));
-		size = initialStates.size();
-		out.writeInt(size);
-		for (i = 0; i <size; i++)
-			out.writeObject(initialStates.get(i));
-		out.writeObject(name2state);
-		if(parameters.weights != null) {
-			size = parameters.weights.length;
-			out.writeInt(size);
-			for (i=0; i<size; i++)
-				out.writeObject(parameters.weights[i]);
-		}	else {
-			out.writeInt(NULL_INTEGER);
-		}
-
-		if (parameters.defaultWeights != null) {
-			size = parameters.defaultWeights.length;
-			out.writeInt(size);
-			for (i=0; i<size; i++)
-				out.writeDouble(parameters.defaultWeights[i]);
-		}	else {
-			out.writeInt(NULL_INTEGER);
-		}
-
-		if (featureSelections != null) {
-			size = featureSelections.length;
-			out.writeInt(size);
-			for (i=0; i<size; i++)
-				out.writeObject(featureSelections[i]);
-		} else {
-			out.writeInt(NULL_INTEGER);
-		}
-		if (parameters.weightsFrozen != null) {
-			size = parameters.weightsFrozen.length;
-			out.writeInt (size);
-			for (i = 0; i < size; i++)
-				out.writeBoolean (parameters.weightsFrozen[i]);
-		} else {
-			out.writeInt (NULL_INTEGER);
-		}
-
-		out.writeObject(globalFeatureSelection);
-		out.writeObject(parameters.weightAlphabet);
-
-		out.writeInt(featureInducers.size());
-		for (i = 0; i < featureInducers.size(); i++) {
-			out.writeObject(featureInducers.get(i));
-		}
+		out.writeObject (states);
+		out.writeObject (initialStates);
+		out.writeObject (name2state);
+		out.writeObject (parameters);
+		out.writeObject (globalFeatureSelection);		
+		out.writeObject (featureSelections);
+		out.writeObject (featureInducers);
 	}
 
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int size, i;
 		int version = in.readInt ();
-		inputPipe = (Pipe) in.readObject();
-		outputPipe = (Pipe) in.readObject();
-		inputAlphabet = (Alphabet) in.readObject();
-		outputAlphabet = (Alphabet) in.readObject();
-		size = in.readInt();
-		states = new ArrayList<State>();
-		for (i=0; i<size; i++) {
-			State s = (CRF.State) in.readObject();
-			states.add(s);
-		}
-		size = in.readInt();
-		initialStates = new ArrayList<State>();
-		for (i=0; i<size; i++) {
-			State s = (CRF.State) in.readObject();
-			initialStates.add(s);
-		}
-		name2state = (HashMap<String,State>) in.readObject();
-		size = in.readInt();
-		if (size == NULL_INTEGER) {
-			parameters.weights = null;
-		}
-		else {
-			parameters.weights = new SparseVector[size];
-			for(i=0; i< size; i++) {
-				parameters.weights[i] = (SparseVector) in.readObject();
-			}
-		}
-		size = in.readInt();
-		if (size == NULL_INTEGER) {
-			parameters.defaultWeights = null;
-		}
-		else {
-			parameters.defaultWeights = new double[size];
-			for(i=0; i< size; i++) {
-				parameters.defaultWeights[i] = in.readDouble();
-			}
-		}
-
-		size = in.readInt();
-		if (size == NULL_INTEGER) {
-			featureSelections = null;
-		}	else {
-			featureSelections = new FeatureSelection[size];
-			for(i=0; i<size; i++)
-				featureSelections[i] = (FeatureSelection)in.readObject();
-		}
-
-		// weightsFrozen appears in version 4
-		if (version >= 4) {
-			size = in.readInt ();
-			if (size == NULL_INTEGER) {
-				parameters.weightsFrozen = null;
-			} else {
-				parameters.weightsFrozen = new boolean [size];
-				for (i = 0; i < size; i++)
-					parameters.weightsFrozen[i] = (boolean)in.readBoolean ();
-			}
-		} else {
-			parameters.weightsFrozen = new boolean [parameters.weights.length];
-		}
-
-		assertWeightsLength ();
-
-		globalFeatureSelection = (FeatureSelection) in.readObject();
-		parameters.weightAlphabet = (Alphabet) in.readObject();
-
-		size = in.readInt();
-		featureInducers = new ArrayList<FeatureInducer>();
-		for (i = 0; i < size; i++) {
-			featureInducers.add((FeatureInducer)in.readObject());
-		}
+		numParameters = in.readInt ();
+		weightsValueChangeStamp = in.readInt ();
+		weightsStructureChangeStamp = in.readInt ();
+		cachedNumParametersStamp = in.readInt ();
+		inputAlphabet = (Alphabet) in.readObject ();
+		outputAlphabet = (Alphabet) in.readObject ();
+		states = (ArrayList<State>) in.readObject ();
+		initialStates = (ArrayList<State>) in.readObject ();
+		name2state = (HashMap) in.readObject ();
+		parameters = (Factors) in.readObject ();
+		globalFeatureSelection = (FeatureSelection) in.readObject ();		
+		featureSelections = (FeatureSelection[]) in.readObject ();
+		featureInducers = (ArrayList<FeatureInducer>) in.readObject ();
 	}
 
 
@@ -1815,95 +1726,26 @@ public class CRF extends Transducer implements Serializable
 
 		private static final long serialVersionUID = 1;
 		private static final int CURRENT_SERIAL_VERSION = 0;
-		private static final int NULL_INTEGER = -1;
 
 		private void writeObject (ObjectOutputStream out) throws IOException {
-			int i, size;
 			out.writeInt (CURRENT_SERIAL_VERSION);
 			out.writeObject(name);
 			out.writeInt(index);
-			size = (destinationNames == null) ? NULL_INTEGER : destinationNames.length;
-			out.writeInt(size);
-			if (size != NULL_INTEGER) {
-				for(i=0; i<size; i++){
-					out.writeObject(destinationNames[i]);
-				}
-			}
-			size = (destinations == null) ? NULL_INTEGER : destinations.length;
-			out.writeInt(size);
-			if (size != NULL_INTEGER) {
-				for(i=0; i<size;i++) {
-					out.writeObject(destinations[i]);
-				}
-			}
-			size = (weightsIndices == null) ? NULL_INTEGER : weightsIndices.length;
-			out.writeInt(size);
-			if (size != NULL_INTEGER) {
-				for (i=0; i<size; i++) {
-					out.writeInt(weightsIndices[i].length);
-					for (int j = 0; j < weightsIndices[i].length; j++)
-						out.writeInt(weightsIndices[i][j]);
-				}
-			}
-			size = (labels == null) ? NULL_INTEGER : labels.length;
-			out.writeInt(size);
-			if (size != NULL_INTEGER) {
-				for (i=0; i<size; i++)
-					out.writeObject(labels[i]);
-				//out.writeObject (inputAlphabet);
-				//out.writeObject (outputAlphabet);
-			}
+			out.writeObject(destinationNames);
+			out.writeObject(destinations);
+			out.writeObject(weightsIndices);
+			out.writeObject(labels);
 			out.writeObject(crf);
 		}
 
 		private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-			int size, i;
 			int version = in.readInt ();
 			name = (String) in.readObject();
 			index = in.readInt();
-			size = in.readInt();
-			if (size != NULL_INTEGER) {
-				destinationNames = new String[size];
-				for (i=0; i<size; i++) {
-					destinationNames[i] = (String) in.readObject();
-				}
-			}
-			else {
-				destinationNames = null;
-			}
-			size = in.readInt();
-			if (size != NULL_INTEGER) {
-				destinations = new State[size];
-				for (i=0; i<size; i++) {
-					destinations[i] = (State) in.readObject();
-				}
-			}
-			else {
-				destinations = null;
-			}
-			size = in.readInt();
-			if (size != NULL_INTEGER) {
-				weightsIndices = new int[size][];
-				for (i=0; i<size; i++) {
-					int size2 = in.readInt();
-					weightsIndices[i] = new int[size2];
-					for (int j = 0; j < size2; j++)
-						weightsIndices[i][j] = in.readInt();
-				}
-			}
-			else {
-				weightsIndices = null;
-			}
-			size = in.readInt();
-			if (size != NULL_INTEGER) {
-				labels = new String[size];
-				for (i=0; i<size; i++)
-					labels[i] = (String) in.readObject();
-				//inputAlphabet = (Alphabet) in.readObject();
-				//outputAlphabet = (Alphabet) in.readObject();
-			}	else {
-				labels = null;
-			}
+			destinationNames = (String[]) in.readObject();
+			destinations = (CRF.State[]) in.readObject();
+			weightsIndices = (int[][]) in.readObject();
+			labels = (String[]) in.readObject();
 			crf = (CRF) in.readObject();
 		}
 
@@ -1993,15 +1835,7 @@ public class CRF extends Transducer implements Serializable
 			out.writeObject (source);
 			out.writeInt (index);
 			out.writeInt (nextIndex);
-			if (weights != null) {
-				out.writeInt (weights.length);
-				for (int i = 0; i < weights.length; i++) {
-					out.writeDouble (weights[i]);
-				}
-			}
-			else {
-				out.writeInt(NULL_INTEGER);
-			}
+			out.writeObject(weights);
 			out.writeObject (input);
 			out.writeObject(crf);
 		}
@@ -2011,16 +1845,7 @@ public class CRF extends Transducer implements Serializable
 			source = (State) in.readObject();
 			index = in.readInt ();
 			nextIndex = in.readInt ();
-			int size = in.readInt();
-			if (size == NULL_INTEGER) {
-				weights = null;
-			}
-			else {
-				weights = new double[size];
-				for (int i =0; i <size; i++) {
-					weights[i] = in.readDouble();
-				}
-			}
+			weights = (double[]) in.readObject();
 			input = (FeatureVector) in.readObject();
 			crf = (CRF) in.readObject();
 		}

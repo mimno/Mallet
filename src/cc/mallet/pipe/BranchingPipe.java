@@ -16,7 +16,9 @@ import cc.mallet.types.Instance;
  * any Instances---in other words they shouldn't call next() to pre-gather any Instances 
  * they they themselves don't consume and process immediately.  Otherwise, Instances
  * that should have been processed by some other constituent Pipe could get lost in 
- * this buffering process. */
+ * this buffering process. 
+ * @author Andrew McCallum <mccallum@cs.umass.edu> */
+
 
 @ Deprecated
 //Implementation not yet complete, and seems quite dangerous and error-prone.

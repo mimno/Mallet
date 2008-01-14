@@ -8,7 +8,7 @@ import cc.mallet.types.InstanceList;
 
 public abstract class TransducerTrainer {
 	// The list of evaluators to be run every once in a while
-	ArrayList<TransducerEvaluator> evaluators;
+	ArrayList<TransducerEvaluator> evaluators = new ArrayList<TransducerEvaluator>();
 	
 	public abstract Transducer getTransducer();
 	public abstract int getIteration();
