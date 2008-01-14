@@ -431,7 +431,7 @@ public class SimpleTagger
     {
       p.setTargetProcessing(true);
       trainingData = new InstanceList(p);
-      trainingData.add(
+      trainingData.addThruPipe(
           new LineGroupIterator(trainingFile,
             Pattern.compile("^\\s*$"), true));
       logger.info
@@ -441,7 +441,7 @@ public class SimpleTagger
         if (testFile != null)
         {
           testData = new InstanceList(p);
-          testData.add(
+          testData.addThruPipe(
               new LineGroupIterator(testFile,
                 Pattern.compile("^\\s*$"), true));
         } else
@@ -459,14 +459,14 @@ public class SimpleTagger
     {
       p.setTargetProcessing(true);
       testData = new InstanceList(p);
-      testData.add(
+      testData.addThruPipe(
           new LineGroupIterator(testFile,
             Pattern.compile("^\\s*$"), true));
     } else
     {
       p.setTargetProcessing(false);
       testData = new InstanceList(p);
-      testData.add(
+      testData.addThruPipe(
           new LineGroupIterator(testFile,
             Pattern.compile("^\\s*$"), true));
     }

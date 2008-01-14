@@ -158,7 +158,7 @@ public class TUI
 		});
 
 		InstanceList ilist = new InstanceList (p);
-		ilist.add (new FileIterator (datadir, FileIterator.STARTING_DIRECTORIES));
+		ilist.addThruPipe (new FileIterator (datadir, FileIterator.STARTING_DIRECTORIES));
 		Random r = new Random (1);
 		InstanceList[] ilists = ilist.split (r, new double[] {0.8, 0.2});
 		

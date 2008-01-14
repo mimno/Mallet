@@ -100,7 +100,7 @@ public class TestClassifiers extends TestCase
       30, 0,
       10, 50,
       classNames);
-    testing.add (iter);
+    testing.addThruPipe (iter);
 
     for (int i = 0; i < testing.size (); i++) {
       Instance inst = testing.get (i);

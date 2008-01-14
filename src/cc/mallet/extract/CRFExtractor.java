@@ -123,9 +123,9 @@ public class CRFExtractor implements Extractor {
     // I think that pipes should be associated neither with InstanceLists, nor
     //  with Instances. -cas
     InstanceList toked = new InstanceList (tokenizationPipe);
-    toked.add (source);
+    toked.addThruPipe (source);
     InstanceList piped = new InstanceList (getFeaturePipe ());
-    piped.add (toked.iterator());
+    piped.addThruPipe (toked.iterator());
     return piped;
   }
 
@@ -153,9 +153,9 @@ public class CRFExtractor implements Extractor {
     Extraction extraction = new Extraction (this, getTargetAlphabet ());
     // Put all the instances through both pipes, then get viterbi path
     InstanceList tokedList = new InstanceList (tokenizationPipe);
-    tokedList.add (source);
+    tokedList.addThruPipe (source);
     InstanceList pipedList = new InstanceList (getFeaturePipe ());
-    pipedList.add (tokedList.iterator());
+    pipedList.addThruPipe (tokedList.iterator());
 
     Iterator<Instance> it1 = tokedList.iterator ();
     Iterator<Instance> it2 = pipedList.iterator ();

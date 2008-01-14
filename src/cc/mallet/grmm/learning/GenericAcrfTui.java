@@ -108,9 +108,9 @@ public class GenericAcrfTui {
     }
 
     InstanceList training = new InstanceList (pipe);
-    training.add (trainSource);
+    training.addThruPipe (trainSource);
     InstanceList testing = new InstanceList (pipe);
-    testing.add (testSource);
+    testing.addThruPipe (testSource);
 
     ACRF.Template[] tmpls = parseModelFile (modelFile.value);
     ACRFEvaluator eval = createEvaluator (evalOption.value);

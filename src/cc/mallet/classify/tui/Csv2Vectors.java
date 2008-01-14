@@ -134,7 +134,7 @@ public class Csv2Vectors
 		else
 		    fileReader = new FileReader (inputFile.value);
 
-		ilist.add (new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
+		ilist.addThruPipe (new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
 					    dataOption.value, labelOption.value, nameOption.value));
 		
 		ObjectOutputStream oos;

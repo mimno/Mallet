@@ -14,18 +14,15 @@ import java.util.logging.*;
 import java.io.*;
 
 import cc.mallet.pipe.FeatureSequence2FeatureVector;
-import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.Target2Label;
 import cc.mallet.pipe.TokenSequence2FeatureSequence;
-import cc.mallet.pipe.iterator.PipeInputIterator;
 import cc.mallet.pipe.iterator.RandomTokenSequenceIterator;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Labeling;
-import cc.mallet.util.DoubleList;
 import cc.mallet.util.MalletLogger;
-import cc.mallet.util.PropertyList;
 import cc.mallet.util.Randoms;
 
 /**
@@ -70,9 +67,13 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	Class targetClass = null;
 
 	/**
-	 * Creates a list with the given pipe and initial capacity
-	 * where all added instances are passed through the specified pipe.
-	 * @param pipe The pipe through which all added instances will be passed.
+	 * Construct an InstanceList having given capacity, with given default pipe.
+	 * Typically Instances added to this InstanceList will have gone through the 
+	 * pipe (for example using instanceList.addThruPipe); but this is not required.
+	 * This InstanaceList will obtain its dataAlphabet and targetAlphabet from the pipe.
+	 * It is required that all Instances in this InstanceList share these Alphabets. 
+	 * @param pipe The default pipe used to process instances added via the addThruPipe methods.
+	 * @param capacity The initial capacity of the list; will grow further as necessary.
 	 */
 	// XXX not very useful, should perhaps be removed
 	public InstanceList (Pipe pipe, int capacity)
@@ -82,28 +83,32 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	}
 
 	/**
-	 * Creates a list with the given pipe.
-	 * @param pipe The pipe through which all added instances will be passed.
+	 * Construct an InstanceList with initial capacity of 10, with given default pipe.
+	 * Typically Instances added to this InstanceList will have gone through the 
+	 * pipe (for example using instanceList.addThruPipe); but this is not required.
+	 * This InstanaceList will obtain its dataAlphabet and targetAlphabet from the pipe.
+	 * It is required that all Instances in this InstanceList share these Alphabets. 
+	 * @param pipe The default pipe used to process instances added via the addThruPipe methods.
 	 */
 	public InstanceList (Pipe pipe)
 	{
 		this (pipe, 10);
 	}
 
-	/** <p>Creates a list which will not pass added instances through a pipe.</p>
-	 *
-	 * <p>Used in those infrequent circumstances when the <code>InstanceList</code>
-	 * has no pipe, and objects containing vocabularies are entered
+	/** 
+	 * Construct an InstanceList with initial capacity of 10, with a Noop default pipe.
+	 * Used in those infrequent circumstances when Instances typically would not have further
+	 * processing,  and objects containing vocabularies are entered
 	 * directly into the <code>InstanceList</code>; for example, the creation of a
 	 * random <code>InstanceList using <code>Dirichlet</code>s and
 	 * <code>Multinomial</code>s.</p>
 	 *
-	 * @param dataVocab The vocabulary for added instances' data fields
-	 * @param targetVocab The vocabulary for added instances' targets
+	 * @param dataAlphabet The vocabulary for added instances' data fields
+	 * @param targetAlphabet The vocabulary for added instances' targets
 	 */
 	public InstanceList (Alphabet dataAlphabet, Alphabet targetAlphabet)
 	{
-		this ((Pipe)null, 10);
+		this (new Noop(dataAlphabet, targetAlphabet), 10);
 		this.dataAlphabet = dataAlphabet;
 		this.targetAlphabet = targetAlphabet;
 	}
@@ -121,7 +126,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	}
 	static final Pipe notYetSetPipe = new NotYetSetPipe();
 
-	/** Creates a list which must have its pipe set later. */
+	/** Creates a list that will have its pipe set later when its first Instance is added. */
 	public InstanceList ()
 	{
 		this (notYetSetPipe);
@@ -154,7 +159,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 				classCentroidAverageAlphaMean, classCentroidAverageAlphaVariance,
 				featureVectorSizePoissonLambda, classInstanceCountPoissonLambda,
 				classNames);
-		this.add (iter);
+		this.addThruPipe (iter);
 	}
 
 	private static Alphabet dictOfSize (int size)
@@ -240,7 +245,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	 * passing each one through this InstanceList's pipe. */
 	// TODO This method should be renamed addPiped(Iterator<Instance> ii)
 	// and 
-	public void add (Iterator<Instance> ii)
+	public void addThruPipe (Iterator<Instance> ii)
 	{
 		Iterator<Instance> pipedInstanceIterator = pipe.newIteratorFrom(ii);
 		while (pipedInstanceIterator.hasNext())
@@ -367,8 +372,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
   
   
   
-	@Deprecated
-	// Remove this
+	@Deprecated	// Remove this.  It seems like too specialized behavior to be implemented here.
 	// Intentionally add some noise into the data.
 	// return the real random ratio
 	// added by Fuchun Peng, Sept. 2003
@@ -428,6 +432,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 		return cloneEmptyInto (new InstanceList (pipe));
 	}
 
+	// A precursor to cloning subclasses of InstanceList 
 	protected InstanceList cloneEmptyInto (InstanceList ret)
 	{
 		ret.instWeights = null; // Don't copy these, because its empty! instWeights == null ? null : (HashMap<Instance,Double>) instWeights.clone();
@@ -600,16 +605,15 @@ public InstanceList[] splitInOrder (double[] proportions) {
 		return newList;
 	}
 
-	/** Returns the class of the object contained in the data field of the
-	 * first <code>Instance</code> in this list. */
-	public Class getDataClass ()
-	{
-		if (this.size() == 0)
-			return null;
-		else
-			return get(0).getData().getClass();
+	/** Returns the Java Class 'data' field of Instances in this list. */
+	public Class getDataClass () {
+		return dataClass;
 	}
 
+	/** Returns the Java Class 'target' field of Instances in this list. */
+	public Class getTargetClass () {
+		return targetClass;
+	}
 
 	//added by Fuchun
 	/** Replaces the <code>Instance</code> at position <code>index</code>
@@ -843,8 +847,10 @@ public InstanceList[] splitInOrder (double[] proportions) {
 		return pipe;
 	}
 
-	// this should never be used except under extreme circustances!!
-	public void setPipe(Pipe p){
+	/** Change the default Pipe associated with InstanceList.
+	 * This method is very dangerous and should only be used in extreme circumstances!! */
+	public void setPipe(Pipe p) {
+		assert (Alphabet.alphabetsMatch(this, p));
 		pipe = p;
 	}
 
@@ -883,10 +889,6 @@ public InstanceList[] splitInOrder (double[] proportions) {
 		return new Alphabet[] {getDataAlphabet(), getTargetAlphabet() };
 	}
 	
-	public boolean alphabetsMatch (AlphabetCarrying object) {
-		return Alphabet.alphabetsMatch(this, object);
-	}
-
 	public LabelVector targetLabelDistribution ()
 	{
 		if (this.size() == 0) return null;

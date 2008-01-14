@@ -67,8 +67,8 @@ public class TestOffsetFeatureConjunctions extends TestCase {
     InstanceList mtLst = new InstanceList (mtPipe);
     InstanceList noMtLst = new InstanceList (noMtPipe);
 
-    mtLst.add (new ArrayIterator (doc1));
-    noMtLst.add (new ArrayIterator (doc1));
+    mtLst.addThruPipe (new ArrayIterator (doc1));
+    noMtLst.addThruPipe (new ArrayIterator (doc1));
 
     Instance mtInst = mtLst.get (0);
     Instance noMtInst = noMtLst.get (0);
@@ -101,7 +101,7 @@ public class TestOffsetFeatureConjunctions extends TestCase {
 
     Pipe mtPipe = (Pipe) TestSerializable.cloneViaSerialization (origPipe);
     InstanceList mtLst = new InstanceList (mtPipe);
-    mtLst.add (new ArrayIterator (doc1));
+    mtLst.addThruPipe (new ArrayIterator (doc1));
     Instance mtInst = mtLst.get (0);
     TokenSequence mtTs = (TokenSequence) mtInst.getData ();
     assertEquals (6, mtTs.size ());

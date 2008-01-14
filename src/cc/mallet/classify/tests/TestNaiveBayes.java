@@ -105,8 +105,8 @@ public class TestNaiveBayes extends TestCase
 							new TokenSequence2FeatureSequence (),
 							new FeatureSequence2FeatureVector ()}));
 
-		instances.add (new ArrayIterator (africaTraining, "africa"));
-		instances.add (new ArrayIterator (asiaTraining, "asia"));
+		instances.addThruPipe (new ArrayIterator (africaTraining, "africa"));
+		instances.addThruPipe (new ArrayIterator (asiaTraining, "asia"));
 		Classifier c = new NaiveBayesTrainer ().train (instances);
 
 		Classification cf = c.classify ("nelson mandela never eats lions");
@@ -156,7 +156,7 @@ public class TestNaiveBayes extends TestCase
 					new FeatureSequence2FeatureVector() });
 
 		InstanceList instList = new InstanceList(instPipe);
-		instList.add(new
+		instList.addThruPipe(new
 				FileIterator(directories, FileIterator.STARTING_DIRECTORIES));
 
 		System.out.println("Training 1");
@@ -173,7 +173,7 @@ public class TestNaiveBayes extends TestCase
 		System.out.println("data alphabet size " + instList.getDataAlphabet().size());
 		System.out.println("target alphabet size " + instList.getTargetAlphabet().size());
 		InstanceList instList2 = new InstanceList(instPipe);
-		instList2.add(new
+		instList2.addThruPipe(new
 				FileIterator(t2directories, FileIterator.STARTING_DIRECTORIES));
 
 		System.out.println("Training 2");
@@ -210,7 +210,7 @@ public class TestNaiveBayes extends TestCase
 					new FeatureSequence2FeatureVector() });
 
 		InstanceList instList = new InstanceList(instPipe);
-		instList.add(new
+		instList.addThruPipe(new
 				FileIterator(directories, FileIterator.STARTING_DIRECTORIES));
 
 		System.out.println("Training 1");
@@ -234,7 +234,7 @@ public class TestNaiveBayes extends TestCase
 		System.out.println("data alphabet size " + instList.getDataAlphabet().size());
 		System.out.println("target alphabet size " + instList.getTargetAlphabet().size());
 		InstanceList instList2 = new InstanceList(instPipe);
-		instList2.add(new
+		instList2.addThruPipe(new
 				FileIterator(t2directories, FileIterator.STARTING_DIRECTORIES));
 
 		System.out.println("Training 2");
@@ -273,7 +273,7 @@ public class TestNaiveBayes extends TestCase
 					new FeatureSequence2FeatureVector() });
 
 		InstanceList instList = new InstanceList(instPipe);
-		instList.add(new
+		instList.addThruPipe(new
 				FileIterator(directories, FileIterator.STARTING_DIRECTORIES));
 
 		System.out.println("Training 1");
@@ -297,7 +297,7 @@ public class TestNaiveBayes extends TestCase
 		System.out.println("data alphabet size " + instList.getDataAlphabet().size());
 		System.out.println("target alphabet size " + instList.getTargetAlphabet().size());
 		InstanceList instList2 = new InstanceList(instPipe);
-		instList2.add(new
+		instList2.addThruPipe(new
 				FileIterator(t2directories, FileIterator.STARTING_DIRECTORIES, true));
 
 		System.out.println("Training 2");

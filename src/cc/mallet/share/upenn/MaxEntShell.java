@@ -123,7 +123,7 @@ public class MaxEntShell {
 					new TokenSequence2FeatureSequence(features),
 					new FeatureSequence2FeatureVector()});
 		InstanceList trainingList = new InstanceList(instancePipe);
-		trainingList.add(data);
+		trainingList.addThruPipe(data);
 		logger.info("# features = " + features.size());
 		logger.info("# labels = " + labels.size());
 		logger.info("# training instances = " + trainingList.size());
@@ -168,7 +168,7 @@ public class MaxEntShell {
 	 */
 	static public double test(Classifier classifier, Iterator<Instance> data) {
 		InstanceList testList = new InstanceList (classifier.getInstancePipe());
-		testList.add(data);
+		testList.addThruPipe(data);
 		logger.info("# test instances = " + testList.size());
 		double accuracy = classifier.getAccuracy(testList);
 		return accuracy;
@@ -214,7 +214,7 @@ public class MaxEntShell {
 			Iterator<Instance> data) {
 		InstanceList unlabeledList =
 			new InstanceList(classifier.getInstancePipe());
-		unlabeledList.add(data);
+		unlabeledList.addThruPipe(data);
 		logger.info("# unlabeled instances = " + unlabeledList.size());
 		List classifications = classifier.classify(unlabeledList);
 		return (Classification[])classifications.toArray(new Classification[]{});

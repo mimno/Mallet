@@ -226,14 +226,14 @@ public class TUI
 													 homedir+"/research/data/ie/ner2003/eng.testa"};
 
 		InstanceList trainingData = new InstanceList (p);
-		trainingData.add (new LineGroupIterator (new FileReader (new File (args[0])),
+		trainingData.addThruPipe (new LineGroupIterator (new FileReader (new File (args[0])),
 																						 Pattern.compile("^.DOCSTART. .X. .X. .$"), true));
 		System.out.println ("Read "+trainingData.size()+" training instances");
 		
 		InstanceList testingData = null;
 		if (args.length > 1) {
 			testingData = new InstanceList (p);
-			testingData.add (new LineGroupIterator (new FileReader (new File (args[1])),
+			testingData.addThruPipe (new LineGroupIterator (new FileReader (new File (args[1])),
 																							Pattern.compile("^.DOCSTART. .X. .X. .$"), true));
 		}
 

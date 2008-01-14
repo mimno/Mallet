@@ -57,7 +57,7 @@ public class TestSpacePipe extends TestCase {
 		System.setOut (new PrintStream (out));
 
 		InstanceList lst = new InstanceList (p);
-		lst.add (new ArrayIterator (new String[] { TestCRF.data[0], 
+		lst.addThruPipe (new ArrayIterator (new String[] { TestCRF.data[0], 
 																							 TestCRF.data[1], }));
 
 		System.setOut (oldOut);

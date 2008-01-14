@@ -50,9 +50,9 @@ public class TestDocumentViewer extends TestCase {
      String[] data1 = { TestCRF.data[1] };
 
      InstanceList training = new InstanceList (pipe);
-     training.add (new ArrayIterator (data0));
+     training.addThruPipe (new ArrayIterator (data0));
      InstanceList testing = new InstanceList (pipe);
-     testing.add (new ArrayIterator (data1));
+     testing.addThruPipe (new ArrayIterator (data1));
 
      CRF crf = new CRF (pipe, null);
      crf.addFullyConnectedStatesForLabels ();

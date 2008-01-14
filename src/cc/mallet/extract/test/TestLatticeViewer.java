@@ -52,9 +52,9 @@ public class TestLatticeViewer extends TestCase {
     String[] data1 = { TestCRF.data[1] };
 
     InstanceList training = new InstanceList (pipe);
-    training.add (new ArrayIterator (data0));
+    training.addThruPipe (new ArrayIterator (data0));
     InstanceList testing = new InstanceList (pipe);
-    testing.add (new ArrayIterator (data1));
+    testing.addThruPipe (new ArrayIterator (data1));
 
     CRF crf = new CRF (pipe, null);
     crf.addFullyConnectedStatesForLabels ();
@@ -102,9 +102,9 @@ public class TestLatticeViewer extends TestCase {
     String[] data1 = TestCRF.data;
 
     InstanceList training = new InstanceList (pipe);
-    training.add (new ArrayIterator (data0));
+    training.addThruPipe (new ArrayIterator (data0));
     InstanceList testing = new InstanceList (pipe);
-    testing.add (new ArrayIterator (data1));
+    testing.addThruPipe (new ArrayIterator (data1));
 
     CRF crf = new CRF (pipe, null);
     crf.addFullyConnectedStatesForLabels ();
@@ -120,9 +120,9 @@ public class TestLatticeViewer extends TestCase {
 
     Pipe pipe2 = TestMEMM.makeSpacePredictionPipe ();
     InstanceList training2 = new InstanceList (pipe2);
-    training2.add (new ArrayIterator (data0));
+    training2.addThruPipe (new ArrayIterator (data0));
     InstanceList testing2 = new InstanceList (pipe2);
-    testing2.add (new ArrayIterator (data1));
+    testing2.addThruPipe (new ArrayIterator (data1));
 
     MEMM memm = new MEMM (pipe2, null);
     memm.addFullyConnectedStatesForLabels ();

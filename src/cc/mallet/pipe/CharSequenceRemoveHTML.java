@@ -81,7 +81,7 @@ public class CharSequenceRemoveHTML extends Pipe {
 		Pipe pipe = new SerialPipes(new Pipe[] { new Input2CharSequence(),
 				new CharSequenceRemoveHTML() });
 		InstanceList list = new InstanceList(pipe);
-		list.add(new FileIterator(htmldir, FileIterator.STARTING_DIRECTORIES));
+		list.addThruPipe(new FileIterator(htmldir, FileIterator.STARTING_DIRECTORIES));
 
 		for (int index = 0; index < list.size(); index++) {
 			Instance inst = list.get(index);

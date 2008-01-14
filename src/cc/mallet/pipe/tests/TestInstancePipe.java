@@ -58,7 +58,7 @@ public class TestInstancePipe extends TestCase
 	{
     Pipe p = createPipe();
     InstanceList ilist = new InstanceList (p);
-    ilist.add(new StringArrayIterator(data));
+    ilist.addThruPipe(new StringArrayIterator(data));
 		assertTrue (ilist.size() == 3);
 	}
 
@@ -76,7 +76,7 @@ public class TestInstancePipe extends TestCase
 													 new PrintInput (),
 													 new TokenSequence2TokenInstances()});
 		InstanceList ilist = new InstanceList (p);
-		ilist.add (new StringArrayIterator(data));
+		ilist.addThruPipe (new StringArrayIterator(data));
 		assert (ilist.size() == 19) : "list size = "+ilist.size();
 		assertTrue (ilist.size() == 19);
 	}
@@ -86,7 +86,7 @@ public class TestInstancePipe extends TestCase
     Pipe p = createPipe ();
     Pipe clone = (Pipe) TestSerializable.cloneViaSerialization (p);
     InstanceList ilist = new InstanceList (clone);
-    ilist.add(new StringArrayIterator(data));
+    ilist.addThruPipe(new StringArrayIterator(data));
 		assertTrue (ilist.size() == 3);
   }
 

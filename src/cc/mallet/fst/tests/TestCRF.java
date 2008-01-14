@@ -409,7 +409,7 @@ public class TestCRF extends TestCase {
 		Pipe p2 = new TestCRF2String();
 
 		InstanceList instances = new InstanceList(p);
-		instances.add(new ArrayIterator(data));
+		instances.addThruPipe(new ArrayIterator(data));
 		InstanceList[] lists = instances.split(new Random(1), new double[]{.5, .5});
 		CRF crf = new CRF(p, p2);
 		crf.addFullyConnectedStatesForLabels();
@@ -456,7 +456,7 @@ public class TestCRF extends TestCase {
 		CRF savedCRF;
 		File f = new File("TestObject.obj");
 		InstanceList instances = new InstanceList(p);
-		instances.add(new ArrayIterator(data));
+		instances.addThruPipe(new ArrayIterator(data));
 		InstanceList[] lists = instances.split(new double[]{.5, .5});
 		CRF crf = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
 		crf.addFullyConnectedStatesForLabels();
@@ -546,7 +546,7 @@ public class TestCRF extends TestCase {
 		Pipe p = makeSpacePredictionPipe ();
 
 		InstanceList instances = new InstanceList (p);
-		instances.add (new ArrayIterator(data));
+		instances.addThruPipe (new ArrayIterator(data));
 		InstanceList[] lists = instances.split (new java.util.Random (678), new double[]{.5, .5});
 
 		// Compare 3 CRFs trained with addOrderNStates, and make sure
@@ -616,7 +616,7 @@ public class TestCRF extends TestCase {
 		Pipe p = makeSpacePredictionPipe ();
 
 		InstanceList instances = new InstanceList (p);
-		instances.add (new ArrayIterator (data));
+		instances.addThruPipe (new ArrayIterator (data));
 
 		CRF crf1 = new CRF (p.getDataAlphabet (), p.getTargetAlphabet ());
 		crf1.addFullyConnectedStatesForLabels ();
@@ -660,7 +660,7 @@ public class TestCRF extends TestCase {
 		Pipe p2 = new TestCRF2String();
 
 		InstanceList instances = new InstanceList(p);
-		instances.add(new ArrayIterator(data));
+		instances.addThruPipe(new ArrayIterator(data));
 		InstanceList[] lists = instances.split(new double[]{.5, .5});
 		CRF crf = new CRF(p, p2);
 		crf.addFullyConnectedStatesForLabels();
@@ -695,7 +695,7 @@ public class TestCRF extends TestCase {
 		Pipe p = makeSpacePredictionPipe ();
 
 		InstanceList instances = new InstanceList(p);
-		instances.add(new ArrayIterator(data));
+		instances.addThruPipe(new ArrayIterator(data));
 		InstanceList[] lists = instances.split (new Random (777), new double[]{.5, .5});
 
 		CRF crf = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
@@ -724,7 +724,7 @@ public class TestCRF extends TestCase {
 		});
 		InstanceList one = new InstanceList (p);
 		String[] data = new String[] { "ABCDE", };
-		one.add (new ArrayIterator (data));
+		one.addThruPipe (new ArrayIterator (data));
 		CRF crf = new CRF (p, null);
 		crf.addFullyConnectedStatesForThreeQuarterLabels(one);
 		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
@@ -749,7 +749,7 @@ public class TestCRF extends TestCase {
 		});
 		InstanceList one = new InstanceList (p);
 		String[] data = new String[] { "ABCDE", };
-		one.add (new ArrayIterator (data));
+		one.addThruPipe (new ArrayIterator (data));
 		CRF crf = new CRF (p, null);
 		crf.addFullyConnectedStatesForLabels();
 		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
@@ -797,7 +797,7 @@ public class TestCRF extends TestCase {
 		});
 
 		InstanceList data = new InstanceList (p);
-		data.add (new LineGroupIterator (new StringReader (toy), Pattern.compile ("\n"), true));
+		data.addThruPipe (new LineGroupIterator (new StringReader (toy), Pattern.compile ("\n"), true));
 
 		CRF crf = new CRF (p, null);
 		crf.print();
@@ -823,7 +823,7 @@ public class TestCRF extends TestCase {
 		Pipe p = makeSpacePredictionPipe ();
 
 		InstanceList instances = new InstanceList (p);
-		instances.add (new ArrayIterator(data));
+		instances.addThruPipe (new ArrayIterator(data));
 
 		// Test that dense observations wights aren't added for "default-feature" edges.
 		CRF crf1 = new CRF (p, null);
@@ -849,7 +849,7 @@ public class TestCRF extends TestCase {
 		Pipe p = makeSpacePredictionPipe ();
 
 		InstanceList instances = new InstanceList (p);
-		instances.add (new ArrayIterator(data));
+		instances.addThruPipe (new ArrayIterator(data));
 
 		CRF crf1 = new CRF (p, null);
 		crf1.addFullyConnectedStatesForLabels ();
@@ -884,7 +884,7 @@ public class TestCRF extends TestCase {
 	{
 		Pipe p = makeSpacePredictionPipe (); // This used to be MEMM.makeSpacePredictionPipe(), but I don't know why -akm 12/2007
 		InstanceList training = new InstanceList (p);
-		training.add (new ArrayIterator (data)); // This used to be MEMM.data, but I don't know why -akm 12/2007
+		training.addThruPipe (new ArrayIterator (data)); // This used to be MEMM.data, but I don't know why -akm 12/2007
 
 		CRF crf = new CRF (p, null);
 		crf.addFullyConnectedStatesForLabels ();

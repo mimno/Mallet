@@ -54,7 +54,7 @@ public class DocumentClassifier
 		// Add all the files in the directories to the list of instances.
 		// The Instance that goes into the beginning of the instancePipe
 		// will have a File in the "data" slot, and a string from args[] in the "target" slot.
-		ilist.add (new FileIterator (directories, FileIterator.STARTING_DIRECTORIES));
+		ilist.addThruPipe (new FileIterator (directories, FileIterator.STARTING_DIRECTORIES));
 
 		// Make a test/train split; ilists[0] will be for training; ilists[1] will be for testing
 		InstanceList[] ilists = ilist.split (new double[] {.5, .5});
