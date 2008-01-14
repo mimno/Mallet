@@ -171,7 +171,7 @@ public class TUI
 
 		CRF crf = new CRF (p, null);
 		crf.addStatesForThreeQuarterLabelsConnectedAsIn (ilists[0]);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crft.setGaussianPriorVariance (100.0);
 		
 		for (int i = 0; i < crf.numStates(); i++)

@@ -274,7 +274,7 @@ public class TUI
 		//crf.addStatesForTriLabelsConnectedAsIn (trainingData);
 		else
 			throw new IllegalStateException ("label-gram must be 1, 2, or 3, not "+ labelGramOption.value);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);		
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);		
 		
 		if (useHyperbolicPriorOption.value) {
 			crft.setUseHyperbolicPrior (true);

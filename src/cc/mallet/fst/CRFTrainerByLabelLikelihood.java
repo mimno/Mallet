@@ -3,27 +3,16 @@ package cc.mallet.fst;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
-
-import cc.mallet.fst.Transducer;
-import cc.mallet.fst.CRF.State;
 import cc.mallet.optimize.LimitedMemoryBFGS;
-import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
-import cc.mallet.types.DenseVector;
 import cc.mallet.types.ExpGain;
 import cc.mallet.types.FeatureInducer;
 import cc.mallet.types.FeatureSelection;
-import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.FeatureVector;
-import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.GradientGain;
 import cc.mallet.types.InfoGain;
 import cc.mallet.types.Instance;
@@ -32,13 +21,9 @@ import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
 import cc.mallet.types.LabelVector;
-import cc.mallet.types.Matrix;
-import cc.mallet.types.MatrixOps;
 import cc.mallet.types.RankedFeatureVector;
 import cc.mallet.types.Sequence;
-import cc.mallet.types.SparseVector;
 import cc.mallet.util.MalletLogger;
-import cc.mallet.util.Maths;
 
 /** Unlike ClassifierTrainer, TransducerTrainer is not "stateless" between calls to train. 
  *  A TransducerTrainer is constructed paired with a specific Transducer, and can only train that Transducer.
@@ -50,8 +35,8 @@ import cc.mallet.util.Maths;
  *  */
 
 /** In the future this class may go away in favor of some default version of CRFTrainerByValueGradients... */
-public class CRFTrainerByLikelihood extends TransducerTrainer implements TransducerTrainer.ByOptimization {
-	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLikelihood.class.getName());
+public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements TransducerTrainer.ByOptimization {
+	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLabelLikelihood.class.getName());
 
 	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1.0;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SLOPE = 0.2;
@@ -83,7 +68,7 @@ public class CRFTrainerByLikelihood extends TransducerTrainer implements Transdu
 
 	
 	
-	public CRFTrainerByLikelihood (CRF crf) {
+	public CRFTrainerByLabelLikelihood (CRF crf) {
 		this.crf = crf;
 	}
 	

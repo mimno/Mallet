@@ -70,7 +70,7 @@ public class TestCRF extends TestCase {
 		for (int i = 0; i < numStates; i++)
 			stateNames[i] = "state" + i;
 		crf.addFullyConnectedStates(stateNames);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		Optimizable.ByGradientValue mcrf = crft.getOptimizableCRF(new InstanceList(null));
 		TestOptimizable.testGetSetParameters(mcrf);
 	}
@@ -224,7 +224,7 @@ public class TestCRF extends TestCase {
 		ilist.add(fvs, ss, null, null);
 
 		crf.addFullyConnectedStates(stateNames);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crft.setUseSparseWeights(false);
 
 		if (useSave) {
@@ -413,7 +413,7 @@ public class TestCRF extends TestCase {
 		InstanceList[] lists = instances.split(new Random(1), new double[]{.5, .5});
 		CRF crf = new CRF(p, p2);
 		crf.addFullyConnectedStatesForLabels();
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		if (testValueAndGradient) {
 			Optimizable.ByGradientValue optable = crft.getOptimizableCRF(lists[0]);
 			//TestOptimizable.testValueAndGradient(minable);
@@ -460,7 +460,7 @@ public class TestCRF extends TestCase {
 		InstanceList[] lists = instances.split(new double[]{.5, .5});
 		CRF crf = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
 		crf.addFullyConnectedStatesForLabels();
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crft.setUseSparseWeights (useSparseWeights);
 		if (testValueAndGradient) {
 			Optimizable.ByGradientValue minable = crft.getOptimizableCRF(lists[0]);
@@ -560,7 +560,7 @@ public class TestCRF extends TestCase {
 				null,
 				null,
 				false);
-		new CRFTrainerByLikelihood(crf1).trainIncremental(lists[0]);
+		new CRFTrainerByLabelLikelihood(crf1).trainIncremental(lists[0]);
 
 
 		CRF crf2 = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
@@ -571,7 +571,7 @@ public class TestCRF extends TestCase {
 				null,
 				null,
 				false);
-		new CRFTrainerByLikelihood(crf2).trainIncremental(lists[0]);
+		new CRFTrainerByLabelLikelihood(crf2).trainIncremental(lists[0]);
 
 
 		CRF crf3 = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
@@ -582,7 +582,7 @@ public class TestCRF extends TestCase {
 				null,
 				null,
 				false);
-		new CRFTrainerByLikelihood(crf3).trainIncremental(lists[0]);
+		new CRFTrainerByLabelLikelihood(crf3).trainIncremental(lists[0]);
 
 		// Prevent cached values
 		double lik1 = getLikelihood (crf1, lists[0]);
@@ -602,7 +602,7 @@ public class TestCRF extends TestCase {
 	}
 
 	double getLikelihood (CRF crf, InstanceList data) {
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		Optimizable.ByGradientValue mcrf = crft.getOptimizableCRF (data);
 		// Do this elaborate thing so that crf.cachedValueStale is forced true
 		double[] params = new double [mcrf.getNumParameters()];
@@ -620,7 +620,7 @@ public class TestCRF extends TestCase {
 
 		CRF crf1 = new CRF (p.getDataAlphabet (), p.getTargetAlphabet ());
 		crf1.addFullyConnectedStatesForLabels ();
-		CRFTrainerByLikelihood crft1 = new CRFTrainerByLikelihood (crf1);
+		CRFTrainerByLabelLikelihood crft1 = new CRFTrainerByLabelLikelihood (crf1);
 		crft1.trainIncremental (instances);
 
 		CRF crf2 = new CRF (p.getDataAlphabet (), p.getTargetAlphabet ());
@@ -628,7 +628,7 @@ public class TestCRF extends TestCase {
 		// Freeze some weights, before training
 		for (int i = 0; i < crf2.getWeights ().length; i += 2)
 			crf2.freezeWeights (i);
-		CRFTrainerByLikelihood crft2 = new CRFTrainerByLikelihood (crf2);
+		CRFTrainerByLabelLikelihood crft2 = new CRFTrainerByLabelLikelihood (crf2);
 		crft2.trainIncremental (instances);
 
 		SparseVector[] w = crf2.getWeights ();
@@ -700,7 +700,7 @@ public class TestCRF extends TestCase {
 
 		CRF crf = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
 		crf.addFullyConnectedStatesForLabels();
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crft.setUseSparseWeights (true);
 
 		crft.trainIncremental (lists[0]);
@@ -727,7 +727,7 @@ public class TestCRF extends TestCase {
 		one.addThruPipe (new ArrayIterator (data));
 		CRF crf = new CRF (p, null);
 		crf.addFullyConnectedStatesForThreeQuarterLabels(one);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crf.setWeightsDimensionAsIn (one, false);
 		Optimizable mcrf = crft.getOptimizableCRF(one);
 		double[] params = new double[mcrf.getNumParameters()];
@@ -752,7 +752,7 @@ public class TestCRF extends TestCase {
 		one.addThruPipe (new ArrayIterator (data));
 		CRF crf = new CRF (p, null);
 		crf.addFullyConnectedStatesForLabels();
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crf.setWeightsDimensionAsIn (one, false);
 		Optimizable.ByGradientValue mcrf = crft.getOptimizableCRF(one);
 		double[] params = new double[mcrf.getNumParameters()];
@@ -777,7 +777,7 @@ public class TestCRF extends TestCase {
 		assertEquals (out.toString(), out2.toString ());
 
 		double val1 = mcrf.getValue ();
-		CRFTrainerByLikelihood crft2 = new CRFTrainerByLikelihood (crf2);
+		CRFTrainerByLabelLikelihood crft2 = new CRFTrainerByLabelLikelihood (crf2);
 		double val2 = crft2.getOptimizableCRF(one).getValue ();
 		assertEquals (val1, val2, 1e-5);
 	}
@@ -803,7 +803,7 @@ public class TestCRF extends TestCase {
 		crf.print();
 		crf.addStatesForLabelsConnectedAsIn (data);
 		crf.addStartState ();
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 
 		Optimizable.ByGradientValue maxable = crft.getOptimizableCRF (data);
 		assertEquals (-1.3862, maxable.getValue (), 1e-4);
@@ -811,7 +811,7 @@ public class TestCRF extends TestCase {
 		crf = new CRF (p, null);
 		crf.addOrderNStates (data, new int[] { 1 }, null, "A", null, null, false);
 		crf.print();
-		crft = new CRFTrainerByLikelihood (crf);
+		crft = new CRFTrainerByLabelLikelihood (crf);
 
 		maxable = crft.getOptimizableCRF (data);
 		assertEquals (-3.09104245335831, maxable.getValue (), 1e-4);
@@ -828,14 +828,14 @@ public class TestCRF extends TestCase {
 		// Test that dense observations wights aren't added for "default-feature" edges.
 		CRF crf1 = new CRF (p, null);
 		crf1.addOrderNStates (instances, new int[] { 0 }, null, "start", null, null, true);
-		CRFTrainerByLikelihood crft1 = new CRFTrainerByLikelihood (crf1);
+		CRFTrainerByLabelLikelihood crft1 = new CRFTrainerByLabelLikelihood (crf1);
 		crft1.setUseSparseWeights (false);
 		crft1.train (instances, 1); // Set weights dimension
 		int nParams1 = crft1.getOptimizableCRF (instances).getNumParameters ();
 
 		CRF crf2 = new CRF (p, null);
 		crf2.addOrderNStates (instances, new int[] { 0, 1 }, new boolean[] {false, true}, "start", null, null, true);
-		CRFTrainerByLikelihood crft2 = new CRFTrainerByLikelihood (crf2);
+		CRFTrainerByLabelLikelihood crft2 = new CRFTrainerByLabelLikelihood (crf2);
 		crft2.setUseSparseWeights (false);
 		crft2.train (instances, 1); // Set weights dimension
 		int nParams2 = crft2.getOptimizableCRF (instances).getNumParameters ();
@@ -853,7 +853,7 @@ public class TestCRF extends TestCase {
 
 		CRF crf1 = new CRF (p, null);
 		crf1.addFullyConnectedStatesForLabels ();
-		CRFTrainerByLikelihood crft1 = new CRFTrainerByLikelihood (crf1);
+		CRFTrainerByLabelLikelihood crft1 = new CRFTrainerByLabelLikelihood (crf1);
 		crft1.train (instances, 10); // Let's get some parameters
 
 		Instance inst = instances.get (0);
@@ -888,7 +888,7 @@ public class TestCRF extends TestCase {
 
 		CRF crf = new CRF (p, null);
 		crf.addFullyConnectedStatesForLabels ();
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crft.trainIncremental (training);
 
 		// Check that the notstart state is used at test time

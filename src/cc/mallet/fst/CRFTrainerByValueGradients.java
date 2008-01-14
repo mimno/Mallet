@@ -36,7 +36,7 @@ import cc.mallet.util.MalletLogger;
 /** A CRF trainer that can combine multiple objective functions, each represented by a Optmizable.ByValueGradient. */
 public class CRFTrainerByValueGradients extends TransducerTrainer implements TransducerTrainer.ByOptimization {
 
-	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLikelihood.class.getName());
+	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLabelLikelihood.class.getName());
 
 	CRF crf;
   // gsc: keep objects instead of classnames, this will give more flexibility to the 

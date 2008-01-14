@@ -16,7 +16,7 @@ import cc.mallet.extract.CRFExtractor;
 import cc.mallet.extract.Extraction;
 import cc.mallet.extract.LatticeViewer;
 import cc.mallet.fst.CRF;
-import cc.mallet.fst.CRFTrainerByLikelihood;
+import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.MEMM;
 import cc.mallet.fst.MEMMTrainer;
 import cc.mallet.fst.TokenAccuracyEvaluator;
@@ -58,7 +58,7 @@ public class TestLatticeViewer extends TestCase {
 
     CRF crf = new CRF (pipe, null);
     crf.addFullyConnectedStatesForLabels ();
-    CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+    CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
     crft.trainIncremental (training);
 
     CRFExtractor extor = hackCrfExtor (crf);
@@ -108,7 +108,7 @@ public class TestLatticeViewer extends TestCase {
 
     CRF crf = new CRF (pipe, null);
     crf.addFullyConnectedStatesForLabels ();
-    CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+    CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
     TokenAccuracyEvaluator eval = new TokenAccuracyEvaluator (new InstanceList[] {training, testing}, new String[] {"Training", "Testing"});
     for (int i = 0; i < 5; i++) {
     	crft.train (training, 1);

@@ -15,7 +15,7 @@ import cc.mallet.extract.CRFExtractor;
 import cc.mallet.extract.DocumentViewer;
 import cc.mallet.extract.Extraction;
 import cc.mallet.fst.CRF;
-import cc.mallet.fst.CRFTrainerByLikelihood;
+import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.tests.TestCRF;
 import cc.mallet.fst.tests.TestMEMM;
 import cc.mallet.pipe.Pipe;
@@ -56,7 +56,7 @@ public class TestDocumentViewer extends TestCase {
 
      CRF crf = new CRF (pipe, null);
      crf.addFullyConnectedStatesForLabels ();
-     CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+     CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
      crft.trainIncremental (training);
 
      CRFExtractor extor = TestLatticeViewer.hackCrfExtor (crf);
