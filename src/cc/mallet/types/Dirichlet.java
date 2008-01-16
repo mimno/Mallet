@@ -5,13 +5,6 @@
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
 
-
-
-
-/** 
-   @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- */
-
 package cc.mallet.types;
 
 import gnu.trove.TIntHashSet;
@@ -31,11 +24,14 @@ import cc.mallet.types.Multinomial;
 import cc.mallet.util.Maths;
 import cc.mallet.util.Randoms;
 
-// TODO Make this a subclass of DenseFeatureVector?
-//Yes!
+/** 
+ *  Various useful functions related to Dirichlet distributions.
+ *
+ *  @author Andrew McCallum and David Mimno
+ */
 
-public class Dirichlet
-{
+public class Dirichlet {
+
 	Alphabet dict;
 	double magnitude = 1;
 	double[] partition;
@@ -63,13 +59,22 @@ public class Dirichlet
 
 
 
-	/** A dirichlet parameterized by a distribution and a magnitude */
+	/** A dirichlet parameterized by a distribution and a magnitude
+	 * 
+	 * @param m The magnitude of the Dirichlet: sum_i alpha_i
+	 * @param p A probability distribution: p_i = alpha_i / m
+	 */
 	public Dirichlet (double m, double[] p) {
 		magnitude = m;
 		partition = p;
 	}
 
-	/** A uniform dirichlet: E(X_i) = E(X_j) for all i, j */
+	/** A symmetric dirichlet: E(X_i) = E(X_j) for all i, j 
+	 * 
+	 * @param m The magnitude of the Dirichlet: sum_i alpha_i
+	 * @param n The number of dimensions
+	 */
+    /*
 	public Dirichlet (double m, int n) {
 		magnitude = m;
 		partition = new double[n];
@@ -79,13 +84,14 @@ public class Dirichlet
 			partition[i] = partition[0];
 		}
 	}
+    */
 
 	/** A dirichlet parameterized with a single vector of positive reals */
 	public Dirichlet(double[] p) {
 		magnitude = 0;
 		partition = new double[p.length];
 
-//		Add up the total
+		// Add up the total
 		for (int i=0; i<p.length; i++) {
 			magnitude += p[i];
 		}
@@ -95,6 +101,9 @@ public class Dirichlet
 		}
 	}
 	
+    /** Constructor that takes an alphabet representing the
+     *  meaning of each dimension
+     */
 	public Dirichlet (double[] alphas, Alphabet dict)
 	{
 		this(alphas);
@@ -105,11 +114,19 @@ public class Dirichlet
 			dict.stopGrowth();
 	}
 
+    /**
+     *  A symmetric Dirichlet with alpha_i = 1.0 and the 
+     *  number of dimensions of the given alphabet.
+     */
 	public Dirichlet (Alphabet dict)
 	{
 		this (dict, 1.0);
 	}
 
+    /**
+     *  A symmetric Dirichlet with alpha_i = <code>alpha</code> and the 
+     *  number of dimensions of the given alphabet.
+     */
 	public Dirichlet (Alphabet dict, double alpha)
 	{
 		this(dict.size(), alpha);
@@ -117,14 +134,28 @@ public class Dirichlet
 		dict.stopGrowth();
 	}
 
+    /** A symmetric Dirichlet with alpha_i = 1.0 and <code>size</code> 
+	dimensions */
 	public Dirichlet (int size)
 	{
 		this (size, 1.0);
 	}
 
+	/** A symmetric dirichlet: E(X_i) = E(X_j) for all i, j 
+	 * 
+	 * @param n The number of dimensions
+	 * @param alpha The parameter for each dimension
+	 */
 	public Dirichlet (int size, double alpha)
 	{
-		this (alpha*size, size);
+	    magnitude = size * alpha;
+
+	    partition = new double[size];
+
+	    partition[0] = 1.0 / size;
+	    for (int i=1; i<size; i++) {
+		partition[i] = partition[0];
+	    }
 	}
 	
 	
@@ -158,6 +189,10 @@ public class Dirichlet
 		return distribution;
 	}
 
+    /** 
+     *  Create a printable list of alpha_i parameters
+     */
+
 	public static String distributionToString(double magnitude, double[] distribution) {
 		StringBuffer output = new StringBuffer();
 		NumberFormat formatter = NumberFormat.getInstance();
@@ -165,14 +200,16 @@ public class Dirichlet
 
 		output.append(formatter.format(magnitude) + ":\t");
 
-//		for (int i=0; i<distribution.length; i++) {
-		for (int i=0; i<100; i++) {
+		for (int i=0; i<distribution.length; i++) {
 			output.append(formatter.format(distribution[i]) + "\t");
 		}
 
 		return output.toString();
 	}
 
+    /** Write the parameters alpha_i to the specified file, one
+     *  per line
+     */
 	public void toFile(String filename) throws IOException {
 		PrintWriter out = 
 			new PrintWriter(new BufferedWriter(new FileWriter(filename)));
@@ -193,6 +230,11 @@ dirichlet, then draw n samples from that multinomial. */
 		return drawObservation(n, distribution);
 	}
 
+    /** 
+     *   Draw a count vector from the probability distribution provided.
+     * 
+     *  @param n The <i>expected</i> total number of counts in the returned vector. The actual number is ~ Poisson(<code>n</code>)
+     */
 	public int[] drawObservation(int n, double[] distribution) {
 		initRandom();
 
@@ -254,10 +296,15 @@ with n observations. */
 		return result;
 	}
 
+    /** Currently aliased to <code>logGammaStirling</code> */
 	public static double logGamma(double z) {
 		return logGammaStirling(z);
 	}
 
+    /** Use a fifth order Stirling's approximation.
+     * 
+     *  @param z Note that Stirling's approximation is increasingly unstable as <code>z</code> approaches 0. If <code>z</code> is less than 2, we shift it up, calculate the approximation, and then shift the answer back down.
+     */
 	public static double logGammaStirling(double z) {
 		int shift = 0;
 		while (z < 2) {
@@ -277,6 +324,8 @@ with n observations. */
 		return result;
 	}
 
+    /** Gergo Nemes' approximation */
+    
 	public static double logGammaNemes(double z) {
 		double result = HALF_LOG_TWO_PI - (Math.log(z) / 2) +
 		z * (Math.log(z + (1/(12 * z - (1/(10*z))))) - 1);
@@ -327,6 +376,105 @@ Bernoulli numbers. */
 		}
 		return sum;
 	}
+
+
+    /** 
+     * 
+     * @param parameters A reference to the current values of the parameters, which will be updated in place
+     * @param observations An array of count histograms. <code>observations[10][3]</code> could be the number of documents that contain exactly 3 tokens of word type 10.
+     * @param observationLengths A histogram of sample lengths, for example <code>observationLengths[20]</code> could be the number of documents that are exactly 20 tokens long.
+     * @returns The sum of the learned parameters.
+     */ 
+    public static double learnParameters(double[] parameters,
+					 int[][] observations,
+					 int[] observationLengths) {
+        int i, k;
+
+        double parametersSum = 0;
+
+	double shape = 1.00001;
+	double scale = 1.0;
+
+        //  Initialize the parameter sum
+
+        for (k=0; k < parameters.length; k++) {
+            parametersSum += parameters[k];
+        }
+
+        double oldParametersK;
+        double currentDigamma;
+        double denominator;
+
+        int nonZeroLimit;
+        int[] nonZeroLimits = new int[observations.length];
+        Arrays.fill(nonZeroLimits, -1);
+
+        // The histogram arrays go up to the size of the largest document,
+        //  but the non-zero values will almost always cluster in the low end.
+        //  We avoid looping over empty arrays by saving the index of the largest
+        //  non-zero value.
+
+        int[] histogram;
+
+        for (i=0; i<observations.length; i++) {
+            histogram = observations[i];
+
+            StringBuffer out = new StringBuffer();
+            for (k = 0; k < histogram.length; k++) {
+                if (histogram[k] > 0) {
+                    nonZeroLimits[i] = k;
+                    out.append(k + ":" + histogram[k] + " ");
+                }
+            }
+            //System.out.println(out);
+        }
+
+        for (int iteration=0; iteration<200; iteration++) {
+
+            // Calculate the denominator
+            denominator = 0;
+            currentDigamma = 0;
+
+            // Iterate over the histogram:
+            for (i=1; i<observationLengths.length; i++) {
+                currentDigamma += 1 / (parametersSum + i - 1);
+                denominator += observationLengths[i] * currentDigamma;
+            }
+
+            // Bayesian estimation Part I
+            denominator -= 1/scale;
+
+            // Calculate the individual parameters
+
+            parametersSum = 0;
+            
+            for (k=0; k<parameters.length; k++) {
+
+                // What's the largest non-zero element in the histogram?
+                nonZeroLimit = nonZeroLimits[k];
+
+                oldParametersK = parameters[k];
+                parameters[k] = 0;
+                currentDigamma = 0;
+
+                histogram = observations[k];
+
+                for (i=1; i <= nonZeroLimit; i++) {
+                    currentDigamma += 1 / (oldParametersK + i - 1);
+                    parameters[k] += histogram[i] * currentDigamma;
+                }
+
+                // Bayesian estimation part II
+                parameters[k] = (oldParametersK * parameters[k] + shape - 1) / denominator;
+
+                parametersSum += parameters[k];
+            }
+        }
+
+        return parametersSum;
+    }
+
+
 
 	/** Use the fixed point iteration described by Tom Minka. */
 	public long learnParametersWithHistogram(Object[] observations) {
@@ -804,7 +952,7 @@ Bernoulli numbers. */
 		output.append(sum + "\t" + k + "\t" +
 				n + "\t" + w + "\t");
 
-		uniformDirichlet = new Dirichlet(sum, k);
+		uniformDirichlet = new Dirichlet(k, sum/k);
 
 		dirichlet = new Dirichlet(sum, uniformDirichlet.nextDistribution());
 //		System.out.println("real: " + distributionToString(dirichlet.magnitude, 
@@ -815,19 +963,19 @@ Bernoulli numbers. */
 
 		long time;
 
-		Dirichlet estimatedDirichlet = new Dirichlet(sum, k);
+		Dirichlet estimatedDirichlet = new Dirichlet(k, sum/k);
 
 		time = estimatedDirichlet.learnParametersWithDigamma(observations);
 		output.append(time + "\t" + 
 				dirichlet.absoluteDifference(estimatedDirichlet) + "\t");
 
-		estimatedDirichlet = new Dirichlet(sum, k);
+		estimatedDirichlet = new Dirichlet(k, sum/k);
 
 		time = estimatedDirichlet.learnParametersWithHistogram(observations);
 		output.append(time + "\t" + 
 				dirichlet.absoluteDifference(estimatedDirichlet) + "\t");
 
-		estimatedDirichlet = new Dirichlet(sum, k);
+		estimatedDirichlet = new Dirichlet(k, sum/k);
 
 		time = estimatedDirichlet.learnParametersWithMoments(observations);
 		output.append(time + "\t" + 
@@ -835,7 +983,7 @@ Bernoulli numbers. */
 //		System.out.println("Moments: " + time + ", " + 
 //		dirichlet.absoluteDifference(estimatedDirichlet));
 
-		estimatedDirichlet = new Dirichlet(sum, k);
+		estimatedDirichlet = new Dirichlet(k, sum/k);
 
 		time = estimatedDirichlet.learnParametersWithLeaveOneOut(observations);
 		output.append(time + "\t" + 
@@ -1095,7 +1243,7 @@ Bernoulli numbers. */
 
 	public static void main (String[] args) {
 
-		Dirichlet prior = new Dirichlet(100.0, 100);
+		Dirichlet prior = new Dirichlet(100, 1.0);
 		double[] distribution;
 		int[] x, y;
 
