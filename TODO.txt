@@ -1,0 +1,25 @@
+Overhaul logger functionality.  Try to get rid of MalletLogger.
+
+Consider removing Matrix, DenseMatrix, DenseVector, etc.  
+Rename cloneMatrix and cloneMatrixZeroed.
+Consider a new gerneric-based interface for Factors as an alternative, which doesn't refer to any individual elements of the collection of numbers, or a number of dimensions.
+Make SparseVector obey it, and consider making a Matrix2 and Matrixn version.
+
+Look for commonalities among the topic classes.
+
+Make clone return subtypes of Object where appropriate.
+
+Remove InstanceListTUI?
+
+Move fst parameter priors into a different class?
+
+Make CommandOption help print with nice formatting.
+
+Put Kedar's better TestOptimizable in place.
+
+Implement fst stochastic gradient optimization.
+
+Overhaul FeatureSelection so that we operate on the union of FeatureSelection objects in the classifier and instance list.
+
+Investigate FeatureInducers and make them robust on new test InstanceLists.
+
