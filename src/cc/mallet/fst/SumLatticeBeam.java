@@ -451,7 +451,7 @@ public class SumLatticeBeam implements SumLattice  // CPAL - like Lattice but us
 		if (outputAlphabet != null) {
 			labelings = new LabelVector[latticeLength];
 			for (int ip = latticeLength-2; ip >= 0; ip--) {
-				assert (Math.abs(1.0-DenseVector.sum (outputCounts[ip])) < 0.000001);;
+				assert (Math.abs(1.0-MatrixOps.sum (outputCounts[ip])) < 0.000001);;
 				labelings[ip] = new LabelVector (outputAlphabet, outputCounts[ip]);
 			}
 		}
@@ -995,7 +995,7 @@ public class SumLatticeBeam implements SumLattice  // CPAL - like Lattice but us
 		if (outputAlphabet != null) {
 			labelings = new LabelVector[latticeLength];
 			for (int ip = latticeLength-2; ip >= 0; ip--) {
-				assert (Math.abs(1.0-DenseVector.sum (outputCounts[ip])) < 0.000001);;
+				assert (Math.abs(1.0-MatrixOps.sum (outputCounts[ip])) < 0.000001);;
 				labelings[ip] = new LabelVector (outputAlphabet, outputCounts[ip]);
 			}
 		}

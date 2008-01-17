@@ -9,6 +9,7 @@ import cc.mallet.fst.Transducer.TransitionIterator;
 import cc.mallet.types.DenseVector;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelVector;
+import cc.mallet.types.MatrixOps;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
 
@@ -331,7 +332,7 @@ public class SumLatticeConstrained extends SumLatticeDefault {
 		if (outputAlphabet != null) {
 			labelings = new LabelVector[latticeLength];
 			for (int ip = latticeLength-2; ip >= 0; ip--) {
-				assert (Math.abs(1.0-DenseVector.sum (outputCounts[ip])) < 0.000001);;
+				assert (Math.abs(1.0-MatrixOps.sum (outputCounts[ip])) < 0.000001);;
 				labelings[ip] = new LabelVector (outputAlphabet, outputCounts[ip]);
 			}
 		}

@@ -479,7 +479,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 public InstanceList[] splitInOrder (double[] proportions) {
 		InstanceList[] ret = new InstanceList[proportions.length];
 		double maxind[] = proportions.clone();
-		DenseVector.normalize(maxind);
+		MatrixOps.normalize(maxind);
 		for (int i = 0; i < maxind.length; i++) {
 			ret[i] = this.cloneEmpty();  // Note that we are passing on featureSelection here.
 			if (i > 0) 

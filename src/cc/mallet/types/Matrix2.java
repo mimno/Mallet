@@ -20,6 +20,8 @@ import java.util.Arrays;
 import cc.mallet.types.Matrix;
 import cc.mallet.util.MalletLogger;
 
+@Deprecated // This class is very sparsely used, and I think we can get rid of it. -akm 1/2008
+// TODO Remove this class
 public final class Matrix2 extends DenseMatrix
 {
 	private static Logger logger = MalletLogger.getLogger(Matrix2.class.getName());

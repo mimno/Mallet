@@ -157,7 +157,7 @@ public class MaxEnt extends Classifier implements Serializable
 		getUnnormalizedClassificationScores(instance, scores);
 		// Move scores to a range where exp() is accurate, and normalize
 		int numLabels = getLabelAlphabet().size();
-		double max = DenseVector.max (scores);
+		double max = MatrixOps.max (scores);
 		double sum = 0;
 		for (int li = 0; li < numLabels; li++)
 			sum += (scores[li] = Math.exp (scores[li] - max));
@@ -172,7 +172,7 @@ public class MaxEnt extends Classifier implements Serializable
 		getUnnormalizedClassificationScores(instance, scores);
 		// Move scores to a range where exp() is accurate, and normalize
 		int numLabels = getLabelAlphabet().size();
-		double max = DenseVector.max (scores);
+		double max = MatrixOps.max (scores);
 		double sum = 0;
 		for (int li = 0; li < numLabels; li++)
 			sum += (scores[li] = Math.exp (scores[li] - max));
