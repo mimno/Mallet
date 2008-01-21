@@ -71,10 +71,10 @@ public class TestPagedInstanceList extends TestCase {
     Randoms r = new Randoms (1);
     Iterator<Instance> iter = new RandomTokenSequenceIterator (r,  new Dirichlet(fd, 2.0),
           30, 0, 10, 200, classNames);
-    training.add (iter);
+    training.addThruPipe (iter);
 
     InstanceList testing = new InstanceList (training.getPipe ());
-    testing.add (new RandomTokenSequenceIterator (r,  new Dirichlet(fd, 2.0),
+    testing.addThruPipe (new RandomTokenSequenceIterator (r,  new Dirichlet(fd, 2.0),
           30, 0, 10, 200, classNames));
 
     System.out.println ("Training set size = "+training.size());

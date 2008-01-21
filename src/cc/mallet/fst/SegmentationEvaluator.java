@@ -30,10 +30,27 @@ public class SegmentationEvaluator extends TransducerEvaluator
 	// is not part of the segment).
 	static Pattern startRegex = Pattern.compile ("^B.*");
 	//static Pattern endRegex = Pattern.compile ("^O.*");
-	Object segmentStartTag = new Object () {
-			public boolean equals (Object o) { return startRegex.matcher(o.toString()).matches(); } };
-	Object segmentEndTag = new Object () {
-			public boolean equals (Object o) { return false; } };
+	Object segmentStartTag = new Object () { public boolean equals (Object o) { return startRegex.matcher(o.toString()).matches(); } };
+	Object segmentEndTag = new Object () { public boolean equals (Object o) { return false; } };
+			
+	public SegmentationEvaluator (InstanceList[] instanceLists, String[] descriptions) {
+		super (instanceLists, descriptions);
+	}
+	
+	public SegmentationEvaluator (InstanceList instanceList1, String description1) {
+		this (new InstanceList[] {instanceList1}, new String[] {description1});
+	}
+
+	public SegmentationEvaluator (InstanceList instanceList1, String description1,
+			InstanceList instanceList2, String description2) {
+		this (new InstanceList[] {instanceList1, instanceList2}, new String[] {description1, description2});
+	}
+
+	public SegmentationEvaluator (InstanceList instanceList1, String description1,
+			InstanceList instanceList2, String description2,
+			InstanceList instanceList3, String description3) {
+		this (new InstanceList[] {instanceList1, instanceList2, instanceList3}, new String[] {description1, description2, description3});
+	}
 
 	public SegmentationEvaluator setSegmentStartTag (Object o) { this.segmentStartTag = o; return this; }
 	public SegmentationEvaluator setSegmentEndTag (Object o) { this.segmentEndTag = o; return this; }

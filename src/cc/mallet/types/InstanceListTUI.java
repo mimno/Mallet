@@ -130,7 +130,7 @@ public class InstanceListTUI
 				interpreter.set ("pipeInput", pipeInputOption.value[0]);
 			Iterator<Instance> pii =
 				(Iterator<Instance>)interpreter.eval ("new "+pipeInputIteratorOption.value);
-			ilist.add (pii);
+			ilist.addThruPipe (pii);
 		} else {
 			Instance carrier;
 			if (pipeInputOption.value.length > 1)

@@ -40,7 +40,7 @@ public class TestIndexedSparseVector extends TestCase
                                       true, true, true);
   IndexedSparseVector s2 = new IndexedSparseVector (idxs, dbl2, dbl2.length, dbl2.length,
                                       true, true, true);
-  DenseVector d1 = new DenseVector (dbl3, true);
+  SparseVector d1 = new SparseVector (dbl3, true);
 
  public void testLocation ()
  {

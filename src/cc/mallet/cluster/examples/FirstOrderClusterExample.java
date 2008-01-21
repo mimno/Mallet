@@ -55,7 +55,7 @@ public class FirstOrderClusterExample {
 		Pipe clusterPipe = new OverlappingFeaturePipe();
 		System.err.println("Training with " + training);
 		InstanceList trainList = new InstanceList(clusterPipe);
-		trainList.add(new ClusterSampleIterator(training, random, 0.5, 100));
+		trainList.addThruPipe(new ClusterSampleIterator(training, random, 0.5, 100));
 		System.err.println("Created " + trainList.size() + " instances.");
 		Classifier me = new MaxEntTrainer().train(trainList);
 		ClassifyingNeighborEvaluator eval =

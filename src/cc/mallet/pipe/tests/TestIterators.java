@@ -44,7 +44,7 @@ public class TestIterators extends TestCase {
 		pipe.setTargetProcessing (false);
 
 		InstanceList lst = new InstanceList (pipe);
-		lst.add (it);
+		lst.addThruPipe (it);
 
 		assertEquals (3, lst.size());
 		assertEquals ("(a (b c) ((d))  )", lst.get(0).getData());

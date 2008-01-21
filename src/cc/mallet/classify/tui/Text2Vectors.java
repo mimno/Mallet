@@ -175,7 +175,7 @@ public class Text2Vectors
 	
 	InstanceList ilist = new InstanceList (instancePipe);
 	boolean removeCommonPrefix=true;
-	ilist.add (new FileIterator (directories, FileIterator.STARTING_DIRECTORIES, removeCommonPrefix));
+	ilist.addThruPipe (new FileIterator (directories, FileIterator.STARTING_DIRECTORIES, removeCommonPrefix));
         //System.out.println(" output ilist pipe instance id =" + ilist.getPipe().getInstanceId());
         // write vector file
 	ObjectOutputStream oos;

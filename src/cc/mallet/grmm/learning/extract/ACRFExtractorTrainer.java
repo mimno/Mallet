@@ -243,12 +243,12 @@ public class ACRFExtractorTrainer {
   {
     Timing timing = new Timing ();
     training = new InstanceList (featurePipe);
-    training.add (new PipedIterator (trainIterator, tokPipe));
+    training.addThruPipe (new PipedIterator (trainIterator, tokPipe));
     if (trainingPct > 0) training = subsetData (training, trainingPct);
 
     if (testIterator != null) {
       testing = new InstanceList (featurePipe);
-      testing.add (new PipedIterator (testIterator, tokPipe));
+      testing.addThruPipe (new PipedIterator (testIterator, tokPipe));
       if (testingPct > 0) testing = subsetData (testing, trainingPct);
     }
 

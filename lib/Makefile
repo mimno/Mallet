@@ -5,8 +5,6 @@ GRMM_JARS = \
 JARS = \
 ant.jar \
 bsh.jar \
-common-logging-1.0.4.jar \
-crimson.jar \
 jdom-1.0.jar \
 junit-3.8.1.jar \
 jwnl-1.3.jar \
@@ -17,6 +15,10 @@ trove-2.0.2.jar \
 xml-apis.jar \
 xmlParserAPIs.jar \
 $(GRMM_JARS)
+
+OLD = \
+common-logging-1.0.4.jar \
+crimson.jar \
 
 # note: jython.jar not included above, because only needed by bin/mallethon
 

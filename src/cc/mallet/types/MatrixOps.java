@@ -138,6 +138,17 @@ public final class MatrixOps
             ret += m[i];
         return ret;
     }
+    
+    public static double oneNormalize (double[] m) {
+    	double sum = oneNorm(m);
+    	for (int i = 0; i < m.length; i++)
+    		m[i] /= sum;
+    	return sum;
+    }
+    
+    public static double normalize (double[] m) {
+    	return oneNormalize(m);
+    }
 
     public static double infinityNorm (double[] m) {
         double ret = Double.NEGATIVE_INFINITY;

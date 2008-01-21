@@ -72,10 +72,10 @@ public class TestPerDocumentF1Evaluator extends TestCase {
     });
 
     InstanceList pred = new InstanceList (pipe);
-    pred.add (new ArrayIterator (predStrings));
+    pred.addThruPipe (new ArrayIterator (predStrings));
 
     InstanceList targets = new InstanceList (pipe);
-    targets.add (new ArrayIterator (trueStrings));
+    targets.addThruPipe (new ArrayIterator (trueStrings));
 
     LabelAlphabet dict = (LabelAlphabet) pipe.getTargetAlphabet ();
     Extraction extraction = new Extraction (null, dict);

@@ -158,7 +158,7 @@ public class TUI
 		});
 
 		InstanceList ilist = new InstanceList (p);
-		ilist.add (new FileIterator (datadir, FileIterator.STARTING_DIRECTORIES));
+		ilist.addThruPipe (new FileIterator (datadir, FileIterator.STARTING_DIRECTORIES));
 		Random r = new Random (1);
 		InstanceList[] ilists = ilist.split (r, new double[] {0.8, 0.2});
 		
@@ -171,7 +171,7 @@ public class TUI
 
 		CRF crf = new CRF (p, null);
 		crf.addStatesForThreeQuarterLabelsConnectedAsIn (ilists[0]);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
 		crft.setGaussianPriorVariance (100.0);
 		
 		for (int i = 0; i < crf.numStates(); i++)

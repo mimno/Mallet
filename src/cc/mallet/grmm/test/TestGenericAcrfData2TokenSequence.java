@@ -59,14 +59,14 @@ public class TestGenericAcrfData2TokenSequence extends TestCase {
   {
     Pipe p = new GenericAcrfData2TokenSequence ();
     InstanceList training = new InstanceList (p);
-    training.add (new LineGroupIterator (new StringReader (sampleData), Pattern.compile ("^$"), true));
+    training.addThruPipe (new LineGroupIterator (new StringReader (sampleData), Pattern.compile ("^$"), true));
 
     Pipe p2 = (Pipe) TestSerializable.cloneViaSerialization (p);
 
     InstanceList l1 = new InstanceList (p);
-    l1.add (new LineGroupIterator (new StringReader (sampleData2), Pattern.compile ("^$"), true));
+    l1.addThruPipe (new LineGroupIterator (new StringReader (sampleData2), Pattern.compile ("^$"), true));
     InstanceList l2 = new InstanceList (p2);
-    l2.add (new LineGroupIterator (new StringReader (sampleData2), Pattern.compile ("^$"), true));
+    l2.addThruPipe (new LineGroupIterator (new StringReader (sampleData2), Pattern.compile ("^$"), true));
 
     // the readResolve alphabet thing doesn't kick in on first deserialization
     assertTrue (p.getTargetAlphabet () != p2.getTargetAlphabet ());
@@ -92,7 +92,7 @@ public class TestGenericAcrfData2TokenSequence extends TestCase {
   {
     Pipe p = new GenericAcrfData2TokenSequence (2);
     InstanceList training = new InstanceList (p);
-    training.add (new LineGroupIterator (new StringReader (sampleFixedData), Pattern.compile ("^$"), true));
+    training.addThruPipe (new LineGroupIterator (new StringReader (sampleFixedData), Pattern.compile ("^$"), true));
 
     assertEquals (1, training.size ());
 
@@ -108,7 +108,7 @@ public class TestGenericAcrfData2TokenSequence extends TestCase {
     p.setLabelsAtEnd (true);
 
     InstanceList training = new InstanceList (p);
-    training.add (new LineGroupIterator (new StringReader (labelsAtEndData), Pattern.compile ("^$"), true));
+    training.addThruPipe (new LineGroupIterator (new StringReader (labelsAtEndData), Pattern.compile ("^$"), true));
 
     assertEquals (1, training.size ());
 
@@ -132,7 +132,7 @@ public class TestGenericAcrfData2TokenSequence extends TestCase {
     p.setIncludeTokenText(false);
 
     InstanceList training = new InstanceList (p);
-    training.add (new LineGroupIterator (new StringReader (sampleFixedData), Pattern.compile ("^$"), true));
+    training.addThruPipe (new LineGroupIterator (new StringReader (sampleFixedData), Pattern.compile ("^$"), true));
 
     assertEquals (1, training.size ());
 

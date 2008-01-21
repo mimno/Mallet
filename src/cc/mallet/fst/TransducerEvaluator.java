@@ -15,6 +15,7 @@
 package cc.mallet.fst;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import cc.mallet.optimize.Optimizable;
@@ -46,6 +47,8 @@ public abstract class TransducerEvaluator
    * @param tt The TransducerTrainer to evaluate.
    */
 	public void evaluate (TransducerTrainer tt)	{
+		if (!precondition(tt))
+			return;
 		this.preamble(tt);
 		for (int k = 0; k < instanceLists.length; k++)
 			if (instanceLists[k] != null)

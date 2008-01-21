@@ -29,7 +29,7 @@ public class NoopTransducerTrainer extends TransducerTrainer {
 	}
 
 	@Override
-	public boolean trainIncremental(InstanceList trainingSet) {
+	public boolean train(InstanceList trainingSet) {
 		return true;
 	}
 

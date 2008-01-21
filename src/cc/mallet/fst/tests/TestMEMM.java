@@ -86,7 +86,7 @@ public class TestMEMM extends TestCase {
     InstanceList training = new InstanceList (p);
 //    String[] data = { TestMEMM.data[0], }; // TestMEMM.data[1], TestMEMM.data[2], TestMEMM.data[3], };
 //    String[] data = { "ab" };
-    training.add (new ArrayIterator (data));
+    training.addThruPipe (new ArrayIterator (data));
 
 //    CRF4 memm = new CRF4 (p, null);
     MEMM memm = new MEMM (p, null);
@@ -111,7 +111,7 @@ public class TestMEMM extends TestCase {
   {
     Pipe p = makeSpacePredictionPipe ();
     InstanceList training = new InstanceList (p);
-    training.add (new ArrayIterator (data));
+    training.addThruPipe (new ArrayIterator (data));
 
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
@@ -339,7 +339,7 @@ public class TestMEMM extends TestCase {
     Pipe p2 = new TestMEMM2String();
 
 	  InstanceList instances = new InstanceList(p);
-	  instances.add(new ArrayIterator(data));
+	  instances.addThruPipe(new ArrayIterator(data));
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM memm = new MEMM(p, p2);
 	  memm.addFullyConnectedStatesForLabels();
@@ -381,7 +381,7 @@ public class TestMEMM extends TestCase {
     MEMM savedCRF;
 	  File f = new File("TestObject.obj");
 	  InstanceList instances = new InstanceList(p);
-	  instances.add(new ArrayIterator(data));
+	  instances.addThruPipe(new ArrayIterator(data));
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM crf = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
 	  crf.addFullyConnectedStatesForLabels();
@@ -462,7 +462,7 @@ public class TestMEMM extends TestCase {
     Pipe p = makeSpacePredictionPipe ();
 
     InstanceList instances = new InstanceList (p);
-	  instances.add (new ArrayIterator(data));
+	  instances.addThruPipe (new ArrayIterator(data));
 	  InstanceList[] lists = instances.split (new java.util.Random (678), new double[]{.5, .5});
 
 		// Compare 3 CRFs trained with addOrderNStates, and make sure
@@ -567,7 +567,7 @@ public class TestMEMM extends TestCase {
 	  });
 		InstanceList one = new InstanceList (p);
 		String[] data = new String[] { "ABCDE", };
-		one.add (new ArrayIterator (data));
+		one.addThruPipe (new ArrayIterator (data));
 		MEMM crf = new MEMM (p, null);
 		crf.addFullyConnectedStatesForLabels();
 		crf.setWeightsDimensionAsIn (one, false);

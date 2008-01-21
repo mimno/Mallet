@@ -226,14 +226,14 @@ public class TUI
 													 homedir+"/research/data/ie/ner2003/eng.testa"};
 
 		InstanceList trainingData = new InstanceList (p);
-		trainingData.add (new LineGroupIterator (new FileReader (new File (args[0])),
+		trainingData.addThruPipe (new LineGroupIterator (new FileReader (new File (args[0])),
 																						 Pattern.compile("^.DOCSTART. .X. .X. .$"), true));
 		System.out.println ("Read "+trainingData.size()+" training instances");
 		
 		InstanceList testingData = null;
 		if (args.length > 1) {
 			testingData = new InstanceList (p);
-			testingData.add (new LineGroupIterator (new FileReader (new File (args[1])),
+			testingData.addThruPipe (new LineGroupIterator (new FileReader (new File (args[1])),
 																							Pattern.compile("^.DOCSTART. .X. .X. .$"), true));
 		}
 
@@ -274,7 +274,7 @@ public class TUI
 		//crf.addStatesForTriLabelsConnectedAsIn (trainingData);
 		else
 			throw new IllegalStateException ("label-gram must be 1, 2, or 3, not "+ labelGramOption.value);
-		CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);		
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);		
 		
 		if (useHyperbolicPriorOption.value) {
 			crft.setUseHyperbolicPrior (true);

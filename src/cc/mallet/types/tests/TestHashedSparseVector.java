@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import cc.mallet.types.DenseVector;
 import cc.mallet.types.HashedSparseVector;
+import cc.mallet.types.SparseVector;
 import cc.mallet.util.FileUtils;
 
 public class TestHashedSparseVector extends TestCase
@@ -42,7 +43,7 @@ public class TestHashedSparseVector extends TestCase
 																			true, true, true);
 	HashedSparseVector s2 = new HashedSparseVector (idxs, dbl2, dbl2.length, dbl2.length,
 																			true, true, true);
-	DenseVector d1 = new DenseVector (dbl3, true);
+	SparseVector d1 = new SparseVector (dbl3, true);
 
 
 	private void checkAnswer (HashedSparseVector actual, double[] ans)

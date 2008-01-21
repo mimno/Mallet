@@ -136,7 +136,7 @@ public class MCMaxEnt extends Classifier implements Serializable
         }
 
         // Move scores to a range where exp() is accurate, and normalize
-        double max = DenseVector.max (scores);
+        double max = MatrixOps.max (scores);
         double sum = 0;
         for (int li = 0; li < numLabels; li++)
             sum += (scores[li] = Math.exp (scores[li] - max));

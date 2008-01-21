@@ -16,9 +16,11 @@ import cc.mallet.extract.CRFExtractor;
 import cc.mallet.extract.Extraction;
 import cc.mallet.extract.LatticeViewer;
 import cc.mallet.fst.CRF;
-import cc.mallet.fst.CRFTrainerByLikelihood;
+import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.MEMM;
+import cc.mallet.fst.MEMMTrainer;
 import cc.mallet.fst.TokenAccuracyEvaluator;
+import cc.mallet.fst.TransducerEvaluator;
 import cc.mallet.fst.tests.TestCRF;
 import cc.mallet.fst.tests.TestMEMM;
 import cc.mallet.pipe.Pipe;
@@ -50,13 +52,13 @@ public class TestLatticeViewer extends TestCase {
     String[] data1 = { TestCRF.data[1] };
 
     InstanceList training = new InstanceList (pipe);
-    training.add (new ArrayIterator (data0));
+    training.addThruPipe (new ArrayIterator (data0));
     InstanceList testing = new InstanceList (pipe);
-    testing.add (new ArrayIterator (data1));
+    testing.addThruPipe (new ArrayIterator (data1));
 
     CRF crf = new CRF (pipe, null);
     crf.addFullyConnectedStatesForLabels ();
-    CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+    CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
     crft.trainIncremental (training);
 
     CRFExtractor extor = hackCrfExtor (crf);
@@ -100,13 +102,13 @@ public class TestLatticeViewer extends TestCase {
     String[] data1 = TestCRF.data;
 
     InstanceList training = new InstanceList (pipe);
-    training.add (new ArrayIterator (data0));
+    training.addThruPipe (new ArrayIterator (data0));
     InstanceList testing = new InstanceList (pipe);
-    testing.add (new ArrayIterator (data1));
+    testing.addThruPipe (new ArrayIterator (data1));
 
     CRF crf = new CRF (pipe, null);
     crf.addFullyConnectedStatesForLabels ();
-    CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+    CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
     TokenAccuracyEvaluator eval = new TokenAccuracyEvaluator (new InstanceList[] {training, testing}, new String[] {"Training", "Testing"});
     for (int i = 0; i < 5; i++) {
     	crft.train (training, 1);
@@ -118,13 +120,16 @@ public class TestLatticeViewer extends TestCase {
 
     Pipe pipe2 = TestMEMM.makeSpacePredictionPipe ();
     InstanceList training2 = new InstanceList (pipe2);
-    training2.add (new ArrayIterator (data0));
+    training2.addThruPipe (new ArrayIterator (data0));
     InstanceList testing2 = new InstanceList (pipe2);
-    testing2.add (new ArrayIterator (data1));
+    testing2.addThruPipe (new ArrayIterator (data1));
 
     MEMM memm = new MEMM (pipe2, null);
     memm.addFullyConnectedStatesForLabels ();
-    memm.train (training2, null, testing2, new TokenAccuracyEvaluator (new InstanceList[] {training2, testing2}, new String[] {"Training2", "Testing2"}), 5);
+    MEMMTrainer memmt = new MEMMTrainer (memm);
+    TransducerEvaluator memmeval = new TokenAccuracyEvaluator (new InstanceList[] {training2, testing2}, new String[] {"Training2", "Testing2"});
+    memmt.train (training2, 5);
+    memmeval.evaluate(memmt);
 
     CRFExtractor extor2 = hackCrfExtor (memm);
     Extraction e2 = extor2.extract (new ArrayIterator (data1));

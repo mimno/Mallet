@@ -1,16 +1,20 @@
 package cc.mallet.fst;
 
+import java.util.ArrayList;
+
 import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
 public abstract class TransducerTrainer {
+	// The list of evaluators to be run every once in a while
+	ArrayList<TransducerEvaluator> evaluators = new ArrayList<TransducerEvaluator>();
 	
 	public abstract Transducer getTransducer();
 	public abstract int getIteration();
 	public abstract boolean isFinishedTraining();
 	
-	public boolean trainIncremental (InstanceList trainingSet) {
+	public boolean train (InstanceList trainingSet) {
 		return train (trainingSet, Integer.MAX_VALUE);
 	}
 	
@@ -25,6 +29,16 @@ public abstract class TransducerTrainer {
 	//public abstract boolean train ();
 	//public abstract boolean train (int numIterations);
 	
+	// Management of evaluators
+	public void addEvaluator (TransducerEvaluator te) {	evaluators.add(te);	}
+	public void removeEvaluator (TransducerEvaluator te) { evaluators.remove(te);	}
+	/** This method should be called by subclasses whenever evaluators should be run.
+	 * Do not worry too much about them being run too often, because the evaluators
+	 * themselves can control/limit when they actually do their work with TransducerEvaluator.precondition(). */
+	protected void runEvaluators () {
+		for (TransducerEvaluator te : evaluators) 
+			te.evaluate(this);
+	}
 	
 	public interface ByOptimization {
 		public Optimizer getOptimizer ();

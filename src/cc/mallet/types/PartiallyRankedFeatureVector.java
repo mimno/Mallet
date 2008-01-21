@@ -23,114 +23,114 @@ import cc.mallet.types.RankedFeatureVector;
 public class PartiallyRankedFeatureVector extends RankedFeatureVector
 {
 
-    private static final int SORTINIT = -1;
-    int numRanked = -1;
+	private static final int SORTINIT = -1;
+	int numRanked = -1;
 
-    public PartiallyRankedFeatureVector (Alphabet dict, int[] indices, 
-					 double[] values)
-    {
-	super (dict, indices, values);
-    }
-    
-    public PartiallyRankedFeatureVector (Alphabet dict, double[] values)
-    {
-	super (dict, values);
-    }
-    
-    public PartiallyRankedFeatureVector (Alphabet dict, DenseVector v)
-    {
-	this (dict, v.values);
-    }
-    
-    public PartiallyRankedFeatureVector (Alphabet dict, 
-					 AugmentableFeatureVector v)
-    {
-	super (dict, v );
-    }
-    
-    public PartiallyRankedFeatureVector (Alphabet dict, SparseVector v)
-    {
-	super (dict, v );
-    }
-
-    public int numRanked () {
-
-	if (numRanked == -1)
+	public PartiallyRankedFeatureVector (Alphabet dict, int[] indices, 
+			double[] values)
 	{
-	    numRanked = 0;
-	    for (int i=0; i<values.length ; i++) {
-		if (!Double.isNaN(values[i])) 
-		    numRanked++;
-	    }
+		super (dict, indices, values);
 	}
 
-	return numRanked;
-    }
-
-    protected void setRankOrder ( int extent, boolean reset)
-    {
-
-	int sortExtent;
-	// Set the number of cells to sort, making sure we don't go past the max
-	// Sorting n-1 sorts the whole array.
-
-	sortExtent = (extent >= values.length) ? values.length - 1: extent;
-	
-	if (sortExtent>=numRanked())
-	    return;
-
-	if (sortedTo == SORTINIT || reset) { // reinitialize and sort
-	    this.rankOrder = new int[values.length];
-	    for (int i = 0; i < rankOrder.length; i++) {
-		rankOrder[i] = i;
-		
-	    }
+	public PartiallyRankedFeatureVector (Alphabet dict, double[] values)
+	{
+		super (dict, values);
 	}
 
-	// Selection sort
-	double max, front, next;
-	int maxIndex;
-	
-	for (int i = sortedTo+1 ; i<=sortExtent ; i++ ) {
-	    
-	    front = values[rankOrder[i]];
-	    
-	    if (Double.isNaN( front ) )
-		max = Double.NEGATIVE_INFINITY;
-	    else
-		max = front;
+	public PartiallyRankedFeatureVector (Alphabet dict, DenseVector v)
+	{
+		this (dict, v.values);
+	}
 
-	    maxIndex = i;
+	public PartiallyRankedFeatureVector (Alphabet dict, 
+			AugmentableFeatureVector v)
+	{
+		super (dict, v );
+	}
 
-	    for (int j=sortedTo+1 ; j<rankOrder.length ; j++ ) {
-		
-		next = values[rankOrder[j]];
+	public PartiallyRankedFeatureVector (Alphabet dict, SparseVector v)
+	{
+		super (dict, v );
+	}
 
-		if (!Double.isNaN(next) && next>max )
+	public int numRanked () {
+
+		if (numRanked == -1)
 		{
-		    max = next;
-		    maxIndex = j;
+			numRanked = 0;
+			for (int i=0; i<values.length ; i++) {
+				if (!Double.isNaN(values[i])) 
+					numRanked++;
+			}
 		}
-	    }
-	    // swap
-	    int r = rankOrder[maxIndex];
-	    rankOrder[maxIndex] = rankOrder[i];
-	    rankOrder[i] = r;
-	    sortedTo = i;
+
+		return numRanked;
 	}
-    }
+
+	protected void setRankOrder ( int extent, boolean reset)
+	{
+
+		int sortExtent;
+		// Set the number of cells to sort, making sure we don't go past the max
+		// Sorting n-1 sorts the whole array.
+
+		sortExtent = (extent >= values.length) ? values.length - 1: extent;
+
+		if (sortExtent>=numRanked())
+			return;
+
+		if (sortedTo == SORTINIT || reset) { // reinitialize and sort
+			this.rankOrder = new int[values.length];
+			for (int i = 0; i < rankOrder.length; i++) {
+				rankOrder[i] = i;
+
+			}
+		}
+
+		// Selection sort
+		double max, front, next;
+		int maxIndex;
+
+		for (int i = sortedTo+1 ; i<=sortExtent ; i++ ) {
+
+			front = values[rankOrder[i]];
+
+			if (Double.isNaN( front ) )
+				max = Double.NEGATIVE_INFINITY;
+			else
+				max = front;
+
+			maxIndex = i;
+
+			for (int j=sortedTo+1 ; j<rankOrder.length ; j++ ) {
+
+				next = values[rankOrder[j]];
+
+				if (!Double.isNaN(next) && next>max )
+				{
+					max = next;
+					maxIndex = j;
+				}
+			}
+			// swap
+			int r = rankOrder[maxIndex];
+			rankOrder[maxIndex] = rankOrder[i];
+			rankOrder[i] = r;
+			sortedTo = i;
+		}
+	}
 
 
-    public interface Factory
-    {
-	public PartiallyRankedFeatureVector newPartiallyRankedFeatureVector 
-	    (InstanceList ilist, LabelVector[] posteriors);
-    }
+	public interface Factory
+	{
+		public PartiallyRankedFeatureVector newPartiallyRankedFeatureVector 
+		(InstanceList ilist, LabelVector[] posteriors);
+	}
 
-    public interface PerLabelFactory
-    {
-	public PartiallyRankedFeatureVector[] newPartiallyRankedFeatureVectors 
-	    (InstanceList ilist, LabelVector[] posteriors);
-    }
+	public interface PerLabelFactory
+	{
+		public PartiallyRankedFeatureVector[] newPartiallyRankedFeatureVectors 
+		(InstanceList ilist, LabelVector[] posteriors);
+	}
 
 }

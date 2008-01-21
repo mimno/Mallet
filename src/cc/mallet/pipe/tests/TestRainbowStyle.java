@@ -43,7 +43,7 @@ public class TestRainbowStyle extends TestCase
 				new FeatureSequence2FeatureVector ()
 			}));
 		Iterator<Instance> pi = new FileIterator (new File("foo/bar"), null, Pattern.compile("^([^/]*)/"));
-		il.add (pi);
+		il.addThruPipe (pi);
 	}
 
 	public static Test suite ()

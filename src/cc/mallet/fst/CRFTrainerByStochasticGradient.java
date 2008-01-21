@@ -57,6 +57,7 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements
 				constraints.plusEquals(expectations, -1);
 				// Change the parameters a little by this difference, obeying weightsFrozen
 				crf.parameters.plusEquals(constraints, learningRate, true);
+				runEvaluators();
 			}
 		}
 		return false;

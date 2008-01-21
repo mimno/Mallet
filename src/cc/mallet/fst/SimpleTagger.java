@@ -270,7 +270,7 @@ public class SimpleTagger
         crf.addOrderNStates(training, orders, null,
             defaultLabel, forbiddenPat, allowedPat,
             connected);
-      CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood(crf);
+      CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood(crf);
       crft.setGaussianPriorVariance (var);
       for (int i = 0; i < crf.numStates(); i++)
         crf.getState(i).setInitialWeight (Transducer.IMPOSSIBLE_WEIGHT);
@@ -279,7 +279,7 @@ public class SimpleTagger
     logger.info("Training on " + training.size() + " instances");
     if (testing != null)
       logger.info("Testing on " + testing.size() + " instances");
-    CRFTrainerByLikelihood crft = new CRFTrainerByLikelihood (crf);
+    CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
     if (featureInductionOption.value) {
     	 crft.trainWithFeatureInduction(training, null, testing, eval, iterations, 10, 20, 500, 0.5, false, null);
     } else {
@@ -431,7 +431,7 @@ public class SimpleTagger
     {
       p.setTargetProcessing(true);
       trainingData = new InstanceList(p);
-      trainingData.add(
+      trainingData.addThruPipe(
           new LineGroupIterator(trainingFile,
             Pattern.compile("^\\s*$"), true));
       logger.info
@@ -441,7 +441,7 @@ public class SimpleTagger
         if (testFile != null)
         {
           testData = new InstanceList(p);
-          testData.add(
+          testData.addThruPipe(
               new LineGroupIterator(testFile,
                 Pattern.compile("^\\s*$"), true));
         } else
@@ -459,14 +459,14 @@ public class SimpleTagger
     {
       p.setTargetProcessing(true);
       testData = new InstanceList(p);
-      testData.add(
+      testData.addThruPipe(
           new LineGroupIterator(testFile,
             Pattern.compile("^\\s*$"), true));
     } else
     {
       p.setTargetProcessing(false);
       testData = new InstanceList(p);
-      testData.add(
+      testData.addThruPipe(
           new LineGroupIterator(testFile,
             Pattern.compile("^\\s*$"), true));
     }
