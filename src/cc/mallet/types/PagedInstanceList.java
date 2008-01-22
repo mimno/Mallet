@@ -207,7 +207,7 @@ public class PagedInstanceList extends InstanceList
  		System.arraycopy (proportions, 0, maxind, 0, proportions.length);
 		PagedInstanceList[] ret = new PagedInstanceList[proportions.length];
 		ArrayList<Integer>[] splitIndices = new ArrayList[proportions.length];
-		DenseVector.normalize(maxind);
+		MatrixOps.normalize(maxind);
 		// Fill maxind[] with the highest instance index that should go in
 		// each corresponding returned InstanceList.
 		for (int i = 0; i < maxind.length; i++) {

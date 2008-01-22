@@ -37,7 +37,7 @@ public class BaggingClassifier extends Classifier
 			Labeling labeling = baggedClassifiers[i].classify(inst).getLabeling();
 			labeling.addTo (scores);
 		}
-		DenseVector.normalize (scores);
+		MatrixOps.normalize (scores);
 		return new Classification (inst, this, new LabelVector (getLabelAlphabet(), scores));
 	}
 

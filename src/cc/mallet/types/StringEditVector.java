@@ -16,7 +16,6 @@ package cc.mallet.types;
 
 import java.util.logging.*;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.io.*;
 
 import cc.mallet.util.MalletLogger;

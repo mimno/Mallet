@@ -669,14 +669,13 @@ public class TestCRF extends TestCase {
 		System.out.println("Training Accuracy before training = " + crf.averageTokenAccuracy(lists[0]));
 		System.out.println("Testing  Accuracy before training = " + crf.averageTokenAccuracy(lists[1]));
 		System.out.println("Training...");
-		//crft.train(lists[0], instances.size()/5, 100);
-		crft.setLearningRate(0.000001);
-		for (int j = 0; j < 10; j++) {
-			crft.train(lists[0], lists[0].size()/1, 10);
-			crf.print();
-			System.out.println("Training Accuracy after training = " + crf.averageTokenAccuracy(lists[0]));
-			System.out.println("Testing  Accuracy after training = " + crf.averageTokenAccuracy(lists[1]));
-		}
+		// either fixed learning rate or selected on a sample
+		crft.chooseLearningRateByLikelihood(lists[0]);
+		// crft.setLearningRate(0.01);
+		crft.train(lists[0], 100);
+		crf.print();
+		System.out.println("Training Accuracy after training = " + crf.averageTokenAccuracy(lists[0]));
+		System.out.println("Testing  Accuracy after training = " + crf.averageTokenAccuracy(lists[1]));
 	}
 
 
