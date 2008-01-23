@@ -100,7 +100,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	 * Used in those infrequent circumstances when Instances typically would not have further
 	 * processing,  and objects containing vocabularies are entered
 	 * directly into the <code>InstanceList</code>; for example, the creation of a
-	 * random <code>InstanceList using <code>Dirichlet</code>s and
+	 * random <code>InstanceList</code> using <code>Dirichlet</code>s and
 	 * <code>Multinomial</code>s.</p>
 	 *
 	 * @param dataAlphabet The vocabulary for added instances' data fields
