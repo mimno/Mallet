@@ -23,14 +23,14 @@ public class BshInterpreter extends bsh.Interpreter
 				"import java.util.*;"+
 				"import java.util.regex.*;"+
 				"import java.io.*;"+
-				"import edu.umass.cs.mallet.base.types.*;"+
-				"import edu.umass.cs.mallet.base.pipe.*;"+
-				"import edu.umass.cs.mallet.base.pipe.iterator.*;"+
-				"import edu.umass.cs.mallet.base.pipe.tsf.*;"+
-				"import edu.umass.cs.mallet.base.classify.*;"+
-				"import edu.umass.cs.mallet.base.extract.*;"+
-				"import edu.umass.cs.mallet.base.fst.*;"+
-				"import edu.umass.cs.mallet.base.minimize.*;");
+				"import cc.mallet.types.*;"+
+				"import cc.mallet.pipe.*;"+
+				"import cc.mallet.pipe.iterator.*;"+
+				"import cc.mallet.pipe.tsf.*;"+
+				"import cc.mallet.classify.*;"+
+				"import cc.mallet.extract.*;"+
+				"import cc.mallet.fst.*;"+
+				"import cc.mallet.optimize.*;");
 			if (prefixCommands != null)
 				eval (prefixCommands);
 		} catch (bsh.EvalError e) {
