@@ -247,7 +247,7 @@ public class Vectors2Topics {
 			System.out.println ("Data loaded.");
 			LDAHyper lda = new LDAHyper (numTopics.value, alpha.value, beta.value);
 
-			lda.setTrainingInstances(training);
+			lda.addInstances(training);
 			lda.setTopicDisplay(showTopicsInterval.value, topWords.value);
 
 			if (outputModelInterval.value != 0) {
@@ -269,7 +269,6 @@ public class Vectors2Topics {
                 lda.setSaveState(outputStateInterval.value, stateFile.value);
             }
 
-			lda.initialize();
 			lda.estimate();
 
 			if (stateFile.value != null)

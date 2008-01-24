@@ -8,6 +8,9 @@
 package cc.mallet.topics;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+
 import java.util.zip.*;
 
 import java.io.*;
@@ -26,7 +29,6 @@ public class LDAHyper {
 
 	int numTopics; // Number of topics to be fit
 	int numTypes;
-	int numTokens;
 
 	double[] alpha;	 // Dirichlet(alpha,alpha,...) is the distribution over topics
 	double alphaSum;
@@ -35,10 +37,20 @@ public class LDAHyper {
 	double betaSum;
 	public static final double DEFAULT_BETA = 0.01;
 
-	InstanceList instances, testing;  // the data field of the instances is expected to hold a FeatureSequence
+	// Instance list containing word features
+	InstanceList instances = null;
 
-	int[][] topics; // indexed by <document index, sequence index>
+	// Instance list containing topic features
+	InstanceList topics = null;
+
+	// Instance list for empirical likelihood calculation
+	InstanceList testing = null;
+	
+	// An array to put the topic counts for
+	//  the current document. Defined here to avoid
+	//   garbage collection overhead.
 	int[] oneDocTopicCounts; // indexed by <document index, topic index>
+
 	int[][] typeTopicCounts; // indexed by <feature index, topic index>
 	int[] tokensPerTopic; // indexed by <topic index>
 
@@ -63,7 +75,6 @@ public class LDAHyper {
 	
 	Randoms random;
 
-	Runtime runtime;
 	NumberFormat formatter;
 	
 	public LDAHyper (int numberOfTopics) {
@@ -75,21 +86,23 @@ public class LDAHyper {
 		formatter = NumberFormat.getInstance();
 		formatter.setMaximumFractionDigits(5);
 	
-		System.out.println("optimizingLDA: " + numberOfTopics);
+		System.out.println("LDA: " + numberOfTopics + " topics");
 	
 		this.numTopics = numberOfTopics;
 		this.alphaSum = alphaSum;
 		this.alpha = new double[numberOfTopics];
+
 		Arrays.fill(alpha, alphaSum / numTopics);
 		this.beta = beta;
 	
-		runtime = Runtime.getRuntime();
+		random = new Randoms();
+
+		oneDocTopicCounts = new int[numTopics];
+		tokensPerTopic = new int[numTopics];
+		topicWeights = new double[numTopics];
+
 	}
 	
-	public void setTrainingInstances(InstanceList training) {
-		this.instances = training;
-	}
-
 	/** Held-out instances for empirical likelihood calculation */
 	public void setTestingInstances(InstanceList testing) {
 		this.testing = testing;
@@ -131,55 +144,99 @@ public class LDAHyper {
 		this.stateFilename = filename;
 	}
 
+	/** Set the instance list with word features for training */
+	public void addInstances(InstanceList training) {
+		this.instances = training;
 
-	/** Set up arrays and pick random topics */
-	public void initialize() {
+		// We need to create a new instance list. 
+		//  Since the topics aren't really meaningful on their own,
+		// just add placeholders in the data alphabet.
 
-		if (random == null) {
-			random = new Randoms();
+		Alphabet topicAlphabet = new Alphabet();
+
+		System.out.println("adding alphabet " + topicAlphabet);
+
+		for (int topic=0; topic < numTopics; topic++) {
+			topicAlphabet.lookupIndex("Topic " + topic, true);
 		}
 
-		numTypes = instances.getDataAlphabet().size ();
-		int numDocs = instances.size();
-		topics = new int[numDocs][];
-		oneDocTopicCounts = new int[numTopics];
+		this.topics = new InstanceList(topicAlphabet, null);
+
+		numTypes = instances.getDataAlphabet().size ();	   
 		typeTopicCounts = new int[numTypes][numTopics];
-		tokensPerTopic = new int[numTopics];
 		betaSum = beta * numTypes;
 
-		topicWeights = new double[numTopics];
+		List<Instance> rawTopicInstances = new ArrayList<Instance>();
+		
+		for (Instance instance: instances) {
+			FeatureSequence tokenSequence = (FeatureSequence) instance.getData();
+			rawTopicInstances.add(new Instance( new FeatureSequence( topicAlphabet,
+																	 new int[tokenSequence.getLength()] ),
+												null, null, null ));
+		}			
+			
+		// Run the instances through the pipe
+		
+		topics.addThruPipe(rawTopicInstances.iterator());
+
+		for (int doc=0; doc < instances.size(); doc++) {
+			FeatureSequence tokenSequence = (FeatureSequence) instances.get(doc).getData();
+			FeatureSequence topicSequence = (FeatureSequence) topics.get(doc).getData();
+
+			// Sample topics according to the predictive distribution			
+			sampleTopicsForOneDoc(tokenSequence, topicSequence,
+								  false, true);	//   (don't store histograms, do start from nothing)
+		}
+
+		initializeHistograms();
+	}
+
+	public void addInstances(InstanceList training, InstanceList topics) {
+		this.instances = training;		
+		this.topics = topics;
+
+		numTypes = instances.getDataAlphabet().size ();
+		typeTopicCounts = new int[numTypes][numTopics];
+		betaSum = beta * numTypes;
+
+		for (int doc = 0; doc < instances.size(); doc++) {
+			
+			FeatureSequence tokenSequence = (FeatureSequence) instances.get(doc).getData();
+			FeatureSequence topicSequence = (FeatureSequence) topics.get(doc).getData();
+			
+			for (int token = 0; token < topicSequence.getLength(); token++) {
+				int topic = topicSequence.getIndexAtPosition(token);
+				typeTopicCounts[ tokenSequence.getIndexAtPosition(token) ][topic]++;
+				tokensPerTopic[topic]++;
+			}
+		}
+
+		initializeHistograms();
+	}
+
+	/** 
+	 *  Gather statistics on the size of documents 
+	 *  and create histograms for use in Dirichlet hyperparameter
+	 *  optimization.
+	 */
+	private void initializeHistograms() {
 
 		int maxTokens = 0;
 		int totalTokens = 0;
-
-		// Initialize with random assignments of tokens to topics
-		// and finish allocating this.topics and this.tokens
 		int topic, seqLen;
-		for (int doc = 0; doc < numDocs; doc++) {
+
+		for (int doc = 0; doc < instances.size(); doc++) {
 			FeatureSequence fs = (FeatureSequence) instances.get(doc).getData();
 			seqLen = fs.getLength();
 			if (seqLen > maxTokens) { 
 				maxTokens = seqLen;
 			}
 			totalTokens += seqLen;
-
-			numTokens += seqLen;
-			topics[doc] = new int[seqLen];
-			// Randomly assign tokens to topics
-			for (int token = 0; token < seqLen; token++) {
-				topic = random.nextInt(numTopics);
-				topics[doc][token] = topic;
-
-				typeTopicCounts[ fs.getIndexAtPosition(token) ][topic]++;
-				tokensPerTopic[topic]++;
-			}
 		}
 
 		System.out.println("max tokens: " + maxTokens);
 		System.out.println("total tokens: " + totalTokens);
 
-		// These will be initialized at the first call to 
-		//	clearHistograms() in the loop below.
 		docLengthCounts = new int[maxTokens + 1];
 		topicDocCounts = new int[numTopics][maxTokens + 1];
 	}
@@ -225,10 +282,15 @@ public class LDAHyper {
 			}
 
 			// Loop over every document in the corpus
-			for (int doc = 0; doc < topics.length; doc++) {
-				sampleTopicsForOneDoc (doc,
+			for (int doc = 0; doc < topics.size(); doc++) {
+
+				FeatureSequence tokenSequence = (FeatureSequence) instances.get(doc).getData();
+				FeatureSequence topicSequence = (FeatureSequence) topics.get(doc).getData();
+
+				sampleTopicsForOneDoc (tokenSequence, topicSequence,
 									   iterations > burninPeriod &&
-									   iterations % saveSampleInterval == 0);
+									   iterations % saveSampleInterval == 0,
+									   false);
 			}
 		
 			System.out.print((System.currentTimeMillis() - iterationStart) + " ");
@@ -258,35 +320,41 @@ public class LDAHyper {
 		}
 	}
 
-	private void sampleTopicsForOneDoc (int doc, boolean shouldSaveState) {
+	private void sampleTopicsForOneDoc (FeatureSequence tokenSequence, 
+										FeatureSequence topicSequence,
+										boolean shouldSaveState, boolean initializing) {
 
 		long startTime = System.currentTimeMillis();
 	
-		FeatureSequence tokens = (FeatureSequence) instances.get(doc).getData();
-		int[] oneDocTopics = topics[doc];
+		int[] oneDocTopics = topicSequence.getFeatures();
 
 		int[] currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
 		double topicWeightsSum;
-		int docLen = tokens.getLength();
+		int docLen = tokenSequence.getLength();
 
 		double weight;
 	
 		// populate topic counts
 		Arrays.fill(oneDocTopicCounts, 0);
-		for (int token = 0; token < docLen; token++) {
-			oneDocTopicCounts[ oneDocTopics[token] ]++;
+
+		if (! initializing) {
+			for (int token = 0; token < docLen; token++) {
+				oneDocTopicCounts[ oneDocTopics[token] ]++;
+			}
 		}
 
 		// Iterate over the potokentions (words) in the document
 		for (int token = 0; token < docLen; token++) {
-			type = tokens.getIndexAtPosition(token);
+			type = tokenSequence.getIndexAtPosition(token);
 			oldTopic = oneDocTopics[token];
 
-			// Remove this token from all counts
-			oneDocTopicCounts[oldTopic]--;
-			typeTopicCounts[type][oldTopic]--;
-			tokensPerTopic[oldTopic]--;
+			if (! initializing) {
+				// Remove this token from all counts
+				oneDocTopicCounts[oldTopic]--;
+				typeTopicCounts[type][oldTopic]--;
+				tokensPerTopic[oldTopic]--;
+			}
 
 			// Build a distribution over topics for this token
 			topicWeightsSum = 0;
@@ -395,10 +463,14 @@ public class LDAHyper {
 			max = numTopics;
 		}
 
-		for (int doc = 0; doc < topics.length; doc++) {
+		for (int doc = 0; doc < topics.size(); doc++) {
+			FeatureSequence topicSequence = 
+				(FeatureSequence) topics.get(doc).getData();
+			int[] currentDocTopics = topicSequence.getFeatures();
+
 			output.append (doc); output.append (' ');
 
-			if (instances.get(doc).getSource() != null){
+			if (instances.get(doc).getSource() != null) {
 				output.append (instances.get(doc).getSource()); 
 			}
 			else {
@@ -406,11 +478,11 @@ public class LDAHyper {
 			}
 
 			output.append (' ');
-			docLen = topics[doc].length;
+			docLen = currentDocTopics.length;
 
 			// Count up the tokens
 			for (int token=0; token < docLen; token++) {
-				topicCounts[ topics[doc][token] ]++;
+				topicCounts[ currentDocTopics[token] ]++;
 			}
 
 			// And normalize
@@ -427,9 +499,11 @@ public class LDAHyper {
 							   sortedTopics[i].getWeight() + " ");
 			}
 			output.append (" \n");
+
+			pw.print(output.toString());
+			output = new StringBuffer();
 		}
 		
-		pw.print(output.toString());
 	}
 	
 	public void printState (File f) throws IOException {
@@ -440,17 +514,24 @@ public class LDAHyper {
 	}
 	
 	public void printState (PrintStream out) {
-		Alphabet a = instances.getDataAlphabet();
+		Alphabet alphabet = instances.getDataAlphabet();
+
 		out.println ("#doc pos typeindex type topic");
-		for (int di = 0; di < topics.length; di++) {
-			FeatureSequence fs = (FeatureSequence) instances.get(di).getData();
-			for (int token = 0; token < topics[di].length; token++) {
-				int type = fs.getIndexAtPosition(token);
-				out.print(di); out.print(' ');
+		for (int doc = 0; doc < topics.size(); doc++) {
+
+			FeatureSequence tokenSequence =
+				(FeatureSequence) instances.get(doc).getData();
+			FeatureSequence topicSequence =
+				(FeatureSequence) instances.get(doc).getData();
+
+			for (int token = 0; token < topicSequence.getLength(); token++) {
+				int type = tokenSequence.getIndexAtPosition(token);
+				int topic = topicSequence.getIndexAtPosition(token);
+				out.print(doc); out.print(' ');
 				out.print(token); out.print(' ');
 				out.print(type); out.print(' ');
-				out.print(a.lookupObject(type)); out.print(' ');
-				out.print(topics[di][token]); out.println();
+				out.print(alphabet.lookupObject(type)); out.print(' ');
+				out.print(topic); out.println();
 			}
 		}
 	}
@@ -475,20 +556,20 @@ public class LDAHyper {
 	
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
+
+		// Instance lists
 		out.writeObject (instances);
+		out.writeObject (topics);
+
 		out.writeInt (numTopics);
 		out.writeObject (alpha);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
-		for (int di = 0; di < topics.length; di ++)
-			for (int si = 0; si < topics[di].length; si++)
-				out.writeInt (topics[di][si]);
-		/*for (int di = 0; di < topics.length; di ++)
-		  for (int ti = 0; ti < numTopics; ti++)
-		  out.writeInt (docTopicCounts[di][ti]);*/
+
 		for (int fi = 0; fi < numTypes; fi++)
 			for (int ti = 0; ti < numTopics; ti++)
 				out.writeInt (typeTopicCounts[fi][ti]);
+
 		for (int ti = 0; ti < numTopics; ti++)
 			out.writeInt (tokensPerTopic[ti]);
 	}
@@ -496,25 +577,16 @@ public class LDAHyper {
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int featuresLength;
 		int version = in.readInt ();
+
 		instances = (InstanceList) in.readObject ();
+		topics = (InstanceList) in.readObject ();
+
 		numTopics = in.readInt();
 		alpha = (double[]) in.readObject();
 		beta = in.readDouble();
 		betaSum = in.readDouble();
 		int numDocs = instances.size();
-		topics = new int[numDocs][];
-		for (int di = 0; di < instances.size(); di++) {
-			int docLen = ((FeatureSequence)instances.get(di).getData()).getLength();
-			topics[di] = new int[docLen];
-			for (int si = 0; si < docLen; si++)
-				topics[di][si] = in.readInt();
-		}
-		/*
-		  docTopicCounts = new int[numDocs][numTopics];
-		  for (int di = 0; di < instances.size(); di++)
-		  for (int ti = 0; ti < numTopics; ti++)
-		  docTopicCounts[di][ti] = in.readInt();
-		*/
+
 		int numTypes = instances.getDataAlphabet().size();
 		typeTopicCounts = new int[numTypes][numTopics];
 		for (int fi = 0; fi < numTypes; fi++)
@@ -537,7 +609,10 @@ public class LDAHyper {
 
 		for (doc=0; doc < instances.size(); doc++) {
 			label = instances.get(doc).getLabeling().getBestIndex();
-			docTopics = topics[doc];
+
+			FeatureSequence topicSequence = 
+				(FeatureSequence) topics.get(doc).getData();
+			docTopics = topicSequence.getFeatures();
 
 			for (token = 0; token < docTopics.length; token++) {
 				topic = docTopics[token];
@@ -695,9 +770,11 @@ public class LDAHyper {
 			topicLogGammas[ topic ] = Dirichlet.logGammaStirling( alpha[topic] );
 		}
 	
-		for (int doc=0; doc < topics.length; doc++) {
-		
-			docTopics = topics[doc];
+		for (int doc=0; doc < topics.size(); doc++) {
+			FeatureSequence topicSequence = 
+				(FeatureSequence) topics.get(doc).getData();
+
+			docTopics = topicSequence.getFeatures();
 
 			for (int token=0; token < docTopics.length; token++) {
 				topicCounts[ docTopics[token] ]++;
@@ -717,7 +794,7 @@ public class LDAHyper {
 		}
 	
 		// add the parameter sum term
-		logLikelihood += topics.length * Dirichlet.logGammaStirling(alphaSum);
+		logLikelihood += topics.size() * Dirichlet.logGammaStirling(alphaSum);
 
 		// And the topics
 
@@ -760,10 +837,7 @@ public class LDAHyper {
 			args.length > 2 ? InstanceList.load (new File(args[2])) : null;
 
 		LDAHyper lda = new LDAHyper (numTopics, 50.0, 0.01);
-		lda.setTrainingInstances(training);
-		//lda.setTopicDisplayInterval(1);
-
-		lda.initialize();
+		lda.addInstances(training);
 		lda.estimate();
 	}
 	
