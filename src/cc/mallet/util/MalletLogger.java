@@ -32,7 +32,7 @@ public class MalletLogger extends Logger
 		if (System.getProperty("java.util.logging.config.file") == null
 				&& System.getProperty("java.util.logging.config.class") == null) {
 			// TODO What is going on here?  This is causing an error
-			System.setProperty("java.util.logging.config.class", "cc.mallet.util.Logger.DefaultConfigurator");
+			//System.setProperty("java.util.logging.config.class", "cc.mallet.util.Logger.DefaultConfigurator");
 			try {
 				InputStream s = MalletLogger.class.getResourceAsStream ("resources/logging.properties");
 				if (s == null)
