@@ -58,10 +58,9 @@
       >
       <src path="${src}"/>
       <include name="cc/**/*.java"/>
-      <exclude name="cc/mallet/users/**"/>
-      <exclude name="cc/mallet/projects/**"/>
       <exclude name="cc/mallet/grmm/**"/>
       <exclude name="cc/mallet/share/**"/>
+      <!-- <compilerarg value="-Xlint"/> -->
     </javac>
   </target>
  
