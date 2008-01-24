@@ -30,8 +30,8 @@ public abstract class TransducerTrainer {
 	//public abstract boolean train (int numIterations);
 	
 	// Management of evaluators
-	public void addEvaluator (TransducerEvaluator te) {	evaluators.add(te);	}
-	public void removeEvaluator (TransducerEvaluator te) { evaluators.remove(te);	}
+	public TransducerTrainer addEvaluator (TransducerEvaluator te) {	evaluators.add(te);	return this; }
+	public TransducerTrainer removeEvaluator (TransducerEvaluator te) { evaluators.remove(te);	return this; }
 	/** This method should be called by subclasses whenever evaluators should be run.
 	 * Do not worry too much about them being run too often, because the evaluators
 	 * themselves can control/limit when they actually do their work with TransducerEvaluator.precondition(). */

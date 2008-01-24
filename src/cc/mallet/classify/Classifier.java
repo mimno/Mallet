@@ -29,7 +29,6 @@ import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.FeatureSelection;
-import cc.mallet.util.ArrayListUtils;
 
 /**
  * Abstract parent of all Classifiers.

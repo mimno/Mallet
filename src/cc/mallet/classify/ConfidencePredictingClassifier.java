@@ -23,7 +23,6 @@ import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelVector;
-import cc.mallet.util.ArrayListUtils;
 
 public class ConfidencePredictingClassifier extends Classifier
 {

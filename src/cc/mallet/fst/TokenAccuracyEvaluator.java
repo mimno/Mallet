@@ -32,6 +32,10 @@ public class TokenAccuracyEvaluator extends TransducerEvaluator
 		super (instanceLists, descriptions);
 	}
 	
+	public TokenAccuracyEvaluator (InstanceList instanceList1, String description1) {
+		this (new InstanceList[] {instanceList1}, new String[] {description1});
+	}
+	
 	public TokenAccuracyEvaluator (InstanceList instanceList1, String description1,
 			InstanceList instanceList2, String description2) {
 		this (new InstanceList[] {instanceList1, instanceList2}, new String[] {description1, description2});

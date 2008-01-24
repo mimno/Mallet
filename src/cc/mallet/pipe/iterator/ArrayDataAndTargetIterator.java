@@ -16,6 +16,7 @@ package cc.mallet.pipe.iterator;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,7 +25,6 @@ import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Label;
-import cc.mallet.util.ArrayListUtils;
 
 public class ArrayDataAndTargetIterator implements Iterator<Instance>
 {
@@ -32,7 +32,7 @@ public class ArrayDataAndTargetIterator implements Iterator<Instance>
   Iterator targetIterator;
 	int index;
 	
-	public ArrayDataAndTargetIterator (ArrayList data, ArrayList targets)
+	public ArrayDataAndTargetIterator (List data, List targets)
 	{
 		this.subIterator = data.iterator ();
 		this.targetIterator = targets.iterator ();
@@ -41,8 +41,7 @@ public class ArrayDataAndTargetIterator implements Iterator<Instance>
 
 	public ArrayDataAndTargetIterator (Object[] data, Object target[])
 	{
-		this (ArrayListUtils.createArrayList (data),
-          ArrayListUtils.createArrayList (target));
+		this (java.util.Arrays.asList (data),	java.util.Arrays.asList (target));
 	}
 
 	// The PipeInputIterator interface

@@ -22,7 +22,6 @@ import cc.mallet.pipe.*;
 import cc.mallet.pipe.iterator.*;
 import cc.mallet.pipe.tsf.*;
 import cc.mallet.types.*;
-import cc.mallet.util.ArrayListUtils;
 
 public class TestSGML2TokenSequence extends TestCase
 {

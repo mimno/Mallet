@@ -24,7 +24,6 @@ import cc.mallet.pipe.iterator.*;
 import cc.mallet.pipe.tsf.*;
 import cc.mallet.types.*;
 import cc.mallet.types.tests.TestSerializable;
-import cc.mallet.util.ArrayListUtils;
 
 public class TestInstancePipe extends TestCase
 {
