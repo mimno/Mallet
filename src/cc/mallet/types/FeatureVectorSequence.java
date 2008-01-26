@@ -14,26 +14,29 @@
 
 package cc.mallet.types;
 
-import java.io.*;
-import java.util.Iterator;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-// xxx A not very space-efficient version.  I'll compress it later.
-
-public class FeatureVectorSequence implements Sequence, Serializable, AlphabetCarrying
+public class FeatureVectorSequence implements Sequence<FeatureVector>, Serializable, AlphabetCarrying
 {
 	FeatureVector[] sequence;
+	Alphabet alphabet;
 
 	public FeatureVectorSequence (FeatureVector[] featureVectors)
 	{
 		this.sequence = featureVectors;
+		this.alphabet = featureVectors[0].getAlphabet();
 	}
 
 	public FeatureVectorSequence (Alphabet dict,
-																TokenSequence tokens,
-																boolean binary,
-																boolean augmentable,
-																boolean growAlphabet)
+			TokenSequence tokens,
+			boolean binary,
+			boolean augmentable,
+			boolean growAlphabet)
 	{
+		this.alphabet = dict;
 		this.sequence = new FeatureVector[tokens.size()];
 		if (augmentable)
 			for (int i = 0; i < tokens.size(); i++)
@@ -44,44 +47,36 @@ public class FeatureVectorSequence implements Sequence, Serializable, AlphabetCa
 	}
 
 	public FeatureVectorSequence (Alphabet dict,
-																TokenSequence tokens,
-																boolean binary,
-																boolean augmentable)
+			TokenSequence tokens,
+			boolean binary,
+			boolean augmentable)
 	{
 		this(dict, tokens, binary, augmentable, true);
 	}
-	
+
 	public FeatureVectorSequence (Alphabet dict,
-																TokenSequence tokens)
+			TokenSequence tokens)
 	{
 		this (dict, tokens, false, false);
 	}
-	
+
 	public Alphabet getAlphabet() {
-		if (sequence.length > 0)
-			return sequence[0].getAlphabet();
-		else
-			return null;
+		return alphabet;
 	}
-	
+
 	public Alphabet[] getAlphabets()
 	{
 		return new Alphabet[] {getAlphabet()};
 	}
-	
-	public boolean alphabetsMatch (AlphabetCarrying object)
-	{
-		return getAlphabet().equals (object.getAlphabet());
-	}
 
 
-	
+
 	public int size ()
 	{
 		return sequence.length;
 	}
 
-	public Object get (int i)
+	public FeatureVector get (int i)
 	{
 		return sequence[i];
 	}
@@ -90,28 +85,27 @@ public class FeatureVectorSequence implements Sequence, Serializable, AlphabetCa
 	{
 		return sequence [i];
 	}
-	
+
 	public double dotProduct (int sequencePosition,
-														Matrix2 weights,
-														int weightRowIndex)
+			Matrix2 weights,
+			int weightRowIndex)
 	{
 		return weights.rowDotProduct (weightRowIndex, sequence[sequencePosition]);
 	}
 
-	public double dotProduct (int sequencePosition,
-														Vector weights)
+	public double dotProduct (int sequencePosition,	Vector weights)
 	{
 		return weights.dotProduct (sequence[sequencePosition]);
 	}
-	
+
 	/** An iterator over the FeatureVectors in the sequence. */
-	public class Iterator implements java.util.Iterator
+	public class Iterator implements java.util.Iterator<FeatureVector>
 	{
 		int pos;
 		public Iterator () {
 			pos = 0;
 		}
-		public Object next() {
+		public FeatureVector next() {
 			return sequence[pos++];
 		}
 		public int getIndex () {
@@ -124,7 +118,7 @@ public class FeatureVectorSequence implements Sequence, Serializable, AlphabetCa
 			throw new UnsupportedOperationException ();
 		}
 	}
-	
+
 	public Iterator iterator ()
 	{
 		return new Iterator();
@@ -146,37 +140,21 @@ public class FeatureVectorSequence implements Sequence, Serializable, AlphabetCa
 	}
 
 	// Serialization of Instance
-	
+
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 0;
-	private static final int NULL_INTEGER = -1;
-	
+
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
-		if (sequence == null) {
-			out.writeInt(NULL_INTEGER);
-		}
-		else {
-			int size = sequence.length;
-			out.writeInt(size);
-			for(int i=0; i<size; i++) {
-				out.writeObject(sequence[i]);
-			}
-		}
+		out.writeObject(alphabet);
+		out.writeObject(sequence);
 	}
-	
+
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+		@SuppressWarnings("unused")
 		int version = in.readInt ();
-		int size = in.readInt();
-		if (size == NULL_INTEGER) {
-			sequence = null;
-		}
-		else {
-      sequence = new FeatureVector[size];
-			for (int i = 0; i<size; i++) {
-				sequence[i] = (FeatureVector) in.readObject();
-			}
-		}
+		this.alphabet = (Alphabet) in.readObject();
+		this.sequence = (FeatureVector[]) in.readObject();
 	}
 
 }

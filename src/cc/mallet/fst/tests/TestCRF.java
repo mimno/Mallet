@@ -670,7 +670,7 @@ public class TestCRF extends TestCase {
 		System.out.println("Testing  Accuracy before training = " + crf.averageTokenAccuracy(lists[1]));
 		System.out.println("Training...");
 		// either fixed learning rate or selected on a sample
-		crft.chooseLearningRateByLikelihood(lists[0]);
+		crft.setLearningRateByLikelihood(lists[0]);
 		// crft.setLearningRate(0.01);
 		crft.train(lists[0], 100);
 		crf.print();

@@ -96,7 +96,6 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 	 * ever create 	any corresponding dictionary for the argument.
 	 *  @param dataDict  Alphabet that will be used as the data dictionary.
 	 *  @param targetDict Alphabet that will be used as the target dictionary.
-	 *   WHEN WHEN WHEN WHEN
 	 */
 	public Pipe (Alphabet dataDict, Alphabet targetDict)
 	{
@@ -117,6 +116,8 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 	 * </code> */
 	// TODO "precondition" doesn't seem like the best name for this because if false, we don't fail, we pass thru.  
 	// Consider alternatives: skipIfTrue, passThru, skipPredicate,
+	// TODO Actually, we might really want multiple different methods like this: 
+	//  (a) if false, drop this instance and go on to next, (b) if false, pass through unchanged (current implementation)
 	public boolean precondition (Instance inst) {
 		return true;
 	}
