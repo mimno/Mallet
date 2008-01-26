@@ -65,7 +65,7 @@ public class StringTokenization extends TokenSequence implements Tokenization
   }
 
 
-  public Span getSpan (int i) { return (Span) getToken (i); }
+  public Span getSpan (int i) { return (Span) get(i); }
 
   public Object getDocument ()
   {

@@ -59,7 +59,7 @@ public class ListMember extends Pipe implements java.io.Serializable {
             StringBuffer sbs = new StringBuffer(); // separate tokens by spaces
             for (int j=i; j<i+max && j<seq.size(); j++) {
                 // test tokens from i to j
-                String text = seq.getToken(j).getText();
+                String text = seq.get(j).getText();
                 sb.append(text);
                 if (sbs.length() == 0) sbs.append(text);
                 else sbs.append(" "+text);
@@ -72,7 +72,7 @@ public class ListMember extends Pipe implements java.io.Serializable {
 
         for (int i=0; i<seq.size(); i++) {
             if (marked[i])
-                seq.getToken(i).setFeatureValue(name, 1.0);
+                seq.get(i).setFeatureValue(name, 1.0);
         }
         return carrier;
     }

@@ -315,7 +315,7 @@ public class TestCRF extends TestCase {
 			boolean lastWasSpace = true;
 			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < ts.size(); i++) {
-				Token t = ts.getToken(i);
+				Token t = ts.get(i);
 				if (t.getText().equals(" "))
 					lastWasSpace = true;
 				else {

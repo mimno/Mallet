@@ -58,7 +58,7 @@ public class CountMatchesMatching extends Pipe
 		for (int i = 0; i < ts.size(); i++) {
 			count = 0;
 			moreSpecificCount = 0;
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			Matcher matcher = regex.matcher (t.getText());
 			while (matcher.find()) {
 				count++;

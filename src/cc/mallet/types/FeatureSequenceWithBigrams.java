@@ -32,7 +32,7 @@ public class FeatureSequenceWithBigrams extends FeatureSequence
 		this.biFeatures = new int[len];
 		Token t, pt = null;
 		for (int i = 0; i < len; i++) {
-			t = ts.getToken(i);
+			t = ts.get(i);
 			super.add(t.getText());
 			if (pt != null && pt.getProperty(deletionMark) == null)
 				biFeatures[i] = biDictionary.lookupIndex(pt.getText()+"_"+t.getText(), true);

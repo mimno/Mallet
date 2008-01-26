@@ -59,10 +59,10 @@ public class OffsetPropertyConjunctions extends Pipe implements Serializable
 		PropertyList[] oldfs = new PropertyList[ts.size()];
 		PropertyList[] newfs = new PropertyList[ts.size()];
 		for (int i = 0; i < tsSize; i++)
-			oldfs[i] = ts.getToken(i).getFeatures ();
+			oldfs[i] = ts.get(i).getFeatures ();
 		if (includeOriginalSingletons)
 			for (int i = 0; i < tsSize; i++)
-				newfs[i] = ts.getToken(i).getFeatures ();
+				newfs[i] = ts.get(i).getFeatures ();
 
 		for (int i = 0; i < ts.size(); i++) {
 			//System.out.println ("OffsetPropertyConjunctions: ts index="+i+", conjunction =");
@@ -164,7 +164,7 @@ public class OffsetPropertyConjunctions extends Pipe implements Serializable
 
 		// Put the new PropertyLists in place
 		for (int i = 0; i < ts.size(); i++)
-			ts.getToken(i).setFeatures (newfs[i]);
+			ts.get(i).setFeatures (newfs[i]);
 		return carrier;
 	}
 

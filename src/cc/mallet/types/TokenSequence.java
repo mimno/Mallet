@@ -21,53 +21,48 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
-import cc.mallet.pipe.Pipe;
 import cc.mallet.util.PropertyList;
 
 /**
  * A representation of a piece of text, usually a single word, to which we can attach properties.
  */
 
-public class TokenSequence implements Sequence, Serializable {
-	ArrayList tokens;
+public class TokenSequence extends ArrayList<Token> implements Serializable {
+	//ArrayList tokens;
 	PropertyList properties = null;				// for arbitrary properties
 
-	public TokenSequence(Collection tokens) {
-		this.tokens = new ArrayList( tokens );
+	public TokenSequence (Collection<Token> tokens) {
+		super(tokens);
 	}
 
-	public TokenSequence() {
-		this.tokens = new ArrayList();
+	public TokenSequence () {
+		super();
 	}
 
-	public TokenSequence(int capacity) {
-		this.tokens = new ArrayList( capacity );
+	public TokenSequence (int capacity) {
+		super (capacity);
 	}
 
-	public TokenSequence(Token[] tokens) {
-		this( tokens.length );
+	public TokenSequence (Token[] tokens) {
+		this (tokens.length);
 		for (int i = 0; i < tokens.length; i++)
 			this.add( tokens[i] );
 	}
 
-	public TokenSequence(Object[] tokens) {
+	public TokenSequence (Object[] tokens) {
 		this( tokens.length );
 		for (int i = 0; i < tokens.length; i++)
-			this.add( new Token( tokens[i].toString() ) );
+			this.add (new Token( tokens[i].toString()));
 	}
+	
+	//public Token get (int i) {return this.get(i);	}
 
-
-	public int size() {
-		return this.tokens.size();
-	}
-
-	public String toString() {
+	public String toString () {
 		StringBuffer sb = new StringBuffer();
 		sb.append( "TokenSequence " + super.toString() + "\n" );
-		for (int i = 0; i < tokens.size(); i++) {
-			String tt = getToken( i ).toString();
+		for (int i = 0; i < this.size(); i++) {
+			String tt = get(i).toString();
 			sb.append( "Token#" + i + ":" );
 			sb.append( tt );
 			if (!tt.endsWith( "\n" ))
@@ -76,28 +71,20 @@ public class TokenSequence implements Sequence, Serializable {
 		return sb.toString();
 	}
 
-    public String toStringShort(){
-	StringBuffer sb = new StringBuffer();
-	for (int i = 0; i < tokens.size(); i++) {
-	    String tt = getToken( i ).toString();
-	    tt.replaceAll("\n","");
-	    if (i > 0){
-		sb.append(" ");
-	    }
-	    sb.append(tt);
-	}
-	return sb.toString();
-    }
-
-	public Token getToken(int i) {
-		return (Token)tokens.get( i );
+	public String toStringShort () {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < this.size(); i++) {
+			String tt = get(i).toString();
+			tt.replaceAll("\n","");
+			if (i > 0){
+				sb.append(" ");
+			}
+			sb.append(tt);
+		}
+		return sb.toString();
 	}
 
-	public Object get(int i) {
-		return tokens.get( i );
-	}
-
-	public void add(Object o) {
+	public void add (Object o) {
 		if (o instanceof Token)
 			add( (Token)o );
 		else if (o instanceof TokenSequence)
@@ -106,82 +93,59 @@ public class TokenSequence implements Sequence, Serializable {
 			add( new Token( o.toString() ) );
 	}
 
-	public void add(Token t) {
-		tokens.add( t );
-	}
-
-	//added by Fuchun Peng, Oct. 24, 2003
-	public Object remove(int index) {
-		return tokens.remove( index );
-	}
-
 	// added by Fuchun Peng, Oct. 24, 2003
-	public Object removeLastToken() {
-		if (tokens.size() > 0) {
-			return tokens.remove( tokens.size() - 1 );
-		}
+	public Object removeLast () {
+		if (this.size() > 0) 
+			return this.remove (this.size() - 1);
 		else
 			return null;
 	}
 
-	public void addAll(TokenSequence ts) {
-		for (int i = 0; i < ts.size(); i++)
-			add( ts.getToken( i ) );
-	}
 
-	public void addAll(Token[] tokens) {
-		for (int i = 0; i < tokens.length; i++)
-			add( tokens[i] );
-	}
-
-	public void addAll(Object[] tokens) {
-		for (int i = 0; i < tokens.length; i++) {
-			if (tokens[i] instanceof Token)
-				add( (Token)tokens[i] );
+	public void addAll (Object[] objects) {
+		for (int i = 0; i < objects.length; i++) {
+			if (objects[i] instanceof Token)
+				add( (Token)objects[i] );
 			else
-				add( new Token( tokens[i].toString() ) );
+				add( new Token( objects[i].toString() ) );
 		}
 	}
 
-	public Iterator iterator() {
-		return tokens.iterator();
-	}
-
-	public FeatureSequence toFeatureSequence(Alphabet dict) {
-		FeatureSequence fs = new FeatureSequence( dict, tokens.size() );
-		for (int i = 0; i < tokens.size(); i++)
-			fs.add( dict.lookupIndex( ((Token)tokens.get( i )).getText() ) );
+	public FeatureSequence toFeatureSequence (Alphabet dict) {
+		FeatureSequence fs = new FeatureSequence( dict, this.size() );
+		for (int i = 0; i < this.size(); i++)
+			fs.add (dict.lookupIndex( (this.get(i)).getText()));
 		return fs;
 	}
 
-	public FeatureVector toFeatureVector(Alphabet dict) {
+	public FeatureVector toFeatureVector (Alphabet dict) {
 		return new FeatureVector( toFeatureSequence( dict ) );
 	}
 
-	public void setNumericProperty(String key, double value) {
+	public void setNumericProperty (String key, double value) {
 		properties = PropertyList.add( key, value, properties );
 	}
 
-	public void setProperty(String key, Object value) {
+	public void setProperty (String key, Object value) {
 		properties = PropertyList.add( key, value, properties );
 	}
 
-	public double getNumericProperty(String key) {
+	public double getNumericProperty (String key) {
 		return properties.lookupNumber( key );
 	}
 
-	public Object getProperty(String key) {
+	public Object getProperty (String key) {
 		return properties.lookupObject( key );
 	}
 
-	public boolean hasProperty(String key) {
+	public boolean hasProperty (String key) {
 		return properties.hasProperty( key );
 	}
 
-    // added gmann 8/30/2006
-    public PropertyList getProperties(){
-	return properties;
-    }
+	// added gmann 8/30/2006
+	public PropertyList getProperties () {
+		return properties;
+	}
 
 
 	// Serialization
@@ -195,6 +159,7 @@ public class TokenSequence implements Sequence, Serializable {
 	}
 
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		@SuppressWarnings("unused")
 		int version = in.readInt();
 		in.defaultReadObject();
 	}

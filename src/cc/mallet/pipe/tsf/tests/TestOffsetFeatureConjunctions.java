@@ -79,10 +79,10 @@ public class TestOffsetFeatureConjunctions extends TestCase {
     assertEquals (6, mtTs.size ());
     assertEquals (6, noMtTs.size ());
 
-    assertEquals (1.0, mtTs.getToken (3).getFeatureValue ("time"), 1e-15);
-    assertEquals (1.0, noMtTs.getToken (3).getFeatureValue ("time"), 1e-15);
-    assertEquals (1.0, mtTs.getToken (4).getFeatureValue ("time"), 1e-15);
-    assertEquals (0.0, noMtTs.getToken (4).getFeatureValue ("time"), 1e-15);
+    assertEquals (1.0, mtTs.get (3).getFeatureValue ("time"), 1e-15);
+    assertEquals (1.0, noMtTs.get (3).getFeatureValue ("time"), 1e-15);
+    assertEquals (1.0, mtTs.get (4).getFeatureValue ("time"), 1e-15);
+    assertEquals (0.0, noMtTs.get (4).getFeatureValue ("time"), 1e-15);
   }
 
   public static void testMultiTagSerialization () throws IOException, ClassNotFoundException
@@ -105,8 +105,8 @@ public class TestOffsetFeatureConjunctions extends TestCase {
     Instance mtInst = mtLst.get (0);
     TokenSequence mtTs = (TokenSequence) mtInst.getData ();
     assertEquals (6, mtTs.size ());
-    assertEquals (1.0, mtTs.getToken (3).getFeatureValue ("time"), 1e-15);
-    assertEquals (1.0, mtTs.getToken (4).getFeatureValue ("time"), 1e-15);
+    assertEquals (1.0, mtTs.get (3).getFeatureValue ("time"), 1e-15);
+    assertEquals (1.0, mtTs.get (4).getFeatureValue ("time"), 1e-15);
   }
 
   /**

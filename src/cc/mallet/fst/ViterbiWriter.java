@@ -80,7 +80,7 @@ public class ViterbiWriter extends TransducerEvaluator {
       	//viterbiOutputStream.println (tokens.charAt(j)+" "+trueOutput.get(j).toString()+
       	//'/'+predOutput.get(j).toString()+"  "+ fv.toString(true));
       	if (sourceTokenSequence != null)
-      		viterbiOutputStream.print (sourceTokenSequence.getToken(j).getText()+": ");
+      		viterbiOutputStream.print (sourceTokenSequence.get(j).getText()+": ");
       	viterbiOutputStream.println (trueOutput.get(j).toString()+
       			'/'+predOutput.get(j).toString()+"  "+ fv.toString(true));
       }

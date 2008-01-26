@@ -36,7 +36,7 @@ public class Target2FeatureSequence extends Pipe implements Serializable
 			TokenSequence ts = (TokenSequence) target;
 			FeatureSequence fs = new FeatureSequence (getTargetAlphabet(), ts.size());
 			for (int i = 0; i < ts.size(); i++)
-				fs.add (ts.getToken(i).getText());
+				fs.add (ts.get(i).getText());
 			carrier.setTarget(fs);
 		} else {
 			throw new IllegalArgumentException ("Unrecognized target type.");

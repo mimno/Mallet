@@ -90,10 +90,10 @@ public class OffsetConjunctions extends Pipe implements Serializable
 		}
 		
 		for (int i = 0; i < tsSize; i++)
-			oldfs[i] = ts.getToken(i).getFeatures ();
+			oldfs[i] = ts.get(i).getFeatures ();
 		if (includeOriginalSingletons)
 			for (int i = 0; i < tsSize; i++)
-				newfs[i] = ts.getToken(i).getFeatures ();
+				newfs[i] = ts.get(i).getFeatures ();
 
 		for (int i = 0; i < tsSize; i++) {
 			for (int j = 0; j < conjunctions.length; j++) {				
@@ -109,7 +109,7 @@ public class OffsetConjunctions extends Pipe implements Serializable
 		}
 		// Put the new PropertyLists in place
 		for (int i = 0; i < ts.size(); i++)
-			ts.getToken(i).setFeatures (newfs[i]);
+			ts.get(i).setFeatures (newfs[i]);
 		return carrier;
 	}		
 

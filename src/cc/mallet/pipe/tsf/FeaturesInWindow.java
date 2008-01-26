@@ -101,7 +101,7 @@ public class FeaturesInWindow extends Pipe implements Serializable
 		int tsSize = ts.size();
 		PropertyList[] newFeatures = new PropertyList[tsSize];
 		for (int i = 0; i < tsSize; i++) {
-			Token t = ts.getToken (i);
+			Token t = ts.get (i);
 			PropertyList pl = t.getFeatures();
 			newFeatures[i] = pl;
 			for (int position = i + leftBoundary; position < i + rightBoundary; position++) {
@@ -113,7 +113,7 @@ public class FeaturesInWindow extends Pipe implements Serializable
 				else if (position >= tsSize)
 					pl2 = endfs[position-tsSize];
 				else
-					pl2 = ts.getToken(position).getFeatures ();
+					pl2 = ts.get(position).getFeatures ();
 				PropertyList.Iterator pl2i = pl2.iterator();
 				while (pl2i.hasNext()) {
 					pl2i.next();
@@ -127,7 +127,7 @@ public class FeaturesInWindow extends Pipe implements Serializable
 		}
 		for (int i = 0; i < tsSize; i++) {
 			// Put the new PropertyLists in place
-			ts.getToken (i).setFeatures (newFeatures[i]);
+			ts.get (i).setFeatures (newFeatures[i]);
 		}
 		return carrier;
 	}

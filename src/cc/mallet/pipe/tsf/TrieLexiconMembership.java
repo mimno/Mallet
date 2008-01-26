@@ -171,7 +171,7 @@ public class TrieLexiconMembership extends Pipe implements Serializable {
 					i++;
 				} else {
 					for (; i <= j; i++) {
-						Token t = ts.getToken(i);
+						Token t = ts.get(i);
 						t.setFeatureValue(name, 1.0);
 					}
 				}
@@ -187,7 +187,7 @@ public class TrieLexiconMembership extends Pipe implements Serializable {
 			Hashtable currentLevel = lex;
 			int end = -1;
 			for (int i = start; i < ts.size(); i++) {
-				Token t = ts.getToken(i);
+				Token t = ts.get(i);
 				String s = t.getText();
 				if (ignoreCase)
 					s = s.toLowerCase();

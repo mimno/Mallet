@@ -62,7 +62,7 @@ public class TokenSequenceParseFeatureString extends Pipe implements Serializabl
 	public Instance pipe (Instance carrier) {
 		TokenSequence ts = (TokenSequence) carrier.getData ();
 		for (int i=0; i < ts.size(); i++) {
-			Token t = ts.getToken (i);
+			Token t = ts.get (i);
 			String[] values = t.getText().split("\\s+");
 			for (int j=0; j < values.length; j++) {
 				if (specifyFeatureNames) {

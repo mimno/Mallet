@@ -250,7 +250,7 @@ public class LatticeViewer {
     out.println ("  <tr class=\"input\">");
     out.println ("    <td class=\"label\"></td>");
     for (int ip = start; ip < end; ip++) {
-      out.print ("<td>"+input.getToken(ip).getText()+"</td>");
+      out.print ("<td>"+input.get(ip).getText()+"</td>");
     }
     out.println ("  </tr>");
   }

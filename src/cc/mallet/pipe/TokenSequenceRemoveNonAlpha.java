@@ -44,7 +44,7 @@ public class TokenSequenceRemoveNonAlpha extends Pipe {
 		TokenSequence ret = new TokenSequence ();
 		Token prevToken = null;
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			String s = t.getText();
 			if (CharSequenceLexer.LEX_ALPHA.matcher(s).matches()) {
 				ret.add (t);

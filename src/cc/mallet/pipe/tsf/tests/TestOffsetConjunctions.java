@@ -48,9 +48,9 @@ public class TestOffsetConjunctions extends TestCase
 		Instance carrier = p.instanceFrom(new Instance (input, null, null, null));
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		assertTrue (ts.size() == 26);
-		assertTrue (ts.getToken(0).getFeatureValue("a_&_b@1") == 1.0);
-		assertTrue (ts.getToken(0).getFeatureValue("V_&_a") == 1.0);
-		assertTrue (ts.getToken(2).getFeatureValue("b@-1_&_c_&_d@1") == 1.0);
+		assertTrue (ts.get(0).getFeatureValue("a_&_b@1") == 1.0);
+		assertTrue (ts.get(0).getFeatureValue("V_&_a") == 1.0);
+		assertTrue (ts.get(2).getFeatureValue("b@-1_&_c_&_d@1") == 1.0);
 	}
 
 

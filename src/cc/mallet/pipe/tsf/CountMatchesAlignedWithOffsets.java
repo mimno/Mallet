@@ -56,7 +56,7 @@ public class CountMatchesAlignedWithOffsets extends Pipe
 		for (int i = 0; i < ts.size(); i++) {
 			countMatches = 0;
 			countAlignedMatches = 0;
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			Matcher matcher = regex.matcher (t.getText());
 			while (matcher.find ()) {
 				countMatches++;
@@ -64,7 +64,7 @@ public class CountMatchesAlignedWithOffsets extends Pipe
 				for (int j = 0; j < offsets.length; j++) {
 					int offset = i + offsets[j];
 					if (offset >= 0 && offset < ts.size()) {
-						String offsetText = ts.getToken(offset).getText();
+						String offsetText = ts.get(offset).getText();
 						if (offsetText.length() > position) {
 							Matcher offsetMatcher =
 								regex.matcher (offsetText.substring(position));
