@@ -69,10 +69,10 @@ public class Instance implements Serializable, AlphabetCarrying, Cloneable
 {
 	private static Logger logger = MalletLogger.getLogger(Instance.class.getName());
 
-	Object data;									// The input data in digested form, e.g. a FeatureVector
-	Object target;								// The output data in digested form, e.g. a Label
-	Object name;									// A readable name of the source, e.g. for ML error analysis
-	Object source;								/* The input in a reproducable form, e.g. enabling re-print of
+	protected Object data;				// The input data in digested form, e.g. a FeatureVector
+	protected Object target;			// The output data in digested form, e.g. a Label
+	protected Object name;				// A readable name of the source, e.g. for ML error analysis
+	protected Object source;			/* The input in a reproducable form, e.g. enabling re-print of
 																	 string w/ POS tags, usually without target information,
 																	 e.g. an un-annotated RegionList. */
 	PropertyList properties = null;
