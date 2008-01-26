@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import cc.mallet.types.Instance;
-import cc.mallet.util.ArrayListUtils;
 
 public class ArrayIterator implements Iterator<Instance>
 {
@@ -42,7 +41,7 @@ public class ArrayIterator implements Iterator<Instance>
 	
 	public ArrayIterator (Object[] data, Object target)
 	{
-		this (ArrayListUtils.createArrayList (data), target);
+		this (java.util.Arrays.asList (data), target);
 	}
 
 	public ArrayIterator (Object[] data)

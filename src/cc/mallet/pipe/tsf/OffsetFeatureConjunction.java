@@ -134,7 +134,7 @@ public class OffsetFeatureConjunction extends Pipe implements Serializable
 					passes = false;
 					break;
 				}
-        boolean featurePresent = hasMatchingFeature (ts.getToken(pos), featurePatterns [fnum]);
+        boolean featurePresent = hasMatchingFeature (ts.get(pos), featurePatterns [fnum]);
         if (featurePresent != isNonNegated [fnum]) {
 					passes = false;
 					break;
@@ -144,10 +144,10 @@ public class OffsetFeatureConjunction extends Pipe implements Serializable
 				if (tagAllTimesteps) {
 					for (int fnum = 0; fnum < featurePatterns.length; fnum++) {
 						int pos = t + offsets[fnum];
-						ts.getToken(pos).setFeatureValue (thisFeatureName, 1.0);
+						ts.get(pos).setFeatureValue (thisFeatureName, 1.0);
 					}
 				} else {
-					ts.getToken(t).setFeatureValue (thisFeatureName, 1.0);
+					ts.get(t).setFeatureValue (thisFeatureName, 1.0);
 				}
 			}
 		}

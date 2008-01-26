@@ -9,11 +9,16 @@ package cc.mallet.topics;
 
 import cc.mallet.types.*;
 import cc.mallet.util.Randoms;
+
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.zip.*;
+
 import java.io.*;
 import java.text.NumberFormat;
 
-import cc.mallet.types.Dirichlet;
+import gnu.trove.*;
 
 /**
  * Latent Dirichlet Allocation.
@@ -22,1159 +27,866 @@ import cc.mallet.types.Dirichlet;
 
 public class MultinomialHMM {
 
-	int numTopics; // Number of topics to be fit
-	int numStates; // Number of hidden states
-	int numTypes;
-	int numTokens;
-	int numDocs;
-	int numSequences;
+    int numTopics; // Number of topics to be fit
+    int numStates; // Number of hidden states
+    int numDocs;
+    int numSequences;
 
-	// Dirichlet(alpha,alpha,...) is the distribution over topics
-	double[] alpha;
-	double alphaSum;
+    // Dirichlet(alpha,alpha,...) is the distribution over topics
+    double[] alpha;
+    double alphaSum;
 
-	// Prior on per-topic multinomial distribution over words
-	double beta;
-	double betaSum;
+    // Prior on per-topic multinomial distribution over words
+    double beta;
+    double betaSum;
 
-	// Prior on the state-state transition distributions
-	double gamma;
-	double gammaSum;
+    // Prior on the state-state transition distributions
+    double gamma;
+    double gammaSum;
 
-	double pi;
-	double sumPi;
+    double pi;
+    double sumPi;
 
-	InstanceList instances, testing;  // the data field of the instances is expected to hold a FeatureSequence
+    TIntObjectHashMap<TIntIntHashMap> documentTopics;
+    int[] documentSequenceIDs;    
+    int[] documentStates;
 
-	int[][] topics; // indexed by <document index, sequence index>
-	int[] oneDocTopicCounts; // indexed by <document index, topic index>
-	int[][] typeTopicCounts; // indexed by <feature index, topic index>
-	int[] tokensPerTopic; // indexed by <topic index>
+    int[][] stateTopicCounts;
+    int[] stateTopicTotals;
+    int[][] stateStateTransitions;
+    int[] stateTransitionTotals;
 
-	int[] documentSequenceIDs;
+    int[] initialStateCounts;
 
-	int[] documentStates;
-	int[][] stateTopicCounts;
-	int[] stateTopicTotals;
-	int[][] stateStateTransitions;
-	int[] stateTransitionTotals;
+    // Keep track of the most times each topic is
+    //  used in any document
+    int[] maxTokensPerTopic;
 
-	int[] initialStateCounts;
+    // The size of the largest document
+    int maxDocLength;
 
-	// These two arrays are only used by the sampler within
-	//  a single document, but declare them here to avoid 
-	//   garbage collection.
-	int[] docTopicCounts;
-	double[] topicWeights;
+    // Rather than calculating log gammas for every state and every topic
+    //  we cache log predictive distributions for every possible state
+    //  and document.
+    double[][][] topicLogGammaCache;
+    double[][] docLogGammaCache;
 
-	// for dirichlet estimation
-	int[] docLengthCounts; // histogram of document sizes
-	int[][] topicDocCounts; // histogram of document/topic counts
+    int numIterations = 1000;
+    int burninPeriod = 200;
+    int saveSampleInterval = 10;
+    int optimizeInterval = 0;
+    int showTopicsInterval = 50;
 
-	int numIterations = 1000;
-	int burninPeriod = 200;
-	int saveSampleInterval = 10;    
-	int optimizeInterval = 0;
-	int showTopicsInterval = 50;
+    String[] topicKeys;
 
-	String[] topicKeys;
+    Randoms random;
 
-	Randoms random;
+    NumberFormat formatter;
+    
+    public MultinomialHMM (int numberOfTopics, String topicsFilename, int numStates) throws IOException {
+	formatter = NumberFormat.getInstance();
+	formatter.setMaximumFractionDigits(5);
+	
+	System.out.println("LDA HMM: " + numberOfTopics);
+	
+	documentTopics = new TIntObjectHashMap<TIntIntHashMap>();
 
-	Runtime runtime;
-	NumberFormat formatter;
+	this.numTopics = numberOfTopics;
+	this.alphaSum = numberOfTopics;
+	this.alpha = new double[numberOfTopics];
+	Arrays.fill(alpha, alphaSum / numTopics);
 
-	public MultinomialHMM (int numberOfTopics) {
-		this (numberOfTopics, numberOfTopics, 0.01);
-	}
+	topicKeys = new String[numTopics];
 
-	public MultinomialHMM (int numberOfTopics, double alphaSum, double beta)
-	{
-		formatter = NumberFormat.getInstance();
-		formatter.setMaximumFractionDigits(5);
+	// This initializes numDocs as well
+	loadTopicsFromFile(topicsFilename);
 
-		System.out.println("LDA HMM: " + numberOfTopics);
+	documentStates = new int[ numDocs ];
+	documentSequenceIDs = new int[ numDocs ];
 
-		this.numTopics = numberOfTopics;
-		this.alphaSum = alphaSum;
-		this.alpha = new double[numberOfTopics];
-		Arrays.fill(alpha, alphaSum / numTopics);
-		this.beta = beta;
+	maxTokensPerTopic = new int[ numTopics ];
+	maxDocLength = 0;
+	
+	//int[] histogram = new int[380];
+	//int totalTokens = 0;
 
-		runtime = Runtime.getRuntime();
-	}
+	for (int doc=0; doc < numDocs; doc++) {
+	    if (! documentTopics.containsKey(doc)) { continue; }
+	    
+	    TIntIntHashMap topicCounts = documentTopics.get(doc);
+	    
+	    int count = 0;
+	    for (int topic: topicCounts.keys()) {
+		int topicCount = topicCounts.get(topic);
+		//histogram[topicCount]++;
+		//totalTokens += topicCount;
 
-	public void setTrainingInstances(InstanceList training) {
-		this.instances = training;
-	}
-
-	/** Held-out instances for empirical likelihood calculation */
-	public void setTestingInstances(InstanceList testing) {
-		this.testing = testing;
-	}
-
-	public void setNumStates(int s) {
-		this.numStates = s;
-	}
-
-	public void setGamma(double g) {
-		this.gamma = g;
-	}
-
-	public void setNumIterations (int numIterations) {
-		this.numIterations = numIterations;
-	}
-
-	public void setBurninPeriod (int burninPeriod) {
-		this.burninPeriod = burninPeriod;
-	}
-
-	public void setTopicDisplayInterval(int interval) {
-		this.showTopicsInterval = interval;
-	}
-
-	public void setRandomSeed(int seed) {
-		random = new Randoms(seed);
-	}
-
-	public void setOptimizeInterval(int interval) {
-		this.optimizeInterval = interval;
-	}
-
-	public void initialize () {
-
-		if (random == null) {
-			random = new Randoms();
+		if (topicCount > maxTokensPerTopic[topic]) {
+		    maxTokensPerTopic[topic] = topicCount;
 		}
-
-		numTypes = instances.getDataAlphabet().size ();
-		numDocs = instances.size();
-
-		topics = new int[numDocs][];
-		oneDocTopicCounts = new int[numTopics];
-		typeTopicCounts = new int[numTypes][numTopics];
-		tokensPerTopic = new int[numTopics];
-
-		topicKeys = new String[numTopics];
-
-		docTopicCounts = new int[numTopics];
-		topicWeights = new double[numTopics];
-
-		betaSum = beta * numTypes;
-		gammaSum = gamma * numStates;
-
-		stateTopicCounts = new int[numStates][numTopics];
-		stateTopicTotals = new int[numStates];
-		stateStateTransitions = new int[numStates][numStates];
-		stateTransitionTotals = new int[numStates];
-
-		initialStateCounts = new int[numStates];
-
-		pi = 1000.0;
-		sumPi = numStates * pi;
-
-
-		documentStates = new int[numDocs];
-		documentSequenceIDs = new int[numDocs];
-
-		int maxTokens = 0;
-		int totalTokens = 0;
-
-		numSequences = 0;
-
-		int sequenceID;
-		int currentSequenceID = -1;
-
-		// Initialize with random assignments of tokens to topics
-		// and finish allocating this.topics and this.tokens
-		int topic, seqLen;
-		for (int doc = 0; doc < numDocs; doc++) {
-			FeatureSequence fs = (FeatureSequence) instances.get(doc).getData();
-
-			// Choose a random state
-
-			documentStates[doc] = random.nextInt(numStates);
-
-			// All other initialization will be done later, loading a saved
-			//  topic state from files.
-
-			seqLen = fs.getLength();
-			if (seqLen > maxTokens) { 
-				maxTokens = seqLen;
-			}
-			totalTokens += seqLen;
-
-			numTokens += seqLen;
-			topics[doc] = new int[seqLen];
-		}
-
-		System.out.println("max tokens: " + maxTokens);
-		System.out.println("total tokens: " + totalTokens);
-
-		// These will be initialized at the first call to 
-		//  clearHistograms() in the loop below.
-		docLengthCounts = new int[maxTokens + 1];
-		topicDocCounts = new int[numTopics][maxTokens + 1];
+		count += topicCount;
+	    }
+	    if (count > maxDocLength) {
+		maxDocLength = count;
+	    }
 	}
 
+	/*
+	double runningTotal = 0.0;
+	for (int i=337; i >= 0; i--) {
+	    runningTotal += i * histogram[i];
+	    System.out.format("%d\t%d\t%.3f\n", i, histogram[i], 
+			      runningTotal / totalTokens);
+	}
+	*/
 
-	public void estimate() throws IOException {
+	this.numStates = numStates; 
+	this.initialStateCounts = new int[numStates];
 
-		long startTime = System.currentTimeMillis();
+	topicLogGammaCache = new double[numStates][numTopics][];
+	for (int state=0; state < numStates; state++) {
+	    for (int topic=0; topic < numTopics; topic++) {
+		topicLogGammaCache[state][topic] = new double[ maxTokensPerTopic[topic] + 1 ];
+		//topicLogGammaCache[state][topic] = new double[21];
 
-		for (int iterations = 1; iterations <= numIterations; iterations++) {
-			long iterationStart = System.currentTimeMillis();
+	    }
+	}
+	System.out.println( maxDocLength );
+	docLogGammaCache = new double[numStates][ maxDocLength + 1 ];
 
-			if (showTopicsInterval != 0 && iterations % showTopicsInterval == 0) {
-				System.out.println();
-				System.out.println(printTopWords (5, false));
+    }
 
-				/*
-		if (testing != null) {
-		    double el = empiricalLikelihood(1000, testing);
-		}
-		double ll = modelLogLikelihood();
-		double mi = printTopicLabels();
-		System.out.println(ll + "\t" + el + "\t" + mi);
-				 */
-			}
-			/*
-	      if (outputModelInterval != 0 && iterations % outputModelInterval == 0) {
-	      this.write (new File(outputModelFilename+'.'+iterations));
-	      }
-			 */
+    public void setGamma(double g) {
+	this.gamma = g;
+    }
 
-			//System.out.println (printStateTransitions());
-			for (int doc = 0; doc < topics.length; doc++) {
-				sampleTopicsForOneDoc (doc, random, (iterations > burninPeriod &&
-						iterations % saveSampleInterval == 0));
+    public void setNumIterations (int numIterations) {
+	this.numIterations = numIterations;
+    }
 
-				//if (doc % 10000 == 0) { System.out.println (printStateTransitions()); }
-			}
+    public void setBurninPeriod (int burninPeriod) {
+	this.burninPeriod = burninPeriod;
+    }
 
-			System.out.print((System.currentTimeMillis() - iterationStart) + " ");
+    public void setTopicDisplayInterval(int interval) {
+	this.showTopicsInterval = interval;
+    }
 
-			if (iterations % 10 == 0) {
-				System.out.println ("<" + iterations + "> ");
+    public void setRandomSeed(int seed) {
+	random = new Randoms(seed);
+    }
 
-				PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("state_state_matrix." + iterations)));
-				out.print(stateTransitionMatrix());
-				out.close();
+    public void setOptimizeInterval(int interval) {
+	this.optimizeInterval = interval;
+    }
+    
+    public void initialize () {
 
-				out = new PrintWriter(new BufferedWriter(new FileWriter("state_topics." + iterations)));
-				out.print(stateTopics());
-				out.close();
+	if (random == null) {
+	    random = new Randoms();
+	}
 
-				if (iterations % 10 == 0) {
-					out = new PrintWriter(new BufferedWriter(new FileWriter("states." + iterations)));
+	gammaSum = gamma * numStates;
+	
+	stateTopicCounts = new int[numStates][numTopics];
+	stateTopicTotals = new int[numStates];
+	stateStateTransitions = new int[numStates][numStates];
+	stateTransitionTotals = new int[numStates];
 
-					for (int doc = 0; doc < documentStates.length; doc++) {
-						out.println(documentStates[doc]);
-					}
+	pi = 1000.0;
+	sumPi = numStates * pi;
 
-					out.close();
-				}
-			}
-			System.out.flush();
-		}
+	int maxTokens = 0;
+	int totalTokens = 0;
 
-		long seconds = Math.round((System.currentTimeMillis() - startTime)/1000.0);
-		long minutes = seconds / 60;	seconds %= 60;
-		long hours = minutes / 60;	minutes %= 60;
-		long days = hours / 24;	hours %= 24;
-		System.out.print ("\nTotal time: ");
-		if (days != 0) { System.out.print(days); System.out.print(" days "); }
-		if (hours != 0) { System.out.print(hours); System.out.print(" hours "); }
-		if (minutes != 0) { System.out.print(minutes); System.out.print(" minutes "); }
-		System.out.print(seconds); System.out.println(" seconds");
+	numSequences = 0;
+
+	int sequenceID;
+	int currentSequenceID = -1;
+
+	// The code to cache topic distributions 
+	//  takes an int-int hashmap as a mask to only update
+	//  the distributions for topics that have actually changed.
+	// Here we create a dummy count hash that has all the topics.
+	TIntIntHashMap allTopicsDummy = new TIntIntHashMap();
+	for (int topic = 0; topic < numTopics; topic++) {
+	    allTopicsDummy.put(topic, 1);
+	}
+
+	for (int state=0; state < numStates; state++) {
+	    recacheStateTopicDistribution(state, allTopicsDummy);
+	}
+
+	for (int doc = 0; doc < numDocs; doc++) {
+	    sampleState(doc, random, true);
+	}
+
+    }
+
+    private void recacheStateTopicDistribution(int state, TIntIntHashMap topicCounts) {
+	int[] currentStateTopicCounts = stateTopicCounts[state];
+	double[][] currentStateCache = topicLogGammaCache[state];
+	double[] cache;
+
+	for (int topic: topicCounts.keys()) {
+	    cache = currentStateCache[topic];
+	    
+	    cache[0] = 0.0;
+	    for (int i=1; i < cache.length; i++) {
+                    cache[i] =
+                        cache[ i-1 ] +
+                        Math.log( alpha[topic] + i - 1 + 
+				  currentStateTopicCounts[topic] );
+	    }
 
 	}
 
-	public void loadTopicsFromFile(String stateFilename) throws IOException {
-		BufferedReader in = 
-			new BufferedReader(new FileReader(new File(stateFilename)));
-
-		String line = null;
-		while ((line = in.readLine()) != null) {
-			if (line.startsWith("#")) {
-				continue;
-			}
-
-			String[] fields = line.split(" ");
-			int doc = Integer.parseInt(fields[0]);
-			int token = Integer.parseInt(fields[1]);
-			int type = Integer.parseInt(fields[2]);
-			int topic = Integer.parseInt(fields[4]);
-
-			// Now add the new topic
-
-			topics[doc][token] = topic;
-
-			stateTopicCounts[ documentStates[doc] ][ topic ]++;
-			stateTopicTotals[ documentStates[doc] ]++;
-
-			typeTopicCounts[ type ][ topic ]++;
-			tokensPerTopic[topic]++;
-		}
-		in.close();
-
-		System.out.println("loaded topics");
+	docLogGammaCache[state][0] = 0.0;
+	for (int i=1; i < docLogGammaCache[state].length; i++) {
+                docLogGammaCache[state][i] =
+                    docLogGammaCache[state][ i-1 ] +
+                    Math.log( alphaSum + i - 1 + 
+			      stateTopicTotals[state] );
 	}
-
-	public void loadAlphaFromFile(String alphaFilename) throws IOException {
-
-		// Now restore the saved alpha parameters
-		alphaSum = 0.0;
-
-		BufferedReader in = new BufferedReader(new FileReader(new File(alphaFilename)));
-		String line = null;
-		while ((line = in.readLine()) != null) {
-			if (line.equals("")) { continue; }
-
-			String[] fields = line.split("\\s+");
-
-			int topic = Integer.parseInt(fields[0]);
-			alpha[topic] = 1.0; // Double.parseDouble(fields[1]);
-			alphaSum += alpha[topic];
-
-			StringBuffer topicKey = new StringBuffer();
-			for (int i=2; i<fields.length; i++) {
-				topicKey.append(fields[i] + " ");
-			}
-			topicKeys[topic] = topicKey.toString();
-		}
-		in.close();
-
-		System.out.println("loaded alpha");
-	}
-
-	public void loadStatesFromFile(String stateFilename) throws IOException {
-
-		int doc = 0;
-
-		int state;
-
-		BufferedReader in = new BufferedReader(new FileReader(new File(stateFilename)));
-		String line = null;
-		while ((line = in.readLine()) != null) {
-
-			// We assume that the sequences are in the instance list
-			//  in order.
-
-			state = Integer.parseInt(line);
-			documentStates[doc] = state;
-
-			// Additional bookkeeping will be performed when we load sequence IDs, 
-			// so states MUST be loaded before sequences.
-
-			doc++;
-		}
-		in.close();
-
-		System.out.println("loaded states");
-	}
-
-
-	public void loadSequenceIDsFromFile(String sequenceFilename) throws IOException {
-
-		int doc = 0;
-
-		int sequenceID;
-		int currentSequenceID = -1;
-
-		BufferedReader in = new BufferedReader(new FileReader(new File(sequenceFilename)));
-		String line = null;
-		while ((line = in.readLine()) != null) {
-
-			// We assume that the sequences are in the instance list
-			//  in order.
-
-			sequenceID = Integer.parseInt(line);
-
-			documentSequenceIDs[doc] = sequenceID;
-
-			if (sequenceID == currentSequenceID) {
-				// this is a continuation of the previous sequence
-
-				stateStateTransitions[ documentStates[doc-1] ][ documentStates[doc] ]++;
-				stateTransitionTotals[ documentStates[doc-1] ]++;
-
-			}
-			else {
-				initialStateCounts[ documentStates[doc] ]++;
-				numSequences ++;
-			}
-
-			currentSequenceID = sequenceID;
-
-			doc++;
-
-		}
-		in.close();
-
-		System.out.println("loaded sequence");
-	}
-
-	private void sampleTopicsForOneDoc (int doc, Randoms r, boolean shouldSaveState) {
-
-		long startTime = System.currentTimeMillis();
-
-		FeatureSequence oneDocTokens = 
-			(FeatureSequence)instances.get(doc).getData();
-
-		int oldState = documentStates[doc];
-
-		int[] oneDocTopics = topics[doc];
-
-		Arrays.fill(docTopicCounts, 0);
-
-		int[] currentTypeTopicCounts;
-		int[] currentStateTopicCounts = stateTopicCounts[oldState];
-
-		int type;
-		double topicWeightsSum;
-		int docLen = oneDocTokens.getLength();
-
-		double tw;
-
-		// Iterate over the positions (words) in the document
-
-		for (int token = 0; token < docLen; token++) {
-			int topic = oneDocTopics[token];
-
-			currentStateTopicCounts[topic]--;
-			docTopicCounts[topic]++;
-		}
-
-		// At this point, we have shifted all of the counts for the tokens
-		// for this document out of the current state's stateTopicCounts.
-
-		int previousSequenceID = -1; 
-		if (doc > 0) {
-			previousSequenceID = documentSequenceIDs[ doc-1 ];
-		}
-
-		int sequenceID = documentSequenceIDs[ doc ];
-
-		int nextSequenceID = -1; 
-		if (doc < numDocs - 1) { 
-			nextSequenceID = documentSequenceIDs[ doc+1 ];
-		}
-
-		double[] stateLogLikelihoods = new double[numStates];
-		double[] samplingDistribution = new double[numStates];
-
-		int nextState, previousState;
-
-		// There are four cases:
-
-		if (previousSequenceID != sequenceID && sequenceID != nextSequenceID) {
-			// 1. This is a singleton document
-
-			initialStateCounts[oldState]--;
-
-			for (int state = 0; state < numStates; state++) {
-				stateLogLikelihoods[state] = Math.log( (initialStateCounts[state] + pi) /
-						(numSequences - 1 + sumPi) );
-			}
-		}	    
-		else if (previousSequenceID != sequenceID) {
-			// 2. This is the beginning of a sequence
-
-			initialStateCounts[oldState]--;
-
-			nextState = documentStates[doc+1];
-			stateStateTransitions[oldState][nextState]--;
-
-			assert(stateStateTransitions[oldState][nextState] >= 0);
-
-			stateTransitionTotals[oldState]--;
-
-			for (int state = 0; state < numStates; state++) {
-				stateLogLikelihoods[state] = Math.log( (stateStateTransitions[state][nextState] + gamma) * 
-						(initialStateCounts[state] + pi) /
-						(numSequences - 1 + sumPi) );
-				if (Double.isInfinite(stateLogLikelihoods[state])) {
-					System.out.println("infinite beginning");
-				}
-
-			}
-		}
-		else if (sequenceID != nextSequenceID) {
-			// 3. This is the end of a sequence
-
-			previousState = documentStates[doc-1];
-			stateStateTransitions[previousState][oldState]--;
-
-			assert(stateStateTransitions[previousState][oldState] >= 0);
-
-			for (int state = 0; state < numStates; state++) {
-				stateLogLikelihoods[state] = Math.log( stateStateTransitions[previousState][state] + gamma );
-
-				if (Double.isInfinite(stateLogLikelihoods[state])) {
-					System.out.println("infinite end");
-				}
-			}
-		}
-		else {
-			// 4. This is the middle of a sequence
-
-			nextState = documentStates[doc+1];
-			stateStateTransitions[oldState][nextState]--;
-			if (stateStateTransitions[oldState][nextState] < 0) {
-				System.out.println(printStateTransitions());
-				System.out.println(oldState + " -> " + nextState);
-
-				System.out.println(sequenceID);
-			}
-			assert (stateStateTransitions[oldState][nextState] >= 0);
-			stateTransitionTotals[oldState]--;
-
-			previousState = documentStates[doc-1];
-			stateStateTransitions[previousState][oldState]--;
-			assert(stateStateTransitions[previousState][oldState] >= 0);
-
-			for (int state = 0; state < numStates; state++) {
-
-				if (previousState == state && state == nextState) {		    
-					stateLogLikelihoods[state] =
-						Math.log( (stateStateTransitions[previousState][state] + gamma) *
-								(stateStateTransitions[state][nextState] + 1 + gamma) / 
-								(stateTransitionTotals[state] + 1 + gammaSum) );
-
-				}
-				else if (previousState == state) {
-					stateLogLikelihoods[state] =
-						Math.log( (stateStateTransitions[previousState][state] + gamma) *
-								(stateStateTransitions[state][nextState] + gamma) /
-								(stateTransitionTotals[state] + 1 + gammaSum) );
-				}
-				else {
-					stateLogLikelihoods[state] =
-						Math.log( (stateStateTransitions[previousState][state] + gamma) *
-								(stateStateTransitions[state][nextState] + gamma) /
-								(stateTransitionTotals[state] + gammaSum) );
-				}
-
-				if (Double.isInfinite(stateLogLikelihoods[state])) {
-					System.out.println("infinite middle");
-				}
-			}
-
-		}
-
-		double max = Double.NEGATIVE_INFINITY;
-
-		for (int state = 0; state < numStates; state++) {
-
-			stateLogLikelihoods[state] -= stateTransitionTotals[state] / 10;
-
-			currentStateTopicCounts = stateTopicCounts[state];
-
-			int totalTokens = 0;
-			for (int topic = 0; topic < numTopics; topic++) {
-
-				for (int j=0; j < docTopicCounts[topic]; j++) {
-					stateLogLikelihoods[state] +=
-						Math.log( (alpha[topic] + currentStateTopicCounts[topic] + j) /
-								(alphaSum + stateTopicTotals[state] + totalTokens) );
-
-					if (Double.isNaN(stateLogLikelihoods[state])) {
-						System.out.println("NaN: "  + alpha[topic] + " + " + currentStateTopicCounts[topic] + " + " + j + ") /\n" + 
-								"(" + alphaSum + " + " + stateTopicTotals[state] + " + " + totalTokens);
-					}
-
-					totalTokens++;
-				}
-			}
-
-			if (stateLogLikelihoods[state] > max) {
-				max = stateLogLikelihoods[state];
-			}
-
-		}
-
-		double sum = 0.0;
-		for (int state = 0; state < numStates; state++) {
-			if (Double.isNaN(samplingDistribution[state])) {
-				System.out.println(stateLogLikelihoods[state]);
-			}
-
-			assert(! Double.isNaN(samplingDistribution[state]));
-
-			samplingDistribution[state] = 
-				Math.exp(stateLogLikelihoods[state] - max);
-			sum += samplingDistribution[state];
-
-			if (Double.isNaN(samplingDistribution[state])) {
-				System.out.println(stateLogLikelihoods[state]);
-			}
-
-			assert(! Double.isNaN(samplingDistribution[state]));
-
-			if (doc % 100 == 0) {
-				//System.out.println(samplingDistribution[state]);
-			}
-		}
-
-		int newState = r.nextDiscrete(samplingDistribution, sum);
-
-		documentStates[doc] = newState;
-
-		for (int topic = 0; topic < numTopics; topic++) {
-			stateTopicCounts[newState][topic] += docTopicCounts[topic];
-		}
-		stateTopicTotals[newState] += oneDocTokens.getLength();
-
-
-		if (previousSequenceID != sequenceID && sequenceID != nextSequenceID) {
-			// 1. This is a singleton document
-
-			initialStateCounts[newState]++;
-		}	    
-		else if (previousSequenceID != sequenceID) {
-			// 2. This is the beginning of a sequence
-
-			initialStateCounts[newState]++;
-
-			nextState = documentStates[doc+1];
-			stateStateTransitions[newState][nextState]++;
-			stateTransitionTotals[newState]++;
-		}
-		else if (sequenceID != nextSequenceID) {
-			// 3. This is the end of a sequence
-
-			previousState = documentStates[doc-1];
-			stateStateTransitions[previousState][newState]++;
-		}
-		else {
-			// 4. This is the middle of a sequence
-
-			previousState = documentStates[doc-1];
-			stateStateTransitions[previousState][newState]++;
-
-			nextState = documentStates[doc+1];
-			stateStateTransitions[newState][nextState]++;
-			stateTransitionTotals[newState]++;
-
-		}
-
-
-
-		if (shouldSaveState) {
-
-			// Update the document-topic count histogram,
-			//  for dirichlet estimation
-			docLengthCounts[ docLen ]++;
-			for (int topic=0; topic < numTopics; topic++) {
-				topicDocCounts[topic][ oneDocTopicCounts[topic] ]++;
-			}
-		}
-	}
-
-	public String printStateTransitions() {
-		StringBuffer out = new StringBuffer();
-
-		IDSorter[] sortedTopics = new IDSorter[numTopics];
-
-		for (int s = 0; s < numStates; s++) {
-
-			for (int topic=0; topic<numTopics; topic++) {
-				sortedTopics[topic] = new IDSorter(topic, (double) stateTopicCounts[s][topic] / stateTopicTotals[s]);
-			}
-			Arrays.sort(sortedTopics);
-
-			out.append("\n" + s + "\n");
-
-			for (int i=0; i<4; i++) {
-				int topic = sortedTopics[i].getID();
-				out.append(stateTopicCounts[s][topic] + "\t" + topicKeys[topic] + "\n");
-			}
-
-			out.append("\n");
-
-			out.append("[" + initialStateCounts[s] + "/" + numSequences + "] ");
-
-			out.append("[" + stateTransitionTotals[s] + "]");
-			for (int t = 0; t < numStates; t++) {
-				out.append("\t");
-				if (s == t) {
-					out.append("[" + stateStateTransitions[s][t] + "]");
-				}
-				else {
-					out.append(stateStateTransitions[s][t]);
-				}
-			}
-			out.append("\n");
-		}
-
-		return out.toString();
-	}
-
-	public String stateTransitionMatrix() {
-		StringBuffer out = new StringBuffer();
-
-		for (int s = 0; s < numStates; s++) {
-			for (int t = 0; t < numStates; t++) {
-				out.append(stateStateTransitions[s][t]);
-				out.append("\t");
-			}
-			out.append("\n");
-		}
-
-		return out.toString();
-	}
-
-	public String stateTopics() {
-		StringBuffer out = new StringBuffer();
-
-		for (int s = 0; s < numStates; s++) {
-			for (int topic=0; topic<numTopics; topic++) {
-				out.append(stateTopicCounts[s][topic] + "\t");
-			}
-			out.append("\n");
-		}
-
-		return out.toString();
-	}
-
-	public String printTopWords (int numWords, boolean useNewLines, File file) throws IOException {
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-		out.println(printTopWords(numWords, useNewLines));
+    }
+
+    public void sample() throws IOException {
+
+	long startTime = System.currentTimeMillis();
+		
+	for (int iterations = 1; iterations <= numIterations; iterations++) {
+	    long iterationStart = System.currentTimeMillis();
+
+	    //System.out.println (printStateTransitions());
+	    for (int doc = 0; doc < numDocs; doc++) {
+		sampleState (doc, random, false);
+		
+		//if (doc % 10000 == 0) { System.out.println (printStateTransitions()); }
+	    }
+
+	    System.out.print((System.currentTimeMillis() - iterationStart) + " ");
+	    
+	    if (iterations % 10 == 0) {
+		System.out.println ("<" + iterations + "> ");
+		
+		PrintWriter out = 
+		    new PrintWriter(new BufferedWriter(new FileWriter("state_state_matrix." + iterations)));
+		out.print(stateTransitionMatrix());
 		out.close();
 
-		return null; 
+		out = new PrintWriter(new BufferedWriter(new FileWriter("state_topics." + iterations)));
+		out.print(stateTopics());
+		out.close();
+		
+		if (iterations % 10 == 0) {
+		    out = new PrintWriter(new BufferedWriter(new FileWriter("states." + iterations)));
+
+		    for (int doc = 0; doc < documentStates.length; doc++) {
+			out.println(documentStates[doc]);
+		    }
+
+		    out.close();
+		}
+	    }
+	    System.out.flush();
+	}
+	
+	long seconds = Math.round((System.currentTimeMillis() - startTime)/1000.0);
+	long minutes = seconds / 60;	seconds %= 60;
+	long hours = minutes / 60;	minutes %= 60;
+	long days = hours / 24;	hours %= 24;
+	System.out.print ("\nTotal time: ");
+	if (days != 0) { System.out.print(days); System.out.print(" days "); }
+	if (hours != 0) { System.out.print(hours); System.out.print(" hours "); }
+	if (minutes != 0) { System.out.print(minutes); System.out.print(" minutes "); }
+	System.out.print(seconds); System.out.println(" seconds");
+	
+    }
+    
+    public void loadTopicsFromFile(String stateFilename) throws IOException {
+	BufferedReader in;
+	if (stateFilename.endsWith(".gz")) {
+	    in = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(stateFilename))));
+	}
+	else {
+	    in = new BufferedReader(new FileReader(new File(stateFilename)));
 	}
 
-	public String printTopWords (int numWords, boolean useNewLines) {
+	numDocs = 0;
 
-		class WordProb implements Comparable {
-			int wi; double p;
-			public WordProb (int wi, double p) { this.wi = wi; this.p = p; }
-			public final int compareTo (Object o2) {
-				if (p > ((WordProb)o2).p)
-					return -1;
-				else if (p == ((WordProb)o2).p)
-					return 0;
-				else return 1;
-			}
-		}
+	String line = null;
+	while ((line = in.readLine()) != null) {
+	    if (line.startsWith("#")) {
+		continue;
+	    }
+	    
+	    String[] fields = line.split(" ");
+	    int doc = Integer.parseInt(fields[0]);
+	    int token = Integer.parseInt(fields[1]);
+	    int type = Integer.parseInt(fields[2]);
+	    int topic = Integer.parseInt(fields[4]);
 
-		StringBuffer output = new StringBuffer();
+	    // Now add the new topic
 
-		WordProb[] wp = new WordProb[numTypes];
-		for (int ti = 0; ti < numTopics; ti++) {
-			for (int wi = 0; wi < numTypes; wi++)
-				wp[wi] = new WordProb (wi, ((double)typeTopicCounts[wi][ti]) / tokensPerTopic[ti]);
-			Arrays.sort (wp);
-			if (useNewLines) {
-				output.append ("\nTopic " + ti + "\n");
-				for (int i = 0; i < numWords; i++)
-					output.append (instances.getDataAlphabet().lookupObject(wp[i].wi).toString() + "\t" +
-							formatter.format(wp[i].p) + "\n");
-			} else {
-				output.append (ti+"\t" + formatter.format(alpha[ti]) + "\t");
-				for (int i = 0; i < numWords; i++)
-					output.append (instances.getDataAlphabet().lookupObject(wp[i].wi).toString() + " ");
-				output.append("\n");
-			}
-		}
+	    if (! documentTopics.containsKey(doc)) {
+		documentTopics.put(doc, new TIntIntHashMap());
+	    }
 
-		return output.toString();
+	    if (documentTopics.get(doc).containsKey(topic)) {
+		documentTopics.get(doc).increment(topic);
+	    }
+	    else {
+		documentTopics.get(doc).put(topic, 1);
+	    }
+
+	    if (doc >= numDocs) { numDocs = doc + 1; }
+	}
+	in.close();
+
+	System.out.println("loaded topics, " + numDocs + " documents");
+    }
+
+    public void loadAlphaFromFile(String alphaFilename) throws IOException {
+
+	// Now restore the saved alpha parameters
+	alphaSum = 0.0;
+	
+	BufferedReader in = new BufferedReader(new FileReader(new File(alphaFilename)));
+	String line = null;
+	while ((line = in.readLine()) != null) {
+	    if (line.equals("")) { continue; }
+
+            String[] fields = line.split("\\s+");
+
+	    int topic = Integer.parseInt(fields[0]);
+	    alpha[topic] = 1.0; // Double.parseDouble(fields[1]);
+	    alphaSum += alpha[topic];
+
+	    StringBuffer topicKey = new StringBuffer();
+	    for (int i=2; i<fields.length; i++) {
+		topicKey.append(fields[i] + " ");
+	    }
+	    topicKeys[topic] = topicKey.toString();
+	}
+	in.close();
+
+	System.out.println("loaded alpha");
+    }
+
+    /*
+    public void loadStatesFromFile(String stateFilename) throws IOException {
+
+	int doc = 0;
+
+        int state;
+
+        BufferedReader in = new BufferedReader(new FileReader(new File(stateFilename)));
+        String line = null;
+        while ((line = in.readLine()) != null) {
+
+            // We assume that the sequences are in the instance list
+            //  in order.
+
+            state = Integer.parseInt(line);
+	    documentStates[doc] = state;
+
+	    // Additional bookkeeping will be performed when we load sequence IDs, 
+	    // so states MUST be loaded before sequences.
+
+	    doc++;
+	}
+	in.close();
+
+	System.out.println("loaded states");
+    }
+    */
+    
+
+    public void loadSequenceIDsFromFile(String sequenceFilename) throws IOException {
+
+	int doc = 0;
+
+	int sequenceID;
+	int currentSequenceID = -1;
+
+        BufferedReader in = new BufferedReader(new FileReader(new File(sequenceFilename)));
+        String line = null;
+        while ((line = in.readLine()) != null) {
+
+	    // We assume that the sequences are in the instance list
+	    //  in order.
+
+	    String[] fields = line.split("\\t");
+
+	    sequenceID = Integer.parseInt(fields[0]);
+
+	    documentSequenceIDs[doc] = sequenceID;
+
+	    if (sequenceID != currentSequenceID) {
+		numSequences ++;
+	    }
+
+	    currentSequenceID = sequenceID;
+
+	    doc++;
+	}
+	in.close();
+
+	if (doc != numDocs) { System.out.println("Warning: number of documents with topics (" + numDocs + ") is not equal to number of docs with sequence IDs (" + doc + ")"); }
+
+	System.out.println("loaded sequence");
+    }
+
+    private void sampleState (int doc, Randoms r, boolean initializing) {
+
+	/*
+	if (doc % 10000 == 0) {
+	    if (initializing) {
+		System.out.println("initializing doc " + doc);
+	    }
+	    else {
+		System.out.println("sampling doc " + doc);
+	    }
+	}
+	*/
+
+	long startTime = System.currentTimeMillis();
+	
+	// It's possible this document contains no words, 
+	//  in which case it has no topics, and no entry in the
+	//  documentTopics hash.
+	if (! documentTopics.containsKey(doc)) { return; }
+
+        TIntIntHashMap topicCounts = documentTopics.get(doc);
+
+	// if we are in initializing mode, this is meaningless,
+	//  but it won't hurt.
+	int oldState = documentStates[doc];
+	int[] currentStateTopicCounts = stateTopicCounts[oldState];
+
+	// Look at the document features (topics).
+	//  If we're not in initializing mode, reduce the topic counts
+	//  of the current (old) state.
+	
+	int docLength = 0;
+	
+	for (int topic: topicCounts.keys()) {
+	    int topicCount = topicCounts.get(topic);
+	    if (! initializing) {
+		currentStateTopicCounts[topic] -= topicCount;
+	    }
+	    docLength += topicCount;
 	}
 
-	public void printDocumentTopics (File f) throws IOException {
-		printDocumentTopics (new PrintWriter (new FileWriter (f)));
-	}
-
-	public void printDocumentTopics (PrintWriter pw) {
-
-		StringBuffer output = new StringBuffer();
-		output.append("#doc name [topic_counts]\n");
-		output.append("#");
-		for (int topic=0; topic < numTopics; topic++) {
-			output.append(alpha[topic] + "\t");
-		}
-		pw.println(output);
-
-		int docLen;
-		int[] topicCount = new int[numTopics];
-		for (int doc = 0; doc < topics.length; doc++) {
-
-			output = new StringBuffer();
-
-			for (int token = 0; token < topics[doc].length; token++) {
-				topicCount[ topics[doc][token] ]++;
-			}
-
-			output.append(doc + "\t" + 
-					instances.get(doc).getName() + "\t");
-			for (int topic=0; topic < numTopics; topic++) {
-				output.append(topicCount[topic] + "\t");
-			}
-
-			pw.println(output);
-
-			Arrays.fill(topicCount, 0);
-		}
-	}
-
-	public void printState (File f) throws IOException {
-		printState (new PrintWriter (new FileWriter(f)));
-	}
-
-	public void printState (PrintWriter pw) {
-		Alphabet a = instances.getDataAlphabet();
-		pw.println ("#doc pos typeindex type topic");
-		for (int di = 0; di < topics.length; di++) {
-			FeatureSequence fs = (FeatureSequence) instances.get(di).getData();
-			for (int token = 0; token < topics[di].length; token++) {
-				int type = fs.getIndexAtPosition(token);
-				pw.print(di); pw.print(' ');
-				pw.print(token); pw.print(' ');
-				pw.print(type); pw.print(' ');
-				pw.print(a.lookupObject(type)); pw.print(' ');
-				pw.print(topics[di][token]); pw.println();
-			}
-		}
-		pw.close();
-	}
-
-	public void write (File f) {
-		try {
-			ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream(f));
-			oos.writeObject(this);
-			oos.close();
-		}
-		catch (IOException e) {
-			System.err.println("Exception writing file " + f + ": " + e);
-		}
+	if (! initializing) {
+	    stateTopicTotals[oldState] -= docLength;
+	    recacheStateTopicDistribution(oldState, topicCounts);
 	}
 
 
-	// Serialization
-
-	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 0;
-	private static final int NULL_INTEGER = -1;
-
-	private void writeObject (ObjectOutputStream out) throws IOException {
-		out.writeInt (CURRENT_SERIAL_VERSION);
-		out.writeObject (instances);
-		out.writeInt (numTopics);
-		out.writeObject (alpha);
-		out.writeDouble (beta);
-		out.writeDouble (betaSum);
-		for (int di = 0; di < topics.length; di ++)
-			for (int token = 0; token < topics[di].length; token++)
-				out.writeInt (topics[di][token]);
-		/*for (int di = 0; di < topics.length; di ++)
-	  for (int ti = 0; ti < numTopics; ti++)
-	  out.writeInt (docTopicCounts[di][ti]);*/
-		for (int fi = 0; fi < numTypes; fi++)
-			for (int ti = 0; ti < numTopics; ti++)
-				out.writeInt (typeTopicCounts[fi][ti]);
-		for (int ti = 0; ti < numTopics; ti++)
-			out.writeInt (tokensPerTopic[ti]);
+	int previousSequenceID = -1;
+	if (doc > 0) {
+	    previousSequenceID = documentSequenceIDs[ doc-1 ];
 	}
 
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int featuresLength;
-		int version = in.readInt ();
-		instances = (InstanceList) in.readObject ();
-		numTopics = in.readInt();
-		alpha = (double[]) in.readObject();
-		beta = in.readDouble();
-		betaSum = in.readDouble();
-		int numDocs = instances.size();
-		topics = new int[numDocs][];
-		for (int di = 0; di < instances.size(); di++) {
-			int docLen = ((FeatureSequence)instances.get(di).getData()).getLength();
-			topics[di] = new int[docLen];
-			for (int token = 0; token < docLen; token++)
-				topics[di][token] = in.readInt();
+        int sequenceID = documentSequenceIDs[ doc ];
+
+	int nextSequenceID = -1; 
+	if (! initializing && 
+	    doc < numDocs - 1) { 
+	    nextSequenceID = documentSequenceIDs[ doc+1 ];
+	}
+
+	double[] stateLogLikelihoods = new double[numStates];
+	double[] samplingDistribution = new double[numStates];
+
+	int nextState, previousState;
+
+	if (initializing) {
+	    // Initializing the states is the same as sampling them,
+	    //  but we only look at the previous state and we don't decrement
+	    //  any counts.
+
+	    if (previousSequenceID != sequenceID) {
+		// New sequence, start from scratch
+
+		for (int state = 0; state < numStates; state++) {
+                    stateLogLikelihoods[state] = Math.log( (initialStateCounts[state] + pi) /
+                                                           (numSequences - 1 + sumPi) );
+                }
+	    }
+	    else {
+		// Continuation
+                previousState = documentStates[ doc-1 ];
+
+                for (int state = 0; state < numStates; state++) {
+                    stateLogLikelihoods[state] = Math.log( stateStateTransitions[previousState][state] + gamma );
+
+                    if (Double.isInfinite(stateLogLikelihoods[state])) {
+                        System.out.println("infinite end");
+                    }
+                }
+	    }
+	}
+	else {
+
+	    // There are four cases:
+
+	    if (previousSequenceID != sequenceID && sequenceID != nextSequenceID) {
+		// 1. This is a singleton document
+		
+		initialStateCounts[oldState]--;
+		
+		for (int state = 0; state < numStates; state++) {
+		    stateLogLikelihoods[state] = Math.log( (initialStateCounts[state] + pi) /
+							   (numSequences - 1 + sumPi) );
 		}
+	    }	    
+	    else if (previousSequenceID != sequenceID) {
+		// 2. This is the beginning of a sequence
+		
+		initialStateCounts[oldState]--;
+		
+		nextState = documentStates[doc+1];
+		stateStateTransitions[oldState][nextState]--;
+		
+		assert(stateStateTransitions[oldState][nextState] >= 0);
+		
+		stateTransitionTotals[oldState]--;
+		
+		for (int state = 0; state < numStates; state++) {
+		    stateLogLikelihoods[state] = Math.log( (stateStateTransitions[state][nextState] + gamma) * 
+							   (initialStateCounts[state] + pi) /
+							   (numSequences - 1 + sumPi) );
+		    if (Double.isInfinite(stateLogLikelihoods[state])) {
+			System.out.println("infinite beginning");
+		    }
+		    
+		}
+	    }
+	    else if (sequenceID != nextSequenceID) {
+		// 3. This is the end of a sequence
+		
+		previousState = documentStates[doc-1];
+		stateStateTransitions[previousState][oldState]--;
+		
+		assert(stateStateTransitions[previousState][oldState] >= 0);
+		
+		for (int state = 0; state < numStates; state++) {
+		    stateLogLikelihoods[state] = Math.log( stateStateTransitions[previousState][state] + gamma );
+		    
+		    if (Double.isInfinite(stateLogLikelihoods[state])) {
+			System.out.println("infinite end");
+		    }
+		}
+	    }
+	    else {
+		// 4. This is the middle of a sequence
+		
+		nextState = documentStates[doc+1];
+		stateStateTransitions[oldState][nextState]--;
+		if (stateStateTransitions[oldState][nextState] < 0) {
+		    System.out.println(printStateTransitions());
+		    System.out.println(oldState + " -> " + nextState);
+		    
+		    System.out.println(sequenceID);
+		}
+		assert (stateStateTransitions[oldState][nextState] >= 0);
+		stateTransitionTotals[oldState]--;
+		
+		previousState = documentStates[doc-1];
+		stateStateTransitions[previousState][oldState]--;
+		assert(stateStateTransitions[previousState][oldState] >= 0);
+		
+		for (int state = 0; state < numStates; state++) {
+		    
+		    if (previousState == state && state == nextState) {		    
+			stateLogLikelihoods[state] =
+			    Math.log( (stateStateTransitions[previousState][state] + gamma) *
+				      (stateStateTransitions[state][nextState] + 1 + gamma) / 
+				      (stateTransitionTotals[state] + 1 + gammaSum) );
+			
+		    }
+		    else if (previousState == state) {
+			stateLogLikelihoods[state] =
+			    Math.log( (stateStateTransitions[previousState][state] + gamma) *
+				      (stateStateTransitions[state][nextState] + gamma) /
+				      (stateTransitionTotals[state] + 1 + gammaSum) );
+		    }
+		    else {
+			stateLogLikelihoods[state] =
+			    Math.log( (stateStateTransitions[previousState][state] + gamma) *
+				      (stateStateTransitions[state][nextState] + gamma) /
+				      (stateTransitionTotals[state] + gammaSum) );
+		    }
+		    
+		    if (Double.isInfinite(stateLogLikelihoods[state])) {
+			System.out.println("infinite middle: " + doc);
+			System.out.println(previousState + " -> " + 
+					   state + " -> " + nextState);
+			System.out.println(stateStateTransitions[previousState][state] + " -> " +
+					   stateStateTransitions[state][nextState] + " / " + 
+					   stateTransitionTotals[state]);
+			
+		    }
+		}
+		
+	    }
+	}
+
+	double max = Double.NEGATIVE_INFINITY;
+
+	for (int state = 0; state < numStates; state++) {
+	    
+	    stateLogLikelihoods[state] -= stateTransitionTotals[state] / 10;
+	    
+	    currentStateTopicCounts = stateTopicCounts[state];
+	    double[][] currentStateLogGammaCache = topicLogGammaCache[state];
+
+	    int totalTokens = 0;
+	    for (int topic: topicCounts.keys()) {
+		int count = topicCounts.get(topic);
+
+		// Cached Sampling Distribution
+		stateLogLikelihoods[state] += currentStateLogGammaCache[topic][count];
+
+		
 		/*
-	  docTopicCounts = new int[numDocs][numTopics];
-	  for (int di = 0; di < instances.size(); di++)
-	  for (int ti = 0; ti < numTopics; ti++)
-	  docTopicCounts[di][ti] = in.readInt();
-		 */
-		int numTypes = instances.getDataAlphabet().size();
-		typeTopicCounts = new int[numTypes][numTopics];
-		for (int fi = 0; fi < numTypes; fi++)
-			for (int ti = 0; ti < numTopics; ti++)
-				typeTopicCounts[fi][ti] = in.readInt();
-		tokensPerTopic = new int[numTopics];
-		for (int ti = 0; ti < numTopics; ti++)
-			tokensPerTopic[ti] = in.readInt();
-	}
+		  // Hybrid version
 
-
-	public double printTopicLabels() {
-		int doc, level, label, topic, token, type;
-		int[] docTopics;
-
-		int[][] topicLabelCounts = new int[ numTopics ][ instances.getTargetAlphabet().size() ];
-		int[] topicCounts = new int[ numTopics ];
-		int[] labelCounts = new int[ instances.getTargetAlphabet().size() ];
-		int total = 0;
-
-		for (doc=0; doc < instances.size(); doc++) {
-			label = instances.get(doc).getLabeling().getBestIndex();
-			docTopics = topics[doc];
-
-			for (token = 0; token < docTopics.length; token++) {
-				topic = docTopics[token];
-				topicLabelCounts[ topic ][ label ]++;
-				topicCounts[topic]++;
-				labelCounts[label]++;
-				total++;
-			}
+		if (count < currentStateLogGammaCache[topic].length) {
+		    stateLogLikelihoods[state] += currentStateLogGammaCache[topic][count];
 		}
+		else {
+		    int i = currentStateLogGammaCache[topic].length - 1;
+
+		    stateLogLikelihoods[state] += 
+			currentStateLogGammaCache[topic][ i ];
+
+		    for (; i < count; i++) {
+			stateLogLikelihoods[state] +=
+			    Math.log(alpha[topic] + currentStateTopicCounts[topic] + i);
+		    }
+		}
+		*/
 
 		/*
+		for (int j=0; j < count; j++) {
+		    stateLogLikelihoods[state] +=
+			Math.log( (alpha[topic] + currentStateTopicCounts[topic] + j) /
+				  (alphaSum + stateTopicTotals[state] + totalTokens) );
 
-        IDSorter[] wp = new IDSorter[numTypes];
-
-        for (topic = 0; topic < numTopics; topic++) {
-
-            for (type = 0; type < numTypes; type++) {
-                wp[type] = new IDSorter (type, (((double) typeTopicCounts[type][topic]) /
-                                                tokensPerTopic[topic]));
-            }
-            Arrays.sort (wp);
-
-            StringBuffer terms = new StringBuffer();
-            for (int i = 0; i < 8; i++) {
-                terms.append(instances.getDataAlphabet().lookupObject(wp[i].id));
-                terms.append(" ");
-            }
-
-            System.out.println(terms);
-            for (label = 0; label < topicLabelCounts[topic].length; label++) {
-                System.out.println(topicLabelCounts[ topic ][ label ] + "\t" +
-                                   instances.getTargetAlphabet().lookupObject(label));
-            }
-            System.out.println();
-        }
-
-		 */
-
-		double topicEntropy = 0.0;
-		double labelEntropy = 0.0;
-		double jointEntropy = 0.0;
-		double p;
-		double log2 = Math.log(2);
-
-		for (topic = 0; topic < topicCounts.length; topic++) {
-			if (topicCounts[topic] == 0) { continue; }
-			p = (double) topicCounts[topic] / total;
-			topicEntropy -= p * Math.log(p) / log2;
+		    if (Double.isNaN(stateLogLikelihoods[state])) {
+			System.out.println("NaN: "  + alpha[topic] + " + " +
+					   currentStateTopicCounts[topic] + " + " + 
+					   j + ") /\n" + 
+					   "(" + alphaSum + " + " + 
+					   stateTopicTotals[state] + " + " + totalTokens);
+		    }
+		    
+		    totalTokens++;
 		}
-
-		for (label = 0; label < labelCounts.length; label++) {
-			if (labelCounts[label] == 0) { continue; }
-			p = (double) labelCounts[label] / total;
-			labelEntropy -= p * Math.log(p) / log2;
+		*/
+	    }
+	    
+	    // Cached Sampling Distribution
+	    stateLogLikelihoods[state] -= docLogGammaCache[state][ docLength ];
+		
+	    /*
+	    // Hybrid version
+	    if (docLength < docLogGammaCache[state].length) {
+		stateLogLikelihoods[state] -= docLogGammaCache[state][docLength];
+	    }
+	    else {
+		int i = docLogGammaCache[state].length - 1;
+		
+		stateLogLikelihoods[state] -=
+		    docLogGammaCache[state][ i ];
+		
+		for (; i < docLength; i++) {
+		    stateLogLikelihoods[state] -=
+			Math.log(alphaSum + stateTopicTotals[state] + i);
+		    
 		}
+	    }
+	    */
 
-		for (topic = 0; topic < topicCounts.length; topic++) {
-			for (label = 0; label < labelCounts.length; label++) {
-				if (topicLabelCounts[ topic ][ label ] == 0) { continue; }
-				p = (double) topicLabelCounts[ topic ][ label ] / total;
-				jointEntropy -= p * Math.log(p) / log2;
-			}
-		}
-
-		return topicEntropy + labelEntropy - jointEntropy;
-
+	    if (stateLogLikelihoods[state] > max) {
+		max = stateLogLikelihoods[state];
+	    }
 
 	}
+	
+	double sum = 0.0;
+	for (int state = 0; state < numStates; state++) {
+	    if (Double.isNaN(samplingDistribution[state])) {
+		System.out.println(stateLogLikelihoods[state]);
+	    }
 
-	public double empiricalLikelihood(int numSamples, InstanceList testing) {
-		double[][] likelihoods = new double[ testing.size() ][ numSamples ];
-		double[] multinomial = new double[numTypes];
-		double[] topicDistribution, currentSample, currentWeights;
-		Dirichlet topicPrior = new Dirichlet(alpha);       
+	    assert(! Double.isNaN(samplingDistribution[state]));
 
-		int sample, doc, topic, type, token, seqLen;
-		FeatureSequence fs;
+	    samplingDistribution[state] = 
+		Math.exp(stateLogLikelihoods[state] - max);
+	    sum += samplingDistribution[state];
 
-		for (sample = 0; sample < numSamples; sample++) {
-			topicDistribution = topicPrior.nextDistribution();
-			Arrays.fill(multinomial, 0.0);
+	    if (Double.isNaN(samplingDistribution[state])) {
+		System.out.println(stateLogLikelihoods[state]);
+	    }
 
-			for (topic = 0; topic < numTopics; topic++) {
-				for (type=0; type<numTypes; type++) {
-					multinomial[type] += 
-						topicDistribution[topic] *
-						(beta + typeTopicCounts[type][topic]) /
-						(betaSum + tokensPerTopic[topic]);
-				}
-			}
+	    assert(! Double.isNaN(samplingDistribution[state]));
 
-			// Convert to log probabilities
-			for (type=0; type<numTypes; type++) {
-				assert(multinomial[type] > 0.0);
-				multinomial[type] = Math.log(multinomial[type]);
-			}
-
-			for (doc=0; doc<testing.size(); doc++) {
-				fs = (FeatureSequence) testing.get(doc).getData();
-				seqLen = fs.getLength();
-
-				for (token = 0; token < seqLen; token++) {
-					type = fs.getIndexAtPosition(token);
-					likelihoods[doc][sample] += multinomial[type];
-				}
-			}
-		}
-
-		double averageLogLikelihood = 0.0;
-		double logNumSamples = Math.log(numSamples);
-		for (doc=0; doc<testing.size(); doc++) {
-			double max = Double.NEGATIVE_INFINITY;
-			for (sample = 0; sample < numSamples; sample++) {
-				if (likelihoods[doc][sample] > max) {
-					max = likelihoods[doc][sample];
-				}
-			}
-
-			double sum = 0.0;
-			for (sample = 0; sample < numSamples; sample++) {
-				sum += Math.exp(likelihoods[doc][sample] - max);
-			}
-
-			averageLogLikelihood += Math.log(sum) + max - logNumSamples;
-		}
-
-		return averageLogLikelihood;
-
+	    if (doc % 100 == 0) {
+		//System.out.println(samplingDistribution[state]);
+	    }
 	}
 
-	public double modelLogLikelihood() {
-		double logLikelihood = 0.0;
-		int nonZeroTopics;
+	int newState = r.nextDiscrete(samplingDistribution, sum);
 
-		// The likelihood of the model is a combination of a 
-		// Dirichlet-multinomial for the words in each topic
-		// and a Dirichlet-multinomial for the topics in each
-		// document.
+	documentStates[doc] = newState;
 
-		// The likelihood function of a dirichlet multinomial is
-		//   Gamma( sum_i alpha_i )  prod_i Gamma( alpha_i + N_i )
-		//  prod_i Gamma( alpha_i )   Gamma( sum_i (alpha_i + N_i) )
+	for (int topic = 0; topic < numTopics; topic++) {
+	    stateTopicCounts[newState][topic] += topicCounts.get(topic);
+	}
+	stateTopicTotals[newState] += docLength;
+	recacheStateTopicDistribution(newState, topicCounts);
 
-		// So the log likelihood is 
-		//  logGamma ( sum_i alpha_i ) - logGamma ( sum_i (alpha_i + N_i) ) + 
-		//   sum_i [ logGamma( alpha_i + N_i) - logGamma( alpha_i ) ]
 
-		// Do the documents first
-
-		int[] topicCounts = new int[numTopics];
-		double[] topicLogGammas = new double[numTopics];
-		int[] docTopics;
-
-		for (int topic=0; topic < numTopics; topic++) {
-			topicLogGammas[ topic ] = Dirichlet.logGammaStirling(alpha[topic]);
-		}
-
-		for (int doc=0; doc < topics.length; doc++) {
-
-			docTopics = topics[doc];
-
-			for (int token=0; token < docTopics.length; token++) {
-				topicCounts[ docTopics[token] ]++;
-			}
-
-			for (int topic=0; topic < numTopics; topic++) {
-				if (topicCounts[topic] > 0) {
-					logLikelihood += (Dirichlet.logGammaStirling(alpha[topic] + topicCounts[topic]) -
-							topicLogGammas[ topic ]);
-				}
-			}
-
-			// subtract the (count + parameter) sum term
-			logLikelihood -= Dirichlet.logGammaStirling(alphaSum + docTopics.length);
-
-			Arrays.fill(topicCounts, 0);
-		}
-
-		// add the parameter sum term
-		logLikelihood += topics.length * Dirichlet.logGammaStirling(alphaSum);
-
-		// And the topics
-
-		// Count the number of type-topic pairs
-		int nonZeroTypeTopics = 0;
-
-		for (int type=0; type < numTypes; type++) {
-			// reuse this array as a pointer
-			topicCounts = typeTopicCounts[type];
-
-			for (int topic=0; topic < numTopics; topic++) {
-				if (topicCounts[topic] > 0) {
-					nonZeroTypeTopics++;
-					logLikelihood += Dirichlet.logGammaStirling(beta + topicCounts[topic]);
-				}
-			}
-		}
-
-		for (int topic=0; topic < numTopics; topic++) {
-			logLikelihood -= 
-				Dirichlet.logGammaStirling( (beta * numTopics) +
-						tokensPerTopic[ topic ] );
-		}
-
-		logLikelihood += 
-			(Dirichlet.logGammaStirling(beta * numTopics)) -
-			(Dirichlet.logGammaStirling(beta) * nonZeroTypeTopics);
-
-		return logLikelihood;
+	if (initializing) {
+	    // If we're initializing the states, don't bother
+	    //  looking at the next state.
+	    
+	    if (previousSequenceID != sequenceID) {
+		initialStateCounts[newState]++;
+	    }
+	    else {
+		previousState = documentStates[doc-1];
+                stateStateTransitions[previousState][newState]++;
+		stateTransitionTotals[newState]++;
+	    }
+	}
+	else {
+	    if (previousSequenceID != sequenceID && sequenceID != nextSequenceID) {
+		// 1. This is a singleton document
+		
+		initialStateCounts[newState]++;
+	    }	    
+	    else if (previousSequenceID != sequenceID) {
+		// 2. This is the beginning of a sequence
+		
+		initialStateCounts[newState]++;
+		
+		nextState = documentStates[doc+1];
+		stateStateTransitions[newState][nextState]++;
+		stateTransitionTotals[newState]++;
+	    }
+	    else if (sequenceID != nextSequenceID) {
+		// 3. This is the end of a sequence
+		
+		previousState = documentStates[doc-1];
+		stateStateTransitions[previousState][newState]++;
+	    }
+	    else {
+		// 4. This is the middle of a sequence
+		
+		previousState = documentStates[doc-1];
+		stateStateTransitions[previousState][newState]++;
+		
+		nextState = documentStates[doc+1];
+		stateStateTransitions[newState][nextState]++;
+		stateTransitionTotals[newState]++;
+		
+	    }
 	}
 
-	// Recommended to use mallet/bin/vectors2topics instead.
-	public static void main (String[] args) throws IOException {
+    }
 
-		InstanceList training = //InstanceList.load (new File(args[0]));
-			InstanceList.load(new File("/iesl/canvas/mimno/employment/all-instances/resumes.mallet"));
+    public String printStateTransitions() {
+	StringBuffer out = new StringBuffer();
 
-		int numTopics = args.length > 1 ? Integer.parseInt(args[1]) : 500;
+	IDSorter[] sortedTopics = new IDSorter[numTopics];
 
-		InstanceList testing = args.length > 2 ? InstanceList.load (new File(args[2])) : null;
+	for (int s = 0; s < numStates; s++) {
+	    
+	    for (int topic=0; topic<numTopics; topic++) {
+		sortedTopics[topic] = new IDSorter(topic, (double) stateTopicCounts[s][topic] / stateTopicTotals[s]);
+	    }
+	    Arrays.sort(sortedTopics);
+	    
+	    out.append("\n" + s + "\n");
 
-		MultinomialHMM hmm = new MultinomialHMM (numTopics);
+	    for (int i=0; i<4; i++) {
+		int topic = sortedTopics[i].getID();
+		out.append(stateTopicCounts[s][topic] + "\t" + topicKeys[topic] + "\n");
+	    }
+	    
+	    out.append("\n");
 
-		hmm.setTrainingInstances(training);
-		hmm.setGamma(1.0);
-		hmm.setNumStates(150);
+	    out.append("[" + initialStateCounts[s] + "/" + numSequences + "] ");
 
-		hmm.setRandomSeed(1);
-
-		hmm.initialize();
-		//hmm.loadStatesFromFile("/iesl/canvas/mimno/mallet/saved.state");
-		hmm.loadTopicsFromFile("/iesl/canvas/mimno/employment/all-instances/500.state");
-		hmm.loadAlphaFromFile("/iesl/canvas/mimno/employment/all-instances/500.keys");
-		hmm.loadSequenceIDsFromFile("/iesl/canvas/mimno/employment/all-instances/resumes.resume_ids");
-
-		hmm.estimate();
-	}
-
-
-	public class IDSorter implements Comparable {
-		int id; double p;
-		public IDSorter (int id, double p) { this.id = id; this.p = p; }
-		public IDSorter (int id, int p) { this.id = id; this.p = p; }
-		public final int compareTo (Object o2) {
-			if (p > ((IDSorter) o2).p)
-				return -1;
-			else if (p == ((IDSorter) o2).p)
-				return 0;
-			else return 1;
+	    out.append("[" + stateTransitionTotals[s] + "]");
+	    for (int t = 0; t < numStates; t++) {
+		out.append("\t");
+		if (s == t) {
+		    out.append("[" + stateStateTransitions[s][t] + "]");
 		}
-		public int getID() {return id;}
-		public double getWeight() {return p;}
+		else {
+		    out.append(stateStateTransitions[s][t]);
+		}
+	    }
+	    out.append("\n");
 	}
 
+	return out.toString();
+    }
+
+    public String stateTransitionMatrix() {
+	StringBuffer out = new StringBuffer();
+
+	for (int s = 0; s < numStates; s++) {
+	    for (int t = 0; t < numStates; t++) {
+		out.append(stateStateTransitions[s][t]);
+		out.append("\t");
+	    }
+	    out.append("\n");
+	}
+
+	return out.toString();
+    }
+
+    public String stateTopics() {
+	StringBuffer out = new StringBuffer();
+
+	for (int s = 0; s < numStates; s++) {
+	    for (int topic=0; topic<numTopics; topic++) {
+		out.append(stateTopicCounts[s][topic] + "\t");
+	    }
+	    out.append("\n");
+	}
+
+	return out.toString();
+    }
+
+    public static void main (String[] args) throws IOException {
+
+	if (args.length != 4) {
+	    System.err.println("Usage: MultinomialHMM [num topics] [lda state file] [lda keys file] [sequence metadata file]");
+	    System.exit(0);
+	}
+
+	int numTopics = Integer.parseInt(args[0]);
+
+	MultinomialHMM hmm =
+	    new MultinomialHMM (numTopics, args[1], 150);
+
+	hmm.setGamma(1.0);
+	hmm.setRandomSeed(1);
+
+	hmm.loadAlphaFromFile(args[2]);
+	hmm.loadSequenceIDsFromFile(args[3]);
+
+	hmm.initialize();
+
+	hmm.sample();
+    }
+    
 }

@@ -38,14 +38,14 @@ public class TokenSequenceNGrams extends Pipe implements Serializable
 		TokenSequence ts = (TokenSequence) carrier.getData();
 
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			for(int j = 0; j < gramSizes.length; j++) {
 				int len = gramSizes[j];
 				if (len <= 0 || len > (i+1)) continue;
 				if (len == 1) { tmpTS.add(t); continue; }
 				newTerm = new String(t.getText());
 				for(int k = 1; k < len; k++)
-					newTerm = ts.getToken(i-k).getText() + "_" + newTerm;
+					newTerm = ts.get(i-k).getText() + "_" + newTerm;
 				tmpTS.add(newTerm);
 			}
 		}

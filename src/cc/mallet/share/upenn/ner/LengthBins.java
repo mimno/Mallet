@@ -39,7 +39,7 @@ public class LengthBins extends Pipe implements java.io.Serializable {
         TokenSequence ts = (TokenSequence) carrier.getData();
         tokens:
         for (int i=0; i < ts.size(); i++) {
-            Token t = ts.getToken(i);
+            Token t = ts.get(i);
             int length = t.getText().length();
             for (int j=0; j<bins.length; j++)
                 if (length <= bins[j]) {

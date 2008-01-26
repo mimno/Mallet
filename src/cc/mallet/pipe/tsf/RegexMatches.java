@@ -46,7 +46,7 @@ public class RegexMatches extends Pipe implements Serializable
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			if (regex.matcher (t.getText()).matches ())
 				t.setFeatureValue (feature, 1.0);
 		}

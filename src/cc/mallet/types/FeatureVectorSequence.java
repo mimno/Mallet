@@ -37,10 +37,10 @@ public class FeatureVectorSequence implements Sequence, Serializable, AlphabetCa
 		this.sequence = new FeatureVector[tokens.size()];
 		if (augmentable)
 			for (int i = 0; i < tokens.size(); i++)
-				sequence[i] = new AugmentableFeatureVector (dict, tokens.getToken(i).getFeatures(), binary, growAlphabet);
+				sequence[i] = new AugmentableFeatureVector (dict, tokens.get(i).getFeatures(), binary, growAlphabet);
 		else
 			for (int i = 0; i < tokens.size(); i++)
-				sequence[i] = new FeatureVector (dict, tokens.getToken(i).getFeatures(), binary, growAlphabet);
+				sequence[i] = new FeatureVector (dict, tokens.get(i).getFeatures(), binary, growAlphabet);
 	}
 
 	public FeatureVectorSequence (Alphabet dict,

@@ -38,7 +38,7 @@ public class TokenText extends Pipe implements Serializable
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			t.setFeatureValue (prefix == null ? t.getText().intern() : (prefix+t.getText()).intern(), 1.0);
 		}
 		return carrier;

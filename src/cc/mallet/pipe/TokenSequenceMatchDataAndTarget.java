@@ -70,7 +70,7 @@ public class TokenSequenceMatchDataAndTarget extends Pipe implements Serializabl
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		TokenSequence targetTokenSeq = new TokenSequence (ts.size());
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			Matcher matcher = regex.matcher (t.getText());
 			if (matcher.matches()) {
 				targetTokenSeq.add (matcher.group(targetGroup));

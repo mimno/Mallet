@@ -42,7 +42,7 @@ public class TokenSequence2Tokenization extends Pipe {
       StringTokenization spans = new StringTokenization (buf);  // I can use a StringBuffer as the doc! Awesome!
 
       for (int i = 0; i < ts.size(); i++) {
-        Token token = ts.getToken (i);
+        Token token = ts.get(i);
 
         int start = buf.length ();
         buf.append (token.getText());

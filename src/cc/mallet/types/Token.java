@@ -74,6 +74,20 @@ public class Token implements Serializable, PropertyHolder
 		}
 		return sb.toString();
 	}
+	
+	public String toStringWithFeatureNames ()
+	{
+		StringBuffer sb = new StringBuffer ();
+		sb.append (getText());
+		if (features != null) {
+			PropertyList.Iterator iter = features.iterator();
+			while (iter.hasNext()) {
+				iter.next();
+				sb.append (" " + iter.getKey());
+			}
+		}
+		return sb.toString();
+	}
 
 	public FeatureVector toFeatureVector (Alphabet dict, boolean binary)
 	{
