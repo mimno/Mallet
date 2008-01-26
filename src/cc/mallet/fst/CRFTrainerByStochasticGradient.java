@@ -54,7 +54,8 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 	// lambda=priorVariance*numTrainingInstances
 	// After an initial eta_0 is set, t_0 = 1/(lambda*eta_0)
 	// After each training step eta = 1/(lambda*(t+t_0)), t=0,1,2,..,Infinity
-	public void chooseLearningRateByLikelihood(InstanceList trainingSample) {
+	/** Automatically set the learning rate to one that would be good */
+	public void setLearningRateByLikelihood (InstanceList trainingSample) {
 		int numIterations = 10;
 		double bestLearningRate = Double.NEGATIVE_INFINITY;
 		double bestLikelihoodChange = Double.NEGATIVE_INFINITY;
