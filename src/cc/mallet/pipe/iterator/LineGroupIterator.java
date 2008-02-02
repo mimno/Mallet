@@ -69,7 +69,7 @@ public class LineGroupIterator implements Iterator<Instance>
 					this.nextNextBoundary = line;
 					break;
 				} else { // The first line of the file.
-					sb.append(line + '\n');
+					if (!skipBoundary) sb.append(line + '\n');
 					this.nextNextBoundary = line;
 				}
 			} else {
