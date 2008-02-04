@@ -32,7 +32,7 @@ public class MakeAmpersandXMLFriendly extends Pipe implements Serializable
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			String s = t.getText();
 			if (s.indexOf("&") != -1) {
 				if (s.indexOf("&amp;") != -1) // already friendly

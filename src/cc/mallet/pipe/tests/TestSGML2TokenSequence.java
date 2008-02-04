@@ -73,8 +73,8 @@ public class TestSGML2TokenSequence extends TestCase
 			assert (input.size() == target.size());
 			assert (input.size() == oginput.length);
 			for (int j=0; j < oginput.length; j++) {
-				assert (oginput[j].equals (input.getToken(j).getText()));
-				assert (ogtags[j].equals (target.getToken(j).getText()));
+				assert (oginput[j].equals (input.get(j).getText()));
+				assert (ogtags[j].equals (target.get(j).getText()));
 			}
 		}
 	}

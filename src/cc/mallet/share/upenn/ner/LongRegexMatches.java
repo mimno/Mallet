@@ -35,7 +35,7 @@ public class LongRegexMatches extends Pipe implements java.io.Serializable {
             for (int length = 1; length <= max; length++) {
                 int loc = i - length + 1;
                 if (loc < 0) break; // take another token
-                sb.insert(0, ts.getToken(loc).getText()); // else prepend token
+                sb.insert(0, ts.get(loc).getText()); // else prepend token
                 // On a match, mark all participating tokens.
                 if (length >= min && regex.matcher(sb.toString()).matches()) {
                     for (int j=0; j<length; j++)
@@ -47,7 +47,7 @@ public class LongRegexMatches extends Pipe implements java.io.Serializable {
         // Set feature on all tokens participating in any match
         for (int i=0; i < ts.size(); i++)
             if (marked[i])
-                ts.getToken(i).setFeatureValue(name, 1.0);
+                ts.get(i).setFeatureValue(name, 1.0);
         
 		return carrier;
     }

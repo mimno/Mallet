@@ -145,7 +145,7 @@ public class SGML2TokenSequence extends Pipe implements Serializable
 				logger.finer ("===");
 				logger.info (args[i]);
 				for (int j = 0; j < data.size(); j++)
-					logger.info (target.getToken(j).getText()+" "+data.getToken(j).getText());
+					logger.info (target.get(j).getText()+" "+data.get(j).getText());
 			}
 		} catch (Exception e) {
 			System.out.println (e);

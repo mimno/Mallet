@@ -53,7 +53,7 @@ public class TokenTextCharNGrams extends Pipe implements Serializable
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			String s = t.getText();
 			if (distinguishBorders)
 				s = startBorderChar + s + endBorderChar;

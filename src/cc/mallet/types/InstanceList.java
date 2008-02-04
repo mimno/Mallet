@@ -288,7 +288,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	public boolean add (Instance instance)
 	{
 		if (!Alphabet.alphabetsMatch(this, instance))
-			throw new IllegalArgumentException ("Alphabets don't match: instance: "+
+			throw new IllegalArgumentException ("Alphabets don't match: Instance: "+
 					instance.getAlphabets()+" InstanceList: "+this.getAlphabets());
 		if (dataClass == null) {
 			dataClass = instance.data.getClass();

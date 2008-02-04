@@ -126,7 +126,7 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		TokenSequence ret = new TokenSequence ();
 		Token prevToken = null;
 		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.getToken(i);
+			Token t = ts.get(i);
 			if (! stoplist.contains (caseSensitive ? t.getText() : t.getText().toLowerCase())) {
 				// xxx Should we instead make and add a copy of the Token?
 				ret.add (t);

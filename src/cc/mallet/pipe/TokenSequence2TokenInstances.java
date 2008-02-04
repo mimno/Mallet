@@ -30,7 +30,7 @@ public class TokenSequence2TokenInstances extends Pipe {
 				currentInstance = source.next();
 				currentTokenSequence = (TokenSequence) currentInstance.getData();
 			}
-			Instance ret = new Instance (currentTokenSequence.getToken(currentIndex),
+			Instance ret = new Instance (currentTokenSequence.get(currentIndex),
 					((LabelSequence)currentInstance.getTarget()).getLabelAtPosition(currentIndex),
 					null, null);
 			currentIndex++;

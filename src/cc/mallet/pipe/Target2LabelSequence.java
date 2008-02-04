@@ -50,7 +50,7 @@ public class Target2LabelSequence extends Pipe implements Serializable
 			TokenSequence ts = (TokenSequence) target;
 			int indices[] = new int[ts.size()];
 			for (int i = 0; i < ts.size(); i++)
-				indices[i] = v.lookupIndex (ts.getToken(i).getText());
+				indices[i] = v.lookupIndex (ts.get(i).getText());
 			LabelSequence ls = new LabelSequence ((LabelAlphabet)getTargetAlphabet(), indices);
 			carrier.setTarget(ls);
 		} else if (target instanceof LabelsSequence) {

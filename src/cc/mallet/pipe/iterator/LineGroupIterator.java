@@ -31,31 +31,29 @@ public class LineGroupIterator implements Iterator<Instance>
 	boolean skipBoundary;
 	//boolean putBoundaryLineAtEnd; // Not yet implemented
 	String nextLineGroup;
+	String nextBoundary;
+	String nextNextBoundary;
 	int groupIndex = 0;
+	boolean putBoundaryInSource = true;
 	
 	public LineGroupIterator (Reader input, Pattern lineBoundaryRegex, boolean skipBoundary)
 	{
 		this.reader = new LineNumberReader (input);
 		this.lineBoundaryRegex = lineBoundaryRegex;
 		this.skipBoundary = skipBoundary;
-		this.nextLineGroup = getNextLineGroup();
+		setNextLineGroup();
 	}
 
-	// added by Fuchun Peng
-	public String getLineGroup ()
-	{
+	public String peekLineGroup () {
 		return nextLineGroup;
 	}
-	// added by Fuchun Peng
-	public void nextLineGroup()
-	{
-		nextLineGroup = getNextLineGroup();
-	}
 
-	public String getNextLineGroup ()
+	private void setNextLineGroup ()
 	{
 		StringBuffer sb = new StringBuffer ();
 		String line;
+		if (!skipBoundary && nextBoundary != null)
+			sb.append(nextBoundary + '\n');
 		while (true) {
 			try {
 				line = reader.readLine();
@@ -66,31 +64,32 @@ public class LineGroupIterator implements Iterator<Instance>
 			if (line == null) {
 				break;
 			} else if (lineBoundaryRegex.matcher (line).matches()) {
-				if (!skipBoundary) {
-					sb.append(line);
-					sb.append('\n');
-				}
-				if (sb.length() > 0)
+				if (sb.length() > 0) {
+					this.nextBoundary = this.nextNextBoundary;
+					this.nextNextBoundary = line;
 					break;
+				} else { // The first line of the file.
+					if (!skipBoundary) sb.append(line + '\n');
+					this.nextNextBoundary = line;
+				}
 			} else {
 				sb.append(line);
 				sb.append('\n');
 			}
 		}
 		if (sb.length() == 0)
-			return null;
+			this.nextLineGroup = null;
 		else
-			return sb.toString();
+			this.nextLineGroup = sb.toString();
 	}
 	
-	// The PipeInputIterator interface
 
 	public Instance next ()
 	{
 		assert (nextLineGroup != null);
 		Instance carrier = new Instance (nextLineGroup, null, "linegroup"+groupIndex++,
-																		 null);
-		nextLineGroup = getNextLineGroup ();
+																		 putBoundaryInSource ? nextBoundary : null);
+		setNextLineGroup ();
 		return carrier;
 	}
 

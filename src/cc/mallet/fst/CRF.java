@@ -80,14 +80,14 @@ public class CRF extends Transducer implements Serializable
 
 	static final String LABEL_SEPARATOR = ",";
 
-	Alphabet inputAlphabet;
-	Alphabet outputAlphabet;
+	protected Alphabet inputAlphabet;
+	protected Alphabet outputAlphabet;
 	
-	ArrayList<State> states = new ArrayList<State> ();
-	ArrayList<State> initialStates = new ArrayList<State> ();
-	HashMap<String,State> name2state = new HashMap<String,State> ();
+	protected ArrayList<State> states = new ArrayList<State> ();
+	protected ArrayList<State> initialStates = new ArrayList<State> ();
+	protected HashMap<String,State> name2state = new HashMap<String,State> ();
 	
-	Factors parameters = new Factors ();
+	protected Factors parameters = new Factors ();
 
 	//SparseVector[] weights;
 	//double[] defaultWeights;	// parameters for default feature
@@ -95,22 +95,22 @@ public class CRF extends Transducer implements Serializable
 	//boolean[] weightsFrozen;
 
 	// FeatureInduction can fill this in
-	FeatureSelection globalFeatureSelection;
+	protected FeatureSelection globalFeatureSelection;
 	// "featureSelections" is on a per- weights[i] basis, and over-rides
 	// (permanently disabling) FeatureInducer's and
 	// setWeightsDimensionsAsIn() from using these features on these transitions
-	FeatureSelection[] featureSelections;
+	protected FeatureSelection[] featureSelections;
 	
 	// Store here the induced feature conjunctions so that these conjunctions can be added to test instances before transduction
-	ArrayList<FeatureInducer> featureInducers = new ArrayList<FeatureInducer>();
+	protected ArrayList<FeatureInducer> featureInducers = new ArrayList<FeatureInducer>();
 
 	// An integer index that gets incremented each time this CRFs parameters get changed
-	int weightsValueChangeStamp = 0;
+	protected int weightsValueChangeStamp = 0;
 	// An integer index that gets incremented each time this CRFs parameters' structure get changed
-	int weightsStructureChangeStamp = 0;
+	protected int weightsStructureChangeStamp = 0;
 	
-	int cachedNumParametersStamp = -1; // A copy of weightsStructureChangeStamp the last time numParameters was calculated
-	int numParameters;
+	protected int cachedNumParametersStamp = -1; // A copy of weightsStructureChangeStamp the last time numParameters was calculated
+	protected int numParameters;
 	
 	
 	/** A simple, transparent container to hold the parameters or sufficient statistics for the CRF. */

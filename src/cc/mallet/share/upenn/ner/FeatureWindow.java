@@ -24,7 +24,7 @@ public class FeatureWindow extends Pipe implements java.io.Serializable {
         TokenSequence seq = (TokenSequence)carrier.getData();
         TObjectDoubleHashMap[] original = new TObjectDoubleHashMap[seq.size()];
         for (int i=0; i<seq.size(); i++) {
-            Token t = seq.getToken(i);
+            Token t = seq.get(i);
             original[i] = new TObjectDoubleHashMap();
             PropertyList.Iterator pl = t.getFeatures().iterator();
             while (pl.hasNext()) {
@@ -39,7 +39,7 @@ public class FeatureWindow extends Pipe implements java.io.Serializable {
                 String append = (j < 0) ? "/"+j : "/+"+j; 
                 if (index<0 || index==i || index>=original.length) continue;
                 
-                Token t = seq.getToken(i);
+                Token t = seq.get(i);
                 Object[] features = original[index].keys();
                 for (int k=0; k<features.length; k++)
                     t.setFeatureValue((String)features[k]+append, 

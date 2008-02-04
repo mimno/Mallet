@@ -117,7 +117,7 @@ public class TestGenericAcrfData2TokenSequence extends TestCase {
     LabelsSequence ls1 = (LabelsSequence) inst1.getTarget ();
 
     assertEquals (4, ls1.size ());
-    assertEquals (3, toks.getToken (0).getFeatures ().size ());
+    assertEquals (3, toks.get(0).getFeatures ().size ());
     assertEquals ("LBLB LBLD", ls1.getLabels (0).toString ());
 
     LabelAlphabet globalDict = p.getLabelAlphabet (0);
@@ -142,8 +142,8 @@ public class TestGenericAcrfData2TokenSequence extends TestCase {
     assertEquals (4, ls1.size ());
 
     TokenSequence ts1 = (TokenSequence) inst1.getData ();
-    assertEquals (3, ts1.getToken(0).getFeatures().size ());
-    assertEquals (2, ts1.getToken(1).getFeatures().size ());
+    assertEquals (3, ts1.get(0).getFeatures().size ());
+    assertEquals (2, ts1.get(1).getFeatures().size ());
   }
 
   public static Test suite ()

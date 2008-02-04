@@ -36,7 +36,7 @@ import cc.mallet.util.search.SearchState;
 public class MaxLatticeDefault implements MaxLattice
 {
 	private static Logger logger = MalletLogger.getLogger(MaxLatticeDefault.class.getName());
-	{ logger.setLevel(Level.INFO); }
+	//{ logger.setLevel(Level.INFO); }
 
 	private Transducer t;
 	private Sequence<Object> input, providedOutput;

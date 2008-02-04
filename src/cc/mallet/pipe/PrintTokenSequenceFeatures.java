@@ -46,17 +46,17 @@ public class PrintTokenSequenceFeatures extends Pipe implements Serializable
 		sb.append ("name: "+carrier.getName()+"\n");
 		for (int i = 0; i < ts.size(); i++) {
 			if (source != null) {
-				sb.append (source.getToken(i).getText());
+				sb.append (source.get(i).getText());
 				sb.append (' ');
 			}
 			if (carrier.getTarget() instanceof TokenSequence) {
-				sb.append (((TokenSequence)carrier.getTarget()).getToken(i).getText());
+				sb.append (((TokenSequence)carrier.getTarget()).get(i).getText());
 				sb.append (' ');
 			}	if (carrier.getTarget() instanceof FeatureSequence) {
 				sb.append (((FeatureSequence)carrier.getTarget()).getObjectAtPosition(i).toString());
 				sb.append (' ');
 			}
-			PropertyList pl = ts.getToken(i).getFeatures();
+			PropertyList pl = ts.get(i).getFeatures();
 			if (pl != null) {
 				PropertyList.Iterator iter = pl.iterator();
 				while (iter.hasNext()) {

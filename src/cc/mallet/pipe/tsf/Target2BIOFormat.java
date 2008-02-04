@@ -59,7 +59,7 @@ public class Target2BIOFormat extends Pipe implements Serializable
 			int indices[] = new int[ts.size()];
 			String previousString =  this.backgroundTag;
 			for (int i = 0; i < ts.size(); i++) {
-				String s = ts.getToken (i).getText ();
+				String s = ts.get (i).getText ();
 				String tag = s;
 				if (!tag.equals (this.backgroundTag)) {
 					if (tag.equals (previousString))

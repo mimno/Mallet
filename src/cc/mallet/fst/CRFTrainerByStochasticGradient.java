@@ -28,7 +28,15 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 
 	CRF.Factors expectations, constraints;
 
-	public CRFTrainerByStochasticGradient(CRF crf, double learningRate) {
+	public CRFTrainerByStochasticGradient (CRF crf, InstanceList trainingSample) {
+		this.crf = crf;
+		this.expectations = new CRF.Factors(crf);
+		this.constraints = new CRF.Factors(crf);
+		this.setLearningRateByLikelihood(trainingSample);
+	}
+
+
+	public CRFTrainerByStochasticGradient (CRF crf, double learningRate) {
 		this.crf = crf;
 		this.learningRate = learningRate;
 		this.expectations = new CRF.Factors(crf);
@@ -54,8 +62,9 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 	// lambda=priorVariance*numTrainingInstances
 	// After an initial eta_0 is set, t_0 = 1/(lambda*eta_0)
 	// After each training step eta = 1/(lambda*(t+t_0)), t=0,1,2,..,Infinity
-	public void chooseLearningRateByLikelihood(InstanceList trainingSample) {
-		int numIterations = 10;
+	/** Automatically set the learning rate to one that would be good */
+	public void setLearningRateByLikelihood (InstanceList trainingSample) {
+		int numIterations = 5; // was 10 -akm 1/25/08
 		double bestLearningRate = Double.NEGATIVE_INFINITY;
 		double bestLikelihoodChange = Double.NEGATIVE_INFINITY;
 
@@ -64,11 +73,8 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 			currLearningRate *= 2;
 			crf.parameters.zero();
 			double beforeLikelihood = computeLikelihood(trainingSample);
-			double likelihoodChange = trainSample(trainingSample,
-					numIterations, currLearningRate)
-					- beforeLikelihood;
-			System.out.println("likelihood change = " + likelihoodChange
-					+ " for eta=" + currLearningRate);
+			double likelihoodChange = trainSample(trainingSample, numIterations, currLearningRate)	- beforeLikelihood;
+			System.out.println("likelihood change = " + likelihoodChange	+ " for learningrate=" + currLearningRate);
 
 			if (likelihoodChange > bestLikelihoodChange) {
 				bestLikelihoodChange = likelihoodChange;
@@ -84,8 +90,7 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 		setLearningRate(bestLearningRate);
 	}
 
-	private double trainSample(InstanceList trainingSample, int numIterations,
-			double rate) {
+	private double trainSample (InstanceList trainingSample, int numIterations,	double rate) {
 		double lambda = trainingSample.size();
 		double t = 1 / (lambda * rate);
 
@@ -102,35 +107,29 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 		return loglik;
 	}
 
-	private double computeLikelihood(InstanceList trainingSample) {
+	private double computeLikelihood (InstanceList trainingSample) {
 		double loglik = 0.0;
-
 		for (int i = 0; i < trainingSample.size(); i++) {
 			Instance trainingInstance = trainingSample.get(i);
-			FeatureVectorSequence fvs = (FeatureVectorSequence) trainingInstance
-					.getData();
+			FeatureVectorSequence fvs = (FeatureVectorSequence) trainingInstance.getData();
 			Sequence labelSequence = (Sequence) trainingInstance.getTarget();
-			loglik += new SumLatticeDefault(crf, fvs, labelSequence,
-					constraints.new Incrementor()).getTotalWeight();
-			loglik -= new SumLatticeDefault(crf, fvs, null,
-					expectations.new Incrementor()).getTotalWeight();
+			loglik += new SumLatticeDefault(crf, fvs, labelSequence, null).getTotalWeight();
+			loglik -= new SumLatticeDefault(crf, fvs, null, null).getTotalWeight();
 		}
-
 		constraints.zero();
 		expectations.zero();
-
 		return loglik;
 	}
 
-	public void setLearningRate(double r) {
+	public void setLearningRate (double r) {
 		this.learningRate = r;
 	}
 
-	public double getLearningRate() {
+	public double getLearningRate () {
 		return this.learningRate;
 	}
 
-	public boolean train(InstanceList trainingSet, int numIterations) {
+	public boolean train (InstanceList trainingSet, int numIterations) {
 		assert (expectations.structureMatches(crf.parameters));
 		assert (constraints.structureMatches(crf.parameters));
 		lambda = 1.0 / trainingSet.size();
@@ -192,7 +191,7 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 		constraints.zero();
 		expectations.zero();
 		FeatureVectorSequence fvs = (FeatureVectorSequence) trainingInstance
-				.getData();
+		.getData();
 		Sequence labelSequence = (Sequence) trainingInstance.getTarget();
 		singleLoglik += new SumLatticeDefault(crf, fvs, labelSequence,
 				constraints.new Incrementor()).getTotalWeight();
