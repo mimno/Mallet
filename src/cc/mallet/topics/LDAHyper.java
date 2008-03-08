@@ -428,7 +428,7 @@ public class LDAHyper {
 				output.append (topic + "\t" + 
 							   formatter.format(alpha[topic]) + "\t");
 
-				for (int i = 0; i < numWords; i++) {
+				for (int i = 0; i < numWords && i < sortedTypes.length; i++) {
 					output.append (alphabet.lookupObject(sortedTypes[i].getID()) + " ");
 				}
 
