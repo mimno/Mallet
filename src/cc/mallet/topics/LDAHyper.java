@@ -388,44 +388,50 @@ public class LDAHyper {
 		}
 	}
 
-	public String printTopWords (int numWords, boolean useNewLines, File file) throws IOException {
+	public IDSorter[] getSortedTopicWords(int topic) {
+		IDSorter[] sortedTypes = new IDSorter[ numTypes ];
+
+		for (int type = 0; type < numTypes; type++) {
+			sortedTypes[type] = new IDSorter(type, typeTopicCounts[type][topic]);
+		}
+
+		Arrays.sort(sortedTypes);
+		return sortedTypes;
+	}
+
+	public void writeTopicWords (int numWords, boolean useNewLines, File file) throws IOException {
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 		out.println(printTopWords(numWords, useNewLines));
 		out.close();
-
-		return null; 
 	}
 	
-	public String printTopWords (int numWords, boolean useNewLines) {
-
-		class WordProb implements Comparable {
-			int wi; double p;
-			public WordProb (int wi, double p) { this.wi = wi; this.p = p; }
-			public final int compareTo (Object o2) {
-				if (p > ((WordProb)o2).p)
-					return -1;
-				else if (p == ((WordProb)o2).p)
-					return 0;
-				else return 1;
-			}
-		}
+	public String printTopWords (int numWords, boolean usingNewLines) {
 
 		StringBuffer output = new StringBuffer();
+		Alphabet alphabet = instances.getDataAlphabet();
 
-		WordProb[] wp = new WordProb[numTypes];
-		for (int ti = 0; ti < numTopics; ti++) {
-			for (int wi = 0; wi < numTypes; wi++)
-				wp[wi] = new WordProb (wi, ((double)typeTopicCounts[wi][ti]) / tokensPerTopic[ti]);
-			Arrays.sort (wp);
-			if (useNewLines) {
-				output.append ("\nTopic " + ti + "\n");
-				for (int i = 0; i < numWords; i++)
-					output.append (instances.getDataAlphabet().lookupObject(wp[i].wi).toString() + "\t" +
-								   formatter.format(wp[i].p) + "\n");
-			} else {
-				output.append (ti+"\t" + formatter.format(alpha[ti]) + "\t");
-				for (int i = 0; i < numWords; i++)
-					output.append (instances.getDataAlphabet().lookupObject(wp[i].wi).toString() + " ");
+		for (int topic = 0; topic < numTopics; topic++) {
+
+			IDSorter[] sortedTypes = getSortedTopicWords(topic);
+
+			if (usingNewLines) {
+				output.append ("Topic " + topic + "\n");
+
+				for (int i = 0; i < numWords && i < sortedTypes.length; i++) {
+					output.append (alphabet.lookupObject(sortedTypes[i].getID()) + "\t" +
+								   formatter.format(sortedTypes[i].getWeight()) + "\n");
+				}
+
+				output.append("\n");
+			}
+			else {
+				output.append (topic + "\t" + 
+							   formatter.format(alpha[topic]) + "\t");
+
+				for (int i = 0; i < numWords; i++) {
+					output.append (alphabet.lookupObject(sortedTypes[i].getID()) + " ");
+				}
+
 				output.append("\n");
 			}
 		}
