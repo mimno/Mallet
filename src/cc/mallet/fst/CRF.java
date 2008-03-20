@@ -114,7 +114,7 @@ public class CRF extends Transducer implements Serializable
 	
 	
 	/** A simple, transparent container to hold the parameters or sufficient statistics for the CRF. */
-	public static class Factors {
+	public static class Factors implements Serializable {
 		Alphabet weightAlphabet;
 		public SparseVector[] weights; // parameters on transitions, indexed by "weight index"
 		public double[] defaultWeights;// parameters for default features, indexed by "weight index" 
