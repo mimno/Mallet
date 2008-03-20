@@ -60,6 +60,7 @@ public class TokenAccuracyEvaluator extends TransducerEvaluator
 			Sequence input = (Sequence) instance.getData();
 			Sequence trueOutput = (Sequence) instance.getTarget();
 			assert (input.size() == trueOutput.size());
+			//System.err.println ("TokenAccuracyEvaluator "+i+" length="+input.size());
 			Sequence predOutput = transducer.transduce (input);
 			assert (predOutput.size() == trueOutput.size());
 
@@ -68,8 +69,10 @@ public class TokenAccuracyEvaluator extends TransducerEvaluator
 				if (trueOutput.get(j).equals(predOutput.get(j)))
 					numCorrectTokens++;
 			}
+			//System.err.println ("TokenAccuracyEvaluator "+i+" numCorrectTokens="+numCorrectTokens+" totalTokens="+totalTokens+" accuracy="+((double)numCorrectTokens)/totalTokens);
 		}
 		double acc = ((double)numCorrectTokens)/totalTokens;
+		//System.err.println ("TokenAccuracyEvaluator accuracy="+acc);
 		accuracy.put(description, acc);
 		logger.info (description +" accuracy="+acc);
 	}
