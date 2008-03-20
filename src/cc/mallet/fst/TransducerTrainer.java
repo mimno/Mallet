@@ -1,6 +1,7 @@
 package cc.mallet.fst;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.Instance;
@@ -31,6 +32,7 @@ public abstract class TransducerTrainer {
 	
 	// Management of evaluators
 	public TransducerTrainer addEvaluator (TransducerEvaluator te) {	evaluators.add(te);	return this; }
+	public TransducerTrainer addEvaluators (Collection<TransducerEvaluator> tes) { evaluators.addAll(tes); return this; }
 	public TransducerTrainer removeEvaluator (TransducerEvaluator te) { evaluators.remove(te);	return this; }
 	/** This method should be called by subclasses whenever evaluators should be run.
 	 * Do not worry too much about them being run too often, because the evaluators
