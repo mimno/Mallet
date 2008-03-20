@@ -99,7 +99,7 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 			loglik = 0.0;
 			for (int j = 0; j < trainingSample.size(); j++) {
 				rate = 1 / (lambda * t);
-				loglik += trainSingle(trainingSample.get(j), rate);
+				loglik += trainIncrementalLikelihood(trainingSample.get(j), rate);
 				t += 1.0;
 			}
 		}
@@ -150,12 +150,11 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 			double loglik = 0.0;
 			for (int i = 0; i < trainingSet.size(); i++) {
 				learningRate = 1.0 / (lambda * t);
-				loglik += trainSingle(trainingSet.get(trainingIndices.get(i)));
+				loglik += trainIncrementalLikelihood(trainingSet.get(trainingIndices.get(i)));
 				t += 1.0;
 			}
 
-			System.out.println("loglikelihood[" + numIterations + "] = "
-					+ loglik);
+			System.out.println("loglikelihood[" + numIterations + "] = "	+ loglik);
 
 			if (Math.abs(loglik - oldLoglik) < 1e-3) {
 				converged = true;
@@ -163,6 +162,7 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 			}
 			oldLoglik = loglik;
 
+			Runtime.getRuntime().gc();
 			runEvaluators();
 		}
 
@@ -170,38 +170,37 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 	}
 
 	// TODO Add some way to train by batches of instances, where the batch
-	// memberships are determined externally
-	public boolean trainIncremental(InstanceList trainingSet) {
+	// memberships are determined externally?  Or provide some easy interface for creating batches.
+	public boolean trainIncremental (InstanceList trainingSet) {
 		this.train(trainingSet, 1);
 		return false;
 	}
 
-	public boolean trainIncremental(Instance trainingInstance) {
+	public boolean trainIncremental (Instance trainingInstance) {
 		assert (expectations.structureMatches(crf.parameters));
-		trainSingle(trainingInstance);
+		trainIncrementalLikelihood(trainingInstance);
 		return false;
 	}
 
-	private double trainSingle(Instance trainingInstance) {
-		return trainSingle(trainingInstance, learningRate);
+	/** Adjust the parameters by default learning rate according to the gradient of this single Instance, 
+	 * and return the true label sequence likelihood. */
+	public double trainIncrementalLikelihood (Instance trainingInstance) {
+		return trainIncrementalLikelihood(trainingInstance, learningRate);
 	}
 
-	private double trainSingle(Instance trainingInstance, double rate) {
-		double singleLoglik = 0.0;
+	/** Adjust the parameters by learning rate according to the gradient of this single Instance, 
+	 * and return the true label sequence likelihood. */
+	public double trainIncrementalLikelihood (Instance trainingInstance, double rate) {
+		double singleLoglik;
 		constraints.zero();
 		expectations.zero();
-		FeatureVectorSequence fvs = (FeatureVectorSequence) trainingInstance
-		.getData();
+		FeatureVectorSequence fvs = (FeatureVectorSequence) trainingInstance.getData();
 		Sequence labelSequence = (Sequence) trainingInstance.getTarget();
-		singleLoglik += new SumLatticeDefault(crf, fvs, labelSequence,
-				constraints.new Incrementor()).getTotalWeight();
-		singleLoglik -= new SumLatticeDefault(crf, fvs, null,
-				expectations.new Incrementor()).getTotalWeight();
-		// Calculate parameter gradient given these instances:
-		// (constraints - expectations)
+		singleLoglik = new SumLatticeDefault(crf, fvs, labelSequence,	constraints.new Incrementor()).getTotalWeight();
+		singleLoglik -= new SumLatticeDefault(crf, fvs, null,	expectations.new Incrementor()).getTotalWeight();
+		// Calculate parameter gradient given these instances: (constraints - expectations)
 		constraints.plusEquals(expectations, -1);
-		// Change the parameters a little by this difference,
-		// obeying weightsFrozen
+		// Change the parameters a little by this difference, obeying weightsFrozen
 		crf.parameters.plusEquals(constraints, rate, true);
 
 		return singleLoglik;
