@@ -69,6 +69,12 @@ public class Alphabet implements Serializable
 	{
 		this (8, null);
 	}
+	
+	public Alphabet (Object[] entries) {
+		this (entries.length);
+		for (Object entry : entries)
+			this.lookupIndex(entry);
+	}
 
 	public Object clone ()
 	{
