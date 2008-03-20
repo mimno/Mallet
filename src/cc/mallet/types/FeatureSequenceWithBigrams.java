@@ -35,7 +35,7 @@ public class FeatureSequenceWithBigrams extends FeatureSequence
 			t = ts.get(i);
 			super.add(t.getText());
 			if (pt != null && pt.getProperty(deletionMark) == null)
-				biFeatures[i] = biDictionary.lookupIndex(pt.getText()+"_"+t.getText(), true);
+				biFeatures[i] = biDictionary == null ? 0 : biDictionary.lookupIndex(pt.getText()+"_"+t.getText(), true);
 			else
 				biFeatures[i] = -1;
 			pt = t;
@@ -51,7 +51,7 @@ public class FeatureSequenceWithBigrams extends FeatureSequence
 
 	public Object getObjectAtPosition (int pos)
 	{
-		return biFeatures[pos] == -1 ? null : biDictionary.lookupObject (biFeatures[pos]);
+		return biFeatures[pos] == -1 ? null : (biDictionary == null ? null : biDictionary.lookupObject (biFeatures[pos]));
 	}
 
 	// Serialization
