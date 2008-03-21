@@ -26,6 +26,7 @@ public abstract class TransducerEvaluator
 {
   private static Logger logger = MalletLogger.getLogger(TransducerEvaluator.class.getName());
 
+  // TODO consider storing the TransducerTrainer here also?  Methods like precondition() will be shorter and easier.
 	protected InstanceList[] instanceLists;
 	protected String[] instanceListDescriptions;
 	
