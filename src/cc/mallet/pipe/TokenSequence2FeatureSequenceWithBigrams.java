@@ -21,6 +21,12 @@ public class TokenSequence2FeatureSequenceWithBigrams extends Pipe
 {
 	Alphabet biDictionary;
 
+	public TokenSequence2FeatureSequenceWithBigrams (Alphabet dataDict, Alphabet bigramAlphabet)
+	{
+		super (dataDict, null);
+		biDictionary = bigramAlphabet;
+	}
+
 	public TokenSequence2FeatureSequenceWithBigrams (Alphabet dataDict)
 	{
 		super (dataDict, null);
