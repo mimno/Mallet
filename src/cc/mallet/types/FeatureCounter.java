@@ -61,12 +61,16 @@ public class FeatureCounter
 	public FeatureVector toFeatureVector () {
 		int[] indices = featureCounts.keys();
 		double[] values = new double[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			values[i] = featureCounts.get(indices[i]);
 		return new FeatureVector (alphabet, indices, values);
 	}
 	
 	public RankedFeatureVector toRankedFeatureVector () {
 		int[] indices = featureCounts.keys();
 		double[] values = new double[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			values[i] = featureCounts.get(indices[i]);
 		return new RankedFeatureVector (alphabet, indices, values);
 	}
 	
