@@ -7,6 +7,8 @@
 
 package cc.mallet.topics;
 
+import gnu.trove.TIntIntHashMap;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -53,6 +55,12 @@ public class LDAHyper {
 	protected double beta;   // Prior on per-topic multinomial distribution over words
 	protected double betaSum;
 	public static final double DEFAULT_BETA = 0.01;
+	
+	double smoothingOnlyMass = 0.0;
+	double[] cachedCoefficients;
+	int topicTermCount = 0;
+	int betaTopicCount = 0;
+	int smoothingOnlyCount = 0;
 
 	// Instance list for empirical likelihood calculation
 	protected InstanceList testing = null;
@@ -62,22 +70,20 @@ public class LDAHyper {
 	//   garbage collection overhead.
 	protected int[] oneDocTopicCounts; // indexed by <document index, topic index>
 
-	protected int[][] typeTopicCounts; // indexed by <feature index, topic index>
+	protected gnu.trove.TIntIntHashMap[] typeTopicCounts; // indexed by <feature index, topic index>
 	protected int[] tokensPerTopic; // indexed by <topic index>
-
-	protected double[] topicWeights;
 
 	// for dirichlet estimation
 	protected int[] docLengthCounts; // histogram of document sizes
 	protected int[][] topicDocCounts; // histogram of document/topic counts, indexed by <topic index, sequence position index>
 
 	protected int iterationsSoFar = 0;
-	protected int numIterations = 1000;
-	protected int burninPeriod = 200;
-	protected int saveSampleInterval = 10;	
-	protected int optimizeInterval = 50;
-	protected int showTopicsInterval = 50;
-	protected int wordsPerTopic = 5;
+	public int numIterations = 1000;
+	public int burninPeriod = 20; // was 50; //was 200;
+	public int saveSampleInterval = 5; // was 10;	
+	public int optimizeInterval = 20; // was 50;
+	public int showTopicsInterval = 10; // was 50;
+	public int wordsPerTopic = 7;
 
 	protected int outputModelInterval = 0;
 	protected String outputModelFilename;
@@ -121,7 +127,6 @@ public class LDAHyper {
 		
 		oneDocTopicCounts = new int[numTopics];
 		tokensPerTopic = new int[numTopics];
-		topicWeights = new double[numTopics];
 		
 		formatter = NumberFormat.getInstance();
 		formatter.setMaximumFractionDigits(5);
@@ -133,7 +138,7 @@ public class LDAHyper {
 	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
 	public int getNumTopics() { return numTopics; }
 	public ArrayList<Topication> getData() { return data; }
-	public int getCountFeatureTopic (int featureIndex, int topicIndex) { return typeTopicCounts[featureIndex][topicIndex]; }
+	public int getCountFeatureTopic (int featureIndex, int topicIndex) { return typeTopicCounts[featureIndex].get(topicIndex); }
 	public int getCountTokensPerTopic (int topicIndex) { return tokensPerTopic[topicIndex]; }
 	
 	/** Held-out instances for empirical likelihood calculation */
@@ -186,15 +191,19 @@ public class LDAHyper {
 		if (this.alphabet == null) {
 			this.alphabet = alphabet;
 			this.numTypes = alphabet.size();
-			this.typeTopicCounts = new int[numTypes][numTopics];
+			this.typeTopicCounts = new TIntIntHashMap[numTypes];
+			for (int fi = 0; fi < numTypes; fi++) 
+				typeTopicCounts[fi] = new TIntIntHashMap();
 			this.betaSum = beta * numTypes;
 		} else if (alphabet != this.alphabet) {
 			throw new IllegalArgumentException ("Cannot change Alphabet.");
 		} else if (alphabet.size() != this.numTypes) {
 			this.numTypes = alphabet.size();
-			int[][] newTypeTopicCounts = new int[numTypes][numTopics];
+			TIntIntHashMap[] newTypeTopicCounts = new TIntIntHashMap[numTypes];
 			for (int i = 0; i < typeTopicCounts.length; i++)
 				newTypeTopicCounts[i] = typeTopicCounts[i];
+			for (int i = typeTopicCounts.length; i < numTypes; i++)
+				newTypeTopicCounts[i] = new TIntIntHashMap();
 			this.betaSum = beta * numTypes;
 		}	// else, nothing changed, nothing to be done
 	}
@@ -204,7 +213,15 @@ public class LDAHyper {
 		ArrayList<LabelSequence> topicSequences = new ArrayList<LabelSequence>();
 		for (Instance instance : training) {
 			LabelSequence topicSequence = new LabelSequence(topicAlphabet, new int[instanceLength(instance)]);
-			sampleTopicsForOneDoc((FeatureSequence)instance.getData(), topicSequence, false, false);
+			if (false)
+				// This method not yet obeying its last "false" argument, and must be for this to work
+				sampleTopicsForOneDoc((FeatureSequence)instance.getData(), topicSequence, false, false);
+			else {
+				Randoms r = new Randoms();
+				int[] topics = topicSequence.getFeatures();
+				for (int i = 0; i < topics.length; i++)
+					topics[i] = r.nextInt(numTopics);
+			}
 			topicSequences.add (topicSequence);
 		}
 		addInstances (training, topicSequences);
@@ -221,7 +238,7 @@ public class LDAHyper {
 			LabelSequence topicSequence = t.topicSequence;
 			for (int token = 0; token < topicSequence.getLength(); token++) {
 				int topic = topicSequence.getIndexAtPosition(token);
-				typeTopicCounts[tokenSequence.getIndexAtPosition(token)][topic]++;
+				typeTopicCounts[tokenSequence.getIndexAtPosition(token)].adjustOrPutValue(topic, 1, 1);
 				tokensPerTopic[topic]++;
 			}
 		}
@@ -237,7 +254,7 @@ public class LDAHyper {
 
 		int maxTokens = 0;
 		int totalTokens = 0;
-		int topic, seqLen;
+		int seqLen;
 
 		for (int doc = 0; doc < data.size(); doc++) {
 			FeatureSequence fs = (FeatureSequence) data.get(doc).instance.getData();
@@ -246,6 +263,16 @@ public class LDAHyper {
 				maxTokens = seqLen;
 			totalTokens += seqLen;
 		}
+		// Initialize the smoothing-only sampling bucket
+		smoothingOnlyMass = 0;
+		for (int topic = 0; topic < numTopics; topic++) 
+			smoothingOnlyMass += alpha[topic] * beta / (tokensPerTopic[topic] + betaSum);
+
+		// Initialize the cached coefficients, using only smoothing.
+		cachedCoefficients = new double[ numTopics ];
+		for (int topic=0; topic < numTopics; topic++)
+			cachedCoefficients[topic] =  alpha[topic] / (tokensPerTopic[topic] + betaSum);
+
 		System.out.println("max tokens: " + maxTokens);
 		System.out.println("total tokens: " + totalTokens);
 
@@ -288,23 +315,31 @@ public class LDAHyper {
 			  this.write (new File(outputModelFilename+'.'+iterations));
 			  }
 			*/
+			// TODO this condition should also check that we have more than one sample to work with here
+			// (The number of samples actually obtained is not yet tracked.)
 			if (iterationsSoFar > burninPeriod && optimizeInterval != 0 &&	iterationsSoFar % optimizeInterval == 0) {
 				long optimizeTime = System.currentTimeMillis();
 				alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts);
 				//System.out.print("[o:" + (System.currentTimeMillis() - optimizeTime) + "]");
+				smoothingOnlyMass = 0.0;
+				for (int topic = 0; topic < numTopics; topic++) 
+					smoothingOnlyMass += alpha[topic] * beta / (tokensPerTopic[topic] + betaSum);
 				clearHistograms();
 			}
 
 			// Loop over every document in the corpus
-			for (int di = 0; di < data.size(); di++) {
+			topicTermCount = betaTopicCount = smoothingOnlyCount = 0;
+			int numDocs = data.size(); // TODO consider beginning by sub-sampling?
+			for (int di = 0; di < numDocs; di++) {
 				FeatureSequence tokenSequence = (FeatureSequence) data.get(di).instance.getData();
 				LabelSequence topicSequence = (LabelSequence) data.get(di).topicSequence;
 				sampleTopicsForOneDoc (tokenSequence, topicSequence,
-									   iterationsSoFar > burninPeriod && iterationsSoFar % saveSampleInterval == 0,
+									   iterationsSoFar >= burninPeriod && iterationsSoFar % saveSampleInterval == 0,
 									   true);
 			}
 		
 			System.out.print((System.currentTimeMillis() - iterationStart) + " ");
+			System.out.println(topicTermCount + "\t" + betaTopicCount + "\t" + smoothingOnlyCount);
 			if (iterationsSoFar % 10 == 0) {
 				System.out.println ("<" + iterationsSoFar + "> ");
 				if (printLogLikelihood) System.out.println (modelLogLikelihood());
@@ -336,7 +371,7 @@ public class LDAHyper {
 	 *   will not be changed.
 	 *  If you want to estimate the Dirichlet alpha based on the per-document topic multinomials sampled this round, 
 	 *   then saveStateForAlphaEstimation should be true. */
-	private void sampleTopicsForOneDoc (FeatureSequence featureSequence, 
+	private void oldSampleTopicsForOneDoc (FeatureSequence featureSequence, 
 			FeatureSequence topicSequence,
 			boolean saveStateForAlphaEstimation, boolean readjustTopicsAndStats) 
 	{
@@ -344,10 +379,13 @@ public class LDAHyper {
 	
 		int[] oneDocTopics = topicSequence.getFeatures();
 
-		int[] currentTypeTopicCounts;
+		TIntIntHashMap currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
-		double topicWeightsSum;
+		double[] topicDistribution;
+		double topicDistributionSum;
 		int docLen = featureSequence.getLength();
+		int adjustedValue;
+		int[] topicIndices, topicCounts;
 
 		double weight;
 	
@@ -364,33 +402,39 @@ public class LDAHyper {
 		for (int token = 0; token < docLen; token++) {
 			type = featureSequence.getIndexAtPosition(token);
 			oldTopic = oneDocTopics[token];
+			currentTypeTopicCounts = typeTopicCounts[type];
+			assert (currentTypeTopicCounts.size() != 0);
 
 			if (readjustTopicsAndStats) {
 				// Remove this token from all counts
 				oneDocTopicCounts[oldTopic]--;
-				typeTopicCounts[type][oldTopic]--;
+				adjustedValue = currentTypeTopicCounts.adjustOrPutValue(oldTopic, -1, -1);
+				if (adjustedValue == 0) currentTypeTopicCounts.remove(oldTopic);
+				else if (adjustedValue == -1) throw new IllegalStateException ("Token count in topic went negative.");
 				tokensPerTopic[oldTopic]--;
 			}
 
 			// Build a distribution over topics for this token
-			topicWeightsSum = 0;
-			currentTypeTopicCounts = typeTopicCounts[type];
-			for (int topic = 0; topic < numTopics; topic++) {
-				weight = ((currentTypeTopicCounts[topic] + beta) /
-						  (tokensPerTopic[topic] + betaSum))
-					* ((oneDocTopicCounts[topic] + alpha[topic]));
-				topicWeightsSum += weight;
-				topicWeights[topic] = weight;
+			topicIndices = currentTypeTopicCounts.keys();
+			topicCounts = currentTypeTopicCounts.getValues();
+			topicDistribution = new double[topicIndices.length]; 
+			// TODO Yipes, memory allocation in the inner loop!  But note that .keys and .getValues is doing this too.
+			topicDistributionSum = 0;
+			for (int i = 0; i < topicCounts.length; i++) {
+				int topic = topicIndices[i];
+				weight = ((topicCounts[i] + beta) /	(tokensPerTopic[topic] + betaSum))	* ((oneDocTopicCounts[topic] + alpha[topic]));
+				topicDistributionSum += weight;
+				topicDistribution[topic] = weight;
 			}
 
 			// Sample a topic assignment from this distribution
-			newTopic = random.nextDiscrete (topicWeights, topicWeightsSum);
+			newTopic = topicIndices[random.nextDiscrete (topicDistribution, topicDistributionSum)];
 		
 			if (readjustTopicsAndStats) {
 				// Put that new topic into the counts
 				oneDocTopics[token] = newTopic;
 				oneDocTopicCounts[newTopic]++;
-				typeTopicCounts[type][newTopic]++;
+				typeTopicCounts[type].adjustOrPutValue(newTopic, 1, 1);
 				tokensPerTopic[newTopic]++;
 			}
 		}
@@ -403,11 +447,241 @@ public class LDAHyper {
 			}
 		}
 	}
+	
+	private void sampleTopicsForOneDoc (FeatureSequence tokenSequence,
+			FeatureSequence topicSequence,
+			boolean shouldSaveState,
+			boolean readjustTopicsAndStats /* currently ignored */) {
+
+		int[] oneDocTopics = topicSequence.getFeatures();
+
+		TIntIntHashMap currentTypeTopicCounts;
+		int type, oldTopic, newTopic;
+		double topicWeightsSum;
+		int docLen = tokenSequence.getLength();
+		double tw;
+
+		//		populate topic counts
+		TIntIntHashMap localTopicCounts = new TIntIntHashMap();
+		for (int di = 0; di < docLen; di++) {
+			if (localTopicCounts.containsKey(oneDocTopics[di]))
+				localTopicCounts.increment(oneDocTopics[di]);
+			else
+				localTopicCounts.put(oneDocTopics[di], 1);
+		}
+
+		//		Initialize the topic count/beta sampling bucket
+		double topicBetaMass = 0.0;
+		for (int topic: localTopicCounts.keys()) {
+			int n = localTopicCounts.get(topic);
+			//			initialize the normalization constant for the (B * n_{t|d}) term
+			topicBetaMass += beta * n /	(tokensPerTopic[topic] + betaSum);	
+			//			update the coefficients for the non-zero topics
+			cachedCoefficients[topic] =	(alpha[topic] + n) / (tokensPerTopic[topic] + betaSum);
+		}
+
+		double topicTermMass = 0.0;
+
+		double[] topicTermScores = new double[numTopics];
+		int[] topicTermIndices;
+		int[] topicTermValues;
+		int i;
+		double score;
+
+		//	Iterate over the positions (words) in the document 
+		for (int token = 0; token < docLen; token++) {
+			type = tokenSequence.getIndexAtPosition(token);
+			oldTopic = oneDocTopics[token];
+
+			currentTypeTopicCounts = typeTopicCounts[type];
+			assert(currentTypeTopicCounts.get(oldTopic) >= 0);
+
+			//	Remove this token from all counts
+			if (currentTypeTopicCounts.get(oldTopic) == 1) {
+				currentTypeTopicCounts.remove(oldTopic);
+			}
+			else {
+				currentTypeTopicCounts.adjustValue(oldTopic, -1);
+			}
+
+			smoothingOnlyMass -= alpha[oldTopic] * beta / 
+			(tokensPerTopic[oldTopic] + betaSum);
+			topicBetaMass -= beta * localTopicCounts.get(oldTopic) /
+			(tokensPerTopic[oldTopic] + betaSum);
+
+			if (localTopicCounts.get(oldTopic) == 1) {
+				localTopicCounts.remove(oldTopic);
+			}
+			else {
+				localTopicCounts.adjustValue(oldTopic, -1);
+			}
+
+			tokensPerTopic[oldTopic]--;
+
+			smoothingOnlyMass += alpha[oldTopic] * beta / 
+			(tokensPerTopic[oldTopic] + betaSum);
+			topicBetaMass += beta * localTopicCounts.get(oldTopic) /
+			(tokensPerTopic[oldTopic] + betaSum);
+
+			cachedCoefficients[oldTopic] = 
+				(alpha[oldTopic] + localTopicCounts.get(oldTopic)) /
+				(tokensPerTopic[oldTopic] + betaSum);
+
+			topicTermMass = 0.0;
+
+			topicTermIndices = currentTypeTopicCounts.keys();
+			topicTermValues = currentTypeTopicCounts.getValues();
+
+			for (i=0; i < topicTermIndices.length; i++) {
+				int topic = topicTermIndices[i];
+				score =
+					cachedCoefficients[topic] * topicTermValues[i];
+//				((alpha[topic] + localTopicCounts.get(topic)) * 
+//				topicTermValues[i]) /
+//				(tokensPerTopic[topic] + betaSum);
+
+//				Note: I tried only doing this next bit if 
+//				score > 0, but it didn't make any difference,
+//				at least in the first few iterations.
+
+				topicTermMass += score;
+				topicTermScores[i] = score;
+//				topicTermIndices[i] = topic;
+			}
+//			indicate that this is the last topic
+//			topicTermIndices[i] = -1;
+
+			double sample = random.nextUniform() * (smoothingOnlyMass + topicBetaMass + topicTermMass);
+			double origSample = sample;
+
+//			Make sure it actually gets set
+			newTopic = -1;
+
+			if (sample < topicTermMass) {
+				topicTermCount++;
+
+				i = -1;
+				while (sample > 0) {
+					i++;
+					sample -= topicTermScores[i];
+				}
+				newTopic = topicTermIndices[i];
+
+			}
+			else {
+				sample -= topicTermMass;
+
+				if (sample < topicBetaMass) {
+					betaTopicCount++;
+
+					sample /= beta;
+
+					topicTermIndices = localTopicCounts.keys();
+					topicTermValues = localTopicCounts.getValues();
+
+					for (i=0; i < topicTermIndices.length; i++) {
+						newTopic = topicTermIndices[i];
+
+						sample -= topicTermValues[i] /
+						(tokensPerTopic[newTopic] + betaSum);
+						if (sample <= 0.0) {
+							break;
+						}
+					}
+
+				}
+				else {
+					smoothingOnlyCount++;
+
+					sample -= topicBetaMass;
+
+					sample /= beta;
+
+					for (int topic = 0; topic < numTopics; topic++) {
+						sample -= alpha[topic] / 
+						(tokensPerTopic[topic] + betaSum);
+
+						if (sample <= 0.0) {
+							newTopic = topic;
+							break;
+						}
+					}
+
+				}
+
+			}
+
+			if (newTopic == -1) {
+				System.err.println("LDAHyper sampling error: "+ origSample + " " + sample + " " + smoothingOnlyMass + " " + 
+						topicBetaMass + " " + topicTermMass);
+				newTopic = numTopics-1; // TODO is this appropriate
+				//throw new IllegalStateException ("LDAHyper: New topic not sampled.");
+			}
+			//assert(newTopic != -1);
+
+//			Put that new topic into the counts
+			oneDocTopics[token] = newTopic;
+
+			if (currentTypeTopicCounts.containsKey(newTopic)) {
+				currentTypeTopicCounts.increment(newTopic);
+			}
+			else {
+				currentTypeTopicCounts.put(newTopic, 1);
+			}
+
+			smoothingOnlyMass -= alpha[newTopic] * beta / 
+			(tokensPerTopic[newTopic] + betaSum);
+			topicBetaMass -= beta * localTopicCounts.get(newTopic) /
+			(tokensPerTopic[newTopic] + betaSum);
+
+			if (localTopicCounts.containsKey(newTopic)) {
+				localTopicCounts.increment(newTopic);
+			}
+			else {
+				localTopicCounts.put(newTopic, 1);
+			}
+
+			tokensPerTopic[newTopic]++;
+
+//			update the coefficients for the non-zero topics
+			cachedCoefficients[newTopic] =
+				(alpha[newTopic] + localTopicCounts.get(newTopic)) /
+				(tokensPerTopic[newTopic] + betaSum);
+
+
+			smoothingOnlyMass += alpha[newTopic] * beta / 
+			(tokensPerTopic[newTopic] + betaSum);
+			topicBetaMass += beta * localTopicCounts.get(newTopic) /
+			(tokensPerTopic[newTopic] + betaSum);
+
+
+			assert(currentTypeTopicCounts.get(newTopic) >= 0);
+
+		}
+
+//		Clean up our mess: reset the coefficients to values with only
+//		smoothing. The next doc will update its own non-zero topics...
+		for (int topic: localTopicCounts.keys()) {
+			cachedCoefficients[topic] =
+				alpha[topic] / (tokensPerTopic[topic] + betaSum);
+		}
+
+		if (shouldSaveState) {
+
+//			Update the document-topic count histogram,
+//			for dirichlet estimation
+			docLengthCounts[ docLen ]++;
+			for (int topic: localTopicCounts.keys()) {
+				topicDocCounts[topic][ localTopicCounts.get(topic) ]++;
+			}
+		}
+	}
+
 
 	public IDSorter[] getSortedTopicWords(int topic) {
 		IDSorter[] sortedTypes = new IDSorter[ numTypes ];
 		for (int type = 0; type < numTypes; type++)
-			sortedTypes[type] = new IDSorter(type, typeTopicCounts[type][topic]);
+			sortedTypes[type] = new IDSorter(type, typeTopicCounts[type].get(topic));
 		Arrays.sort(sortedTypes);
 		return sortedTypes;
 	}
@@ -418,19 +692,48 @@ public class LDAHyper {
 		out.close();
 	}
 	
-	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
+	public void oldPrintTopWords (PrintStream out, int numWords, boolean usingNewLines) {
 		for (int topic = 0; topic < numTopics; topic++) {
 			IDSorter[] sortedTypes = getSortedTopicWords(topic);
 			if (usingNewLines) {
 				out.print ("Topic " + topic + "\n");
 				for (int i = 0; i < numWords && i < sortedTypes.length; i++)
 					out.print (alphabet.lookupObject(sortedTypes[i].getID()) + "\t" +
-								   formatter.format(sortedTypes[i].getWeight()) + "\n");
+								   sortedTypes[i].getWeight() + "\n");
 				out.print("\n");
 			}	else {
 				out.print (topic + "\t" + formatter.format(alpha[topic]) + "\t");
 				for (int i = 0; i < numWords && i < sortedTypes.length; i++)
 					out.print (alphabet.lookupObject(sortedTypes[i].getID()) + " ");
+				out.print ("\n");
+			}
+		}
+	}
+	
+	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
+		FeatureCounter[] wordCountsPerTopic = new FeatureCounter[numTopics];
+		for (int ti = 0; ti < numTopics; ti++) 
+			wordCountsPerTopic[ti] = new FeatureCounter(alphabet);
+		for (int fi = 0; fi < numTypes; fi++) {
+			int[] topics = typeTopicCounts[fi].keys();
+			for (int i = 0; i < topics.length; i++) {
+				wordCountsPerTopic[topics[i]].increment(fi, typeTopicCounts[fi].get(topics[i]));
+				//System.out.print (" "+typeTopicCounts[fi].get(topics[i]));
+			}
+			//System.out.println();
+		}
+		for (int ti = 0; ti < numTopics; ti++) {
+			RankedFeatureVector rfv = wordCountsPerTopic[ti].toRankedFeatureVector();
+			if (usingNewLines) {
+				out.println ("Topic " + ti);
+				for (int ri = 0; ri < numWords; ri++) {
+					int fi = rfv.getIndexAtRank(ri);
+					out.println (alphabet.lookupObject(fi).toString()+"\t"+(int)rfv.getValueAtRank(ri));
+				}
+			} else {
+				out.print (ti + "\t" + formatter.format(alpha[ti]) + "\t");
+				for (int ri = 0; ri < numWords; ri++) 
+					out.print (alphabet.lookupObject(rfv.getIndexAtRank(ri)).toString()+" ");
 				out.print ("\n");
 			}
 		}
@@ -465,7 +768,7 @@ public class LDAHyper {
 		}
 
 		for (int di = 0; di < data.size(); di++) {
-			FeatureSequence topicSequence = (FeatureSequence) data.get(di).instance.getData();
+			LabelSequence topicSequence = (LabelSequence) data.get(di).topicSequence;
 			int[] currentDocTopics = topicSequence.getFeatures();
 
 			pw.print (di); pw.print (' ');
@@ -559,8 +862,7 @@ public class LDAHyper {
 		out.writeDouble (betaSum);
 
 		for (int fi = 0; fi < numTypes; fi++)
-			for (int ti = 0; ti < numTopics; ti++)
-				out.writeInt (typeTopicCounts[fi][ti]);
+			out.writeObject (typeTopicCounts[fi]);
 
 		for (int ti = 0; ti < numTopics; ti++)
 			out.writeInt (tokensPerTopic[ti]);
@@ -581,10 +883,9 @@ public class LDAHyper {
 		int numDocs = data.size();
 
 		int numTypes = alphabet.size();
-		typeTopicCounts = new int[numTypes][numTopics];
+		typeTopicCounts = new TIntIntHashMap[numTypes];
 		for (int fi = 0; fi < numTypes; fi++)
-			for (int ti = 0; ti < numTopics; ti++)
-				typeTopicCounts[fi][ti] = in.readInt();
+			typeTopicCounts[fi] = (TIntIntHashMap) in.readObject();
 		tokensPerTopic = new int[numTopics];
 		for (int ti = 0; ti < numTopics; ti++)
 			tokensPerTopic[ti] = in.readInt();
@@ -692,7 +993,7 @@ public class LDAHyper {
 				for (type=0; type<numTypes; type++) {
 					multinomial[type] += 
 						topicDistribution[topic] *
-						(beta + typeTopicCounts[type][topic]) /
+						(beta + typeTopicCounts[type].get(topic)) /
 						(betaSum + tokensPerTopic[topic]);
 				}
 			}
@@ -795,12 +1096,11 @@ public class LDAHyper {
 
 		for (int type=0; type < numTypes; type++) {
 			// reuse this array as a pointer
-			topicCounts = typeTopicCounts[type];
 
 			for (int topic=0; topic < numTopics; topic++) {
 				if (topicCounts[topic] > 0) {
 					nonZeroTypeTopics++;
-					logLikelihood += Dirichlet.logGammaStirling(beta + topicCounts[topic]);
+					logLikelihood += Dirichlet.logGammaStirling(beta + typeTopicCounts[type].get(topic));
 				}
 			}
 		}
