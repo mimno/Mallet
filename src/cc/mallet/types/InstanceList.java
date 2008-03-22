@@ -484,12 +484,14 @@ public InstanceList[] splitInOrder (double[] proportions) {
 			ret[i] = this.cloneEmpty();  // Note that we are passing on featureSelection here.
 			if (i > 0) 
 				maxind[i] += maxind[i-1];
+		}
+		for (int i = 0; i < maxind.length; i++) { 
 			// Fill maxind[] with the highest instance index to go in each corresponding returned InstanceList
 			maxind[i] = Math.rint (maxind[i] * this.size());
 		}
 		for (int i = 0, j = 0; i < size(); i++) {
 			// This gives a slight bias toward putting an extra instance in the last InstanceList.
-			while (i >= maxind[j]) 
+			while (i >= maxind[j] && j < ret.length) 
 				j++;
 			ret[j].add(this.get(i));
 		}
