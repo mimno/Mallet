@@ -206,16 +206,21 @@ public abstract class Transducer implements Serializable
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;
 
+	// gsc: fixed serialization, writing/reading *LatticeFactory objects
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeObject(inputPipe);
 		out.writeObject(outputPipe);
+		out.writeObject(sumLatticeFactory);
+		out.writeObject(maxLatticeFactory);
 	}
 
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		inputPipe = (Pipe) in.readObject();
 		outputPipe = (Pipe) in.readObject();
+		sumLatticeFactory = (SumLatticeFactory) in.readObject();
+		maxLatticeFactory = (MaxLatticeFactory) in.readObject();
 	}
 
 

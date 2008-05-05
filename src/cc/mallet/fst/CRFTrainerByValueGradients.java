@@ -305,7 +305,7 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 
 	}
 
-	// Serialization for CRFTrainerByLikelihood
+	// Serialization for CRFTrainerByValueGradient
 
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;

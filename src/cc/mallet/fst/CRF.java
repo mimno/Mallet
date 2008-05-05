@@ -446,7 +446,7 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 		
-		// Serialization for Factors
+		// gsc: Serialization for Factors
 		private static final long serialVersionUID = 1;
 		private static final int CURRENT_SERIAL_VERSION = 1;
 		private void writeObject (ObjectOutputStream out) throws IOException {
@@ -468,11 +468,8 @@ public class CRF extends Transducer implements Serializable
 			initialWeights = (double[]) in.readObject ();
 			finalWeights = (double[]) in.readObject ();
 		}
-
 	}
 
-	
-	
 	
 	public CRF (Pipe inputPipe, Pipe outputPipe)
 	{
@@ -1576,17 +1573,12 @@ public class CRF extends Transducer implements Serializable
 	}
 
 
-	// Serialization for CRF class
-	
+	// gsc: Serialization for CRF class
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;
 
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
-		out.writeInt (numParameters);
-		out.writeInt (weightsValueChangeStamp);
-		out.writeInt (weightsStructureChangeStamp);
-		out.writeInt (cachedNumParametersStamp);
 		out.writeObject (inputAlphabet);
 		out.writeObject (outputAlphabet);
 		out.writeObject (states);
@@ -1596,14 +1588,14 @@ public class CRF extends Transducer implements Serializable
 		out.writeObject (globalFeatureSelection);		
 		out.writeObject (featureSelections);
 		out.writeObject (featureInducers);
+		out.writeInt (weightsValueChangeStamp);
+		out.writeInt (weightsStructureChangeStamp);
+		out.writeInt (cachedNumParametersStamp);
+		out.writeInt (numParameters);
 	}
 
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
-		numParameters = in.readInt ();
-		weightsValueChangeStamp = in.readInt ();
-		weightsStructureChangeStamp = in.readInt ();
-		cachedNumParametersStamp = in.readInt ();
 		inputAlphabet = (Alphabet) in.readObject ();
 		outputAlphabet = (Alphabet) in.readObject ();
 		states = (ArrayList<State>) in.readObject ();
@@ -1613,11 +1605,12 @@ public class CRF extends Transducer implements Serializable
 		globalFeatureSelection = (FeatureSelection) in.readObject ();		
 		featureSelections = (FeatureSelection[]) in.readObject ();
 		featureInducers = (ArrayList<FeatureInducer>) in.readObject ();
+		weightsValueChangeStamp = in.readInt ();
+		weightsStructureChangeStamp = in.readInt ();
+		cachedNumParametersStamp = in.readInt ();
+		numParameters = in.readInt ();
 	}
 
-
-	
-	
 	
 	// Why is this "static"?  Couldn't it be a non-static inner class? (In Transducer also)  -akm 12/2007
 	public static class State extends Transducer.State implements Serializable
