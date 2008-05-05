@@ -257,7 +257,23 @@ public final class MatrixOps
     		return false;
     }
     
-		// TODO: This is the same as oneNorm(), and should be removed
+    // gsc: returns true if any value in the array is greater than 0.0/-0.0
+    public static boolean isNonZero(double[] m) {
+    		for (int i = 0; i < m.length; i++)
+    				if (Math.abs(m[i]) > 0.0)
+    						return true;
+    		return false;
+    }
+    
+    // gsc: returns true if any value in the array is 0.0/-0.0
+    public static boolean isZero(double[] m) {
+    		for (int i = 0; i < m.length; i++)
+    				if (Math.abs(m[i]) == 0.0)
+    						return true;
+    		return false;
+    }
+    
+    // TODO: This is the same as oneNorm(), and should be removed
     public static double sum (double[] m) {
         double sum = 0;
         for (int i = 0; i < m.length; i++)
@@ -309,6 +325,17 @@ public final class MatrixOps
 
     public static double stderr (double[] m ) {
         return stddev(m) / Math.sqrt (m.length);
+    }
+
+    // gsc
+    /** Return the variance */
+    public static double variance (double[] m) {
+        double mean = mean (m);
+        double s = 0;
+        for (int i = 0; i < m.length; i++)
+            s += (m[i] - mean) * (m[i] - mean);
+        return s/m.length;
+        // Some prefer dividing by (m.length-1), but this is also common
     }
 
   /**
