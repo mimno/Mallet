@@ -17,6 +17,7 @@
 package cc.mallet.pipe.tsf;
 
 import java.io.*;
+import java.util.regex.Pattern;
 
 import cc.mallet.pipe.*;
 import cc.mallet.types.*;
@@ -24,6 +25,13 @@ import cc.mallet.types.*;
 public class TokenText extends Pipe implements Serializable
 {
 	String prefix;
+	Pattern matchingRegex;
+
+	public TokenText (String prefix, Pattern matchingRegex) 
+	{
+		this.prefix = prefix;
+		this.matchingRegex = matchingRegex;
+	}
 
 	public TokenText (String prefix)
 	{
@@ -39,7 +47,8 @@ public class TokenText extends Pipe implements Serializable
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		for (int i = 0; i < ts.size(); i++) {
 			Token t = ts.get(i);
-			t.setFeatureValue (prefix == null ? t.getText().intern() : (prefix+t.getText()).intern(), 1.0);
+			if (matchingRegex != null && matchingRegex.matcher(t.getText()).matches())
+				t.setFeatureValue (prefix == null ? t.getText().intern() : (prefix+t.getText()).intern(), 1.0);
 		}
 		return carrier;
 	}
