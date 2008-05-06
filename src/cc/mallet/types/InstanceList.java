@@ -629,7 +629,7 @@ public InstanceList[] splitInOrder (double[] proportions) {
 	}
 
 	public double getInstanceWeight (Instance instance) {
-		if (instWeights.containsKey(instance))
+		if (instWeights != null && instWeights.containsKey(instance))
 			return instWeights.get(instance);
 		else
 			return 1.0;
