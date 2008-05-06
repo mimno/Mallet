@@ -38,6 +38,7 @@ import cc.mallet.types.*;
 import cc.mallet.util.ArrayUtils;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
+import cc.mallet.types.MatrixOps;
 
 
 /* There are several different kinds of numeric values:
@@ -353,6 +354,35 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 		
+		public class WeightedIncrementor implements Transducer.Incrementor {
+			double instanceWeight = 1.0;
+			public WeightedIncrementor (double instanceWeight) { 
+				this.instanceWeight = instanceWeight; 
+			}
+			public void incrementFinalState(Transducer.State s, double count) {
+				finalWeights[s.getIndex()] += count * instanceWeight;
+			}
+			public void incrementInitialState(Transducer.State s, double count) {
+				initialWeights[s.getIndex()] += count * instanceWeight;
+			}
+			public void incrementTransition(Transducer.TransitionIterator ti, double count) {
+				int index = ti.getIndex();
+				CRF.State source = (CRF.State)ti.getSourceState(); 
+				int nwi = source.weightsIndices[index].length;
+				int weightsIndex;
+				count *= instanceWeight;
+				for (int wi = 0; wi < nwi; wi++) {
+					weightsIndex = source.weightsIndices[index][wi];
+				// For frozen weights, don't even gather their sufficient statistics; this is how we ensure that the gradient for these will be zero
+					if (weightsFrozen[weightsIndex]) continue; 
+					// TODO Should we also obey FeatureSelection here?  No need; it is enforced by the creation of the weights.
+					weights[weightsIndex].plusEqualsSparse ((FeatureVector)ti.getInput(), count);
+					defaultWeights[weightsIndex] += count;
+				}
+			}
+		}
+		
+
 		
 		public void getParameters (double[] buffer)
 		{
@@ -1225,8 +1255,9 @@ public class CRF extends Transducer implements Serializable
 				public void incrementFinalState (Transducer.State s, double count) {	}
 			});
 			// ...and also do it for the paths selected by the current model (so we will get some negative weights)
-			if (useSomeUnsupportedTrick) {
-				logger.info ("CRF: Incremental training detected.  Adding weights for some unsupported features...");
+			if (useSomeUnsupportedTrick && this.getParametersAbsNorm() > 0) {
+				if (i == 0)
+					logger.info ("CRF: Incremental training detected.  Adding weights for some unsupported features...");
 				// (do this once some training is done)
 				sumLatticeFactory.newSumLattice (this, input, null, new Transducer.Incrementor() {
 					public void incrementTransition (Transducer.TransitionIterator ti, double count) {
@@ -1342,7 +1373,7 @@ public class CRF extends Transducer implements Serializable
 		//setTrainable (false);
 		return wi;
 	}
-
+	
 	private void assertWeightsLength ()
 	{
 		if (parameters.weights != null) {
