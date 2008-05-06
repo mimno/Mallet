@@ -65,9 +65,9 @@ public class LDAHyper {
 	// Instance list for empirical likelihood calculation
 	protected InstanceList testing = null;
 	
-	// An array to put the topic counts for
-	//  the current document. Defined here to avoid
-	//   garbage collection overhead.
+	// An array to put the topic counts for the current document. 
+	// Initialized locally below.  Defined here to avoid
+	// garbage collection overhead.
 	protected int[] oneDocTopicCounts; // indexed by <document index, topic index>
 
 	protected gnu.trove.TIntIntHashMap[] typeTopicCounts; // indexed by <feature index, topic index>
@@ -131,7 +131,7 @@ public class LDAHyper {
 		formatter = NumberFormat.getInstance();
 		formatter.setMaximumFractionDigits(5);
 
-		System.out.println("LDA: " + numTopics + " topics");
+		System.err.println("LDA: " + numTopics + " topics");
 	}
 	
 	public Alphabet getAlphabet() { return alphabet; }
@@ -236,9 +236,9 @@ public class LDAHyper {
 			// Include sufficient statistics for this one doc
 			FeatureSequence tokenSequence = (FeatureSequence) t.instance.getData();
 			LabelSequence topicSequence = t.topicSequence;
-			for (int token = 0; token < topicSequence.getLength(); token++) {
-				int topic = topicSequence.getIndexAtPosition(token);
-				typeTopicCounts[tokenSequence.getIndexAtPosition(token)].adjustOrPutValue(topic, 1, 1);
+			for (int pi = 0; pi < topicSequence.getLength(); pi++) {
+				int topic = topicSequence.getIndexAtPosition(pi);
+				typeTopicCounts[tokenSequence.getIndexAtPosition(pi)].adjustOrPutValue(topic, 1, 1);
 				tokensPerTopic[topic]++;
 			}
 		}
@@ -273,8 +273,8 @@ public class LDAHyper {
 		for (int topic=0; topic < numTopics; topic++)
 			cachedCoefficients[topic] =  alpha[topic] / (tokensPerTopic[topic] + betaSum);
 
-		System.out.println("max tokens: " + maxTokens);
-		System.out.println("total tokens: " + totalTokens);
+		System.err.println("max tokens: " + maxTokens);
+		System.err.println("total tokens: " + totalTokens);
 
 		docLengthCounts = new int[maxTokens + 1];
 		topicDocCounts = new int[numTopics][maxTokens + 1];
@@ -338,8 +338,8 @@ public class LDAHyper {
 									   true);
 			}
 		
-			System.out.print((System.currentTimeMillis() - iterationStart) + " ");
-			System.out.println(topicTermCount + "\t" + betaTopicCount + "\t" + smoothingOnlyCount);
+			System.out.print((System.currentTimeMillis() - iterationStart)/1000 + "s ");
+			//System.out.println(topicTermCount + "\t" + betaTopicCount + "\t" + smoothingOnlyCount);
 			if (iterationsSoFar % 10 == 0) {
 				System.out.println ("<" + iterationsSoFar + "> ");
 				if (printLogLikelihood) System.out.println (modelLogLikelihood());
@@ -726,7 +726,8 @@ public class LDAHyper {
 			RankedFeatureVector rfv = wordCountsPerTopic[ti].toRankedFeatureVector();
 			if (usingNewLines) {
 				out.println ("Topic " + ti);
-				for (int ri = 0; ri < numWords; ri++) {
+				int max = rfv.numLocations(); if (max > numWords) max = numWords;
+				for (int ri = 0; ri < max; ri++) {
 					int fi = rfv.getIndexAtRank(ri);
 					out.println (alphabet.lookupObject(fi).toString()+"\t"+(int)rfv.getValueAtRank(ri));
 				}
@@ -814,15 +815,17 @@ public class LDAHyper {
 	}
 	
 	public void printState (PrintStream out) {
-		out.println ("#doc pos typeindex type topic");
+		out.println ("#doc source pos typeindex type topic");
 		for (int di = 0; di < data.size(); di++) {
 			FeatureSequence tokenSequence =	(FeatureSequence) data.get(di).instance.getData();
 			LabelSequence topicSequence =	(LabelSequence) data.get(di).topicSequence;
-			for (int token = 0; token < topicSequence.getLength(); token++) {
-				int type = tokenSequence.getIndexAtPosition(token);
-				int topic = topicSequence.getIndexAtPosition(token);
+			String source = (String) data.get(di).instance.getSource();
+			for (int pi = 0; pi < topicSequence.getLength(); pi++) {
+				int type = tokenSequence.getIndexAtPosition(pi);
+				int topic = topicSequence.getIndexAtPosition(pi);
 				out.print(di); out.print(' ');
-				out.print(token); out.print(' ');
+				out.print(source); out.print(' '); 
+				out.print(pi); out.print(' ');
 				out.print(type); out.print(' ');
 				out.print(alphabet.lookupObject(type)); out.print(' ');
 				out.print(topic); out.println();
