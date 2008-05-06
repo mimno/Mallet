@@ -84,7 +84,7 @@ public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements Tr
 		if (cachedWeightsStructureStamp != crf.weightsStructureChangeStamp) {
 			if (!useNoWeights) {
 				if (useSparseWeights)
-					crf.setWeightsDimensionAsIn (trainingSet, false);	
+					crf.setWeightsDimensionAsIn (trainingSet, useSomeUnsupportedTrick);	
 				else 
 					crf.setWeightsDimensionDensely ();
 			}
