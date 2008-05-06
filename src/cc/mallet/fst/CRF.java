@@ -19,19 +19,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Random;
 import java.util.regex.*;
 import java.util.logging.*;
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 
-import com.sun.jdi.InvocationException;
-
-import cc.mallet.fst.Transducer.State;
-import cc.mallet.fst.Transducer.TransitionIterator;
-import cc.mallet.optimize.*;
-import cc.mallet.optimize.tests.*;
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.*;
@@ -193,6 +185,9 @@ public class CRF extends Transducer implements Serializable
 		public boolean structureMatches (Factors other) {
 			if (weightAlphabet.size() != other.weightAlphabet.size()) return false;
 			if (weights.length != other.weights.length) return false;
+			// gsc: checking each SparseVector's size within weights.
+			for (int i = 0; i < weights.length; i++)
+				if (weights[i].numLocations() != other.weights[i].numLocations()) return false;
 			// Note that we are not checking the indices of the SparseVectors in weights
 			if (defaultWeights.length != other.defaultWeights.length) return false;
 			assert (initialWeights.length == finalWeights.length);
@@ -351,7 +346,25 @@ public class CRF extends Transducer implements Serializable
 					weights[weightsIndex].plusEqualsSparse ((FeatureVector)ti.getInput(), count);
 					defaultWeights[weightsIndex] += count;
 				}
+				}
 			}
+		
+		public double getParametersAbsNorm ()
+		{
+			double ret = 0;
+			for (int i = 0; i < initialWeights.length; i++) {
+				if (initialWeights[i] > Transducer.IMPOSSIBLE_WEIGHT)
+					ret += Math.abs(initialWeights[i]);
+				if (finalWeights[i] > Transducer.IMPOSSIBLE_WEIGHT)
+					ret += Math.abs(finalWeights[i]);
+			}
+			for (int i = 0; i < weights.length; i++) {
+				ret += Math.abs(defaultWeights[i]);
+				int nl = weights[i].numLocations();
+				for (int j = 0; j < nl; j++)
+					ret += Math.abs(weights[i].valueAtLocation(j));
+			}
+			return ret;
 		}
 		
 		public class WeightedIncrementor implements Transducer.Incrementor {
@@ -387,7 +400,7 @@ public class CRF extends Transducer implements Serializable
 		public void getParameters (double[] buffer)
 		{
 			if (buffer.length != getNumFactors ())
-				throw new IllegalArgumentException ("Parameter buffer is of wrong size.");
+				throw new IllegalArgumentException ("Expected size of buffer: " + getNumFactors() + ", actual size: " + buffer.length);
 			int pi = 0;
 			for (int i = 0; i < initialWeights.length; i++) {
 				buffer[pi++] = initialWeights[i];
@@ -463,7 +476,7 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 		
-		// Serialization for Factors
+		// gsc: Serialization for Factors
 		private static final long serialVersionUID = 1;
 		private static final int CURRENT_SERIAL_VERSION = 1;
 		private void writeObject (ObjectOutputStream out) throws IOException {
@@ -485,11 +498,8 @@ public class CRF extends Transducer implements Serializable
 			initialWeights = (double[]) in.readObject ();
 			finalWeights = (double[]) in.readObject ();
 		}
-
 	}
 
-	
-	
 	
 	public CRF (Pipe inputPipe, Pipe outputPipe)
 	{
@@ -1213,6 +1223,8 @@ public class CRF extends Transducer implements Serializable
 		setWeightsDimensionAsIn(trainingData, false);
 	}
 	
+	// gsc: changing this to consider the case when trainingData is a mix of labeled and unlabeled data,
+	// and we want to use the unlabeled data as well to set some weights (while using the unsupported trick)
 	public void setWeightsDimensionAsIn (InstanceList trainingData, boolean useSomeUnsupportedTrick)
 	{
 		final BitSet[] weightsPresent;
@@ -1232,28 +1244,31 @@ public class CRF extends Transducer implements Serializable
 			Instance instance = trainingData.get(i);
 			FeatureVectorSequence input = (FeatureVectorSequence) instance.getData();
 			FeatureSequence output = (FeatureSequence) instance.getTarget();
-			// Do it for the paths consistent with the labels...
-			sumLatticeFactory.newSumLattice (this, input, output, new Transducer.Incrementor() {
-				public void incrementTransition (Transducer.TransitionIterator ti, double count) {
-					State source = (CRF.State)ti.getSourceState();
-					FeatureVector input = (FeatureVector)ti.getInput();
-					int index = ti.getIndex();
-					int nwi = source.weightsIndices[index].length;
-					for (int wi = 0; wi < nwi; wi++) {
-						int weightsIndex = source.weightsIndices[index][wi];
-						for (int i = 0; i < input.numLocations(); i++) {
-							int featureIndex = input.indexAtLocation(i);
-							if ((globalFeatureSelection == null || globalFeatureSelection.contains(featureIndex))
-									&& (featureSelections == null
-											|| featureSelections[weightsIndex] == null
-											|| featureSelections[weightsIndex].contains(featureIndex)))
-								weightsPresent[weightsIndex].set (featureIndex);
+			// trainingData can have unlabeled instances as well
+			if (output != null) {
+				// Do it for the paths consistent with the labels...
+				sumLatticeFactory.newSumLattice (this, input, output, new Transducer.Incrementor() {
+					public void incrementTransition (Transducer.TransitionIterator ti, double count) {
+						State source = (CRF.State)ti.getSourceState();
+						FeatureVector input = (FeatureVector)ti.getInput();
+						int index = ti.getIndex();
+						int nwi = source.weightsIndices[index].length;
+						for (int wi = 0; wi < nwi; wi++) {
+							int weightsIndex = source.weightsIndices[index][wi];
+							for (int i = 0; i < input.numLocations(); i++) {
+								int featureIndex = input.indexAtLocation(i);
+								if ((globalFeatureSelection == null || globalFeatureSelection.contains(featureIndex))
+										&& (featureSelections == null
+												|| featureSelections[weightsIndex] == null
+												|| featureSelections[weightsIndex].contains(featureIndex)))
+									weightsPresent[weightsIndex].set (featureIndex);
+							}
 						}
 					}
-				}
-				public void incrementInitialState (Transducer.State s, double count) {	}
-				public void incrementFinalState (Transducer.State s, double count) {	}
-			});
+					public void incrementInitialState (Transducer.State s, double count) {	}
+					public void incrementFinalState (Transducer.State s, double count) {	}
+				});
+			}
 			// ...and also do it for the paths selected by the current model (so we will get some negative weights)
 			if (useSomeUnsupportedTrick && this.getParametersAbsNorm() > 0) {
 				if (i == 0)
@@ -1398,7 +1413,7 @@ public class CRF extends Transducer implements Serializable
 
 	public boolean isTrainable () { return true; }
 
-	// gsc: adding accessor methods
+	// gsc: accessor methods
 	public int getWeightsValueChangeStamp() {
 		return weightsValueChangeStamp;
 	}
@@ -1589,17 +1604,12 @@ public class CRF extends Transducer implements Serializable
 	}
 
 
-	// Serialization for CRF class
-	
+	// gsc: Serialization for CRF class
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;
 
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
-		out.writeInt (numParameters);
-		out.writeInt (weightsValueChangeStamp);
-		out.writeInt (weightsStructureChangeStamp);
-		out.writeInt (cachedNumParametersStamp);
 		out.writeObject (inputAlphabet);
 		out.writeObject (outputAlphabet);
 		out.writeObject (states);
@@ -1609,14 +1619,14 @@ public class CRF extends Transducer implements Serializable
 		out.writeObject (globalFeatureSelection);		
 		out.writeObject (featureSelections);
 		out.writeObject (featureInducers);
+		out.writeInt (weightsValueChangeStamp);
+		out.writeInt (weightsStructureChangeStamp);
+		out.writeInt (cachedNumParametersStamp);
+		out.writeInt (numParameters);
 	}
 
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
-		numParameters = in.readInt ();
-		weightsValueChangeStamp = in.readInt ();
-		weightsStructureChangeStamp = in.readInt ();
-		cachedNumParametersStamp = in.readInt ();
 		inputAlphabet = (Alphabet) in.readObject ();
 		outputAlphabet = (Alphabet) in.readObject ();
 		states = (ArrayList<State>) in.readObject ();
@@ -1626,11 +1636,12 @@ public class CRF extends Transducer implements Serializable
 		globalFeatureSelection = (FeatureSelection) in.readObject ();		
 		featureSelections = (FeatureSelection[]) in.readObject ();
 		featureInducers = (ArrayList<FeatureInducer>) in.readObject ();
+		weightsValueChangeStamp = in.readInt ();
+		weightsStructureChangeStamp = in.readInt ();
+		cachedNumParametersStamp = in.readInt ();
+		numParameters = in.readInt ();
 	}
 
-
-	
-	
 	
 	// Why is this "static"?  Couldn't it be a non-static inner class? (In Transducer also)  -akm 12/2007
 	public static class State extends Transducer.State implements Serializable

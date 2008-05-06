@@ -195,6 +195,9 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 			else // Gaussian prior
 				cachedValue += crf.parameters.gaussianPrior(gaussianPriorVariance);
 			
+			// gsc: make sure the prior gives a correct value
+			assert(!(Double.isNaN(cachedValue) || Double.isInfinite(cachedValue))) : "Label likelihood is NaN/Infinite";
+			
 			logger.info ("getValue() (loglikelihood, optimizable by label likelihood) = "+cachedValue);
 			long endingTime = System.currentTimeMillis();
 			logger.fine ("Inference milliseconds = "+(endingTime - startingTime));

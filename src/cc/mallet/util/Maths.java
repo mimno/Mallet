@@ -254,6 +254,47 @@ public final class Maths {
    return true;
  }
 
+  // gsc
+  /**
+   * Checks if <tt>min &lt;= value &lt;= max</tt>.
+   */
+  public static boolean checkWithinRange(double value, double min, double max) {
+    return (value > min || almostEquals(value, min, EPSILON)) &&
+           (value < max || almostEquals(value, max, EPSILON));
+  }
+
+  public static final double log2 = Math.log(2);
+
+  // gsc
+  /**
+   * Returns the KL divergence, K(p1 || p2).
+   *
+   * The log is w.r.t. base 2. <p>
+   *
+   * *Note*: If any value in <tt>p2</tt> is <tt>0.0</tt> then the KL-divergence
+   * is <tt>infinite</tt>.
+   */
+  public static double klDivergence(double[] p1, double[] p2) {
+    assert(p1.length == p2.length);
+    double klDiv = 0.0;
+    for (int i = 0; i < p1.length; ++i) {
+      klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
+    }
+    return klDiv;
+  }
+
+  // gsc
+  /**
+   * Returns the Jensen-Shannon divergence.
+   */
+  public static double jensenShannonDivergence(double[] p1, double[] p2) {
+    assert(p1.length == p2.length);
+    double[] average = new double[p1.length];
+    for (int i = 0; i < p1.length; ++i) {
+      average[i] += (p1[i] + p2[i])/2;
+    }
+    return (klDivergence(p1, average) + klDivergence(p2, average))/2;
+  }
 
   /**
 	 *  Returns the sum of two doubles expressed in log space,

@@ -4,33 +4,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import cc.mallet.fst.CRF.Factors.Incrementor;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
-import cc.mallet.types.ExpGain;
-import cc.mallet.types.FeatureInducer;
-import cc.mallet.types.FeatureSelection;
-import cc.mallet.types.FeatureSequence;
-import cc.mallet.types.FeatureVector;
-import cc.mallet.types.FeatureVectorSequence;
-import cc.mallet.types.GradientGain;
-import cc.mallet.types.InfoGain;
-import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import cc.mallet.types.Label;
-import cc.mallet.types.LabelAlphabet;
-import cc.mallet.types.LabelSequence;
-import cc.mallet.types.LabelVector;
 import cc.mallet.types.MatrixOps;
-import cc.mallet.types.RankedFeatureVector;
-import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
 
 /** A CRF trainer that can combine multiple objective functions, each represented by a Optmizable.ByValueGradient. */
@@ -49,6 +31,8 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 	int iterationCount = 0;
 	boolean converged;
 	boolean useSparseWeights = true;
+	// gsc
+	boolean useUnsupportedTrick = false;
 	
 	// Various values from CRF acting as indicators of when we need to ...
 	private int cachedValueWeightsStamp = -1;  // ... re-calculate expectations and values to getValue() because weights' values changed
@@ -56,17 +40,15 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 	private int cachedWeightsStructureStamp = -1; // ... re-allocate crf.weights, expectations & constraints because new states, transitions
 	// Use mcrf.trainingSet to see when we need to re-allocate crf.weights, expectations & constraints because we are using a different TrainingList than last time
 
+	// gsc: number of times to reset (the optimizer), and continue training when the "could not step in
+	// current direction" exception occurs
+  	static final int DEFAULT_MAX_RESETS = 3;
+	int maxResets = DEFAULT_MAX_RESETS;
 	
 	public CRFTrainerByValueGradients (CRF crf, Optimizable.ByGradientValue[] optimizableByValueGradientObjects) {
 		this.crf = crf;
 		this.optimizableByValueGradientObjects = optimizableByValueGradientObjects;
 	}
-	
-//	public CRFTrainerByValueGradients (CRF crf, Class... optimizableByValueGradientClasses) {
-//		// The second argument is not type-checking, but it would be such a pain to define Factory classes and interfaces for this...
-//		this.crf = crf;
-//		this.optimizableByValueGradientClasses = optimizableByValueGradientClasses;
-//	}
 	
 	public Transducer getTransducer() { return crf; }
 	public CRF getCRF () { return crf; }
@@ -75,11 +57,16 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 	public boolean isFinishedTraining() { return converged; }
 	public int getIteration () { return iterationCount; }
 	
+	// gsc
+	public Optimizable.ByGradientValue[] getOptimizableByGradientValueObjects() {
+		return optimizableByValueGradientObjects;
+	}
+
 
 	public OptimizableCRF getOptimizableCRF (InstanceList trainingSet) {
 		if (cachedWeightsStructureStamp != crf.weightsStructureChangeStamp) {
 				if (useSparseWeights)
-					crf.setWeightsDimensionAsIn (trainingSet, false);	
+					crf.setWeightsDimensionAsIn (trainingSet, useUnsupportedTrick);	
 				else 
 					crf.setWeightsDimensionDensely ();
 			ocrf = null;
@@ -114,6 +101,7 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 		getOptimizableCRF(trainingSet); // This will set this.mcrf if necessary
 		getOptimizer(trainingSet); // This will set this.opt if necessary
 
+		int numResets = 0;
 		boolean converged = false;
 		logger.info ("CRF about to train with "+numIterations+" iterations");
 		for (int i = 0; i < numIterations; i++) {
@@ -123,9 +111,21 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 				logger.info ("CRF finished one iteration of maximizer, i="+i);
 				runEvaluators();
 			} catch (IllegalArgumentException e) {
+        		// gsc: resetting the optimizer for specified number of times
 				e.printStackTrace();
-				logger.info ("Catching exception; saying converged.");
-				converged = true;
+				logger.info ("Catching exception.");
+				if (numResets < maxResets) {
+					// reset the optimizer and get a new one
+					logger.info("Resetting optimizer.");
+					++numResets;
+					opt = null;
+					getOptimizer(trainingSet);
+//				logger.info ("Catching exception; saying converged.");
+//				converged = true;
+				} else {
+					logger.info("Saying converged.");
+					converged = true;
+				}
 			}
 			if (converged) {
 				logger.info ("CRF training has converged, i="+i);
@@ -134,7 +134,6 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 		}
 		return converged;
 	}
-	
 	
 
 	/**
@@ -168,6 +167,13 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 	public void setUseSparseWeights (boolean b) { useSparseWeights = b; }
 	public boolean getUseSparseWeights () { return useSparseWeights; }
 
+	// gsc
+	public void setUseUnsupportedTrick (boolean b) { useUnsupportedTrick = b; }
+	public boolean getUseUnsupportedTrick () { return useUnsupportedTrick; }
+
+  // gsc: change max. number of times the optimizer can be reset before
+  // throwing the "could not step in current direction" exception
+  public void setMaxResets(int maxResets) { this.maxResets = maxResets; }
 	
 	
 	
@@ -299,7 +305,7 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 
 	}
 
-	// Serialization for CRFTrainerByLikelihood
+	// Serialization for CRFTrainerByValueGradient
 
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;
