@@ -73,8 +73,10 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 		for (Instance instance : ilist) {
 			FeatureVectorSequence input = (FeatureVectorSequence) instance.getData();
 			FeatureSequence output = (FeatureSequence) instance.getTarget();
+			double instanceWeight = ilist.getInstanceWeight(instance);
 			//System.out.println ("Constraint-gathering on instance "+i+" of "+ilist.size());
-			new SumLatticeDefault (this.crf, input, output, constraints.new Incrementor()); 
+			Transducer.Incrementor incrementor = instanceWeight == 1.0 ? constraints.new Incrementor() : constraints.new WeightedIncrementor(instanceWeight);
+			new SumLatticeDefault (this.crf, input, output, incrementor); 
 		}
 //		System.out.println ("testing Value and Gradient");
 //		TestOptimizable.testValueAndGradientCurrentParameters (this);
@@ -129,6 +131,7 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 		double unlabeledWeight, labeledWeight, weight;
 		for (int ii = 0; ii < trainingSet.size(); ii++) {
 			Instance instance = trainingSet.get(ii);
+			double instanceWeight = trainingSet.getInstanceWeight(instance);
 			FeatureVectorSequence input = (FeatureVectorSequence) instance.getData();
 			FeatureSequence output = (FeatureSequence) instance.getTarget();
 			labeledWeight = new SumLatticeDefault (this.crf, input, output, (Transducer.Incrementor)null).getTotalWeight();
@@ -139,7 +142,8 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 				logger.warning (instanceName + " has -infinite labeled weight.\n"+(instance.getSource() != null ? instance.getSource() : ""));
 			}
 			
-			unlabeledWeight = new SumLatticeDefault (this.crf, input, null, expectations.new Incrementor()).getTotalWeight();
+			Transducer.Incrementor incrementor = instanceWeight == 1.0 ? expectations.new Incrementor() : expectations.new WeightedIncrementor (instanceWeight);
+			unlabeledWeight = new SumLatticeDefault (this.crf, input, null, incrementor).getTotalWeight();
 			//System.out.println ("unlabeledWeight = "+unlabeledWeight);
 			if (Double.isInfinite (unlabeledWeight)) {
 				++numInfUnlabeledWeight;
@@ -159,7 +163,7 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 				continue;
 			} else {
 				// Weights are log probabilities, and we want to return a log probability
-				value += weight;
+				value += weight * instanceWeight;
 			}
 		}
 
