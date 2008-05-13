@@ -287,9 +287,22 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	 */
 	public boolean add (Instance instance)
 	{
-		if (!Alphabet.alphabetsMatch(this, instance))
-			throw new IllegalArgumentException ("Alphabets don't match: Instance: "+
-					instance.getAlphabets()+" InstanceList: "+this.getAlphabets());
+		if (!Alphabet.alphabetsMatch(this, instance)) {
+      // gsc
+      Alphabet data_alphabet = instance.getDataAlphabet();
+      Alphabet target_alphabet = instance.getTargetAlphabet();
+      StringBuilder sb = new StringBuilder();
+      sb.append("Alphabets don't match: ");
+      sb.append("Instance: [" + (data_alphabet == null ? null : data_alphabet.size()) + ", " +
+          (target_alphabet == null ? null : target_alphabet.size()) + "], ");
+      data_alphabet = this.getDataAlphabet();
+      target_alphabet = this.getTargetAlphabet();
+      sb.append("InstanceList: [" + (data_alphabet == null ? null : data_alphabet.size()) + ", " +
+          (target_alphabet == null ? null : target_alphabet.size()) + "]\n");
+      throw new IllegalArgumentException(sb.toString());
+//			throw new IllegalArgumentException ("Alphabets don't match: Instance: "+
+//					instance.getAlphabets()+" InstanceList: "+this.getAlphabets());
+    }
 		if (dataClass == null) {
 			dataClass = instance.data.getClass();
 			if (pipe != null && pipe.isTargetProcessing())
