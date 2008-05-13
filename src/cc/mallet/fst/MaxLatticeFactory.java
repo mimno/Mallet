@@ -1,8 +1,10 @@
 package cc.mallet.fst;
 
+import java.io.Serializable;
+
 import cc.mallet.types.Sequence;
 
-public abstract class MaxLatticeFactory {
+public abstract class MaxLatticeFactory implements Serializable {
 	
 	public MaxLattice newMaxLattice (Transducer trans, Sequence inputSequence)
 	{
