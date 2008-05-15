@@ -1195,6 +1195,7 @@ public class CRF extends Transducer implements Serializable
 	
 	// gsc: changing this to consider the case when trainingData is a mix of labeled and unlabeled data,
 	// and we want to use the unlabeled data as well to set some weights (while using the unsupported trick)
+  // *note*: 'target' sequence of an unlabeled instance is either null or is of size zero.
 	public void setWeightsDimensionAsIn (InstanceList trainingData, boolean useSomeUnsupportedTrick)
 	{
 		final BitSet[] weightsPresent;
@@ -1214,8 +1215,8 @@ public class CRF extends Transducer implements Serializable
 			Instance instance = trainingData.get(i);
 			FeatureVectorSequence input = (FeatureVectorSequence) instance.getData();
 			FeatureSequence output = (FeatureSequence) instance.getTarget();
-			// trainingData can have unlabeled instances as well
-			if (output != null) {
+			// gsc: trainingData can have unlabeled instances as well
+			if (output != null && output.size() > 0) {
 				// Do it for the paths consistent with the labels...
 				sumLatticeFactory.newSumLattice (this, input, output, new Transducer.Incrementor() {
 					public void incrementTransition (Transducer.TransitionIterator ti, double count) {
