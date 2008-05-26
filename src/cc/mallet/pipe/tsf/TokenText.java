@@ -36,6 +36,7 @@ public class TokenText extends Pipe implements Serializable
 	public TokenText (String prefix)
 	{
 		this.prefix=prefix;
+		this.matchingRegex = null;
 	}
 	
 	public TokenText ()
@@ -47,8 +48,9 @@ public class TokenText extends Pipe implements Serializable
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		for (int i = 0; i < ts.size(); i++) {
 			Token t = ts.get(i);
-			if (matchingRegex != null && matchingRegex.matcher(t.getText()).matches())
+			if (matchingRegex == null || matchingRegex.matcher(t.getText()).matches()) {
 				t.setFeatureValue (prefix == null ? t.getText().intern() : (prefix+t.getText()).intern(), 1.0);
+			}
 		}
 		return carrier;
 	}
@@ -56,16 +58,19 @@ public class TokenText extends Pipe implements Serializable
 	// Serialization 
 	
 	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 0;
+	private static final int CURRENT_SERIAL_VERSION = 1;
 	
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeObject (prefix);
+		out.writeObject (matchingRegex);
 	}
 	
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		prefix = (String) in.readObject ();
+		if (version > 0)
+			matchingRegex = (Pattern) in.readObject();
 	}
 
 
