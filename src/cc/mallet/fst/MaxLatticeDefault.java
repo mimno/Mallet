@@ -13,7 +13,11 @@ package cc.mallet.fst;
 
 
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -477,12 +481,23 @@ public class MaxLatticeDefault implements MaxLattice
 
 	
 	
-	public static class Factory extends MaxLatticeFactory
+	public static class Factory extends MaxLatticeFactory implements Serializable
 	{
 		public MaxLattice newMaxLattice (Transducer trans, Sequence inputSequence, Sequence outputSequence)
 		{
 			return new MaxLatticeDefault (trans, inputSequence, outputSequence);
 		}
+
+		private static final long serialVersionUID = 1;
+		private static final int CURRENT_SERIAL_VERSION = 1;
+
+		private void writeObject(ObjectOutputStream out) throws IOException {
+			out.writeInt(CURRENT_SERIAL_VERSION);
+		}
+		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+			int version = in.readInt();
+		}
+
 
 	}
 
