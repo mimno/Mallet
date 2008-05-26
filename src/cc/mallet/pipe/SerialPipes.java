@@ -114,6 +114,11 @@ public class SerialPipes extends Pipe implements Serializable
 		return retPipe;
 	}
 	
+	/** Allows access to the underlying collection of Pipes.  Use with caution. */
+	public ArrayList<Pipe> pipes() {
+		return pipes;
+	}
+	
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer();
