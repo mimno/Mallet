@@ -1,5 +1,9 @@
 package cc.mallet.fst;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -375,12 +379,22 @@ public class SumLatticeDefault implements SumLattice
 		}
 	}
 	
-	public static class Factory extends SumLatticeFactory
+	public static class Factory extends SumLatticeFactory implements Serializable
 	{
 		public SumLattice newSumLattice (Transducer trans, Sequence input, Sequence output, 
 				Transducer.Incrementor incrementor, boolean saveXis, LabelAlphabet outputAlphabet)
 		{
 			return new SumLatticeDefault (trans, input, output, incrementor, saveXis, outputAlphabet);
+		}
+
+		private static final long serialVersionUID = 1;
+		private static final int CURRENT_SERIAL_VERSION = 1;
+
+		private void writeObject(ObjectOutputStream out) throws IOException {
+			out.writeInt(CURRENT_SERIAL_VERSION);
+		}
+		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+			int version = in.readInt();
 		}
 
 	}
