@@ -16,17 +16,17 @@ import cc.mallet.types.Sequence;
  * 
  */
 public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
-	CRF crf;
+	protected CRF crf;
 
 	// t is the decaying factor. lambda is some regularization depending on the
 	// training set size and the gaussian prior.
-	double learningRate, t, lambda;
+	protected double learningRate, t, lambda;
 
-	int iterationCount = 0;
+	protected int iterationCount = 0;
 
-	boolean converged = false;
+	protected boolean converged = false;
 
-	CRF.Factors expectations, constraints;
+	protected CRF.Factors expectations, constraints;
 
 	public CRFTrainerByStochasticGradient (CRF crf, InstanceList trainingSample) {
 		this.crf = crf;

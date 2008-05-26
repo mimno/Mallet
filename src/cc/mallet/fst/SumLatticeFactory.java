@@ -1,10 +1,12 @@
 package cc.mallet.fst;
 
+import java.io.Serializable;
+
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Sequence;
 
 /**  */
-public abstract class SumLatticeFactory {
+public abstract class SumLatticeFactory implements Serializable {
 
 	public SumLattice newSumLattice (Transducer trans, Sequence input)
 	{
