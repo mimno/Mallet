@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
 import java.util.BitSet;
 import java.util.Random;
+
 import java.util.logging.Logger;
 
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
+
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.MatrixOps;
+
 import cc.mallet.util.MalletLogger;
 
 /** A CRF trainer that can combine multiple objective functions, each represented by a Optmizable.ByValueGradient. */
@@ -106,9 +110,12 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 		logger.info ("CRF about to train with "+numIterations+" iterations");
 		for (int i = 0; i < numIterations; i++) {
 			try {
+        // gsc: timing each iteration
+        long startTime = System.currentTimeMillis();
 				converged = opt.optimize (1);
+				logger.info ("CRF finished one iteration of maximizer, i="+i+", "+
+                     +(System.currentTimeMillis()-startTime)/1000 + " secs.");
 				iterationCount++;
-				logger.info ("CRF finished one iteration of maximizer, i="+i);
 				runEvaluators();
 			} catch (IllegalArgumentException e) {
         		// gsc: resetting the optimizer for specified number of times
