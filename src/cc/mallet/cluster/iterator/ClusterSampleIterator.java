@@ -8,7 +8,6 @@ import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.neighbor_evaluator.AgglomerativeNeighbor;
 import cc.mallet.cluster.util.ClusterUtils;
 import cc.mallet.types.Instance;
-import cc.mallet.types.InstanceList;
 import cc.mallet.util.Randoms;
 
 /**

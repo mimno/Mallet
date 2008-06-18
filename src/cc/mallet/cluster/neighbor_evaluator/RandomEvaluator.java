@@ -1,7 +1,10 @@
 package cc.mallet.cluster.neighbor_evaluator;
 
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import cc.mallet.util.Randoms;
 

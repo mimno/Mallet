@@ -102,10 +102,18 @@ public class Clustering implements Serializable {
 	}
 	
 	public String toString () {
-		String ret = "";
-		for (int i = 0; i < labels.length; i++)
-			ret += labels[i] + " ";
-		return ret;
+    	String result="";
+		result+="#Clusters: "+getNumClusters()+"\n";
+		for(int i=0;i<getNumClusters();i++)
+		{
+			result+="\n--CLUSTER "+i+"--";
+			int[] cluster=getIndicesWithLabel(i);
+			for(int k=0;k<cluster.length;k++)
+			{
+				result+="\n\t"+instances.get(cluster[k]).getData().toString();
+			}
+		}
+		return result;
 	}
 
 	public Clustering shallowCopy () {

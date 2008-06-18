@@ -1,5 +1,7 @@
 package cc.mallet.cluster.util;
 
+import java.io.Serializable;
+
 /**
  * 2-D upper-triangular matrix. Used to store pairwise affinity
  * scores.
@@ -8,7 +10,10 @@ package cc.mallet.cluster.util;
  * @version 1.0
  * @since 1.0
  */
-public class PairwiseMatrix {
+public class PairwiseMatrix implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
 	double[][] vals;
 	
 	public PairwiseMatrix (int size) {

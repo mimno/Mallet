@@ -24,6 +24,8 @@ import cc.mallet.types.MatrixOps;
  */
 public class PairwiseEvaluator extends ClassifyingNeighborEvaluator {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * How to combine a set of pairwise scores (e.g. mean, max, ...).
 	 */

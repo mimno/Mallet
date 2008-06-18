@@ -141,6 +141,8 @@ public class FirstOrderClusterExample {
 	 */
 	private class OverlappingFeaturePipe extends Pipe {
 
+		private static final long serialVersionUID = 1L;
+
 		public OverlappingFeaturePipe () {
 			super (new Alphabet(), new LabelAlphabet());			
 		}

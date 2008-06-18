@@ -32,6 +32,8 @@ import cc.mallet.util.VectorStats;
 
 public class KMeans extends Clusterer {
 
+	private static final long serialVersionUID = 1L;
+
 	// Stop after movement of means is less than this
 	static double MEANS_TOLERANCE = 1e-2;
 

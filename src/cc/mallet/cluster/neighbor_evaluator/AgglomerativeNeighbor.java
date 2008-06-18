@@ -13,6 +13,8 @@ import cc.mallet.util.ArrayUtils;
  */
 public class AgglomerativeNeighbor extends Neighbor {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Instance indices in the new, merged cluster.
 	 */

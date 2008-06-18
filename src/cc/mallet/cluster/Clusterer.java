@@ -8,9 +8,11 @@
 package cc.mallet.cluster;
 
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-import cc.mallet.cluster.Clustering;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.InstanceList;
 

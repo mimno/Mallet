@@ -4,7 +4,6 @@ package cc.mallet.cluster.evaluate;
 import java.util.HashSet;
 
 import cc.mallet.cluster.Clustering;
-import cc.mallet.types.InstanceList;
 
 /**
  * Evaluate a Clustering using the MUC evaluation metric. See Marc

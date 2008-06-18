@@ -161,6 +161,22 @@ public class ClusterUtils {
 													clustering.getNumClusters(),
 													newLabels);
 	}
+	
+	public static Clustering mergeInstancesWithSameLabel (Clustering clustering) {
+		InstanceList list = clustering.getInstances();
+		for (int i = 0; i < list.size(); i++) {
+			Instance ii = list.get(i);
+			int li = clustering.getLabel(i);
+			for (int j = i + 1; j < list.size(); j++) {
+				Instance ij = list.get(j);
+				int lj = clustering.getLabel(j);
+				if (li != lj && ii.getLabeling().equals(ij.getLabeling()))
+					clustering = ClusterUtils.mergeClusters(clustering, li, lj);
+			}
+		}	
+		return clustering;
+	}
+
 
 	/**
 	 *

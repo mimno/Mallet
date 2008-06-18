@@ -1,9 +1,12 @@
 package cc.mallet.cluster.neighbor_evaluator;
 
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import cc.mallet.classify.Classifier;
+import cc.mallet.types.Instance;
 import cc.mallet.types.LabelVector;
 
 /**

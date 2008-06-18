@@ -1,8 +1,7 @@
 package cc.mallet.cluster.neighbor_evaluator;
 
 
-import java.util.ArrayList;
-
+import weka.core.Instances;
 import cc.mallet.classify.Classifier;
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.util.PairwiseMatrix;
@@ -20,7 +19,9 @@ import cc.mallet.types.MatrixOps;
  */
 public class MedoidEvaluator extends ClassifyingNeighborEvaluator {
 
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * If single link is true, then the score of clusters A and B is the score of the link between the two medoids.
      */
     boolean singleLink=false;
