@@ -14,3 +14,4 @@ class
 .project
 .classpath
 .settings
+.distfiles
