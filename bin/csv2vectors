@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Make sure that the classpath includes the mallet jar, class directory and
+# mallet-deps.jar corresponding to this shell script
+# class directory is optional
+
+malletdir=`dirname $0`
+malletdir=`dirname $malletdir`
+cp=$malletdir/lib/mallet.jar:$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
+
+# Default Java heap size.  Change with -Xmx800m as the first argument.
+mem=400m
+
+# If first argument is something like -Xmx900m, process appropriately
+arg=`echo "$1" | sed -e 's/-Xmx//'`
+if test $1 != $arg ; then
+  mem=$arg
+  shift 
+fi
+
+java -Xmx$mem -server -classpath $cp edu.umass.cs.mallet.base.classify.tui.Csv2Vectors "$@"
+
