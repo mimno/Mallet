@@ -1,0 +1,72 @@
+This package contains code for supervised and unsupervised clustering.
+
+Below, I'll explain how to use this package. I'll use the example of citation matching (deciding when two citations refer to the same paper).
+
+Terminology:
+
+  Instance : a citation 
+  Cluster: a collection of similar Instances (e.g., duplicate citations)
+  Clustering: a collection of Clusters
+
+SUPERVISED CLUSTERING
+
+(1) Format training data
+  - Each citation should be in a separate file in the format
+     field value1 value2 ...
+     For example:
+       title artificial intelligence
+       year 2003
+  - Each cluster should be a separate directory
+      For example:
+        data/cluster1/instance1
+        data/cluster1/instance2
+        data/cluster2/instance3
+        data/cluster2/instance4
+
+(2) Parse training data
+
+	$ java cc.mallet.cluster.tui.Text2Clusterings --input data --output text.clusterings
+
+	This will convert the data files into a Clusterings object serialized to text.clusterings
+
+	
+(3) Optional: Print statistics about the Clusterings
+
+	$ java cc.mallet.cluster.tui.Clusterings2Info --input text.clusterings --print
+
+	This will print statistics as well as the data read in step (2).
+
+	
+(4) Split into training and testing sets.
+
+	$ java cc.mallet.cluster.tui.Clusterings2Clusterings --input text.clusterings --training-proportion 0.5 --output text.clusterings
+
+	This will split the data into 50% training 50% testing (split by cluster). The output will be in text.clusterings.train and text.clusterings.test
+
+
+(5) Train and test
+
+    $ java cc.mallet.cluster.tui.Clusterings2Clusterer --train text.clusterings.train --test text.clusterings.train --exact-match-fields title year --approx-match-fields title year --substring-match-fields title year --save-clusterer clusterer.mallet
+    
+    This will train a binary MaxEnt classifier to classify whether a pair of Instances belong in the same cluster. This classifier is then embedded in an agglomerative clustering algorithm.
+    
+    There is a default pipe implemented as an inner class in Clusterings2Clusterer. It examines pairs of Instances and includes features such as:
+      - exact match 
+      - approximate match (Levenshtein distance is less than 0.8)
+      - substring match (one field value is completely contained in another)
+    To use this pipe, pass arguments to --exact-match-fields corresponding to field names in the original text files. 
+
+    The learned Clusterer is saved to clusterer.mallet. You can do clustering on another dataset using this clusterer as follows:
+ 
+    $ java cc.mallet.cluster.tui.Clusterings2Clusterer --load-clusterer clusterer.mallet --test text.clusterings.test2
+
+    NOTE: Make sure this new data was read with the same call to Text2Clusterings (otherwise Alphabets may not match).        
+        
+        
+There are a few other options that you can see by running each of the commands above with no arguments.
+
+UNSUPERVISED CLUSTERING
+
+This package also has an implementation of K-Means clustering. In theory, it can be used in the same way as the supervised clustering, although I have not tried this.
+
+Questions? Aron Culotta <culotta@cs.umass.edu> or Michael Wick <mwick.cs.umass.edu>
