@@ -24,6 +24,7 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SLOPE = 0.2;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SHARPNESS = 10.0;
 
+  // gsc: changing field access to make this class extensible
 	protected InstanceList trainingSet;
 	protected double cachedValue = -123456789;
 	protected double[] cachedGradient;
