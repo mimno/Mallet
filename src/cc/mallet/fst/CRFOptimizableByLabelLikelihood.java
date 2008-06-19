@@ -24,12 +24,12 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SLOPE = 0.2;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SHARPNESS = 10.0;
 
-	InstanceList trainingSet;
-	double cachedValue = -123456789;
-	double[] cachedGradient;
-	BitSet infiniteValues = null;
-	CRF crf;
-	CRF.Factors constraints, expectations;
+	protected InstanceList trainingSet;
+	protected double cachedValue = -123456789;
+	protected double[] cachedGradient;
+	protected BitSet infiniteValues = null;
+	protected CRF crf;
+	protected CRF.Factors constraints, expectations;
 	// Various values from CRF acting as indicators of when we need to ...
 	private int cachedValueWeightsStamp = -1;  // ... re-calculate expectations and values to getValue() because weights' values changed
 	private int cachedGradientWeightsStamp = -1; // ... re-calculate to getValueGradient() because weights' values changed
