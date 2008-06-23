@@ -30,7 +30,7 @@ import cc.mallet.util.Randoms;
 public class LDAHyper implements Serializable {
 	
 	// Analogous to a cc.mallet.classify.Classification
-	public class Topication {
+	public class Topication implements Serializable {
 		public Instance instance;
 		public LDAHyper model;
 		public LabelSequence topicSequence;
