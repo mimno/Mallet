@@ -9,6 +9,6 @@ package cc.mallet.fst;
  * @author Gaurav Chandalia
  */
 public interface CacheStaleIndicator {
-  public boolean isValueStale();
-  public boolean isGradientStale();
+	public boolean isValueStale();
+	public boolean isGradientStale();
 }

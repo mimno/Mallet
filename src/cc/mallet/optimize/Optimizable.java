@@ -64,14 +64,14 @@ public interface Optimizable
 	public interface ByBatchGradient extends Optimizable {
 		public void getBatchValueGradient (double[] buffer, int batchIndex, int[] batchAssignments);
 		public double getBatchValue(int batchIndex, int[] batchAssignments);
-  }
+	}
 
-  // gsc: for computing gradient from batches in multiple threads
+	// gsc: for computing gradient from batches in multiple threads
 	public interface ByCombiningBatchGradient extends Optimizable {
 		public void getBatchValueGradient (double[] buffer, int batchIndex, int[] batchAssignments);
 		public double getBatchValue(int batchIndex, int[] batchAssignments);
-    public void combineGradients (Collection<double[]> batchGradients, double[] buffer);
-    public int getNumBatches();
+		public void combineGradients (Collection<double[]> batchGradients, double[] buffer);
+		public int getNumBatches();
 	}
 
 }
