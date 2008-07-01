@@ -863,6 +863,8 @@ public class LDAHyper {
 		out.writeObject (alpha);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
+		
+			// Put here iterationsSoFar, etc... TODO
 
 		for (int fi = 0; fi < numTypes; fi++)
 			out.writeObject (typeTopicCounts[fi]);
