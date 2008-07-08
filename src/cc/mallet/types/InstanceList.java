@@ -287,6 +287,10 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	 */
 	public boolean add (Instance instance)
 	{
+		if (dataAlphabet == null)
+			dataAlphabet = instance.getDataAlphabet();
+		if (targetAlphabet == null)
+			targetAlphabet = instance.getTargetAlphabet();
 		if (!Alphabet.alphabetsMatch(this, instance)) {
       // gsc
       Alphabet data_alphabet = instance.getDataAlphabet();

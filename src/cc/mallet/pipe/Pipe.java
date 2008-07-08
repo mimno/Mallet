@@ -240,6 +240,13 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 			return true;
 		return false;
 	}
+	
+	public void setOrCheckDataAlphabet (Alphabet a) {
+		if (dataAlphabet == null)
+			dataAlphabet = a;
+		else if (! dataAlphabet.equals(a))
+			throw new IllegalStateException ("Data alphabets do not match");
+	}
 
 	public void setTargetAlphabet (Alphabet tDict)
 	{
@@ -249,6 +256,13 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 		targetAlphabet = tDict;
 	}
 	
+	public void setOrCheckTargetAlphabet (Alphabet a) {
+		if (targetAlphabet == null)
+			targetAlphabet = a;
+		else if (! targetAlphabet.equals(a))
+			throw new IllegalStateException ("Target alphabets do not match");
+	}
+
 	protected void preceedingPipeDataAlphabetNotification (Alphabet a)
 	{
 		if (dataAlphabet == null)
