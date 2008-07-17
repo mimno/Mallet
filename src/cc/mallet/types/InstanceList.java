@@ -127,6 +127,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	static final Pipe notYetSetPipe = new NotYetSetPipe();
 
 	/** Creates a list that will have its pipe set later when its first Instance is added. */
+	@Deprecated // Pipe is never set if you use this constructor 
 	public InstanceList ()
 	{
 		this (notYetSetPipe);
@@ -598,7 +599,7 @@ public InstanceList[] splitInOrder (double[] proportions) {
 		if (sumOfWeights <= 0)
 			throw new IllegalArgumentException("weights must sum to positive value");
 
-		InstanceList newList = new InstanceList();
+		InstanceList newList = new InstanceList(getPipe(), size());
 		double[] probabilities = new double[size()];
 		double sumProbs = 0;
 		for (int i = 0; i < size(); i++) {
