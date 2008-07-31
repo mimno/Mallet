@@ -56,8 +56,8 @@ public class LDAHyper implements Serializable {
 	protected double betaSum;
 	public static final double DEFAULT_BETA = 0.01;
 	
-	double smoothingOnlyMass = 0.0;
-	double[] cachedCoefficients;
+	protected double smoothingOnlyMass = 0.0;
+	protected double[] cachedCoefficients;
 	int topicTermCount = 0;
 	int betaTopicCount = 0;
 	int smoothingOnlyCount = 0;
@@ -315,15 +315,19 @@ public class LDAHyper implements Serializable {
 			  this.write (new File(outputModelFilename+'.'+iterations));
 			  }
 			*/
+
 			// TODO this condition should also check that we have more than one sample to work with here
 			// (The number of samples actually obtained is not yet tracked.)
-			if (iterationsSoFar > burninPeriod && optimizeInterval != 0 &&	iterationsSoFar % optimizeInterval == 0) {
-				long optimizeTime = System.currentTimeMillis();
+			if (iterationsSoFar > burninPeriod && optimizeInterval != 0 &&
+				iterationsSoFar % optimizeInterval == 0) {
+
 				alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts);
-				//System.out.print("[o:" + (System.currentTimeMillis() - optimizeTime) + "]");
+
 				smoothingOnlyMass = 0.0;
-				for (int topic = 0; topic < numTopics; topic++) 
+				for (int topic = 0; topic < numTopics; topic++) {
 					smoothingOnlyMass += alpha[topic] * beta / (tokensPerTopic[topic] + betaSum);
+					cachedCoefficients[topic] =  alpha[topic] / (tokensPerTopic[topic] + betaSum);
+				}
 				clearHistograms();
 			}
 
@@ -448,10 +452,10 @@ public class LDAHyper implements Serializable {
 		}
 	}
 	
-	private void sampleTopicsForOneDoc (FeatureSequence tokenSequence,
-			FeatureSequence topicSequence,
-			boolean shouldSaveState,
-			boolean readjustTopicsAndStats /* currently ignored */) {
+	protected void sampleTopicsForOneDoc (FeatureSequence tokenSequence,
+										  FeatureSequence topicSequence,
+										  boolean shouldSaveState,
+										  boolean readjustTopicsAndStats /* currently ignored */) {
 
 		int[] oneDocTopics = topicSequence.getFeatures();
 
