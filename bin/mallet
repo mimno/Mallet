@@ -20,18 +20,19 @@ Mallet 2.0 commands:
   import            convert raw text to Mallet data file
   train-classifier  train a classifier from Mallet data files
   train-topics      train a topic model from Mallet data files
+  hlda              train a topic model using Hierarchical LDA
 
 Include --help with any option for more information
 EOF
 }
 
-## default to text2vectors
 CLASS=
 
 case $CMD in
 	import) CLASS=cc.mallet.classify.tui.Text2Vectors;;
 	train-classifier) CLASS=cc.mallet.classify.tui.Vectors2Classify;;
 	train-topics) CLASS=cc.mallet.topics.tui.Vectors2Topics;;
+	hlda) CLASS=cc.mallet.topics.tui.HierarchicalLDATUI;;
 	*) echo "Unrecognized command: $CMD"; help; exit 1;;
 esac
 
