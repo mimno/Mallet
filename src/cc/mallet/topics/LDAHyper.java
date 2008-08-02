@@ -41,6 +41,24 @@ public class LDAHyper implements Serializable {
 			this.model = model;
 			this.topicSequence = topicSequence;
 		}
+
+		// Maintainable serialization
+		private static final long serialVersionUID = 1;
+		private static final int CURRENT_SERIAL_VERSION = 0;
+		private void writeObject (ObjectOutputStream out) throws IOException {
+			out.writeInt (CURRENT_SERIAL_VERSION);
+			out.writeObject (instance);
+			out.writeObject (model);
+			out.writeObject (topicSequence);
+			out.writeObject (topicDistribution);
+		}
+		private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+			int version = in.readInt ();
+			instance = (Instance) in.readObject();
+			model = (LDAHyper) in.readObject();
+			topicSequence = (LabelSequence) in.readObject();
+			topicDistribution = (Labeling) in.readObject();
+		}
 	}
 
 	protected ArrayList<Topication> data;  // the training instances and their topic assignments
@@ -77,7 +95,7 @@ public class LDAHyper implements Serializable {
 	protected int[] docLengthCounts; // histogram of document sizes
 	protected int[][] topicDocCounts; // histogram of document/topic counts, indexed by <topic index, sequence position index>
 
-	protected int iterationsSoFar = 0;
+	public int iterationsSoFar = 0;
 	public int numIterations = 1000;
 	public int burninPeriod = 20; // was 50; //was 200;
 	public int saveSampleInterval = 5; // was 10;	
@@ -204,8 +222,19 @@ public class LDAHyper implements Serializable {
 				newTypeTopicCounts[i] = typeTopicCounts[i];
 			for (int i = typeTopicCounts.length; i < numTypes; i++)
 				newTypeTopicCounts[i] = new TIntIntHashMap();
+			// TODO AKM July 18:  Why wasn't the next line there previously?
+			// this.typeTopicCounts = newTypeTopicCounts;
 			this.betaSum = beta * numTypes;
 		}	// else, nothing changed, nothing to be done
+	}
+	
+	private void initializeTypeTopicCounts () {
+		TIntIntHashMap[] newTypeTopicCounts = new TIntIntHashMap[numTypes];
+		for (int i = 0; i < typeTopicCounts.length; i++)
+			newTypeTopicCounts[i] = typeTopicCounts[i];
+		for (int i = typeTopicCounts.length; i < numTypes; i++)
+			newTypeTopicCounts[i] = new TIntIntHashMap();
+		this.typeTopicCounts = newTypeTopicCounts;
 	}
 	
 	public void addInstances (InstanceList training) {
@@ -704,9 +733,9 @@ public class LDAHyper implements Serializable {
 			int[] topics = typeTopicCounts[fi].keys();
 			for (int i = 0; i < topics.length; i++) {
 				wordCountsPerTopic[topics[i]].increment(fi, typeTopicCounts[fi].get(topics[i]));
-				//System.out.print (" "+typeTopicCounts[fi].get(topics[i]));
+				//System.out.print (" "+typeTopicCounts[fi].get(topics[i]));//
 			}
-			//System.out.println();
+			//System.out.println();//
 		}
 		for (int ti = 0; ti < numTopics; ti++) {
 			RankedFeatureVector rfv = wordCountsPerTopic[ti].toRankedFeatureVector();
@@ -719,7 +748,8 @@ public class LDAHyper implements Serializable {
 				}
 			} else {
 				out.print (ti + "\t" + formatter.format(alpha[ti]) + "\t");
-				for (int ri = 0; ri < numWords; ri++) 
+				int max = rfv.numLocations(); if (max > numWords) max = numWords;
+				for (int ri = 0; ri < max; ri++) 
 					out.print (alphabet.lookupObject(rfv.getIndexAtRank(ri)).toString()+" ");
 				out.print ("\n");
 			}
@@ -826,10 +856,26 @@ public class LDAHyper implements Serializable {
 			oos.close();
 		}
 		catch (IOException e) {
-			System.err.println("Exception writing file " + f + ": " + e);
+			System.err.println("LDAHyper.write: Exception writing LDAHyper to file " + f + ": " + e);
 		}
 	}
 	
+	public static LDAHyper read (File f) {
+		LDAHyper lda = null;
+		try {
+			ObjectInputStream ois = new ObjectInputStream (new FileInputStream(f));
+			lda = (LDAHyper) ois.readObject();
+			lda.initializeTypeTopicCounts();  // To work around a bug in Trove?
+			ois.close();
+		}
+		catch (IOException e) {
+			System.err.println("Exception reading file " + f + ": " + e);
+		}
+		catch (ClassNotFoundException e) {
+			System.err.println("Exception reading file " + f + ": " + e);
+		}
+		return lda;
+	}
 	
 	// Serialization
 	
@@ -840,46 +886,100 @@ public class LDAHyper implements Serializable {
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
 
-		// Instance lists
 		out.writeObject (data);
 		out.writeObject (alphabet);
 		out.writeObject (topicAlphabet);
 
 		out.writeInt (numTopics);
+		out.writeInt (numTypes);
 		out.writeObject (alpha);
+		out.writeDouble (alphaSum);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
+
+		out.writeDouble (smoothingOnlyMass);
+		out.writeObject (cachedCoefficients);
+		out.writeObject (testing);
 		
-			// Put here iterationsSoFar, etc... TODO
+		out.writeObject (oneDocTopicCounts);
 
-		for (int fi = 0; fi < numTypes; fi++)
-			out.writeObject (typeTopicCounts[fi]);
+		//out.writeObject (typeTopicCounts); // Seems to be buggy
+		for (int fi = 0; fi < numTypes; fi++) {
+			int[] topics = typeTopicCounts[fi].keys();
+			out.writeInt (topics.length);
+			for (int i = 0; i < topics.length; i++) {
+				out.writeInt(topics[i]);
+				out.writeInt(typeTopicCounts[fi].get(topics[i]));
+			}
+		}
 
-		for (int ti = 0; ti < numTopics; ti++)
-			out.writeInt (tokensPerTopic[ti]);
+		out.writeObject (tokensPerTopic);
+		out.writeObject (docLengthCounts);
+		out.writeObject (topicDocCounts);
+		
+		out.writeInt (iterationsSoFar);
+		out.writeInt (numIterations);
+		out.writeInt (burninPeriod);
+		out.writeInt (saveSampleInterval);
+		out.writeInt (optimizeInterval);
+		out.writeInt (showTopicsInterval);
+		out.writeInt (wordsPerTopic);
+		out.writeInt (outputModelInterval);
+		out.writeObject (outputModelFilename);
+		out.writeInt (saveStateInterval);
+		out.writeObject (stateFilename);
+		out.writeObject (random);
+		out.writeObject (formatter);
+		out.writeBoolean (printLogLikelihood);
 	}
 	
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int featuresLength;
 		int version = in.readInt ();
-
-		data = (ArrayList<Topication>) in.readObject ();
+		
+		data = (ArrayList<Topication>) in.readObject();
 		alphabet = (Alphabet) in.readObject();
 		topicAlphabet = (LabelAlphabet) in.readObject();
-
+		
 		numTopics = in.readInt();
+		numTypes = in.readInt();
 		alpha = (double[]) in.readObject();
+		alphaSum = in.readDouble();
 		beta = in.readDouble();
 		betaSum = in.readDouble();
-		int numDocs = data.size();
 
-		int numTypes = alphabet.size();
-		typeTopicCounts = new TIntIntHashMap[numTypes];
-		for (int fi = 0; fi < numTypes; fi++)
-			typeTopicCounts[fi] = (TIntIntHashMap) in.readObject();
-		tokensPerTopic = new int[numTopics];
-		for (int ti = 0; ti < numTopics; ti++)
-			tokensPerTopic[ti] = in.readInt();
+		smoothingOnlyMass = in.readDouble();
+		cachedCoefficients = (double[]) in.readObject();
+		testing = (InstanceList) in.readObject();
+		
+		oneDocTopicCounts = (int[]) in.readObject();
+
+		//typeTopicCounts = (gnu.trove.TIntIntHashMap[]) in.readObject(); // Seems to be buggy
+		typeTopicCounts = new gnu.trove.TIntIntHashMap[numTypes];
+		for (int fi = 0; fi < numTypes; fi++) {
+			typeTopicCounts[fi] = new gnu.trove.TIntIntHashMap();
+			int numEntries = in.readInt();
+			for (int i = 0; i < numEntries; i++)
+				typeTopicCounts[fi].put(in.readInt(), in.readInt());
+		}
+
+		tokensPerTopic = (int[]) in.readObject();
+		docLengthCounts = (int[]) in.readObject();
+		topicDocCounts = (int[][]) in.readObject();
+		
+		iterationsSoFar = in.readInt();
+		numIterations = in.readInt();
+		burninPeriod = in.readInt();
+		saveSampleInterval = in.readInt();
+		optimizeInterval = in.readInt();
+		showTopicsInterval = in.readInt();
+		wordsPerTopic = in.readInt();
+		outputModelInterval = in.readInt();
+		outputModelFilename = (String) in.readObject();
+		saveStateInterval = in.readInt();
+		stateFilename = (String) in.readObject();
+		random = (Randoms) in.readObject();
+		formatter = (NumberFormat) in.readObject();
+		printLogLikelihood = in.readBoolean();
 	}
 
 
