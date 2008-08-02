@@ -50,9 +50,9 @@ public class MUCEvaluator extends ClusteringEvaluator {
 		int denominator = 0;
 		for (int i = 0; i < predicted.getNumClusters(); i++) {
 			int[] siprime = predicted.getIndicesWithLabel(i);
-			HashSet pOfsiprime = new HashSet();
+			HashSet<Integer> pOfsiprime = new HashSet<Integer>();
 			for (int j = 0; j < siprime.length; j++) 
-				pOfsiprime.add(new Integer(truth.getLabel(siprime[j])));
+				pOfsiprime.add(truth.getLabel(siprime[j]));
 			numerator += siprime.length - pOfsiprime.size();
 			denominator += siprime.length - 1;
 		}
@@ -66,7 +66,7 @@ public class MUCEvaluator extends ClusteringEvaluator {
 		numerator = denominator = 0;
 		for (int i = 0; i < truth.getNumClusters(); i++) {
 			int[] si = truth.getIndicesWithLabel(i);
-			HashSet pOfsi = new HashSet();
+			HashSet<Integer> pOfsi = new HashSet<Integer>();
 			for (int j = 0; j < si.length; j++) 
 				pOfsi.add(new Integer(predicted.getLabel(si[j])));
 			numerator += si.length - pOfsi.size();

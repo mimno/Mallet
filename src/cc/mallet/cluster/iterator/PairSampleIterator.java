@@ -17,14 +17,14 @@ import cc.mallet.util.Randoms;
  */
 public class PairSampleIterator extends NeighborIterator {
 
-	InstanceList instances;
-	Randoms random;
-	double positiveProportion;
-	int numberSamples;
-	int positiveTarget;
-	int positiveCount;
-	int totalCount;
-	int[] nonsingletonClusters;
+	protected InstanceList instances;
+	protected Randoms random;
+	protected double positiveProportion;
+	protected int numberSamples;
+	protected int positiveTarget;
+	protected int positiveCount;
+	protected int totalCount;
+	protected int[] nonsingletonClusters;
 	
 	/**
 	 *

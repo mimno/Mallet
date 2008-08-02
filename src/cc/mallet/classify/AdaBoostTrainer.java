@@ -63,7 +63,7 @@ public class AdaBoostTrainer extends ClassifierTrainer<AdaBoost>
 		java.util.Random random = new java.util.Random();
 		// Set the initial weights to be uniform
 		double w = 1.0 / trainingList.size();
-		InstanceList trainingInsts = new InstanceList();
+		InstanceList trainingInsts = new InstanceList(trainingList.getPipe(), trainingList.size());
 		for (int i = 0; i < trainingList.size(); i++)
 			trainingInsts.add(trainingList.get(i), w);
 
@@ -73,7 +73,7 @@ public class AdaBoostTrainer extends ClassifierTrainer<AdaBoost>
 			logger.info("AdaBoostTrainer.train: WARNING: more than two classes");
 		Classifier[] weakLearners = new Classifier[numRounds];
 		double[] alphas = new double[numRounds];
-		InstanceList roundTrainingInsts = new InstanceList();
+		InstanceList roundTrainingInsts = new InstanceList(trainingInsts.getPipe());
 
 		// Boosting iterations
 		for (int round = 0; round < numRounds; round++) {

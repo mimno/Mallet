@@ -201,7 +201,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 
 		if (numIterations == Integer.MAX_VALUE) {
 			// Run it again because in our and Sam Roweis' experience, BFGS can still
-			// eek out more likelihood after first convergence by re-running without
+			// eke out more likelihood after first convergence by re-running without
 			// being restricted by its gradient history.
 			opt.reset ();
 			try {

@@ -68,7 +68,7 @@ public class AdaBoostM2Trainer extends ClassifierTrainer<AdaBoostM2>
 		// Each instance in this list will have weights
 		// (mislabel distribution) associated with classes
 		// the intance doesn't belong to.
-		InstanceList trainingInsts = new InstanceList();
+		InstanceList trainingInsts = new InstanceList(trainingList.getPipe());
 		// Set the initial weights to be uniform
 		double[] weights = new double[numInstances * (numClasses - 1)];
 		double w = 1.0 / weights.length;
@@ -99,12 +99,12 @@ public class AdaBoostM2Trainer extends ClassifierTrainer<AdaBoostM2>
 			// Sample instances from set B using the 
 			// weight vector to train the weak learner
 			double epsilon;
-			InstanceList roundTrainingInsts = new InstanceList();
+			InstanceList roundTrainingInsts = new InstanceList(trainingInsts.getPipe());
 			int resamplingIterations = 0;
 			do {
 				epsilon = 0;
-				roundTrainingInsts = new InstanceList();
 				int[] sampleIndices = sampleWithWeights(instIndices, weights, random);
+        roundTrainingInsts = new InstanceList(trainingInsts.getPipe(), sampleIndices.length);
 				for (int i = 0; i < sampleIndices.length; i++) {
 					Instance inst = trainingInsts.get(sampleIndices[i]);
 					roundTrainingInsts.add(inst, 1);
