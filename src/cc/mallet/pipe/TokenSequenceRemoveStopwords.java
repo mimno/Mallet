@@ -22,39 +22,58 @@ import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 /**
  * Remove tokens from the token sequence in the data field whose text is in the stopword list.
-   @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- */
+ @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+*/
 
 public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 {
 	// xxx Use a gnu.trove collection instead
-	HashSet stoplist = newDefaultStopList();
+	HashSet<String> stoplist = null;
 	boolean caseSensitive = true;
 	boolean markDeletions = false;
 
-  private HashSet newDefaultStopList ()
-  {
-    HashSet sl = new HashSet();
-    for (int i = 0; i < stopwords.length; i++)
-      sl.add (stopwords[i]);
-    return sl;
-  }
-
-
-  public TokenSequenceRemoveStopwords (boolean caseSensitive, boolean markDeletions)
+	private HashSet<String> newDefaultStopList ()
 	{
+		HashSet<String> sl = new HashSet<String>();
+		for (int i = 0; i < stopwords.length; i++)
+			sl.add (stopwords[i]);
+		return sl;
+	}
+
+
+	public TokenSequenceRemoveStopwords (boolean caseSensitive, boolean markDeletions)
+	{
+		stoplist = newDefaultStopList();
 		this.caseSensitive = caseSensitive;
 		this.markDeletions = markDeletions;
 	}
 
-  public TokenSequenceRemoveStopwords (boolean caseSensitive)
+	public TokenSequenceRemoveStopwords (boolean caseSensitive)
 	{
+		stoplist = newDefaultStopList();
 		this.caseSensitive = caseSensitive;
 	}
 
 	public TokenSequenceRemoveStopwords ()
 	{
 		this (false);
+	}
+
+	/**
+	 *  Load a stoplist from a file.
+	 *  @param stoplistFile    The file to load
+	 *  @param encoding        The encoding of the stoplist file (eg UTF-8)
+	 *  @param includeDefault  Whether to include the standard mallet English stoplist
+	 */
+	public TokenSequenceRemoveStopwords(File stoplistFile, String encoding, boolean includeDefault,
+										boolean caseSensitive, boolean markDeletions) {
+		if (! includeDefault) { stoplist = new HashSet<String>(); }
+		else { stoplist = newDefaultStopList(); }
+
+		addStopWords (fileToStringArray(stoplistFile, encoding));
+
+		this.caseSensitive = caseSensitive;
+        this.markDeletions = markDeletions;
 	}
 
 	public TokenSequenceRemoveStopwords setCaseSensitive (boolean flag)
@@ -69,55 +88,65 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		return this;
 	}
 
-  public TokenSequenceRemoveStopwords addStopWords (String[] words)
-  {
-    for (int i = 0; i < words.length; i++)
-      stoplist.add (words[i]);
-    return this;
-  }
+	public TokenSequenceRemoveStopwords addStopWords (String[] words)
+	{
+		for (int i = 0; i < words.length; i++)
+			stoplist.add (words[i]);
+		return this;
+	}
 
 
-  public TokenSequenceRemoveStopwords removeStopWords (String[] words)
-  {
-    for (int i = 0; i < words.length; i++)
-      stoplist.remove (words[i]);
-    return this;
-  }
+	public TokenSequenceRemoveStopwords removeStopWords (String[] words)
+	{
+		for (int i = 0; i < words.length; i++)
+			stoplist.remove (words[i]);
+		return this;
+	}
 
-  /** Add whitespace-separated tokens in file "wordlist" to the stoplist. */
-  public TokenSequenceRemoveStopwords removeStopWords (File wordlist)
-  {
-    this.removeStopWords (fileToStringArray(wordlist));
-    return this;
-  }
+	/** Remove whitespace-separated tokens in file "wordlist" to the stoplist. */
+	public TokenSequenceRemoveStopwords removeStopWords (File wordlist)
+	{
+		this.removeStopWords (fileToStringArray(wordlist, null));
+		return this;
+	}
 
-  /** Add whitespace-separated tokens in file "wordlist" to the stoplist. */
-  public TokenSequenceRemoveStopwords addStopWords (File wordlist)
-  {
-    if (wordlist != null)
-      this.addStopWords (fileToStringArray(wordlist));
-    return this;
-  }
+	/** Add whitespace-separated tokens in file "wordlist" to the stoplist. */
+	public TokenSequenceRemoveStopwords addStopWords (File wordlist)
+	{
+		if (wordlist != null)
+			this.addStopWords (fileToStringArray(wordlist, null));
+		return this;
+	}
 
 
-  private String[] fileToStringArray (File f)
-  {
-    ArrayList wordarray = new ArrayList();
-    try {
-      BufferedReader input = new BufferedReader (new FileReader (f));
-      String line;
-      while (( line = input.readLine()) != null) {
-        String[] words = line.split ("\\s+");
-        for (int i = 0; i < words.length; i++)
-          wordarray.add (words[i]);
-      }
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Trouble reading file "+f);
-    }
-    return (String[]) wordarray.toArray(new String[]{});
-  }
+	private String[] fileToStringArray (File f, String encoding)
+	{
+		ArrayList<String> wordarray = new ArrayList<String>();
 
-  public Instance pipe (Instance carrier)
+		try {
+
+			BufferedReader input = null;
+			if (encoding == null) {
+				input = new BufferedReader (new FileReader (f));
+			}
+			else {
+				input = new BufferedReader( new InputStreamReader( new FileInputStream(f), encoding ));
+			}
+			String line;
+
+			while (( line = input.readLine()) != null) {
+				String[] words = line.split ("\\s+");
+				for (int i = 0; i < words.length; i++)
+					wordarray.add (words[i]);
+			}
+
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Trouble reading file "+f);
+		}
+		return (String[]) wordarray.toArray(new String[]{});
+	}
+	
+	public Instance pipe (Instance carrier)
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
 		// xxx This doesn't seem so efficient.  Perhaps have TokenSequence
@@ -147,18 +176,19 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeBoolean(caseSensitive);
 		out.writeBoolean(markDeletions);
-    out.writeObject(stoplist); // New as of CURRENT_SERIAL_VERSION 2
-  }
+		out.writeObject(stoplist); // New as of CURRENT_SERIAL_VERSION 2
+	}
 	
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		caseSensitive = in.readBoolean();
 		if (version > 0)
 			markDeletions = in.readBoolean();
-    if (version > 1)
-      stoplist = (HashSet) in.readObject();
+		if (version > 1) {
+			stoplist = (HashSet<String>) in.readObject();
+		}
 
-  }
+	}
 
 	
 	static final String[] stopwords =
