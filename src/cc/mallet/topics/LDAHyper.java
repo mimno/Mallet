@@ -853,8 +853,29 @@ public class LDAHyper implements Serializable {
 		out.writeObject (alpha);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
-		
-			// Put here iterationsSoFar, etc... TODO
+
+		out.writeDouble(smoothingOnlyMass);
+		out.writeObject(cachedCoefficients);
+
+		out.writeInt(iterationsSoFar);
+		out.writeInt(numIterations);
+
+		out.writeInt(burninPeriod);
+		out.writeInt(saveSampleInterval);
+		out.writeInt(optimizeInterval);
+		out.writeInt(showTopicsInterval);
+		out.writeInt(wordsPerTopic);
+		out.writeInt(outputModelInterval);
+		out.writeObject(outputModelFilename);
+		out.writeInt(saveStateInterval);
+		out.writeObject(stateFilename);
+
+		out.writeObject(random);
+		out.writeObject(formatter);
+		out.writeBoolean(printLogLikelihood);
+
+		out.writeObject(docLengthCounts);
+		out.writeObject(topicDocCounts);
 
 		for (int fi = 0; fi < numTypes; fi++)
 			out.writeObject (typeTopicCounts[fi]);
@@ -875,9 +896,33 @@ public class LDAHyper implements Serializable {
 		alpha = (double[]) in.readObject();
 		beta = in.readDouble();
 		betaSum = in.readDouble();
-		int numDocs = data.size();
 
-		int numTypes = alphabet.size();
+		smoothingOnlyMass = in.readDouble();
+		cachedCoefficients = (double[]) in.readObject();
+
+		iterationsSoFar = in.readInt();
+		numIterations = in.readInt();
+
+		burninPeriod = in.readInt();
+		saveSampleInterval = in.readInt();
+		optimizeInterval = in.readInt();
+		showTopicsInterval = in.readInt();
+		wordsPerTopic = in.readInt();
+		outputModelInterval = in.readInt();
+		outputModelFilename = (String) in.readObject();
+		saveStateInterval = in.readInt();
+		stateFilename = (String) in.readObject();
+
+		random = (Randoms) in.readObject();
+		formatter = (NumberFormat) in.readObject();
+		printLogLikelihood = in.readBoolean();
+		
+		docLengthCounts = (int[]) in.readObject();
+		topicDocCounts = (int[][]) in.readObject();
+
+		int numDocs = data.size();
+		this.numTypes = alphabet.size();
+
 		typeTopicCounts = new TIntIntHashMap[numTypes];
 		for (int fi = 0; fi < numTypes; fi++)
 			typeTopicCounts[fi] = (TIntIntHashMap) in.readObject();
@@ -1005,7 +1050,13 @@ public class LDAHyper implements Serializable {
 
 				for (token = 0; token < seqLen; token++) {
 					type = fs.getIndexAtPosition(token);
-					likelihoods[doc][sample] += multinomial[type];
+
+					// Adding this check since testing instances may
+					//   have types not found in training instances, 
+					//  as pointed out by Steven Bethard.
+					if (type < numTypes) {
+						likelihoods[doc][sample] += multinomial[type];
+					}
 				}
 			}
 		}
