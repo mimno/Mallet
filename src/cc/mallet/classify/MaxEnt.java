@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.PrintStream;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
