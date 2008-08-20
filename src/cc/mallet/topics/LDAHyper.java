@@ -790,9 +790,11 @@ public class LDAHyper implements Serializable {
 				if (sortedTopics[i].getWeight() < threshold) { break; }
 				
 				pw.print (sortedTopics[i].getID() + " " + 
-							   sortedTopics[i].getWeight() + " ");
+						  sortedTopics[i].getWeight() + " ");
 			}
 			pw.print (" \n");
+
+			Arrays.fill(topicCounts, 0);
 		}
 		
 	}
