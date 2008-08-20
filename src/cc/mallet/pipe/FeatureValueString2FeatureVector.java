@@ -18,17 +18,10 @@
 package cc.mallet.pipe;
 
 import java.io.*;
-import java.net.URI;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
-import cc.mallet.types.Token;
-import cc.mallet.types.TokenSequence;
-import cc.mallet.util.CharSequenceLexer;
-import cc.mallet.util.Lexer;
-/**
- * Unimplemented.
- */
+import cc.mallet.types.FeatureVector;
 
 public class FeatureValueString2FeatureVector extends Pipe implements Serializable
 {
@@ -44,7 +37,24 @@ public class FeatureValueString2FeatureVector extends Pipe implements Serializab
 	
 	public Instance pipe (Instance carrier)
 	{
-		throw new UnsupportedOperationException ("Not yet implemented");
+		String[] fields = carrier.getData().toString().split("\\s+");
+		if (fields.length % 2 != 0) {
+			throw new IllegalArgumentException("Input data must consist of an even number of feature and value pairs");
+		}
+
+		int numFields = fields.length / 2;
+		
+		Object[] featureNames = new Object[numFields];
+		double[] featureValues = new double[numFields];
+
+		for (int i = 0; i < numFields; i++) {
+			featureNames[i] = fields[2 * i];
+			featureValues[i] = Double.parseDouble(fields[(2 * i) + 1]);
+		}
+
+		carrier.setData(new FeatureVector(getDataAlphabet(), featureNames, featureValues));
+		
+		return carrier;
 	}
 	
 }

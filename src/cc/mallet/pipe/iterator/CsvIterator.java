@@ -24,6 +24,23 @@ import java.net.URISyntaxException;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.*;
 
+/**
+ *  This iterator, perhaps more properly called a Line Pattern Iterator, 
+ *   reads through a file and returns one instance per line,
+ *   based on a regular expression.<p>
+ *   
+ *  If you have data of the form 
+ *   <pre>[name]  [label]  [data]</pre>
+ *  and a {@link Pipe} <code>instancePipe</code>, you could read instances using this code:
+<pre>    InstanceList instances = new InstanceList(instancePipe);
+
+    instances.addThruPipe(new CsvIterator(new FileReader(dataFile),
+                                          "(\\w+)\\s+(\\w+)\\s+(.*)",
+                                          3, 2, 1)  // (data, target, name) field indices                    
+                         );
+</pre>
+ *
+ */
 public class CsvIterator implements Iterator<Instance>
 {
 	LineNumberReader reader;

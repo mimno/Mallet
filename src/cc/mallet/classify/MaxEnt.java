@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.PrintStream;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
@@ -193,7 +194,11 @@ public class MaxEnt extends Classifier implements Serializable
 						scores));
 	}
 
-	public void print () 
+	public void print () {
+		print(System.out);
+	}
+
+	public void print (PrintStream out) 
 	{		
 		final Alphabet dict = getAlphabet();
 		final LabelAlphabet labelDict = getLabelAlphabet();
@@ -203,12 +208,12 @@ public class MaxEnt extends Classifier implements Serializable
 
 		// Include the feature weights according to each label
 		for (int li = 0; li < numLabels; li++) {
-			System.out.println ("FEATURES FOR CLASS "+labelDict.lookupObject (li));
-			System.out.println (" <default> "+parameters [li*numFeatures + defaultFeatureIndex]);
+			out.println ("FEATURES FOR CLASS "+labelDict.lookupObject (li));
+			out.println (" <default> "+parameters [li*numFeatures + defaultFeatureIndex]);
 			for (int i = 0; i < defaultFeatureIndex; i++) {
 				Object name = dict.lookupObject (i);
 				double weight = parameters [li*numFeatures + i];
-				System.out.println (" "+name+" "+weight);
+				out.println (" "+name+" "+weight);
 			}
 		}
 	}
