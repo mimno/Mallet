@@ -807,11 +807,18 @@ public class LDAHyper implements Serializable {
 	}
 	
 	public void printState (PrintStream out) {
+
 		out.println ("#doc source pos typeindex type topic");
+
 		for (int di = 0; di < data.size(); di++) {
 			FeatureSequence tokenSequence =	(FeatureSequence) data.get(di).instance.getData();
 			LabelSequence topicSequence =	(LabelSequence) data.get(di).topicSequence;
-			String source = data.get(di).instance.getSource().toString();
+
+			String source = "NA";
+			if (data.get(di).instance.getSource() != null) {
+				source = data.get(di).instance.getSource().toString();
+			}
+
 			for (int pi = 0; pi < topicSequence.getLength(); pi++) {
 				int type = tokenSequence.getIndexAtPosition(pi);
 				int topic = topicSequence.getIndexAtPosition(pi);
