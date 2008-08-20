@@ -10,9 +10,15 @@
 
 /**
 	 Convert a String containing space-separated feature-name floating-point-value pairs
-	 into a FeatureVector.
+	 into a FeatureVector. For example:
+     <pre>length=12  width=1.75  blue  temperature=-17.2</pre>
+	 Features without a corresponding value (ie those not including the character "=",
+	 such as the feature <code>blue</code> here) will be set to 1.0.
 
-   @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+	 <p>If a feature occurs more than once in the input string, the values of each 
+	 occurrence will be added.</p>
+
+   @author David Mimno and Andrew McCallum
  */
 
 package cc.mallet.pipe;
@@ -38,18 +44,22 @@ public class FeatureValueString2FeatureVector extends Pipe implements Serializab
 	public Instance pipe (Instance carrier)
 	{
 		String[] fields = carrier.getData().toString().split("\\s+");
-		if (fields.length % 2 != 0) {
-			throw new IllegalArgumentException("Input data must consist of an even number of feature and value pairs");
-		}
 
-		int numFields = fields.length / 2;
+		int numFields = fields.length;
 		
 		Object[] featureNames = new Object[numFields];
 		double[] featureValues = new double[numFields];
 
 		for (int i = 0; i < numFields; i++) {
-			featureNames[i] = fields[2 * i];
-			featureValues[i] = Double.parseDouble(fields[(2 * i) + 1]);
+			if (fields[i].contains("=")) {
+				String[] subFields = fields[i].split("=");
+				featureNames[i] = subFields[0];
+				featureValues[i] = Double.parseDouble(subFields[1]);
+			}
+			else {
+				featureNames[i] = fields[i];
+				featureValues[i] = 1.0;
+			}
 		}
 
 		carrier.setData(new FeatureVector(getDataAlphabet(), featureNames, featureValues));
