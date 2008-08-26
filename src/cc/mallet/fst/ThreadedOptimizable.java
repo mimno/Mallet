@@ -19,23 +19,26 @@ import cc.mallet.util.MalletLogger;
 
 
 /**
- * An adaptor for optimizables based on batch values/gradients. <p>
- *
+ * An adaptor for optimizables based on batch values/gradients.
+ * <p>
  * Computes values, gradients for each batch in multiple threads and combines
  * them in the end.
  *
  * @author Gaurav Chandalia
+ * @see CRFOptimizableByBatchLabelLikelihood
  */
 public class ThreadedOptimizable implements Optimizable.ByGradientValue {
 	private static Logger logger = MalletLogger.getLogger(ThreadedOptimizable.class.getName());
 
+	/** Data */
 	protected InstanceList trainingSet;
 
-	// the optimizable to be parallelized
+	/** optimizable to be parallelized */
 	protected Optimizable.ByCombiningBatchGradient optimizable;
 
-	// value and gradient obtained from the optimizable for each batch
+	/** Value obtained from the optimizable for each batch */
 	protected double[] batchCachedValue;
+  /** Gradient obtained from the optimizable for each batch */
 	protected List<double[]> batchCachedGradient;
 
 	// determine when value/gradient become stale

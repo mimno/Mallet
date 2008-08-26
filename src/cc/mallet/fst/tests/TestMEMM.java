@@ -33,7 +33,9 @@ import cc.mallet.types.tests.TestSerializable;
 /**
 		@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
-
+// gsc (08/25/08): made changes to all tests after removing the option for 
+// useSparseWeights from MEMMTrainer, now, the users has to set the weights manually
+// irrespective of above changes, two tests fail (testSpaceMaximizable, testSpaceSerializable)
 public class TestMEMM extends TestCase {
 
 	public TestMEMM (String name)
@@ -92,8 +94,9 @@ public class TestMEMM extends TestCase {
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
     memm.addStartState();
+    memm.setWeightsDimensionAsIn(training);
+    
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
-
 //    memm.gatherTrainingSets (training); // ANNOYING: Need to set up per-instance training sets
     memmt.train (training, 1);  // Set weights dimension, gathers training sets, etc.
 
@@ -116,6 +119,7 @@ public class TestMEMM extends TestCase {
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
     memm.addStartState();
+    memm.setWeightsDimensionAsIn(training);
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
     memmt.train (training, 10);
 
@@ -128,10 +132,6 @@ public class TestMEMM extends TestCase {
 
     assertEquals (val1, val2, 1e-5);
   }
-
-
-
-
 
 	// Should print at end:
 	// parameters 4 4 3: unconstrainedCost=-2912.0 constrainedCost=-428.0 minCost=35770.0 minGrad=520.0
@@ -159,10 +159,10 @@ public class TestMEMM extends TestCase {
 	  MEMM saveCRF = crf;
 	  //inputAlphabet = (Feature.Alphabet) crf.getInputAlphabet();
 	  FeatureVectorSequence fvs = new FeatureVectorSequence(new FeatureVector[]{
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
 	  });
 	  FeatureSequence ss = new FeatureSequence(crf.getOutputAlphabet(), new int[]{0, 1, 2, 3});
 	  InstanceList ilist = new InstanceList(null);
@@ -343,6 +343,8 @@ public class TestMEMM extends TestCase {
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM memm = new MEMM(p, p2);
 	  memm.addFullyConnectedStatesForLabels();
+	  memm.setWeightsDimensionAsIn(lists[0]);
+	  
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
 	  if (testValueAndGradient) {
 	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
@@ -385,9 +387,13 @@ public class TestMEMM extends TestCase {
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM crf = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
 	  crf.addFullyConnectedStatesForLabels();
-	  MEMMTrainer memmt = new MEMMTrainer (crf);
+	  if (useSparseWeights)
+	    crf.setWeightsDimensionAsIn(lists[0]);
+	  else
+	    crf.setWeightsDimensionDensely();
 	  
-		memmt.setUseSparseWeights (useSparseWeights);
+	  MEMMTrainer memmt = new MEMMTrainer (crf);
+	  // memmt.setUseSparseWeights (useSparseWeights);
 	  if (testValueAndGradient) {
 	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
 	    TestOptimizable.testValueAndGradient(minable);
@@ -476,6 +482,7 @@ public class TestMEMM extends TestCase {
 												 null,
 												 null,
 												 false);
+	  crf1.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt1 = new MEMMTrainer (crf1);
 		memmt1.train(lists [0]);
 
@@ -488,6 +495,7 @@ public class TestMEMM extends TestCase {
 													 null,
 													 null,
 													 false);
+	  crf2.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt2 = new MEMMTrainer (crf2);
 		memmt2.train(lists [0]);
 
@@ -500,6 +508,7 @@ public class TestMEMM extends TestCase {
 												 null,
 												 null,
 												 false);
+	  crf3.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt3 = new MEMMTrainer (crf3);
 		memmt3.train(lists [0]);
 
@@ -570,7 +579,7 @@ public class TestMEMM extends TestCase {
 		one.addThruPipe (new ArrayIterator (data));
 		MEMM crf = new MEMM (p, null);
 		crf.addFullyConnectedStatesForLabels();
-		crf.setWeightsDimensionAsIn (one, false);
+		crf.setWeightsDimensionAsIn (one);
 		MEMMTrainer memmt = new MEMMTrainer (crf);
 		MEMMTrainer.MEMMOptimizableByLabelLikelihood mcrf = memmt.getOptimizableMEMM(one);
 		double[] params = new double[mcrf.getNumParameters()];

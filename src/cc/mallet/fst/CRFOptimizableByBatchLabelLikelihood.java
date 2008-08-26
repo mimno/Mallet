@@ -89,7 +89,7 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 	// Set the constraints by running forward-backward with the *output label
 	// sequence provided*, thus restricting it to only those paths that agree with
 	// the label sequence,
-	public void gatherConstraints(InstanceList ilist) {
+	protected void gatherConstraints(InstanceList ilist) {
 		logger.info("Gathering constraints...");
 		assert (constraints.structureMatches(crf.parameters));
 		constraints.zero();

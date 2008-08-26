@@ -29,6 +29,8 @@ import cc.mallet.pipe.tsf.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 
+// TODO (gsc (08/25/08)): some tests fail because tests are using CRFTrainerByLabelLikelihood
+// instead of CRFOptimizableByLabelLikelihood and CRFOptimizableByValueGradients
 public class TestCRF extends TestCase {
 
 	public TestCRF(String name)

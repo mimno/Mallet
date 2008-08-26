@@ -26,7 +26,8 @@ public class MEMMTrainer extends TransducerTrainer
 	// After training sets have been gathered in the states, record which
 	//   InstanceList we've gathers, so we don't double-count instances.
 	private InstanceList trainingGatheredFor;
-	boolean useSparseWeights = true;
+	// gsc: user is supposed to set the weights manually, so this flag is not needed
+//	boolean useSparseWeights = true;
 	MEMMOptimizableByLabelLikelihood omemm;
 	
 	public MEMMTrainer (MEMM memm) {
@@ -37,7 +38,7 @@ public class MEMMTrainer extends TransducerTrainer
 		return new MEMMOptimizableByLabelLikelihood (memm, trainingSet);
 	}
 
-	public MEMMTrainer setUseSparseWeights (boolean f) { useSparseWeights = f;  return this; }
+//	public MEMMTrainer setUseSparseWeights (boolean f) { useSparseWeights = f;  return this; }
 
 	public boolean train (InstanceList training) {
 		return train (training, Integer.MAX_VALUE);
@@ -57,11 +58,12 @@ public class MEMMTrainer extends TransducerTrainer
 		if (trainingGatheredFor != training) {
 			gatherTrainingSets (training);
 		}
-		if (useSparseWeights) {
-			memm.setWeightsDimensionAsIn (training, false);
-		} else {
-			memm.setWeightsDimensionDensely ();
-		}
+		// gsc: the user has to set the weights manually
+//		if (useSparseWeights) {
+//			memm.setWeightsDimensionAsIn (training, false);
+//		} else {
+//			memm.setWeightsDimensionDensely ();
+//		}
 
 
 		/*
