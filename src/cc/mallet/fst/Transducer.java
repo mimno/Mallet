@@ -16,27 +16,24 @@ package cc.mallet.fst;
 
 //Analogous to base.types.classify.Classifier
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
-import cc.mallet.types.SequencePair;
 import cc.mallet.types.SequencePairAlignment;
+
+import cc.mallet.pipe.Pipe;
+
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Sequences;
-
-//import edu.umass.cs.mallet.base.pipe.SerialPipe;
 
 //Variable name key:
 //"ip" = "input position"
@@ -178,8 +175,6 @@ public abstract class Transducer implements Serializable
 		throw new UnsupportedOperationException ();
 	}
 
-
-
 	public int stateIndexOfString (String s)
 	{
 		for (int i = 0; i < this.numStates(); i++) {
@@ -199,7 +194,6 @@ public abstract class Transducer implements Serializable
 		logger.fine ("Transducer "+this);
 		printStates();
 	}
-
 
 	// Serialization of Transducer
 
@@ -223,10 +217,6 @@ public abstract class Transducer implements Serializable
 		maxLatticeFactory = (MaxLatticeFactory) in.readObject();
 	}
 
-
-	
-	
-	
 
 	public abstract static class State implements Serializable
 	{
@@ -271,9 +261,6 @@ public abstract class Transducer implements Serializable
 	}
 	
 	
-	
-	
-	
 	/** Methods to be called by inference methods to indicate partial counts of sufficient statistics.
 	 * That is, how much probability mass is falling on a transition, or in an initial state or a final state. */
 	public interface Incrementor {
@@ -282,7 +269,6 @@ public abstract class Transducer implements Serializable
 		public void incrementFinalState (State s, double count);
 	}
 
-	
 	
 	public abstract static class TransitionIterator implements Iterator<State>, Serializable
 	{
@@ -329,8 +315,6 @@ public abstract class Transducer implements Serializable
 		}
 
 	}
-
-
 
 
 	/* sumLogProb()
