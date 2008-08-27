@@ -2,7 +2,7 @@ MALLET_DIR = $(shell pwd)
 
 JAVAC = javac
 JAVA_FLAGS = \
--classpath "$(MALLET_DIR)/class:$(MALLET_DIR)/lib/mallet-deps.jar:$(MALLET_DIR)/lib/jdom-1.0.jar:$(MALLET_DIR)/lib/grmm-deps.jar" \
+-classpath "$(MALLET_DIR)/class:$(MALLET_DIR)/lib/mallet-deps.jar:$(MALLET_DIR)/lib/jdom-1.0.jar:$(MALLET_DIR)/lib/grmm-deps.jar:$(MALLET_DIR)/lib/weka.jar " \
 -sourcepath "$(MALLET_DIR)/src" \
 -g:lines,vars,source \
 -d $(MALLET_DIR)/class \
@@ -15,7 +15,7 @@ all: class link-resources
 	$(JAVAC) $(JAVA_FLAGS) `find src -name '*.java'`
 
 mallet-base: class link-resources
-	$(JAVAC) $(JAVA_FLAGS) `find src/edu/umass/cs/mallet/base -name '*.java'` `find src/gnu/trove -name '*.java'` 
+	$(JAVAC) $(JAVA_FLAGS) `find src/cc/ -name '*.java'`  
 
 javadoc: html class
 	$(JAVADOC) $(JAVADOC_FLAGS) -classpath "$(MALLET_DIR)/class:$(MALLET_DIR)/lib/mallet-deps.jar:$(MALLET_DIR)/lib/grmm-deps.jar" -d $(MALLET_DIR)/html -sourcepath $(MALLET_DIR)/src -source 1.4 -subpackages edu
@@ -59,10 +59,10 @@ link-resources: class
 	done
 
 jar:	class
-	jar -cvf lib/mallet.jar -C class edu/umass/cs/mallet/base -C class gnu
+	jar -cvf lib/mallet.jar -C class cc/
 
 srcjar:	class
-	jar -cvf lib/mallet.jar src README.html Makefile LICENSE HACKING -C class edu -C class gnu 
+	jar -cvf lib/mallet.jar src Makefile -C class cc/ 
 
 class:
 	mkdir -p class
