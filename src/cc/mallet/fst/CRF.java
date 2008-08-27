@@ -1419,6 +1419,11 @@ public class CRF extends Transducer implements Serializable
 		return weightsValueChangeStamp;
 	}
 	
+	// kedar: access structure stamp method
+	public int getWeightsStructureChangeStamp() {
+		return weightsStructureChangeStamp;
+	}
+	
 	public Factors getParameters ()
 	{
 		return parameters;
