@@ -171,6 +171,7 @@ public class MaxEnt extends Classifier implements Serializable
 	public void getClassificationScoresWithTemperature (Instance instance, double temperature, double[] scores)
 	{
 		getUnnormalizedClassificationScores(instance, scores);
+		MatrixOps.timesEquals(scores, temperature);
 		// Move scores to a range where exp() is accurate, and normalize
 		int numLabels = getLabelAlphabet().size();
 		double max = MatrixOps.max (scores);
