@@ -46,8 +46,8 @@ import cc.mallet.util.Strings;
 public class FileIterator implements Iterator<Instance>
 {
 	FileFilter fileFilter;
-	ArrayList fileArray;
-	Iterator subIterator;
+	ArrayList<File> fileArray;
+	Iterator<File> subIterator;
 	Pattern targetPattern;								// Set target slot to string coming from 1st group of this Pattern
 	File[] startingDirectories;
 	int[] minFileIndex;
@@ -70,7 +70,7 @@ public class FileIterator implements Iterator<Instance>
 
 
 	// added by Fuchun Peng	
-	public ArrayList getFileArray()
+	public ArrayList<File> getFileArray()
 	{
 		return fileArray;
 	}
@@ -95,7 +95,7 @@ public class FileIterator implements Iterator<Instance>
 		this.startingDirectories = directories;
 		this.fileFilter = fileFilter;
 		this.minFileIndex = new int[directories.length];
-		this.fileArray = new ArrayList ();
+		this.fileArray = new ArrayList<File> ();
 		this.targetPattern = targetPattern;
 
 		for (int i = 0; i < directories.length; i++) {
@@ -218,7 +218,7 @@ public class FileIterator implements Iterator<Instance>
        this (new File[] {new File(directory) }, filter, null);
     }
 
-	private int fillFileArray (File directory, FileFilter filter, ArrayList files)
+	private int fillFileArray (File directory, FileFilter filter, ArrayList<File> files)
 	{
 		int count = 0;
 		File[] directoryContents = directory.listFiles();
@@ -236,7 +236,7 @@ public class FileIterator implements Iterator<Instance>
 	// The PipeInputIterator interface
 	public Instance next ()
 	{
-		File nextFile = (File) subIterator.next();
+		File nextFile = subIterator.next();
 		String path = nextFile.getAbsolutePath();
 		String targetName = null;
 
@@ -263,7 +263,7 @@ public class FileIterator implements Iterator<Instance>
 	// culotta - 9.11.03
 	public File nextFile ()
 	{
-		return (File) subIterator.next();		
+		return subIterator.next();		
 	}
 
 	public boolean hasNext ()	{	return subIterator.hasNext();	}
