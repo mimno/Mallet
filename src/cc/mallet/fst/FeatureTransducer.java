@@ -17,11 +17,12 @@ package cc.mallet.fst;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.*;
+import java.util.logging.Logger;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.Multinomial;
 import cc.mallet.types.Sequence;
+
 import cc.mallet.util.MalletLogger;
 
 public class FeatureTransducer extends Transducer
@@ -87,7 +88,7 @@ public class FeatureTransducer extends Transducer
 	public int numStates () { return states.size(); }
 
 	public Transducer.State getState (int index) {
-		return (Transducer.State) states.get(index); }
+		return states.get(index); }
 	
 	public Iterator<State> initialStateIterator () { return initialStates.iterator (); }
 
@@ -127,7 +128,7 @@ public class FeatureTransducer extends Transducer
 		Multinomial initialStateDistribution = initialStateCounts.estimate ();
 		Multinomial finalStateDistribution = finalStateCounts.estimate ();
 		for (int i = 0; i < states.size(); i++) {
-			State s = (State) states.get (i);
+			State s = states.get (i);
 			s.initialWeight = initialStateDistribution.logProbability (i);
 			s.finalWeight = finalStateDistribution.logProbability (i);
 			s.estimate ();
@@ -207,8 +208,7 @@ public class FeatureTransducer extends Transducer
 				throw new UnsupportedOperationException ("Not yet implemented.");
 			if (input == null)
 				return transitionIterator ();
-			else
-				return transitionIterator (input, inputPosition);
+      return transitionIterator (input, inputPosition);
 		}
 
 		public Transducer.TransitionIterator transitionIterator (Sequence inputSequence,
@@ -269,7 +269,8 @@ public class FeatureTransducer extends Transducer
 		private static final long serialVersionUID = 1;
 	}
 
-	protected class TransitionIterator extends Transducer.TransitionIterator
+	@SuppressWarnings("serial")
+  protected class TransitionIterator extends Transducer.TransitionIterator
 	{
 		// If "index" is >= -1 we are going through all FeatureState.transitions[] by index.
 		// If "index" is -2, we are following the chain of FeatureTransition.nextWithSameInput,
@@ -305,8 +306,8 @@ public class FeatureTransducer extends Transducer
 			if (index >= -1) {
 				//System.out.println ("hasNext index " + index);
 				return (index < source.transitions.length-1);
-			} else
-				return (index == -2 ? transition != null : transition.nextWithSameInput != null);
+			}
+      return (index == -2 ? transition != null : transition.nextWithSameInput != null);
 		};
 
 		public Transducer.State nextState ()
@@ -359,7 +360,7 @@ public class FeatureTransducer extends Transducer
 		public State getDestinationState ()
 		{
 			if (destination == null) {
-				destination = (State) name2state.get (destinationName);
+				destination = name2state.get (destinationName);
 				assert (destination != null);
 			}
 			return destination;

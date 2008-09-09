@@ -3,17 +3,17 @@ package cc.mallet.fst;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import cc.mallet.fst.TransducerTrainer.ByInstanceIncrements;
 import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 
+import cc.mallet.fst.TransducerTrainer.ByInstanceIncrements;
+
 /**
  * Trains CRF by stochastic gradient. Most effective on large training sets.
  * 
  * @author kedarb
- * 
  */
 public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 	protected CRF crf;
@@ -61,7 +61,7 @@ public class CRFTrainerByStochasticGradient extends ByInstanceIncrements {
 	// lambda=priorVariance*numTrainingInstances
 	// After an initial eta_0 is set, t_0 = 1/(lambda*eta_0)
 	// After each training step eta = 1/(lambda*(t+t_0)), t=0,1,2,..,Infinity
-	/** Automatically set the learning rate to one that would be good */
+	/** Automatically sets the learning rate to one that would be good */
 	public void setLearningRateByLikelihood(InstanceList trainingSample) {
 		int numIterations = 5; // was 10 -akm 1/25/08
 		double bestLearningRate = Double.NEGATIVE_INFINITY;

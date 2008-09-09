@@ -1,6 +1,5 @@
 package cc.mallet.fst;
 
-import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.InstanceList;
 
 /** A TransducerTrainer that does no training, but simply acts as a container for a Transducer;
@@ -9,7 +8,7 @@ public class NoopTransducerTrainer extends TransducerTrainer {
 	
 	Transducer transducer;
 	
-	public NoopTransducerTrainer (Transducer tranducer) {
+	public NoopTransducerTrainer (Transducer transducer) {
 		this.transducer = transducer;
 	}
 

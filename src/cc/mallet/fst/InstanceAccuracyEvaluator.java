@@ -6,13 +6,13 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.fst;
 
-
 import java.util.HashMap;
 import java.util.logging.Logger;
 
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
+
 import cc.mallet.util.MalletLogger;
 
 /**
@@ -64,6 +64,4 @@ public class InstanceAccuracyEvaluator extends TransducerEvaluator {
     }
     return true;
   }
-  
-
 }

@@ -14,13 +14,20 @@
 
 package cc.mallet.fst.tests;
 
-import junit.framework.*;
-import java.net.URI;
 import java.util.Iterator;
 
-import cc.mallet.fst.*;
-import cc.mallet.pipe.*;
-import cc.mallet.types.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.ArrayListSequence;
+import cc.mallet.types.Multinomial;
+
+import cc.mallet.fst.FeatureTransducer;
+import cc.mallet.fst.MaxLatticeDefault;
+import cc.mallet.fst.SumLatticeDefault;
+import cc.mallet.fst.Transducer;
 
 public class TestFeatureTransducer extends TestCase
 {

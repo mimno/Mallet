@@ -1,25 +1,49 @@
 package cc.mallet.fst.tests;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Label;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.types.Sequence;
+import cc.mallet.types.tests.TestSerializable;
 
-import cc.mallet.extract.StringSpan;
-import cc.mallet.extract.StringTokenization;
-import cc.mallet.fst.MEMMTrainer;
-import cc.mallet.fst.SumLatticeDefault;
-import cc.mallet.fst.MEMM;
-import cc.mallet.fst.Transducer;
-import cc.mallet.optimize.Optimizable;
-import cc.mallet.optimize.tests.TestOptimizable;
-import cc.mallet.pipe.*;
+import cc.mallet.pipe.CharSequence2TokenSequence;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.PrintInputAndTarget;
+import cc.mallet.pipe.SerialPipes;
+import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
+import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.ArrayIterator;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
 import cc.mallet.pipe.tsf.TokenText;
-import cc.mallet.types.*;
-import cc.mallet.types.tests.TestSerializable;
+
+import cc.mallet.fst.MEMM;
+import cc.mallet.fst.MEMMTrainer;
+import cc.mallet.fst.SumLatticeDefault;
+
+import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.tests.TestOptimizable;
+
+import cc.mallet.extract.StringSpan;
+import cc.mallet.extract.StringTokenization;
 
 /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
@@ -31,7 +55,9 @@ import cc.mallet.types.tests.TestSerializable;
 
 
 /**
-		@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+ * Tests for MEMM training.
+ * 
+ * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 // gsc (08/25/08): made changes to all tests after removing the option for 
 // useSparseWeights from MEMMTrainer, now, the users has to set the weights manually

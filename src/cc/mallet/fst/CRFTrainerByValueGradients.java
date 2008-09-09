@@ -7,19 +7,22 @@ import java.io.Serializable;
 
 import java.util.BitSet;
 import java.util.Random;
-
 import java.util.logging.Logger;
+
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.MatrixOps;
 
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
 
-import cc.mallet.types.InstanceList;
-import cc.mallet.types.MatrixOps;
-
 import cc.mallet.util.MalletLogger;
 
-/** A CRF trainer that can combine multiple objective functions, each represented by a Optmizable.ByValueGradient. */
+
+/**
+ * A CRF trainer that can combine multiple objective functions, each represented
+ * by a Optmizable.ByValueGradient.
+ */
 public class CRFTrainerByValueGradients extends TransducerTrainer implements TransducerTrainer.ByOptimization {
 
 	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLabelLikelihood.class.getName());
@@ -50,7 +53,7 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 
 	// gsc: number of times to reset (the optimizer), and continue training when the "could not step in
 	// current direction" exception occurs
-	static final int DEFAULT_MAX_RESETS = 3;
+	public static final int DEFAULT_MAX_RESETS = 3;
 	int maxResets = DEFAULT_MAX_RESETS;
 	
 	public CRFTrainerByValueGradients (CRF crf, Optimizable.ByGradientValue[] optimizableByValueGradientObjects) {
@@ -61,7 +64,9 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 	public Transducer getTransducer() { return crf; }
 	public CRF getCRF () { return crf; }
 	public Optimizer getOptimizer() { return opt; }
+	/** Returns true if training converged, false otherwise. */
 	public boolean isConverged() { return converged; }
+  /** Returns true if training converged, false otherwise. */
 	public boolean isFinishedTraining() { return converged; }
 	public int getIteration () { return iterationCount; }
 	
@@ -70,6 +75,11 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 		return optimizableByValueGradientObjects;
 	}
 
+	/**
+	 * Returns an optimizable CRF that contains a collection of objective functions.
+	 * <p>
+	 * If one doesn't exist then creates one and sets the optimizer to null.
+	 */
 	public OptimizableCRF getOptimizableCRF (InstanceList trainingSet) {
 	  // gsc: user should call setWeightsDimensionsAsIn before the optimizable and
 	  // trainer objects are created
@@ -88,20 +98,29 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 		return ocrf;
 	}
 	
+	/**
+	 * Returns a L-BFGS optimizer, creating if one doesn't exist.
+	 * <p>
+	 * Also creates an optimizable CRF if required.
+	 */
 	public Optimizer getOptimizer (InstanceList trainingSet) {
 		getOptimizableCRF(trainingSet); // this will set this.mcrf if necessary
 		if (opt == null || ocrf != opt.getOptimizable())
 			opt = new LimitedMemoryBFGS(ocrf);  // Alternative: opt = new ConjugateGradient (0.001);
 		return opt;
 	}
-	
 
+	/** Trains a CRF until convergence. */
 	public boolean trainIncremental (InstanceList training)
 	{
 		return train (training, Integer.MAX_VALUE);
 	}
 
-
+	/**
+	 * Trains a CRF until convergence or specified number of iterations, whichever is earlier.
+	 * <p>
+	 * Also creates an optimizable CRF and an optmizer if required.
+	 */
 	public boolean train (InstanceList trainingSet, int numIterations) {
 		if (numIterations <= 0)
 			return false;
@@ -186,9 +205,13 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 
   // gsc: change max. number of times the optimizer can be reset before
   // throwing the "could not step in current direction" exception
+	/**
+	 * Sets the max. number of times the optimizer can be reset before throwing 
+	 * an exception.
+	 * <p>
+	 * Default value: <tt>DEFAULT_MAX_RESETS</tt>.
+	 */
   public void setMaxResets(int maxResets) { this.maxResets = maxResets; }
-	
-	
 	
 	/** An optimizable CRF that contains a collection of objective functions. */
 	public class OptimizableCRF implements Optimizable.ByGradientValue, Serializable
@@ -211,7 +234,6 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 			cachedGradientWeightsStamp = -1;
 		}
 
-
 //		protected OptimizableCRF (CRF crf, InstanceList ilist)
 //		{
 //			// Set up
@@ -228,7 +250,6 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 //			cachedValueWeightsStamp = -1;
 //			cachedGradientWeightsStamp = -1;
 //		}
-
 
 		// TODO Move these implementations into CRF.java, and put here stubs that call them!
 		public int getNumParameters () {
@@ -253,9 +274,7 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 			crf.weightsValueChanged();
 		}
 
-		
-
-		// log probability of the training sequence labels and the prior over parameters
+		/** Returns the log probability of the training sequence labels and the prior over parameters. */
 		public double getValue ()
 		{
 			if (crf.weightsValueChangeStamp != cachedValueWeightsStamp) {
@@ -341,5 +360,4 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
 //		useSparseWeights = in.readBoolean();
 		throw new IllegalStateException("Implementation not yet complete.");		
 	}
-	
 }

@@ -52,7 +52,6 @@ public class TokenAccuracyEvaluator extends TransducerEvaluator
 		this (new InstanceList[] {instanceList1, instanceList2, instanceList3}, new String[] {description1, description2, description3});
 	}
 
-
 	public void evaluateInstanceList (TransducerTrainer trainer, InstanceList instances, String description) 
   {
 		int numCorrectTokens;

@@ -14,23 +14,45 @@
 
 package cc.mallet.fst;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Serializable;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.regex.*;
-import java.util.logging.*;
-import java.io.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import java.text.DecimalFormat;
+
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureInducer;
+import cc.mallet.types.FeatureSelection;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.IndexedSparseVector;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.types.RankedFeatureVector;
+import cc.mallet.types.Sequence;
+import cc.mallet.types.SparseVector;
 
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
+
 import cc.mallet.util.ArrayUtils;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
-import cc.mallet.types.MatrixOps;
 
 
 /* There are several different kinds of numeric values:
@@ -65,8 +87,9 @@ import cc.mallet.types.MatrixOps;
 	 incrementCount() methods.
 
  */
-
-
+/**
+ * Represents a CRF model.
+ */
 public class CRF extends Transducer implements Serializable
 {
 	private static Logger logger = MalletLogger.getLogger(CRF.class.getName());
@@ -322,7 +345,6 @@ public class CRF extends Transducer implements Serializable
 				}
 			}
 		}
-
 		
 		/** Instances of this inner class can be passed to various inference methods, which can then 
 		 * gather/increment sufficient statistics counts into the containing Factor instance. */
@@ -395,8 +417,6 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 		
-
-		
 		public void getParameters (double[] buffer)
 		{
 			if (buffer.length != getNumFactors ())
@@ -419,21 +439,18 @@ public class CRF extends Transducer implements Serializable
 			if (index < numStateParms) {
 				if (index % 2 == 0)
 					return initialWeights[index/2];
-				else
-					return finalWeights[index/2];
-			} else {
-				index -= numStateParms;
-				for (int i = 0; i < weights.length; i++) {
-					if (index == 0)
-						return this.defaultWeights[i];
-					index--;
-					if (index < weights[i].numLocations())
-						return weights[i].valueAtLocation (index);
-					else
-						index -= weights[i].numLocations();
-				}
-				throw new IllegalArgumentException ("index too high = "+index);
+        return finalWeights[index/2];
 			}
+      index -= numStateParms;
+      for (int i = 0; i < weights.length; i++) {
+      	if (index == 0)
+      		return this.defaultWeights[i];
+      	index--;
+      	if (index < weights[i].numLocations())
+      		return weights[i].valueAtLocation (index);
+        index -= weights[i].numLocations();
+      }
+      throw new IllegalArgumentException ("index too high = "+index);
 		}
 
 		public void setParameters (double [] buff) {
@@ -465,8 +482,8 @@ public class CRF extends Transducer implements Serializable
 					if (index == 0) {
 						defaultWeights[i] = value;
 						return;
-					} else
-						index--;
+					}
+          index--;
 					if (index < weights[i].numLocations()) {
 						weights[i].setValueAtLocation (index, value);
 					} else
@@ -499,7 +516,6 @@ public class CRF extends Transducer implements Serializable
 			finalWeights = (double[]) in.readObject ();
 		}
 	}
-
 	
 	public CRF (Pipe inputPipe, Pipe outputPipe)
 	{
@@ -551,7 +567,7 @@ public class CRF extends Transducer implements Serializable
 					s.destinationNames, s.labels, weightNames);
 		}
 
-		featureSelections = (FeatureSelection[]) initialCRF.featureSelections.clone ();
+		featureSelections = initialCRF.featureSelections.clone ();
 		// yyy weightsFrozen = (boolean[]) initialCRF.weightsFrozen.clone();
 	}
 
@@ -614,7 +630,7 @@ public class CRF extends Transducer implements Serializable
 		this.addState (name, initialWeight, finalWeight, destinationNames, labelNames, newWeightNames);
 	}
 
-	// Default gives separate parameters to each transition
+	/** Default gives separate parameters to each transition. */
 	public void addState (String name, double initialWeight, double finalWeight,
 			String[] destinationNames,
 			String[] labelNames)
@@ -626,16 +642,16 @@ public class CRF extends Transducer implements Serializable
 		this.addState (name, initialWeight, finalWeight, destinationNames, labelNames, weightNames);
 	}
 
-	// Add a state with parameters equal zero, and labels on out-going arcs
-	// the same name as their destination state names.
+	/** Add a state with parameters equal zero, and labels on out-going arcs
+	    the same name as their destination state names. */
 	public void addState (String name, String[] destinationNames)
 	{
 		this.addState (name, 0, 0, destinationNames, destinationNames);
 	}
 
-	// Add a group of states that are fully connected with each other,
-	// with parameters equal zero, and labels on their out-going arcs
-	// the same name as their destination state names.
+	/** Add a group of states that are fully connected with each other,
+	 * with parameters equal zero, and labels on their out-going arcs
+	 * the same name as their destination state names. */
 	public void addFullyConnectedStates (String[] stateNames)
 	{
 		for (int i = 0; i < stateNames.length; i++)
@@ -715,9 +731,10 @@ public class CRF extends Transducer implements Serializable
 		return connections;
 	}
 
-	/** Add states to create a first-order Markov model on labels,
-			adding only those transitions the occur in the given
-			trainingSet. */
+	/**
+   * Add states to create a first-order Markov model on labels, adding only
+   * those transitions the occur in the given trainingSet.
+   */
 	public void addStatesForLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -735,9 +752,11 @@ public class CRF extends Transducer implements Serializable
 		}
 	}
 
-	/** Add as many states as there are labels, but don't create separate weights
-			for each source-destination pair of states.  Instead have all the incoming
-			transitions to a state share the same weights. */
+	/**
+   * Add as many states as there are labels, but don't create separate weights
+   * for each source-destination pair of states. Instead have all the incoming
+   * transitions to a state share the same weights.
+   */
 	public void addStatesForHalfLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -756,12 +775,14 @@ public class CRF extends Transducer implements Serializable
 		}
 	}
 
-	/** Add as many states as there are labels, but don't create
-			separate observational-test-weights for each source-destination
-			pair of states---instead have all the incoming transitions to a
-			state share the same observational-feature-test weights.
-			However, do create separate default feature for each transition,
-			(which acts as an HMM-style transition probability). */
+	/**
+   * Add as many states as there are labels, but don't create separate
+   * observational-test-weights for each source-destination pair of
+   * states---instead have all the incoming transitions to a state share the
+   * same observational-feature-test weights. However, do create separate
+   * default feature for each transition, (which acts as an HMM-style transition
+   * probability).
+   */
 	public void addStatesForThreeQuarterLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -778,7 +799,7 @@ public class CRF extends Transducer implements Serializable
 					String labelName = (String)outputAlphabet.lookupObject(j);
 					destinationNames[destinationIndex] = labelName;
 					weightNames[destinationIndex] = new String[2];
-					// The "half-labels" will include all observational tests
+					// The "half-labels" will include all observed tests
 					weightNames[destinationIndex][0] = labelName;
 					// The "transition" weights will include only the default feature
 					String wn = (String)outputAlphabet.lookupObject(i) + "->" + (String)outputAlphabet.lookupObject(j);
@@ -839,9 +860,10 @@ public class CRF extends Transducer implements Serializable
 		}
 	}
 
-	/** Add states to create a second-order Markov model on labels,
-			adding only those transitions the occur in the given
-			trainingSet. */
+	/**
+   * Add states to create a second-order Markov model on labels, adding only
+   * those transitions the occur in the given trainingSet.
+   */
 	public void addStatesForBiLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -1009,11 +1031,11 @@ public class CRF extends Transducer implements Serializable
 			order = 0;
 		else
 		{
-			for (int i = 0; i < orders.length; i++)
-				if (orders[i] <= order)
+			for (int i = 0; i < orders.length; i++) {
+        if (orders[i] <= order)
 					throw new IllegalArgumentException("Orders must be non-negative and in ascending order");
-				else 
-					order = orders[i];
+        order = orders[i];
+      }
 			if (order < 0) order = 0;
 		}
 		if (order > 0)
@@ -1097,20 +1119,17 @@ public class CRF extends Transducer implements Serializable
 				history[i] = start;
 			return concatLabels(history);
 		}
-		else
-		{
-			String[] stateNames = new String[outputAlphabet.size()];
-			for (int s = 0; s < outputAlphabet.size(); s++)
-				stateNames[s] = (String)outputAlphabet.lookupObject(s);
-			for (int s = 0; s < outputAlphabet.size(); s++)
-				addState(stateNames[s], 0.0, 0.0, stateNames, stateNames, stateNames);
-			return start;
-		}
+    String[] stateNames = new String[outputAlphabet.size()];
+    for (int s = 0; s < outputAlphabet.size(); s++)
+    	stateNames[s] = (String)outputAlphabet.lookupObject(s);
+    for (int s = 0; s < outputAlphabet.size(); s++)
+    	addState(stateNames[s], 0.0, 0.0, stateNames, stateNames, stateNames);
+    return start;
 	}
 
 	public State getState (String name)
 	{
-		return (State) name2state.get(name);
+		return name2state.get(name);
 	}
 
 	public void setWeights (int weightsIndex, SparseVector transitionWeights)
@@ -1164,14 +1183,7 @@ public class CRF extends Transducer implements Serializable
 		parameters.defaultWeights[widx] = val; 
 	}
 	
-	
 	// Support for making cc.mallet.optimize.Optimizable CRFs
-	
-	
-	
-	
-	
-	
 
 	public boolean isWeightsFrozen (int weightsIndex)
 	{
@@ -1348,8 +1360,6 @@ public class CRF extends Transducer implements Serializable
 		logger.info("Number of weights = "+numWeights);
 		parameters.weights = newWeights;
 	}
-
-	
 	
 	// Create a new weight Vector if weightName is new.
 	public int getWeightsIndex (String weightName)
@@ -1407,7 +1417,7 @@ public class CRF extends Transducer implements Serializable
 	public int numStates () { return states.size(); }
 
 	public Transducer.State getState (int index) {
-		return (Transducer.State) states.get(index); }
+		return states.get(index); }
 
 	public Iterator initialStateIterator () {
 		return initialStates.iterator (); }
@@ -1478,8 +1488,7 @@ public class CRF extends Transducer implements Serializable
 		int weightsIndex = source.weightsIndices[rowIndex][0];
 		if (featureIndex < 0)
 			return parameters.defaultWeights[weightsIndex];
-		else
-			return parameters.weights[weightsIndex].value (featureIndex);
+    return parameters.weights[weightsIndex].value (featureIndex);
 	}
 	
 	public int getNumParameters () {
@@ -1493,7 +1502,8 @@ public class CRF extends Transducer implements Serializable
 
 
 
-	/** This method is deprecated.  But I'm keeping it here as a reminder that I need to do something about this induceFeaturesFor() business. */
+	/** This method is deprecated. */
+	// But it is here as a reminder to do something about induceFeaturesFor(). */
 	@Deprecated
 	public Sequence[] predict (InstanceList testing) {
 		testing.setFeatureSelection(this.globalFeatureSelection);
@@ -1534,12 +1544,11 @@ public class CRF extends Transducer implements Serializable
 	public void induceFeaturesFor (InstanceList instances) {
 		instances.setFeatureSelection(this.globalFeatureSelection);
 		for (int i = 0; i < featureInducers.size(); i++) {
-			FeatureInducer klfi = (FeatureInducer)featureInducers.get(i);
+			FeatureInducer klfi = featureInducers.get(i);
 			klfi.induceFeaturesFor (instances, false, false);
 		}
 	}
 
-	
 	// TODO Put support to Optimizable here, including getValue(InstanceList)??
 
 	public void print ()
@@ -1547,7 +1556,6 @@ public class CRF extends Transducer implements Serializable
 		print (new PrintWriter (new OutputStreamWriter (System.out), true));
 	}
 
-	// yyy
 	public void print (PrintWriter out)
 	{
 		out.println ("*** CRF STATES ***");
@@ -1631,8 +1639,9 @@ public class CRF extends Transducer implements Serializable
 		out.writeInt (numParameters);
 	}
 
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int version = in.readInt ();
+	@SuppressWarnings("unchecked")
+  private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.readInt ();
 		inputAlphabet = (Alphabet) in.readObject ();
 		outputAlphabet = (Alphabet) in.readObject ();
 		states = (ArrayList<State>) in.readObject ();
@@ -1740,7 +1749,7 @@ public class CRF extends Transducer implements Serializable
 		{
 			State ret;
 			if ((ret = destinations[index]) == null) {
-				ret = destinations[index] = (State) crf.name2state.get (destinationNames[index]);
+				ret = destinations[index] = crf.name2state.get (destinationNames[index]);
 				if (ret == null)
 					throw new IllegalArgumentException ("this.name="+this.name+" index="+index+" destinationNames[index]="+destinationNames[index]+" name2state.size()="+ crf.name2state.size());
 			}
@@ -1787,7 +1796,7 @@ public class CRF extends Transducer implements Serializable
 		}
 
 		private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-			int version = in.readInt ();
+			in.readInt ();
 			name = (String) in.readObject();
 			index = in.readInt();
 			destinationNames = (String[]) in.readObject();
@@ -1814,7 +1823,7 @@ public class CRF extends Transducer implements Serializable
 				int inputPosition,
 				String output, CRF crf)
 		{
-			this (source, (FeatureVector)inputSeq.get(inputPosition), output, crf);
+			this (source, inputSeq.get(inputPosition), output, crf);
 		}
 
 		protected TransitionIterator (State source,
@@ -1889,7 +1898,7 @@ public class CRF extends Transducer implements Serializable
 		}
 
 		private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-			int version = in.readInt ();
+			in.readInt ();
 			source = (State) in.readObject();
 			index = in.readInt ();
 			nextIndex = in.readInt ();
