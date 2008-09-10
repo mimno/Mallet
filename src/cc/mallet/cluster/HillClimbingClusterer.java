@@ -18,7 +18,7 @@ import cc.mallet.types.InstanceList;
  */
 public abstract class HillClimbingClusterer extends KBestClusterer {
 
-	NeighborEvaluator evaluator;
+	protected NeighborEvaluator evaluator;
 	
 	public HillClimbingClusterer(Pipe instancePipe, NeighborEvaluator evaluator) {
 		super(instancePipe);

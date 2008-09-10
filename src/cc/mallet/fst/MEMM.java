@@ -21,22 +21,24 @@ package cc.mallet.fst;
 
 
 import java.io.Serializable;
-import java.util.BitSet;
-import java.util.logging.Logger;
+
 import java.text.DecimalFormat;
 
-import cc.mallet.classify.MaxEnt;
-import cc.mallet.optimize.LimitedMemoryBFGS;
-import cc.mallet.optimize.Optimizable;
-import cc.mallet.optimize.Optimizer;
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
-import cc.mallet.util.MalletLogger;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Sequence;
 
+import cc.mallet.pipe.Pipe;
+
+/**
+ * A Maximum Entropy Markov Model.
+ */
+@SuppressWarnings("serial")
 public class MEMM extends CRF implements Serializable
 {
-	private static Logger logger = MalletLogger.getLogger(MEMM.class.getName());
-
+//	private static Logger logger = MalletLogger.getLogger(MEMM.class.getName());
 
 	public MEMM (Pipe inputPipe, Pipe outputPipe)
 	{
@@ -63,9 +65,6 @@ public class MEMM extends CRF implements Serializable
 		return new State (name, index, initialWeight, finalWeight,
 				destinationNames, labelNames, weightNames, crf);
 	}
-
-
-
 
 	public static class State extends CRF.State implements Serializable
 	{
@@ -94,25 +93,20 @@ public class MEMM extends CRF implements Serializable
 					this, (FeatureVectorSequence)inputSequence, inputPosition,
 					(outputSequence == null ? null : (String)outputSequence.get(outputPosition)), crf);
 		}
-
 	}
 
 	protected static class TransitionIterator extends CRF.TransitionIterator implements Serializable
 	{
 		private double sum;
 
-		public TransitionIterator (State source,
-				FeatureVectorSequence inputSeq,
-				int inputPosition,
-				String output, CRF memm)
+		public TransitionIterator (State source, FeatureVectorSequence inputSeq,
+				int inputPosition, String output, CRF memm)
 		{
 			super (source, inputSeq, inputPosition, output, memm);
 			normalizeCosts ();
 		}
 
-		public TransitionIterator (State source,
-				FeatureVector fv,
-				String output, CRF memm)
+		public TransitionIterator (State source, FeatureVector fv, String output, CRF memm)
 		{
 			super (source, fv, output, memm);
 			normalizeCosts ();
@@ -139,7 +133,4 @@ public class MEMM extends CRF implements Serializable
 			return super.describeTransition (cutoff) + "Log Z = "+f.format(sum)+"\n";
 		}
 	}
-
-
-
 }

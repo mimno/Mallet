@@ -28,8 +28,14 @@ import cc.mallet.util.CharSequenceLexer;
  */
 public class Input2CharSequence extends Pipe implements Serializable
 {
+	String encoding = null;
+
 	public Input2CharSequence ()
 	{
+	}
+
+	public Input2CharSequence( String encoding ) {
+		this.encoding = encoding;
 	}
 
 	public Instance pipe (Instance carrier)
@@ -65,7 +71,15 @@ public class Input2CharSequence extends Pipe implements Serializable
 	public CharSequence pipe (File file)
 		throws java.io.FileNotFoundException, java.io.IOException
 	{
-	        BufferedReader br = new BufferedReader (new FileReader (file));
+		BufferedReader br = null;
+
+		if (encoding == null) {
+			br = new BufferedReader (new FileReader (file));
+		}
+		else {
+			br = new BufferedReader( new InputStreamReader(new FileInputStream(file), encoding) );
+		}
+
 		CharSequence cs = pipe(br);
 		br.close();
 		return cs;
@@ -95,15 +109,23 @@ public class Input2CharSequence extends Pipe implements Serializable
 
 	// Serialization 
 	
-	private static final long serialVersionUID = 1;
+	private static final long serialVersionUID = 2;
 	private static final int CURRENT_SERIAL_VERSION = 0;
 	
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
+		if (encoding == null) {
+			out.writeObject("null");
+		}
+		else {
+			out.writeObject(encoding);
+		}
 	}
 	
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
+		this.encoding = (String) in.readObject();
+		if (encoding.equals("null")) { encoding = null; } 
 	}
 
 }

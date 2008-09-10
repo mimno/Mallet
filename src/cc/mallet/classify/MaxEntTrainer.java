@@ -12,6 +12,7 @@ import java.util.*;
 import java.io.*;
 
 import cc.mallet.classify.Classifier;
+import cc.mallet.optimize.ConjugateGradient;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
@@ -67,7 +68,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	MaxEnt initialClassifier;
 	//MaxEnt me = null;  Use ome.getClassifier() instead.
 	MaxEntOptimizableByLabelLikelihood ome = null;
-	LimitedMemoryBFGS opt = null;
+	Optimizer opt = null;
 
 
 	public MaxEntTrainer ()
@@ -129,7 +130,8 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 
 	public Optimizer getOptimizer () {
 		if (opt == null && ome != null)
-			opt = new LimitedMemoryBFGS (ome);
+      opt = new ConjugateGradient(ome);
+    //opt = new LimitedMemoryBFGS (ome);
 		return opt;
 	}
 
@@ -160,7 +162,8 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 		if (ome == null)
 			return 0;
 		else
-			return opt.getIteration ();
+		  return Integer.MAX_VALUE;
+//			return opt.getIteration ();
 	}
 	
 	/**
@@ -201,9 +204,10 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 
 		if (numIterations == Integer.MAX_VALUE) {
 			// Run it again because in our and Sam Roweis' experience, BFGS can still
-			// eek out more likelihood after first convergence by re-running without
+			// eke out more likelihood after first convergence by re-running without
 			// being restricted by its gradient history.
-			opt.reset ();
+			opt = null;
+			getOptimizer();
 			try {
 				opt.optimize ();
 			} catch (IllegalArgumentException e) {

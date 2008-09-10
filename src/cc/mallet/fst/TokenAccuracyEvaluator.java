@@ -16,12 +16,17 @@ package cc.mallet.fst;
 
 
 import java.util.HashMap;
-import java.util.logging.*;
-import java.io.*;
+import java.util.logging.Logger;
 
-import cc.mallet.types.*;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Sequence;
+
 import cc.mallet.util.MalletLogger;
 
+/**
+ * Evaluates a transducer model based on predictions of individual tokens.
+ */
 public class TokenAccuracyEvaluator extends TransducerEvaluator
 {
 	private static Logger logger = MalletLogger.getLogger(TokenAccuracyEvaluator.class.getName());
@@ -46,7 +51,6 @@ public class TokenAccuracyEvaluator extends TransducerEvaluator
 			InstanceList instanceList3, String description3) {
 		this (new InstanceList[] {instanceList1, instanceList2, instanceList3}, new String[] {description1, description2, description3});
 	}
-
 
 	public void evaluateInstanceList (TransducerTrainer trainer, InstanceList instances, String description) 
   {

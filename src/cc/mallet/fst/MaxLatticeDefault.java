@@ -18,16 +18,19 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cc.mallet.fst.Transducer.State;
-import cc.mallet.fst.Transducer.TransitionIterator;
 import cc.mallet.types.ArraySequence;
 import cc.mallet.types.Sequence;
 import cc.mallet.types.SequencePairAlignment;
+
+import cc.mallet.fst.Transducer.State;
+import cc.mallet.fst.Transducer.TransitionIterator;
+
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.search.AStar;
 import cc.mallet.util.search.AStarState;
@@ -35,8 +38,10 @@ import cc.mallet.util.search.SearchNode;
 import cc.mallet.util.search.SearchState;
 
 /** Default, full dynamic programming version of the Viterbi "Max-(Product)-Lattice" algorithm.
- * Author: Fernando Pereira and Andrew McCallum. */
-
+ * 
+ * @author Fernando Pereira
+ * @author Andrew McCallum 
+ */
 public class MaxLatticeDefault implements MaxLattice
 {
 	private static Logger logger = MalletLogger.getLogger(MaxLatticeDefault.class.getName());
@@ -182,9 +187,6 @@ public class MaxLatticeDefault implements MaxLattice
 		return lattice[ip][stateIndex];
 	}
 	
-	
-	
-	
 	public MaxLatticeDefault (Transducer t, Sequence inputSequence) 
 	{
 		this (t, inputSequence, null, 100000);
@@ -279,20 +281,23 @@ public class MaxLatticeDefault implements MaxLattice
 	public double getDelta (int ip, int stateIndex) {
 		if (lattice != null) {
 			return getViterbiNode (ip, stateIndex).delta;
-		} else {
-			throw new RuntimeException ("Attempt to called getDelta() when lattice not stored.");
 		}
+    throw new RuntimeException ("Attempt to called getDelta() when lattice not stored.");
 	}
 
 	private List<SequencePairAlignment<Object,ViterbiNode>> viterbiNodeAlignmentCache = null;
 
-	/** Perform the backward pass of Viterbi, returning the n-best sequences of ViterbiNodes.
-	 * Each ViterbiNode contains the state, output symbol, and other information. 
-	 * Note that the length of each ViterbiNode Sequence is inputLength+1, because the
-	 * first element of the sequence is the start state, and the first input/output symbols 
-	 * occur on the transition from a start-state to the next state.  These first input/output
-	 * symbols are stored in the second ViterbiNode in the sequence.  The last ViterbiNode
-	 * in the sequence corresponds to the final state and has the last input/output symbols. */	
+	/**
+   * Perform the backward pass of Viterbi, returning the n-best sequences of
+   * ViterbiNodes. Each ViterbiNode contains the state, output symbol, and other
+   * information. Note that the length of each ViterbiNode Sequence is
+   * inputLength+1, because the first element of the sequence is the start
+   * state, and the first input/output symbols occur on the transition from a
+   * start-state to the next state. These first input/output symbols are stored
+   * in the second ViterbiNode in the sequence. The last ViterbiNode in the
+   * sequence corresponds to the final state and has the last input/output
+   * symbols.
+   */
 	public List<SequencePairAlignment<Object,ViterbiNode>> bestViterbiNodeSequences (int n) {
 		if (viterbiNodeAlignmentCache != null && viterbiNodeAlignmentCache.size() >= n)
 			return viterbiNodeAlignmentCache;
@@ -310,7 +315,8 @@ public class MaxLatticeDefault implements MaxLattice
 		AStar search = new AStar(finalNodes, latticeLength * t.numStates());
 		List<SequencePairAlignment<Object,ViterbiNode>> outputs = new ArrayList<SequencePairAlignment<Object,ViterbiNode>>(n);
 		for (int i = 0; i < n && search.hasNext(); i++) {
-			SearchNode ans = (SearchNode)search.next();
+		  // gsc: removing unnecessary cast
+			SearchNode ans = search.next();
 			double weight = -ans.getCost();
 			ViterbiNode[] seq = new ViterbiNode[latticeLength];
 			// Commented out so we get the start state ViterbiNode -akm 12/2007
@@ -330,11 +336,13 @@ public class MaxLatticeDefault implements MaxLattice
 
 	private List<SequencePairAlignment<Object,State>> stateAlignmentCache = null;
 
-	/** Perform the backward pass of Viterbi, returning the n-best sequences of States.
-	 * Note that the length of each State Sequence is inputLength+1, because the
-	 * first element of the sequence is the start state, and the first input/output symbols 
-	 * occur on the transition from a start state to the next state.  The last State
-	 * in the sequence corresponds to the final state. */	
+	/**
+   * Perform the backward pass of Viterbi, returning the n-best sequences of
+   * States. Note that the length of each State Sequence is inputLength+1,
+   * because the first element of the sequence is the start state, and the first
+   * input/output symbols occur on the transition from a start state to the next
+   * state. The last State in the sequence corresponds to the final state.
+   */	
 	public List<SequencePairAlignment<Object,State>> bestStateAlignments (int n) {
 		if (stateAlignmentCache != null && stateAlignmentCache.size() >= n)
 			return stateAlignmentCache;
@@ -366,7 +374,6 @@ public class MaxLatticeDefault implements MaxLattice
 	public Sequence<State> bestStateSequence() {
 		return bestStateAlignments(1).get(0).output();
 	}
-
 	
 	private List<SequencePairAlignment<Object,Object>> outputAlignmentCache = null;
 
@@ -480,7 +487,6 @@ public class MaxLatticeDefault implements MaxLattice
 	}
 
 	
-	
 	public static class Factory extends MaxLatticeFactory implements Serializable
 	{
 		public MaxLattice newMaxLattice (Transducer trans, Sequence inputSequence, Sequence outputSequence)
@@ -495,7 +501,7 @@ public class MaxLatticeDefault implements MaxLattice
 			out.writeInt(CURRENT_SERIAL_VERSION);
 		}
 		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-			int version = in.readInt();
+			in.readInt();
 		}
 
 

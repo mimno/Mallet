@@ -1,9 +1,7 @@
 package cc.mallet.fst;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 
 import cc.mallet.types.FeatureVector;
@@ -12,6 +10,15 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 import cc.mallet.types.TokenSequence;
 
+/**
+ * Prints the input instances along with the features and the true and 
+ * predicted labels to a file.
+ * <p>
+ * To control the number of times output has to be printed, override the
+ * {@link cc.mallet.fst.TransducerTrainer.precondition} method.
+ * <p>
+ * The name of the output file is <tt>filename_prefix + description + iteration_number + '.viterbi'</tt>.
+ */
 public class ViterbiWriter extends TransducerEvaluator {
 	
 	String filenamePrefix;
@@ -44,7 +51,8 @@ public class ViterbiWriter extends TransducerEvaluator {
 		// We don't want to print iteration number and cost, so here we override this behavior in the superclass.
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void evaluateInstanceList(TransducerTrainer transducerTrainer,	InstanceList instances, String description) {
 		int iteration = transducerTrainer.getIteration();
     String viterbiFilename = filenamePrefix + description + iteration + ".viterbi";

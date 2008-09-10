@@ -86,10 +86,12 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		gatherConstraints(ilist);
 	}
 
-	// Set the constraints by running forward-backward with the *output label
-	// sequence provided*, thus restricting it to only those paths that agree with
-	// the label sequence,
-	public void gatherConstraints(InstanceList ilist) {
+	/**
+	 * Set the constraints by running forward-backward with the <i>output label
+	 * sequence provided</i>, thus restricting it to only those paths that agree with
+	 * the label sequence.
+	 */
+	protected void gatherConstraints(InstanceList ilist) {
 		logger.info("Gathering constraints...");
 		assert (constraints.structureMatches(crf.parameters));
 		constraints.zero();
@@ -106,8 +108,10 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		constraints.assertNotNaNOrInfinite();
 	}
 
-	// compute log probability of a batch of training data, fill in corresponding
-	// expectations as well
+	/**
+	 * Computes log probability of a batch of training data, fill in corresponding
+	 * expectations as well
+	 */
 	protected double getExpectationValue(int batchIndex, int[] batchAssignments) {
 		// Reset expectations to zero before we fill them again
 		CRF.Factors batchExpectations = expectations.get(batchIndex);
@@ -159,8 +163,10 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		return value;
 	}
 
-	// log probability of a batch of training sequence labels and the prior over
-	// parameters, if last batch then incorporate the prior on parameters as well
+	/**
+	 * Returns the log probability of a batch of training sequence labels and the prior over
+	 * parameters, if last batch then incorporate the prior on parameters as well.
+	 */
 	public double getBatchValue(int batchIndex, int[] batchAssignments) {
 		assert(batchIndex < this.numBatches) : "Incorrect batch index: " + batchIndex + ", range(0, " +
 		this.numBatches + ")";
@@ -213,8 +219,10 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		System.arraycopy(gradient, 0, buffer, 0, gradient.length);
 	}
 
-	// add gradients from all batches,
-	// *Note*: assumes buffer is already initialized
+	/**
+	 * Adds gradients from all batches. <p>
+	 * <b>Note:</b> assumes buffer is already initialized.
+	 */
 	public void combineGradients(Collection<double[]> batchGradients, double[] buffer) {
 		assert(buffer.length == crf.parameters.getNumFactors())
 			: "Incorrect buffer length: " + buffer.length + ", expected: " + crf.parameters.getNumFactors();
@@ -284,5 +292,4 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 			return new CRFOptimizableByBatchLabelLikelihood (crf, trainingData, numBatches);
 		}
 	}
-
 }

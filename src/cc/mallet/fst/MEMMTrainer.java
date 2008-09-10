@@ -3,20 +3,24 @@ package cc.mallet.fst;
 import java.util.BitSet;
 import java.util.logging.Logger;
 
-import cc.mallet.fst.MEMM.State;
-import cc.mallet.fst.MEMM.TransitionIterator;
-import cc.mallet.optimize.LimitedMemoryBFGS;
-import cc.mallet.optimize.Optimizable;
-import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
-import cc.mallet.types.IndexedSparseVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import cc.mallet.types.SparseVector;
+
+import cc.mallet.fst.MEMM.State;
+import cc.mallet.fst.MEMM.TransitionIterator;
+
+import cc.mallet.optimize.LimitedMemoryBFGS;
+import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.Optimizer;
+
 import cc.mallet.util.MalletLogger;
 
+/**
+ * Trains and evaluates a {@link MEMM}.
+ */
 public class MEMMTrainer extends TransducerTrainer 
 {
 	private static Logger logger = MalletLogger.getLogger(MEMMTrainer.class.getName());
@@ -26,7 +30,8 @@ public class MEMMTrainer extends TransducerTrainer
 	// After training sets have been gathered in the states, record which
 	//   InstanceList we've gathers, so we don't double-count instances.
 	private InstanceList trainingGatheredFor;
-	boolean useSparseWeights = true;
+	// gsc: user is supposed to set the weights manually, so this flag is not needed
+//	boolean useSparseWeights = true;
 	MEMMOptimizableByLabelLikelihood omemm;
 	
 	public MEMMTrainer (MEMM memm) {
@@ -37,12 +42,19 @@ public class MEMMTrainer extends TransducerTrainer
 		return new MEMMOptimizableByLabelLikelihood (memm, trainingSet);
 	}
 
-	public MEMMTrainer setUseSparseWeights (boolean f) { useSparseWeights = f;  return this; }
+//	public MEMMTrainer setUseSparseWeights (boolean f) { useSparseWeights = f;  return this; }
 
+	/**
+	 * Trains a MEMM until convergence.
+	 */
 	public boolean train (InstanceList training) {
 		return train (training, Integer.MAX_VALUE);
 	}
 
+	/**
+	 * Trains a MEMM for specified number of iterations or until convergence whichever
+	 * occurs first; returns true if training converged within specified iterations.
+	 */
 	public boolean train (InstanceList training, int numIterations)
 	{
 		if (numIterations <= 0)
@@ -57,11 +69,12 @@ public class MEMMTrainer extends TransducerTrainer
 		if (trainingGatheredFor != training) {
 			gatherTrainingSets (training);
 		}
-		if (useSparseWeights) {
-			memm.setWeightsDimensionAsIn (training, false);
-		} else {
-			memm.setWeightsDimensionDensely ();
-		}
+		// gsc: the user has to set the weights manually
+//		if (useSparseWeights) {
+//			memm.setWeightsDimensionAsIn (training, false);
+//		} else {
+//			memm.setWeightsDimensionDensely ();
+//		}
 
 
 		/*
@@ -103,7 +116,7 @@ public class MEMMTrainer extends TransducerTrainer
 		omemm.gatherExpectationsOrConstraints (true);
 		Optimizer maximizer = new LimitedMemoryBFGS(omemm);
 		int i;
-		boolean continueTraining = true;
+//		boolean continueTraining = true;
 		boolean converged = false;
 		logger.info ("CRF about to train with "+numIterations+" iterations");
 		for (i = 0; i < numIterations; i++) {
@@ -146,22 +159,26 @@ public class MEMMTrainer extends TransducerTrainer
 					MEMM.State source = (MEMM.State) ti.getSourceState();
 					if (count != 0) {
 						// Create the source state's trainingSet if it doesn't exist yet.
-						if (((MEMM.State) source).trainingSet == null)
+						if (source.trainingSet == null)
 							// New InstanceList with a null pipe, because it doesn't do any processing of input.
-							((MEMM.State) source).trainingSet = new InstanceList (null);
+							source.trainingSet = new InstanceList (null);
 						// TODO We should make sure we don't add duplicates (through a second call to setWeightsDimenstion..!
 						// TODO Note that when the training data still allows ambiguous outgoing transitions
 						// this will add the same FV more than once to the source state's trainingSet, each
 						// with >1.0 weight.  Not incorrect, but inefficient.
 //						System.out.println ("From: "+source.getName()+" ---> "+getOutput()+" : "+getInput());
-						((MEMM.State) source).trainingSet.add (ti.getInput (), ti.getOutput (), null, null, count);
+						source.trainingSet.add (new Instance(ti.getInput (), ti.getOutput (), null, null), count);
 					}
 				}
 			});
 		}
 	}
 
-
+	/**
+	 * Not implemented yet.
+	 * 
+	 * @throws UnsupportedOperationException
+	 */
 	public boolean train (InstanceList training, InstanceList validation, InstanceList testing,
 			TransducerEvaluator eval, int numIterations,
 			int numIterationsPerProportion,
@@ -170,6 +187,11 @@ public class MEMMTrainer extends TransducerTrainer
 		throw new UnsupportedOperationException();
 	}
 
+  /**
+   * Not implemented yet.
+   * 
+   * @throws UnsupportedOperationException
+   */
 	public boolean trainWithFeatureInduction (InstanceList trainingData,
 			InstanceList validationData, InstanceList testingData,
 			TransducerEvaluator eval, int numIterations,
@@ -205,7 +227,13 @@ public class MEMMTrainer extends TransducerTrainer
 		}
 	}
 
-	public class MEMMOptimizableByLabelLikelihood extends CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientValue
+	/**
+	 * Represents the terms in the objective function.
+	 * <p>
+	 * The weights are trained by matching the expectations of the model to the observations gathered from the data.
+	 */
+	@SuppressWarnings("serial")
+  public class MEMMOptimizableByLabelLikelihood extends CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientValue
 	{
 		BitSet infiniteValues = null;
 
@@ -247,7 +275,9 @@ public class MEMMTrainer extends TransducerTrainer
 					String labelString = (String) instance.getTarget ();
 					TransitionIterator iter = new TransitionIterator (s, fv, gatherConstraints?labelString:null, memm);
 					while (iter.hasNext ()) {
-						State destination = (MEMM.State) iter.nextState();  // Just to advance the iterator
+					  // gsc
+					  iter.nextState(); // advance the iterator
+//						State destination = (MEMM.State) iter.nextState();  // Just to advance the iterator
 						double weight = iter.getWeight();
 						factorIncrementor.incrementTransition(iter, Math.exp(weight) * instWeight);
 						//iter.incrementCount (Math.exp(weight) * instWeight);

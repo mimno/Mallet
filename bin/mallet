@@ -1,0 +1,45 @@
+#!/bin/sh
+
+
+malletdir=`dirname $0`
+malletdir=`dirname $malletdir`
+cp=$malletdir/classes:$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
+
+MEMORY=1g
+
+JAVA_COMMAND="java -Xmx$MEMORY -ea -Djava.awt.headless=true -server -classpath $cp"
+
+CMD=$1
+shift
+
+help()
+{
+cat <<EOF
+Mallet 2.0 commands: 
+
+  import-dir        load the contents of a directory into mallet instances (one per file)
+  import-file       load a single file into mallet instances (one per line)
+  train-classifier  train a classifier from Mallet data files
+  train-topics      train a topic model from Mallet data files
+  hlda              train a topic model using Hierarchical LDA
+  prune             remove features based on frequency or information gain
+  split             divide data into testing, training, and validation portions
+
+Include --help with any option for more information
+EOF
+}
+
+CLASS=
+
+case $CMD in
+	import-dir) CLASS=cc.mallet.classify.tui.Text2Vectors;;
+	import-file) CLASS=cc.mallet.classify.tui.Csv2Vectors;;
+	train-classifier) CLASS=cc.mallet.classify.tui.Vectors2Classify;;
+	train-topics) CLASS=cc.mallet.topics.tui.Vectors2Topics;;
+	hlda) CLASS=cc.mallet.topics.tui.HierarchicalLDATUI;;
+	prune) CLASS=cc.mallet.classify.tui.Vectors2Vectors;;
+	split) CLASS=cc.mallet.classify.tui.Vectors2Vectors;;
+	*) echo "Unrecognized command: $CMD"; help; exit 1;;
+esac
+
+$JAVA_COMMAND $CLASS $*

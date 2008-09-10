@@ -4,12 +4,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+
 import java.util.logging.Logger;
 
 import cc.mallet.types.InstanceList;
+
 import cc.mallet.util.MalletLogger;
 
-/*
+/**
  * Saves a trained model to specified filename. <p>
  * 
  * Can be used to save the model every few iterations, e.g. to save every 5 iterations: <p>

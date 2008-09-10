@@ -459,7 +459,7 @@ public abstract class CommandOption
     public java.lang.String valueToString() {
       StringBuffer b = new StringBuffer();
       java.lang.String sep = "";
-      for (int i = 0; i < defaultValue.length; i++) {
+      for (int i = 0; i < value.length; i++) {
         b.append(sep).append(java.lang.Double.toString(value[i]));
         sep = ",";
       }
@@ -561,7 +561,7 @@ public abstract class CommandOption
 								java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, java.io.File.class, argRequired, shortdoc, longdoc);
-			this.value = setContents[defaultIndex];
+			this.defaultValue = this.value = setContents[defaultIndex];
 			this.setContents = setContents;
 			StringBuffer sb = new StringBuffer ();
 			for (int i = 0; i < setContents.length; i++) {

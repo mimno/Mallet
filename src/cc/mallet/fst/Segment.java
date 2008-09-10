@@ -12,10 +12,10 @@
 package cc.mallet.fst;
 
 
-import java.util.*;
+import java.util.ArrayList;
 
-import cc.mallet.extract.*;
-import cc.mallet.types.*;
+import cc.mallet.types.ArraySequence;
+import cc.mallet.types.Sequence;
 
 /**
  * Represents a labelled chunk of a {@link Sequence} segmented by a
@@ -35,10 +35,12 @@ public class Segment implements Comparable
 	                         //      pred:  B I O O O
 	
 	/**
-		 @param input entire input sequence
-		 @param pred predicted sequence
-		 @param start starting position of extracted segment
-		 @param end ending position of extracted segment
+	 * Initializes the segment.
+	 * 
+	 * @param input entire input sequence
+	 * @param pred predicted sequence
+	 * @param start starting position of extracted segment
+	 * @param end ending position of extracted segment
 	 */
 	public Segment (Sequence input, Sequence pred, Sequence truth, int start, int end,
 									Object startTag, Object inTag )
@@ -60,13 +62,12 @@ public class Segment implements Comparable
 			}			
 		}
 		// segment can also be incorrect if it ends prematurely
-                if (truth != null) {
-                  if (correct && end+1 < truth.size() &&
-                      truth.get (end+1).equals (inTag)) {
-                    this.correct = false;
-                    this.endsPrematurely = true;
-                  }				
-                }			
+		if (truth != null) {
+		  if (correct && end+1 < truth.size() && truth.get (end+1).equals (inTag)) {
+		    this.correct = false;
+		    this.endsPrematurely = true;
+		  }				
+		}			
 	}
   
 	public void setCorrect (boolean b) { this.correct = b; }
@@ -141,7 +142,6 @@ public class Segment implements Comparable
 			}
 			return true;
 		}
-		else
-			return false;
+    return false;
 	}
 }

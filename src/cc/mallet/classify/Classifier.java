@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.*;
 import java.io.PrintWriter;
+import java.io.Serializable;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
@@ -59,7 +60,7 @@ import cc.mallet.types.FeatureSelection;
  * @see Classification
  * @see Trial
  */
-public abstract class Classifier implements AlphabetCarrying
+public abstract class Classifier implements AlphabetCarrying, Serializable
 {
 	private static Logger logger = Logger.getLogger(Classifier.class.getName());
 

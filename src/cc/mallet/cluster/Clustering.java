@@ -22,9 +22,9 @@ import cc.mallet.types.InstanceList;
 
 public class Clustering implements Serializable {
 	
-	int numLabels;
-	int labels[];
-	InstanceList instances;
+	protected int numLabels;
+	protected int labels[];
+	protected InstanceList instances;
 	
 	/** Clustering constructor.
 	 *

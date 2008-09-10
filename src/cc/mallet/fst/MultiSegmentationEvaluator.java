@@ -18,21 +18,27 @@
 package cc.mallet.fst;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
+
 import java.util.List;
 import java.util.logging.Logger;
+
+import java.text.DecimalFormat;
 
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 import cc.mallet.types.TokenSequence;
+
 import cc.mallet.util.MalletLogger;
 
+/**
+ * Evaluates a transducer model, computes the precision, recall and F1 scores;
+ * considers segments that span across multiple tokens.
+ */
 public class MultiSegmentationEvaluator extends TransducerEvaluator
 {
 	private static Logger logger = MalletLogger.getLogger(SegmentationEvaluator.class.getName());
-
 
 	// equals() is called on these objects to determine if this token is the start or continuation of a segment.
 	// A tag not equal to any of these is an "other".
@@ -163,11 +169,12 @@ public class MultiSegmentationEvaluator extends TransducerEvaluator
 
 
 	/**
-		 returns the number of incorrect segments in <code>predOutput</code>
-		 @param trueOutput truth
-		 @param predOutput predicted
-		 @return number of incorrect segments
-	 */
+   * Returns the number of incorrect segments in <code>predOutput</code>
+   * 
+   * @param trueOutput truth
+   * @param predOutput predicted
+   * @return number of incorrect segments
+   */
 	public int numIncorrectSegments (Sequence trueOutput, Sequence predOutput) {
     int numCorrectTokens, totalTokens;
     int[] numTrueSegments, numPredictedSegments, numCorrectSegments;
@@ -238,14 +245,15 @@ public class MultiSegmentationEvaluator extends TransducerEvaluator
 	}
 
 	/**
-		 Tests segmentation using an ArrayList of predicted Sequences
-		 instead of a {@link Transducer}. If predictedSequence is null,
-		 don't include in stats (useful for error analysis).
-		 @param data list of instances to be segmented
-		 @param predictedSequences predictions
-		 @param description description of trial
-		 @param viterbiOutputStream where to print the Viterbi paths
-	 */
+   * Tests segmentation using an ArrayList of predicted Sequences instead of a
+   * {@link Transducer}. If predictedSequence is null, don't include in stats
+   * (useful for error analysis).
+   * 
+   * @param data list of instances to be segmented
+   * @param predictedSequences predictions
+   * @param description description of trial
+   * @param viterbiOutputStream where to print the Viterbi paths
+   */
   public void batchTest(InstanceList data, List<Sequence> predictedSequences,
 												String description, PrintStream viterbiOutputStream)
   {

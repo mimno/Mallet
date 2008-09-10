@@ -64,9 +64,9 @@ public class CharSequence2TokenSequence extends Pipe implements Serializable
 		lexer.setCharSequence (string);
 		TokenSequence ts = new StringTokenization (string);
 		while (lexer.hasNext()) {
-      lexer.next();
-      ts.add (new StringSpan (string, lexer.getStartOffset (), lexer.getEndOffset ()));
-    }
+			lexer.next();
+			ts.add (new StringSpan (string, lexer.getStartOffset (), lexer.getEndOffset ()));
+		}
 		carrier.setData(ts);
 		return carrier;
 	}

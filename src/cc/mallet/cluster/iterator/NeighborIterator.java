@@ -16,7 +16,7 @@ import cc.mallet.types.Instance;
  * @see InstanceIterator
  */
 public abstract class NeighborIterator implements Iterator<Instance> {
-	Clustering clustering;
+	protected Clustering clustering;
 
 	/**
 	 *

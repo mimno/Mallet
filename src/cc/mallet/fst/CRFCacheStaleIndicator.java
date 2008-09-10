@@ -26,9 +26,8 @@ public class CRFCacheStaleIndicator implements CacheStaleIndicator {
 		if (crf.weightsValueChangeStamp != cachedValueChangeStamp) {
 			cachedValueChangeStamp = crf.weightsValueChangeStamp;
 			return true;
-		} else {
-			return false;
 		}
+    return false;
 	}
 
 	/**
@@ -38,8 +37,7 @@ public class CRFCacheStaleIndicator implements CacheStaleIndicator {
 		if (crf.weightsValueChangeStamp != cachedGradientChangeStamp) {
 			cachedGradientChangeStamp = crf.weightsValueChangeStamp;
 			return true;
-		} else {
-			return false;
 		}
+    return false;
 	}
 }
