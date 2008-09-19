@@ -28,7 +28,7 @@ import cc.mallet.util.Strings;
 
 /**
  * An iterator that generates instances from an initial
- * directory or set of directories.
+ * directory or set of directories. The iterator will recurse through sub-directories.
  * Each filename becomes the data field of an instance, and the result of
  * a user-specified regular expression pattern applied to the filename becomes
  * the target value of the instance.
