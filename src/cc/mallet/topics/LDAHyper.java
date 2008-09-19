@@ -341,8 +341,15 @@ public class LDAHyper implements Serializable {
 									   iterationsSoFar >= burninPeriod && iterationsSoFar % saveSampleInterval == 0,
 									   true);
 			}
-		
-			System.out.print((System.currentTimeMillis() - iterationStart)/1000 + "s ");
+
+			long elapsedMillis = System.currentTimeMillis() - iterationStart;
+			if (elapsedMillis < 1000) {
+				System.out.print(elapsedMillis + "ms ");
+			}
+			else {
+				System.out.print((elapsedMillis/1000) + "s ");
+			}
+
 			//System.out.println(topicTermCount + "\t" + betaTopicCount + "\t" + smoothingOnlyCount);
 			if (iterationsSoFar % 10 == 0) {
 				System.out.println ("<" + iterationsSoFar + "> ");
@@ -1150,12 +1157,14 @@ public class LDAHyper implements Serializable {
 		int nonZeroTypeTopics = 0;
 
 		for (int type=0; type < numTypes; type++) {
-			// reuse this array as a pointer
+			int[] usedTopics = typeTopicCounts[type].keys();
 
-			for (int topic=0; topic < numTopics; topic++) {
-				if (topicCounts[topic] > 0) {
+			for (int topic : usedTopics) {
+				int count = typeTopicCounts[type].get(topic);
+				if (count > 0) {
 					nonZeroTypeTopics++;
-					logLikelihood += Dirichlet.logGammaStirling(beta + typeTopicCounts[type].get(topic));
+					logLikelihood +=
+						Dirichlet.logGammaStirling(beta + count);
 				}
 			}
 		}
@@ -1184,6 +1193,9 @@ public class LDAHyper implements Serializable {
 			args.length > 2 ? InstanceList.load (new File(args[2])) : null;
 
 		LDAHyper lda = new LDAHyper (numTopics, 50.0, 0.01);
+
+		lda.printLogLikelihood = true;
+		lda.setTopicDisplay(50,7);
 		lda.addInstances(training);
 		lda.estimate();
 	}
