@@ -2,8 +2,12 @@
 
 
 malletdir=`dirname $0`
+echo $malletdir
 malletdir=`dirname $malletdir`
+echo $malletdir
 cp=$malletdir/classes:$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
+
+echo $cp
 
 MEMORY=1g
 
