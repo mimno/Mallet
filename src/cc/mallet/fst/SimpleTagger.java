@@ -143,6 +143,8 @@ public class SimpleTagger
       carrier.setData(new FeatureVectorSequence(fvs));
       if (isTargetProcessing())
         carrier.setTarget(target);
+      else
+        carrier.setTarget(new LabelSequence(getTargetAlphabet()));
       return carrier;
     }
   }
@@ -294,7 +296,7 @@ public class SimpleTagger
     	boolean converged;
     	for (int i = 1; i <= iterations; i++) {
     		converged = crft.train (training, 1);
-    		if (i % 1 == 0) // Change the 1 to higher integer to evaluate less often
+    		if (i % 1 == 0 && eval != null) // Change the 1 to higher integer to evaluate less often
     			eval.evaluate(crft);
     		if (viterbiOutputOption.value && i % 10 == 0)
     			new ViterbiWriter("", new InstanceList[] {training, testing}, new String[] {"training", "testing"}).evaluate(crft);
