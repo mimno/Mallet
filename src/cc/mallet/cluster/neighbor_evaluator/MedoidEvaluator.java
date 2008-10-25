@@ -1,7 +1,7 @@
 package cc.mallet.cluster.neighbor_evaluator;
 
 
-import weka.core.Instances;
+//import weka.core.Instances;
 import cc.mallet.classify.Classifier;
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.util.PairwiseMatrix;
