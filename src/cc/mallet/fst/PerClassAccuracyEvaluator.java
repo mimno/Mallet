@@ -16,6 +16,8 @@ import cc.mallet.types.*;
 import cc.mallet.util.MalletLogger;
 
 /**
+ * Determines the precision, recall and F1 on a per-class basis.
+ * 
  * @author Charles Sutton
  * @version $Id: PerClassAccuracyEvaluator.java,v 1.1 2007/10/22 21:37:48 mccallum Exp $
  */

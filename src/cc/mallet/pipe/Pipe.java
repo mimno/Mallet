@@ -41,7 +41,7 @@ import cc.mallet.util.MalletLogger;
 	its output to the "data" field of an instance.
     <p>
     A pipe doesn't have any direct notion of input or output - it merely modifies instances
-    that are handed to it.  A set of helper classes, subclasses of {@link cc.mallet.pipe.types.InstanceIterator},
+    that are handed to it.  A set of helper classes, which implement the interface {@link Iterator<Instance>},
     iterate over commonly encountered input data structures and feed the elements of these
     data structures to a pipe as instances.
     <p>
@@ -56,14 +56,14 @@ import cc.mallet.util.MalletLogger;
     FileIterator feeds instances to an InstanceList, which processes the instances through
     its associated pipe and keeps the results.
 	<p>
-    Pipes can be hierachically composed. In a typical usage, a SerialPipe is created which
-    holds instances of other pipes in an ordered list. Piping
-	in instance through a SerialPipe means piping the instance through the child pipes
+    Pipes can be hierachically composed. In a typical usage, a SerialPipe is created, which
+    holds other pipes in an ordered list. Piping
+	an instance through a SerialPipe means piping the instance through each of the child pipes
 	in sequence.
     <p>
-    A pipe holds onto two separate Alphabets: one for the symbols (feature names)
+    A pipe holds two separate Alphabets: one for the symbols (feature names)
     encountered in the data fields of the instances processed through the pipe,
-    and one for the symbols encountered in the target fields.
+    and one for the symbols (e.g. class labels) encountered in the target fields.
     <p>
 
  @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>

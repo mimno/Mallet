@@ -6,8 +6,8 @@
    information, see the file `LICENSE' included with this distribution. */
 
 /** 
-   @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- */
+	@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+*/
 
 package cc.mallet.pipe.iterator;
 
@@ -20,51 +20,78 @@ import java.net.URISyntaxException;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.*;
 
-public class SimpleFileLineIterator implements Iterator<Instance>
-{
+public class SimpleFileLineIterator implements Iterator<Instance> {
+
 	BufferedReader reader = null;
-  int index = -1;
-  String currentLine = null;
-  boolean hasNextUsed = false;
+	int index = -1;
+	String currentLine = null;
+	boolean hasNextUsed = false;
 	
-	public SimpleFileLineIterator (String filename)
-	{
-    try {
-      this.reader = new BufferedReader (new FileReader(filename));
-      this.index = 0;
+	int progressDisplayInterval = 0;
+
+	public SimpleFileLineIterator (String filename) {
+		try {
+			this.reader = new BufferedReader (new FileReader(filename));
+			this.index = 0;
 		} catch (IOException e) {
 			throw new RuntimeException (e);
 		}
 	}
 
-	public Instance next ()
-	{
+	public SimpleFileLineIterator (File file) {
+		try {
+			this.reader = new BufferedReader (new FileReader(file));
+			this.index = 0;
+		} catch (IOException e) {
+			throw new RuntimeException (e);
+		}
+	}
+
+	/** Set the iterator to periodically print the
+	 *   total number of lines read to standard out.
+	 *  @param interval how often to print
+	 */
+	public void setProgressDisplayInterval(int interval) {
+		progressDisplayInterval = interval;
+	}
+
+	public Instance next () {
+
 		URI uri = null;
 		try { uri = new URI ("array:" + index++); }
 		catch (Exception e) { throw new RuntimeException (e); }
-    if (!hasNextUsed) {
-      try {
-        currentLine = reader.readLine();
-      }
-      catch (IOException e) {
-        throw new RuntimeException (e);
-      }
-    }
-    else
-      hasNextUsed = false;
+
+		if (!hasNextUsed) {
+			try {
+				currentLine = reader.readLine();
+			}
+			catch (IOException e) {
+				throw new RuntimeException (e);
+			}
+		}
+		else {
+			hasNextUsed = false;
+		}
+
+		if (progressDisplayInterval != 0 &&
+			index > 0 &&
+			index % progressDisplayInterval == 0) {
+			System.out.println(index);
+		}
+
 		return new Instance (currentLine, null, uri, null);
 	}
 
 	public boolean hasNext ()	{	
-    hasNextUsed = true; 
-    try {
-      currentLine = reader.readLine(); 
-    }
-    catch (IOException e) {
-      throw new RuntimeException (e);
-    }
-    return (currentLine != null);	
-  }
+		hasNextUsed = true; 
+		try {
+			currentLine = reader.readLine(); 
+		}
+		catch (IOException e) {
+			throw new RuntimeException (e);
+		}
+		return (currentLine != null);	
+	}
 	
 	public void remove () {
 		throw new IllegalStateException ("This Iterator<Instance> does not support remove().");

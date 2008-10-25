@@ -7,6 +7,9 @@ import cc.mallet.optimize.Optimizer;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
+/**
+ * An abstract class to train and evaluate a transducer model.
+ */
 public abstract class TransducerTrainer {
 	// The list of evaluators to be run every once in a while
 	ArrayList<TransducerEvaluator> evaluators = new ArrayList<TransducerEvaluator>();
@@ -19,7 +22,7 @@ public abstract class TransducerTrainer {
 		return train (trainingSet, Integer.MAX_VALUE);
 	}
 	
-	/** Train the tranducer associated with this TransducerTrainer.  
+	/** Train the transducer associated with this TransducerTrainer.  
 	 * You should be able to call this method with different trainingSet objects.
 	 * Whether this causes the TransducerTrainer to combine both trainingSets or
 	 * to view the second as a new alternative is at the discretion of the particular

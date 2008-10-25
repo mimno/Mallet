@@ -3,41 +3,42 @@ package cc.mallet.fst;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
-
 import java.util.logging.Logger;
-
-import cc.mallet.optimize.Optimizable;
 
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.MatrixOps;
+
+import cc.mallet.optimize.Optimizable;
 
 import cc.mallet.util.MalletLogger;
 
 
 /**
- * An adaptor for optimizables based on batch values/gradients. <p>
- *
+ * An adaptor for optimizables based on batch values/gradients.
+ * <p>
  * Computes values, gradients for each batch in multiple threads and combines
  * them in the end.
  *
  * @author Gaurav Chandalia
+ * @see CRFOptimizableByBatchLabelLikelihood
  */
 public class ThreadedOptimizable implements Optimizable.ByGradientValue {
 	private static Logger logger = MalletLogger.getLogger(ThreadedOptimizable.class.getName());
 
+	/** Data */
 	protected InstanceList trainingSet;
 
-	// the optimizable to be parallelized
+	/** optimizable to be parallelized */
 	protected Optimizable.ByCombiningBatchGradient optimizable;
 
-	// value and gradient obtained from the optimizable for each batch
+	/** Value obtained from the optimizable for each batch */
 	protected double[] batchCachedValue;
+  /** Gradient obtained from the optimizable for each batch */
 	protected List<double[]> batchCachedGradient;
 
 	// determine when value/gradient become stale
@@ -86,6 +87,17 @@ public class ThreadedOptimizable implements Optimizable.ByGradientValue {
 
 	public Optimizable.ByCombiningBatchGradient getOptimizable() {
 		return optimizable;
+	}
+
+	/**
+	 * Shuts down the executor used to start and run threads to compute values
+	 * and gradients.
+	 * <p>
+	 * *Note*: For a clean exit of all the threads, it is recommended to call
+	 * this method after training finishes.
+	 */
+	public void shutdown() {
+    assert(executor.shutdownNow().size() == 0) : "All tasks didn't finish";
 	}
 
 	public double getValue () {

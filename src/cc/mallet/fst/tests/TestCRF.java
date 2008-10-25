@@ -14,21 +14,70 @@
 
 package cc.mallet.fst.tests;
 
-import junit.framework.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import java.util.Random;
 import java.util.regex.Pattern;
-import java.io.*;
 
-import cc.mallet.fst.*;
-import cc.mallet.optimize.*;
-import cc.mallet.optimize.tests.*;
-import cc.mallet.pipe.*;
-import cc.mallet.pipe.iterator.*;
-import cc.mallet.pipe.tsf.*;
-import cc.mallet.types.*;
-import cc.mallet.util.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.types.Sequence;
+import cc.mallet.types.SparseVector;
+import cc.mallet.types.Token;
+import cc.mallet.types.TokenSequence;
+
+import cc.mallet.pipe.CharSequence2TokenSequence;
+import cc.mallet.pipe.LineGroupString2TokenSequence;
+import cc.mallet.pipe.Noop;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.PrintInputAndTarget;
+import cc.mallet.pipe.SerialPipes;
+import cc.mallet.pipe.Target2LabelSequence;
+import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
+import cc.mallet.pipe.TokenSequenceLowercase;
+import cc.mallet.pipe.TokenSequenceMatchDataAndTarget;
+import cc.mallet.pipe.TokenSequenceParseFeatureString;
+import cc.mallet.pipe.iterator.ArrayIterator;
+import cc.mallet.pipe.iterator.LineGroupIterator;
+import cc.mallet.pipe.tsf.OffsetConjunctions;
+import cc.mallet.pipe.tsf.TokenText;
+
+import cc.mallet.fst.CRF;
+import cc.mallet.fst.CRFTrainerByLabelLikelihood;
+import cc.mallet.fst.CRFTrainerByStochasticGradient;
+import cc.mallet.fst.MaxLattice;
+import cc.mallet.fst.MaxLatticeDefault;
+import cc.mallet.fst.SumLattice;
+import cc.mallet.fst.SumLatticeDefault;
+import cc.mallet.fst.TokenAccuracyEvaluator;
+import cc.mallet.fst.Transducer;
+
+import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.tests.TestOptimizable;
+
+import cc.mallet.util.FileUtils;
+
+// TODO (gsc (08/25/08)): some tests fail because tests are using CRFTrainerByLabelLikelihood
+// instead of CRFOptimizableByLabelLikelihood and CRFOptimizableByValueGradients
+/** Tests for CRF training. */
 public class TestCRF extends TestCase {
 
 	public TestCRF(String name)

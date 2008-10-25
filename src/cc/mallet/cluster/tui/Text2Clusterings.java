@@ -54,7 +54,7 @@ public class Text2Clusterings {
 			InstanceList instances = new InstanceList(new Noop());
 			TIntArrayList labels = new TIntArrayList();
 			for (int j = 0; j < subdirs.length; j++) {
-				ArrayList records = new FileIterator(subdirs[j]).getFileArray();
+				ArrayList<File> records = new FileIterator(subdirs[j]).getFileArray();
 				int label = clusterAlph.lookupIndex(subdirs[j].toString());
 				for (int k = 0; k < records.size(); k++) {
 					if (fi % 100 == 0) System.out.print(fi);
@@ -64,7 +64,7 @@ public class Text2Clusterings {
 					fi++;
 
 
-					File record = (File) records.get(k);
+					File record = records.get(k);
 					labels.add(label);
 					instances.add(new Instance(new Record(fieldAlph, valueAlph, parseFile(record)),
 												new Integer(label), record.toString(),
@@ -95,7 +95,7 @@ public class Text2Clusterings {
 		for (File f : fs)
 			if (f.isDirectory() && !f.getName().matches("^\\.+$"))
 				ret.add(f);
-		return (File[]) ret.toArray(new File[] {});
+		return ret.toArray(new File[] {});
 	}
 
 	public static String[][] parseFile (File f) throws IOException {

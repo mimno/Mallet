@@ -219,7 +219,10 @@ public class SumLatticeDefault implements SumLattice
 				gammas[latticeLength-1][i] = nodes[latticeLength-1][i].alpha + nodes[latticeLength-1][i].beta - totalWeight;
 				if (incrementor != null) {
 					double p = Math.exp(gammas[latticeLength-1][i]);
-					assert (p >= 0.0 && p <= 1.0+1e-10 && !Double.isNaN(p)) : "p="+p+" gamma="+gammas[latticeLength-1][i];
+					// gsc: reducing from 1e-10 to 1e-6
+					// gsc: removing the isNaN check, range check will catch the NaN error as well
+          // assert (p >= 0.0 && p <= 1.0+1e-10 && !Double.isNaN(p)) : "p="+p+" gamma="+gammas[latticeLength-1][i];
+          assert (p >= 0.0 && p <= 1.0+1e-6) : "p="+p+", gamma="+gammas[latticeLength-1][i];
 					incrementor.incrementFinalState (s, p);
 				}
 			}
@@ -254,7 +257,10 @@ public class SumLatticeDefault implements SumLattice
 						assert (!Double.isNaN(totalWeight));
 						if (incrementor != null || outputAlphabet != null) {
 							double p = Math.exp(xi);
-							assert (p >= 0.0 && p <= 1.0+1e-10 && !Double.isNaN(p)) : "xis["+ip+"]["+i+"]["+j+"]="+xi;
+							// gsc: reducing from 1e-10 to 1e-6
+              // gsc: removing the isNaN check, range check will catch the NaN error as well
+							// assert (p >= 0.0 && p <= 1.0+1e-10 && !Double.isNaN(p)) : "xis["+ip+"]["+i+"]["+j+"]="+xi;
+              assert (p >= 0.0 && p <= 1.0+1e-6) : "p="+p+", xis["+ip+"]["+i+"]["+j+"]="+xi;
 							if (incrementor != null)
 								incrementor.incrementTransition(iter, p);
 							if (outputAlphabet != null) {
@@ -273,7 +279,10 @@ public class SumLatticeDefault implements SumLattice
 		if (incrementor != null)
 			for (int i = 0; i < numStates; i++) {
 				double p = Math.exp(gammas[0][i]);
-				assert (p >= 0.0 && p <= 1.0+1e-10 && !Double.isNaN(p)) : "p="+p;
+        // gsc: reducing from 1e-10 to 1e-6
+        // gsc: removing the isNaN check, range check will catch the NaN error as well
+				// assert (p >= 0.0 && p <= 1.0+1e-10 && !Double.isNaN(p)) : "p="+p;
+        assert (p >= 0.0 && p <= 1.0+1e-6) : "p="+p;
 				incrementor.incrementInitialState(t.getState(i), p);
 			}
 		if (outputAlphabet != null) {

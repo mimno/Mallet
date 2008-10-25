@@ -25,16 +25,18 @@ import cc.mallet.types.RankedFeatureVector;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
 
-/** Unlike ClassifierTrainer, TransducerTrainer is not "stateless" between calls to train. 
- *  A TransducerTrainer is constructed paired with a specific Transducer, and can only train that Transducer.
- * 
- *  CRF stores and has methods for FeatureSelection and weight freezing.
- *  CRFTrainer stores and has methods for determining the contents/dimensions/sparsity/FeatureInduction 
- *   of the CRF's weights as determined by training data.   
- *  
- *  */
 
-/** In the future this class may go away in favor of some default version of CRFTrainerByValueGradients... */
+/**
+ * Unlike ClassifierTrainer, TransducerTrainer is not "stateless" between calls
+ * to train. A TransducerTrainer is constructed paired with a specific
+ * Transducer, and can only train that Transducer. CRF stores and has methods
+ * for FeatureSelection and weight freezing. CRFTrainer stores and has methods
+ * for determining the contents/dimensions/sparsity/FeatureInduction of the
+ * CRF's weights as determined by training data.
+ * <p>
+ * <b>Note:</b> In the future this class may go away in favor of some default 
+ * version of CRFTrainerByValueGradients.
+ */
 public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements TransducerTrainer.ByOptimization {
 	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLabelLikelihood.class.getName());
 

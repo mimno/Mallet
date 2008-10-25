@@ -14,39 +14,34 @@
 
 package cc.mallet.fst;
 
-//Analogous to base.types.classify.Classifier
-
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
-import cc.mallet.types.SequencePair;
 import cc.mallet.types.SequencePairAlignment;
+
+import cc.mallet.pipe.Pipe;
+
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Sequences;
 
-//import edu.umass.cs.mallet.base.pipe.SerialPipe;
-
-//Variable name key:
-//"ip" = "input position"
-//"op" = "output position"
-
-// TODO Consider changing all "costs" to "weights"!
-// Currently confusing because Transition parameters are printed as weights, but initial/final state parameters are printed as costs 
-
+/**
+ * A base class for all sequence models, analogous to {@link classify.Classifier}.
+ */
 public abstract class Transducer implements Serializable
 {
+  // Variable name key:
+  // "ip" = "input position"
+  // "op" = "output position"
+
 	private static Logger logger = MalletLogger.getLogger(Transducer.class.getName());
 	//public static final double ZERO_COST = 0;
 	//public static final double INFINITE_COST = Double.POSITIVE_INFINITY;
@@ -66,9 +61,11 @@ public abstract class Transducer implements Serializable
 	protected Pipe outputPipe;
 	
 	
+	/**
+	 * Initializes default sum-product and max-product inference engines. 
+	 */
 	public Transducer ()
 	{
-		// Set default sum-product and max-product inference engines
 		sumLatticeFactory = new SumLatticeDefault.Factory();
 		maxLatticeFactory = new MaxLatticeDefault.Factory();
 	}
@@ -147,8 +144,10 @@ public abstract class Transducer implements Serializable
 	 that canIterateAllTransitions() is true. */
 	public boolean isGenerative () { return false; }
 
-
-
+	/**
+	 * Runs inference across all the instances and returns the average token
+	 * accuracy.
+	 */
 	public double averageTokenAccuracy (InstanceList ilist)
 	{
 		double accuracy = 0;
@@ -178,8 +177,9 @@ public abstract class Transducer implements Serializable
 		throw new UnsupportedOperationException ();
 	}
 
-
-
+	/**
+	 * Returns the index of the input state name, returns -1 if name not found.
+	 */
 	public int stateIndexOfString (String s)
 	{
 		for (int i = 0; i < this.numStates(); i++) {
@@ -199,7 +199,6 @@ public abstract class Transducer implements Serializable
 		logger.fine ("Transducer "+this);
 		printStates();
 	}
-
 
 	// Serialization of Transducer
 
@@ -223,11 +222,9 @@ public abstract class Transducer implements Serializable
 		maxLatticeFactory = (MaxLatticeFactory) in.readObject();
 	}
 
-
-	
-	
-	
-
+	/**
+	 * An abstract class used to represent the states of the transducer.
+	 */
 	public abstract static class State implements Serializable
 	{
 		public abstract String getName();
@@ -271,9 +268,6 @@ public abstract class Transducer implements Serializable
 	}
 	
 	
-	
-	
-	
 	/** Methods to be called by inference methods to indicate partial counts of sufficient statistics.
 	 * That is, how much probability mass is falling on a transition, or in an initial state or a final state. */
 	public interface Incrementor {
@@ -282,8 +276,9 @@ public abstract class Transducer implements Serializable
 		public void incrementFinalState (State s, double count);
 	}
 
-	
-	
+	/**
+	 * An abstract class to iterate over the states of the transducer. 
+	 */
 	public abstract static class TransitionIterator implements Iterator<State>, Serializable
 	{
 		public abstract boolean hasNext ();
@@ -329,8 +324,6 @@ public abstract class Transducer implements Serializable
 		}
 
 	}
-
-
 
 
 	/* sumLogProb()
@@ -380,14 +373,17 @@ public abstract class Transducer implements Serializable
 			return a - Math.log (1 + Math.exp(a-b));
 	}
 
-
+	/**
+	 * Returns <tt>Math.log(Math.exp(a) + Math.exp(b))</tt>.
+	 * <p>
+	 * <tt>a, b</tt> represent weights.
+	 */
 	public static double sumLogProb (double a, double b)
 	{
 		if (a == Double.NEGATIVE_INFINITY) {
 			if (b == Double.NEGATIVE_INFINITY)
 				return Double.NEGATIVE_INFINITY;
-			else
-				return b;
+      return b;
 		}
 		else if (b == Double.NEGATIVE_INFINITY)
 			return a;

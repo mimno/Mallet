@@ -1,25 +1,49 @@
 package cc.mallet.fst.tests;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Label;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.types.Sequence;
+import cc.mallet.types.tests.TestSerializable;
 
-import cc.mallet.extract.StringSpan;
-import cc.mallet.extract.StringTokenization;
-import cc.mallet.fst.MEMMTrainer;
-import cc.mallet.fst.SumLatticeDefault;
-import cc.mallet.fst.MEMM;
-import cc.mallet.fst.Transducer;
-import cc.mallet.optimize.Optimizable;
-import cc.mallet.optimize.tests.TestOptimizable;
-import cc.mallet.pipe.*;
+import cc.mallet.pipe.CharSequence2TokenSequence;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.PrintInputAndTarget;
+import cc.mallet.pipe.SerialPipes;
+import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
+import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.ArrayIterator;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
 import cc.mallet.pipe.tsf.TokenText;
-import cc.mallet.types.*;
-import cc.mallet.types.tests.TestSerializable;
+
+import cc.mallet.fst.MEMM;
+import cc.mallet.fst.MEMMTrainer;
+import cc.mallet.fst.SumLatticeDefault;
+
+import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.tests.TestOptimizable;
+
+import cc.mallet.extract.StringSpan;
+import cc.mallet.extract.StringTokenization;
 
 /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
@@ -31,9 +55,13 @@ import cc.mallet.types.tests.TestSerializable;
 
 
 /**
-		@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+ * Tests for MEMM training.
+ * 
+ * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
-
+// gsc (08/25/08): made changes to all tests after removing the option for 
+// useSparseWeights from MEMMTrainer, now, the users has to set the weights manually
+// irrespective of above changes, two tests fail (testSpaceMaximizable, testSpaceSerializable)
 public class TestMEMM extends TestCase {
 
 	public TestMEMM (String name)
@@ -92,8 +120,9 @@ public class TestMEMM extends TestCase {
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
     memm.addStartState();
+    memm.setWeightsDimensionAsIn(training);
+    
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
-
 //    memm.gatherTrainingSets (training); // ANNOYING: Need to set up per-instance training sets
     memmt.train (training, 1);  // Set weights dimension, gathers training sets, etc.
 
@@ -116,6 +145,7 @@ public class TestMEMM extends TestCase {
     MEMM memm = new MEMM (p, null);
     memm.addFullyConnectedStatesForLabels ();
     memm.addStartState();
+    memm.setWeightsDimensionAsIn(training);
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
     memmt.train (training, 10);
 
@@ -128,10 +158,6 @@ public class TestMEMM extends TestCase {
 
     assertEquals (val1, val2, 1e-5);
   }
-
-
-
-
 
 	// Should print at end:
 	// parameters 4 4 3: unconstrainedCost=-2912.0 constrainedCost=-428.0 minCost=35770.0 minGrad=520.0
@@ -159,10 +185,10 @@ public class TestMEMM extends TestCase {
 	  MEMM saveCRF = crf;
 	  //inputAlphabet = (Feature.Alphabet) crf.getInputAlphabet();
 	  FeatureVectorSequence fvs = new FeatureVectorSequence(new FeatureVector[]{
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
-	    new FeatureVector((Alphabet) crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
+	    new FeatureVector(crf.getInputAlphabet(), new int[]{1, 2, 3}, new double[]{1, 1, 1}),
 	  });
 	  FeatureSequence ss = new FeatureSequence(crf.getOutputAlphabet(), new int[]{0, 1, 2, 3});
 	  InstanceList ilist = new InstanceList(null);
@@ -343,6 +369,8 @@ public class TestMEMM extends TestCase {
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM memm = new MEMM(p, p2);
 	  memm.addFullyConnectedStatesForLabels();
+	  memm.setWeightsDimensionAsIn(lists[0]);
+	  
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
 	  if (testValueAndGradient) {
 	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
@@ -385,9 +413,13 @@ public class TestMEMM extends TestCase {
 	  InstanceList[] lists = instances.split(new double[]{.5, .5});
 	  MEMM crf = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
 	  crf.addFullyConnectedStatesForLabels();
-	  MEMMTrainer memmt = new MEMMTrainer (crf);
+	  if (useSparseWeights)
+	    crf.setWeightsDimensionAsIn(lists[0]);
+	  else
+	    crf.setWeightsDimensionDensely();
 	  
-		memmt.setUseSparseWeights (useSparseWeights);
+	  MEMMTrainer memmt = new MEMMTrainer (crf);
+	  // memmt.setUseSparseWeights (useSparseWeights);
 	  if (testValueAndGradient) {
 	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
 	    TestOptimizable.testValueAndGradient(minable);
@@ -476,6 +508,7 @@ public class TestMEMM extends TestCase {
 												 null,
 												 null,
 												 false);
+	  crf1.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt1 = new MEMMTrainer (crf1);
 		memmt1.train(lists [0]);
 
@@ -488,6 +521,7 @@ public class TestMEMM extends TestCase {
 													 null,
 													 null,
 													 false);
+	  crf2.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt2 = new MEMMTrainer (crf2);
 		memmt2.train(lists [0]);
 
@@ -500,6 +534,7 @@ public class TestMEMM extends TestCase {
 												 null,
 												 null,
 												 false);
+	  crf3.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt3 = new MEMMTrainer (crf3);
 		memmt3.train(lists [0]);
 
@@ -570,7 +605,7 @@ public class TestMEMM extends TestCase {
 		one.addThruPipe (new ArrayIterator (data));
 		MEMM crf = new MEMM (p, null);
 		crf.addFullyConnectedStatesForLabels();
-		crf.setWeightsDimensionAsIn (one, false);
+		crf.setWeightsDimensionAsIn (one);
 		MEMMTrainer memmt = new MEMMTrainer (crf);
 		MEMMTrainer.MEMMOptimizableByLabelLikelihood mcrf = memmt.getOptimizableMEMM(one);
 		double[] params = new double[mcrf.getNumParameters()];

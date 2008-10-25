@@ -15,30 +15,33 @@
 
 package cc.mallet.fst;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Random;
-import java.util.regex.*;
-import java.util.logging.*;
-import java.io.*;
-import java.lang.reflect.Constructor;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
-import cc.mallet.fst.CRF.State;
-import cc.mallet.optimize.*;
-import cc.mallet.optimize.tests.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Multinomial;
+import cc.mallet.types.Sequence;
+
 import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
+
 import cc.mallet.util.MalletLogger;
-import cc.mallet.util.Maths;
 
 
-/** Hidden Markov Model */
-
+/** A Hidden Markov Model. */
 // TODO Separate out training into a HMMTrainerByLikelihood
-
 public class HMM extends Transducer implements Serializable
 {
 	private static Logger logger = MalletLogger.getLogger(HMM.class.getName());
@@ -47,6 +50,7 @@ public class HMM extends Transducer implements Serializable
 
 	Alphabet inputAlphabet;
 	Alphabet outputAlphabet;
+	// TODO(gsc): generify these (used in Transducer as well)
 	ArrayList states = new ArrayList ();
 	ArrayList initialStates = new ArrayList ();
 	HashMap name2state = new HashMap ();
@@ -110,17 +114,20 @@ public class HMM extends Transducer implements Serializable
 		name2state.put (name, s);
 	}
 
-	// Add a state with parameters equal zero, and labels on out-going arcs
-	// the same name as their destination state names.
+	/**
+	 * Add a state with parameters equal zero, and labels on out-going arcs
+	 * the same name as their destination state names.
+	 */
 	public void addState (String name, String[] destinationNames)
 	{
-		this.addState (name, 0, 0,
-									 destinationNames, destinationNames);
+		this.addState (name, 0, 0, destinationNames, destinationNames);
 	}
 
-	// Add a group of states that are fully connected with each other,
-	// with parameters equal zero, and labels on their out-going arcs
-	// the same name as their destination state names.
+	/**
+	 * Add a group of states that are fully connected with each other,
+	 * with parameters equal zero, and labels on their out-going arcs
+	 * the same name as their destination state names.
+	 */
 	public void addFullyConnectedStates (String[] stateNames)
 	{
 		for (int i = 0; i < stateNames.length; i++)
@@ -141,8 +148,7 @@ public class HMM extends Transducer implements Serializable
 	{
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = new boolean[numLabels][numLabels];
-		for (int i = 0; i < trainingSet.size(); i++) {
-			Instance instance = trainingSet.get(i);
+		for (Instance instance : trainingSet) {
 			FeatureSequence output = (FeatureSequence) instance.getTarget();
 			for (int j = 1; j < output.size(); j++) {
 				int sourceIndex = outputAlphabet.lookupIndex (output.get(j-1));
@@ -154,9 +160,10 @@ public class HMM extends Transducer implements Serializable
 		return connections;
 	}
 
-	/** Add states to create a first-order Markov model on labels,
-			adding only those transitions the occur in the given
-			trainingSet. */
+	/**
+   * Add states to create a first-order Markov model on labels, adding only
+   * those transitions the occur in the given trainingSet.
+   */
 	public void addStatesForLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -174,9 +181,11 @@ public class HMM extends Transducer implements Serializable
 		}
 	}
 
-	/** Add as many states as there are labels, but don't create separate weights
-			for each source-destination pair of states.  Instead have all the incoming
-			transitions to a state share the same weights. */
+	/**
+   * Add as many states as there are labels, but don't create separate weights
+   * for each source-destination pair of states. Instead have all the incoming
+   * transitions to a state share the same weights.
+   */
 	public void addStatesForHalfLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -195,12 +204,14 @@ public class HMM extends Transducer implements Serializable
 		}
 	}
 
-	/** Add as many states as there are labels, but don't create
-			separate observational-test-weights for each source-destination
-			pair of states---instead have all the incoming transitions to a
-			state share the same observational-feature-test weights.
-			However, do create separate default feature for each transition,
-			(which acts as an HMM-style transition probability). */
+	/**
+   * Add as many states as there are labels, but don't create separate
+   * observational-test-weights for each source-destination pair of
+   * states---instead have all the incoming transitions to a state share the
+   * same observational-feature-test weights. However, do create separate
+   * default feature for each transition, (which acts as an HMM-style transition
+   * probability).
+   */
 	public void addStatesForThreeQuarterLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -216,11 +227,12 @@ public class HMM extends Transducer implements Serializable
 					String labelName = (String)outputAlphabet.lookupObject(j);
 					destinationNames[destinationIndex] = labelName;
 					// The "transition" weights will include only the default feature
-					String wn = (String)outputAlphabet.lookupObject(i) + "->" + (String)outputAlphabet.lookupObject(j);
+					// gsc: variable is never used
+					// String wn = (String)outputAlphabet.lookupObject(i) + "->" + (String)outputAlphabet.lookupObject(j);
 					destinationIndex++;
 				}
-			addState ((String)outputAlphabet.lookupObject(i), 0.0, 0.0,
-								destinationNames, destinationNames);
+			  addState ((String)outputAlphabet.lookupObject(i), 0.0, 0.0,
+			            destinationNames, destinationNames);
 		}
 	}
 
@@ -256,9 +268,10 @@ public class HMM extends Transducer implements Serializable
 		}
 	}
 
-	/** Add states to create a second-order Markov model on labels,
-			adding only those transitions the occur in the given
-			trainingSet. */
+	/**
+   * Add states to create a second-order Markov model on labels, adding only
+   * those transitions the occur in the given trainingSet.
+   */
 	public void addStatesForBiLabelsConnectedAsIn (InstanceList trainingSet)
 	{
 		int numLabels = outputAlphabet.size();
@@ -417,11 +430,11 @@ public class HMM extends Transducer implements Serializable
       order = 0;
     else
     {
-      for (int i = 0; i < orders.length; i++)
+      for (int i = 0; i < orders.length; i++) {
         if (orders[i] <= order)
           throw new IllegalArgumentException("Orders must be non-negative and in ascending order");
-        else 
-          order = orders[i];
+        order = orders[i];
+      }
       if (order < 0) order = 0;
     }
     if (order > 0)
@@ -482,15 +495,12 @@ public class HMM extends Transducer implements Serializable
         history[i] = start;
       return concatLabels(history);
     }
-    else
-    {
-      String[] stateNames = new String[outputAlphabet.size()];
-      for (int s = 0; s < outputAlphabet.size(); s++)
-        stateNames[s] = (String)outputAlphabet.lookupObject(s);
-      for (int s = 0; s < outputAlphabet.size(); s++)
-        addState(stateNames[s], 0.0, 0.0, stateNames, stateNames);
-      return start;
-    }
+    String[] stateNames = new String[outputAlphabet.size()];
+    for (int s = 0; s < outputAlphabet.size(); s++)
+      stateNames[s] = (String)outputAlphabet.lookupObject(s);
+    for (int s = 0; s < outputAlphabet.size(); s++)
+      addState(stateNames[s], 0.0, 0.0, stateNames, stateNames);
+    return start;
   }
 
 	public State getState (String name)
@@ -509,12 +519,18 @@ public class HMM extends Transducer implements Serializable
 
 	public boolean isTrainable () { return trainable; }
 
-
+  /**
+   * @throws UnsupportedOperationException Not used in HMM
+   */
 	public void reset ()
 	{
 		throw new UnsupportedOperationException ("Not used in HMMs");
 	}
 
+	/**
+	 * @throws UnsupportedOperationException Not yet implemented
+	 * @throws IllegalStateException If transducer is not trainable
+	 */
 	public void estimate ()
 	{
 		if (!trainable)
@@ -523,17 +539,25 @@ public class HMM extends Transducer implements Serializable
 		throw new UnsupportedOperationException ("Not yet implemented.  Never?");
 	}
 
-
+	/**
+	 * Trains a HMM without validation and evaluation.
+	 */
 	public boolean train (InstanceList ilist)
 	{
 		return train (ilist, (InstanceList)null, (InstanceList)null);
 	}
 
+	/**
+	 * Trains a HMM with <tt>evaluator</tt> set to null.
+	 */
 	public boolean train (InstanceList ilist, InstanceList validation, InstanceList testing)
 	{
 		return train (ilist, validation, testing, (TransducerEvaluator)null);
 	}
 	
+	/**
+	 * Trains a HMM, <tt>validation, testing, eval</tt> can be null.
+	 */
 	public boolean train (InstanceList ilist, InstanceList validation, InstanceList testing,
 												TransducerEvaluator eval)
 	{
@@ -554,8 +578,7 @@ public class HMM extends Transducer implements Serializable
 			}
 			initialEstimator = new Multinomial.LaplaceEstimator (transitionAlphabet);
 		}
-		for (int i=0; i < ilist.size(); i++) {
-			Instance instance = ilist.get(i);
+		for (Instance instance : ilist) {
 			FeatureSequence input = (FeatureSequence) instance.getData();
 			FeatureSequence output = (FeatureSequence) instance.getTarget();
 			new SumLatticeDefault (this, input, output, new Transducer.Incrementor() {
@@ -566,8 +589,10 @@ public class HMM extends Transducer implements Serializable
 					emissionEstimator[index].increment (inputAlphabet.lookupIndex (inputFeature.intValue(), false), count);
 					transitionEstimator[source.getIndex()].increment (source.destinationNames[index], count);
 				}
-				public void incrementInitialState (Transducer.State s, double count) {	} // TODO consider making a designated start state
-				public void incrementFinalState (Transducer.State s, double count) {	} // TODO consider making a designated final state
+				// TODO consider making a designated start state
+				public void incrementInitialState (Transducer.State s, double count) {	}
+				// TODO consider making a designated final state
+				public void incrementFinalState (Transducer.State s, double count) {	}
 			});
 		}
 		initialMultinomial = initialEstimator.estimate();
@@ -594,7 +619,8 @@ public class HMM extends Transducer implements Serializable
 	private double[] getUniformArray (int size) {
 		double[] ret = new double[size];
 		for (int i=0; i < size; i++)
-			ret[i] = 1.0 / (double)size;
+		  // gsc: removing unnecessary cast from 'size'
+			ret[i] = 1.0 / size;
 		return ret;
 	}
 	// Serialization
@@ -696,7 +722,6 @@ public class HMM extends Transducer implements Serializable
 			super ();			
 		}
 		
-		
 		protected State (String name, int index,
 										 double initialWeight, double finalWeight,
 										 String[] destinationNames,
@@ -765,15 +790,9 @@ public class HMM extends Transducer implements Serializable
 		
 		public int getIndex () { return index; }
 
-		public void incrementInitialCount (double count)
-		{
-			
-		}
+		public void incrementInitialCount (double count) {	}
 		
-		public void incrementFinalCount (double count)
-		{
-			
-		}
+		public void incrementFinalCount (double count) { }
 		
 		// Serialization
 		// For  class State

@@ -5,38 +5,47 @@ This software is provided under the terms of the Common Public License,
 version 1.0, as published by http://www.opensource.org.  For further
 information, see the file `LICENSE' included with this distribution. */
 
-/** 
-  @author Fernando Pereira <a href="mailto:pereira@cis.upenn.edu">pereira@cis.upenn.edu</a>
-  */
-
 package cc.mallet.fst;
 
-import junit.framework.*;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.regex.*;
-import java.util.logging.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Reader;
 
-import cc.mallet.fst.*;
-import cc.mallet.optimize.*;
-import cc.mallet.optimize.tests.*;
-import cc.mallet.pipe.*;
-import cc.mallet.pipe.iterator.*;
-import cc.mallet.pipe.tsf.*;
-import cc.mallet.types.*;
-import cc.mallet.util.*;
+import java.util.Random;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.AugmentableFeatureVector;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.types.Sequence;
+
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.iterator.LineGroupIterator;
+
+import cc.mallet.util.CommandOption;
+import cc.mallet.util.MalletLogger;
 
 /**
  * This class's main method trains, tests, or runs a generic CRF-based
- * sequence tagger. Training and test files consist of blocks of
- * lines, one block for each instance, separated by blank lines. Each block
- * of lines should have the first form specified for the input of
- * {@link SimpleTaggerSentence2FeatureVectorSequence}. A variety of
- * command line options control the operation of the main program, as
+ * sequence tagger.
+ * <p>
+ * Training and test files consist of blocks of lines, one block for each instance, 
+ * separated by blank lines. Each block of lines should have the first form 
+ * specified for the input of {@link SimpleTaggerSentence2FeatureVectorSequence}. 
+ * A variety of command line options control the operation of the main program, as
  * described in the comments for {@link #main main}.
  *
- * @author <a href="mailto:pereira@cis.upenn.edu">Fernando Pereira</a>
+ * @author Fernando Pereira <a href="mailto:pereira@cis.upenn.edu">pereira@cis.upenn.edu</a>
  * @version 1.0
  */
 public class SimpleTagger
@@ -46,7 +55,6 @@ public class SimpleTagger
 
   /**
    * No <code>SimpleTagger</code> objects allowed.
-   *
    */
   private SimpleTagger()
   {
@@ -135,6 +143,8 @@ public class SimpleTagger
       carrier.setData(new FeatureVectorSequence(fvs));
       if (isTargetProcessing())
         carrier.setTarget(target);
+      else
+        carrier.setTarget(new LabelSequence(getTargetAlphabet()));
       return carrier;
     }
   }
@@ -217,23 +227,23 @@ public class SimpleTagger
         "Training, testing and running a generic tagger.",
         new CommandOption[] {
           gaussianVarianceOption,
-    trainOption,
-    iterationsOption,
-    testOption,
-    trainingFractionOption,
-    modelOption,
-    randomSeedOption,
-    ordersOption,
-    forbiddenOption,
-    allowedOption,
-    defaultOption,
-    viterbiOutputOption,
-    connectedOption,
-    continueTrainingOption,
-    nBestOption,
-    cacheSizeOption,
-    includeInputOption,
-    featureInductionOption,
+          trainOption,
+          iterationsOption,
+          testOption,
+          trainingFractionOption,
+          modelOption,
+          randomSeedOption,
+          ordersOption,
+          forbiddenOption,
+          allowedOption,
+          defaultOption,
+          viterbiOutputOption,
+          connectedOption,
+          continueTrainingOption,
+          nBestOption,
+          cacheSizeOption,
+          includeInputOption,
+          featureInductionOption,
         });
 
   /**
@@ -286,7 +296,7 @@ public class SimpleTagger
     	boolean converged;
     	for (int i = 1; i <= iterations; i++) {
     		converged = crft.train (training, 1);
-    		if (i % 1 == 0) // Change the 1 to higher integer to evaluate less often
+    		if (i % 1 == 0 && eval != null) // Change the 1 to higher integer to evaluate less often
     			eval.evaluate(crft);
     		if (viterbiOutputOption.value && i % 10 == 0)
     			new ViterbiWriter("", new InstanceList[] {training, testing}, new String[] {"training", "testing"}).evaluate(crft);

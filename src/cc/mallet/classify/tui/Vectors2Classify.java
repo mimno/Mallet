@@ -32,7 +32,7 @@ public abstract class Vectors2Classify
 {
 	private static Logger logger = MalletLogger.getLogger(Vectors2Classify.class.getName());
 	private static Logger progressLogger = MalletProgressMessageLogger.getLogger(Vectors2Classify.class.getName() + "-pl");
-	private static ArrayList classifierTrainers = new ArrayList();
+	private static ArrayList<ClassifierTrainer> classifierTrainers = new ArrayList<ClassifierTrainer>();
     private static boolean[][] ReportOptions = new boolean[3][4];
     private static String[][] ReportOptionArgs = new String[3][4];  //arg in dataset:reportOption=arg
 	// Essentially an enum mapping string names to enums to ints.
@@ -210,7 +210,7 @@ public abstract class Vectors2Classify
 			public void postParsing (CommandOption.List list) {
 				assert (this.value instanceof ClassifierTrainer);
 				//System.out.println("v2c PostParsing " + this.value);
-				classifierTrainers.add (this.value);
+				classifierTrainers.add ((ClassifierTrainer)this.value);
 			}
 		};
 
@@ -323,38 +323,38 @@ public abstract class Vectors2Classify
 			}
 		}
 
-        boolean separateIlists = testFile.wasInvoked() || trainingFile.wasInvoked() ||
-            validationFile.wasInvoked();
-        InstanceList ilist=null;
-        InstanceList testFileIlist=null;
-        InstanceList trainingFileIlist=null;
-        InstanceList validationFileIlist=null;
+		boolean separateIlists = testFile.wasInvoked() || trainingFile.wasInvoked() ||
+		validationFile.wasInvoked();
+		InstanceList ilist=null;
+		InstanceList testFileIlist=null;
+		InstanceList trainingFileIlist=null;
+		InstanceList validationFileIlist=null;
 
-        if (!separateIlists) { // normal case, --input-file specified
-            // Read in the InstanceList, from stdin if the input filename is "-".
-            ilist = InstanceList.load (new File(inputFile.value));
-        }else{  // user specified separate files for testing and training sets.
-            trainingFileIlist = InstanceList.load (new File(trainingFile.value));
-            logger.info("Training vectors loaded from " + trainingFile.value);
+		if (!separateIlists) { // normal case, --input-file specified
+		  // Read in the InstanceList, from stdin if the input filename is "-".
+		  ilist = InstanceList.load (new File(inputFile.value));
+		}else{  // user specified separate files for testing and training sets.
+		  trainingFileIlist = InstanceList.load (new File(trainingFile.value));
+		  logger.info("Training vectors loaded from " + trainingFile.value);
 
-            if (testFile.wasInvoked()){
-                testFileIlist = InstanceList.load (new File(testFile.value));
-                logger.info("Testing vectors loaded from " + testFile.value);
-            }
+		  if (testFile.wasInvoked()){
+		    testFileIlist = InstanceList.load (new File(testFile.value));
+		    logger.info("Testing vectors loaded from " + testFile.value);
+		  }
 
-            if (validationFile.wasInvoked()){
-                validationFileIlist = InstanceList.load (new File(validationFile.value));
-                logger.info("validation vectors loaded from " + validationFile.value);
-            }
+		  if (validationFile.wasInvoked()){
+		    validationFileIlist = InstanceList.load (new File(validationFile.value));
+		    logger.info("validation vectors loaded from " + validationFile.value);
+		  }
 
-        }
+		}
 
 		int numTrials = numTrialsOption.value;
 		Random r = randomSeedOption.wasInvoked() ? new Random (randomSeedOption.value) : new Random ();
 
 		ClassifierTrainer[] trainers = new ClassifierTrainer[classifierTrainers.size()];
 		for (int i = 0; i < classifierTrainers.size(); i++) {
-			trainers[i] = (ClassifierTrainer) classifierTrainers.get(i);
+			trainers[i] = classifierTrainers.get(i);
 			logger.fine ("Trainer specified = "+trainers[i].toString());
 		}
 
@@ -393,7 +393,7 @@ public abstract class Vectors2Classify
         ilists = new InstanceList[3];
         ilists[0] = trainingFileIlist;
         ilists[1] = testFileIlist;
-        ilists[2] = testFileIlist;
+        ilists[2] = validationFileIlist;
       }
       if (unlabeledProportionOption.value > 0)
         unlabeledIndices = new cc.mallet.util.Randoms(r.nextInt())

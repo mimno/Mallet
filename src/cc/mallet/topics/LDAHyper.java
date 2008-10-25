@@ -370,8 +370,15 @@ public class LDAHyper implements Serializable {
 									   iterationsSoFar >= burninPeriod && iterationsSoFar % saveSampleInterval == 0,
 									   true);
 			}
-		
-			System.out.print((System.currentTimeMillis() - iterationStart)/1000 + "s ");
+
+			long elapsedMillis = System.currentTimeMillis() - iterationStart;
+			if (elapsedMillis < 1000) {
+				System.out.print(elapsedMillis + "ms ");
+			}
+			else {
+				System.out.print((elapsedMillis/1000) + "s ");
+			}
+
 			//System.out.println(topicTermCount + "\t" + betaTopicCount + "\t" + smoothingOnlyCount);
 			if (iterationsSoFar % 10 == 0) {
 				System.out.println ("<" + iterationsSoFar + "> ");
@@ -820,9 +827,11 @@ public class LDAHyper implements Serializable {
 				if (sortedTopics[i].getWeight() < threshold) { break; }
 				
 				pw.print (sortedTopics[i].getID() + " " + 
-							   sortedTopics[i].getWeight() + " ");
+						  sortedTopics[i].getWeight() + " ");
 			}
 			pw.print (" \n");
+
+			Arrays.fill(topicCounts, 0);
 		}
 		
 	}
@@ -835,11 +844,18 @@ public class LDAHyper implements Serializable {
 	}
 	
 	public void printState (PrintStream out) {
+
 		out.println ("#doc source pos typeindex type topic");
+
 		for (int di = 0; di < data.size(); di++) {
 			FeatureSequence tokenSequence =	(FeatureSequence) data.get(di).instance.getData();
 			LabelSequence topicSequence =	(LabelSequence) data.get(di).topicSequence;
-			String source = data.get(di).instance.getSource().toString();
+
+			String source = "NA";
+			if (data.get(di).instance.getSource() != null) {
+				source = data.get(di).instance.getSource().toString();
+			}
+
 			for (int pi = 0; pi < topicSequence.getLength(); pi++) {
 				int type = tokenSequence.getIndexAtPosition(pi);
 				int topic = topicSequence.getIndexAtPosition(pi);
@@ -901,11 +917,28 @@ public class LDAHyper implements Serializable {
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
 
-		out.writeDouble (smoothingOnlyMass);
-		out.writeObject (cachedCoefficients);
-		out.writeObject (testing);
-		
-		out.writeObject (oneDocTopicCounts);
+		out.writeDouble(smoothingOnlyMass);
+		out.writeObject(cachedCoefficients);
+
+		out.writeInt(iterationsSoFar);
+		out.writeInt(numIterations);
+
+		out.writeInt(burninPeriod);
+		out.writeInt(saveSampleInterval);
+		out.writeInt(optimizeInterval);
+		out.writeInt(showTopicsInterval);
+		out.writeInt(wordsPerTopic);
+		out.writeInt(outputModelInterval);
+		out.writeObject(outputModelFilename);
+		out.writeInt(saveStateInterval);
+		out.writeObject(stateFilename);
+
+		out.writeObject(random);
+		out.writeObject(formatter);
+		out.writeBoolean(printLogLikelihood);
+
+		out.writeObject(docLengthCounts);
+		out.writeObject(topicDocCounts);
 
 		//out.writeObject (typeTopicCounts); // Seems to be buggy
 		for (int fi = 0; fi < numTypes; fi++) {
@@ -953,25 +986,10 @@ public class LDAHyper implements Serializable {
 
 		smoothingOnlyMass = in.readDouble();
 		cachedCoefficients = (double[]) in.readObject();
-		testing = (InstanceList) in.readObject();
-		
-		oneDocTopicCounts = (int[]) in.readObject();
 
-		//typeTopicCounts = (gnu.trove.TIntIntHashMap[]) in.readObject(); // Seems to be buggy
-		typeTopicCounts = new gnu.trove.TIntIntHashMap[numTypes];
-		for (int fi = 0; fi < numTypes; fi++) {
-			typeTopicCounts[fi] = new gnu.trove.TIntIntHashMap();
-			int numEntries = in.readInt();
-			for (int i = 0; i < numEntries; i++)
-				typeTopicCounts[fi].put(in.readInt(), in.readInt());
-		}
-
-		tokensPerTopic = (int[]) in.readObject();
-		docLengthCounts = (int[]) in.readObject();
-		topicDocCounts = (int[][]) in.readObject();
-		
 		iterationsSoFar = in.readInt();
 		numIterations = in.readInt();
+
 		burninPeriod = in.readInt();
 		saveSampleInterval = in.readInt();
 		optimizeInterval = in.readInt();
@@ -981,9 +999,23 @@ public class LDAHyper implements Serializable {
 		outputModelFilename = (String) in.readObject();
 		saveStateInterval = in.readInt();
 		stateFilename = (String) in.readObject();
+
 		random = (Randoms) in.readObject();
 		formatter = (NumberFormat) in.readObject();
 		printLogLikelihood = in.readBoolean();
+		
+		docLengthCounts = (int[]) in.readObject();
+		topicDocCounts = (int[][]) in.readObject();
+
+		int numDocs = data.size();
+		this.numTypes = alphabet.size();
+
+		typeTopicCounts = new TIntIntHashMap[numTypes];
+		for (int fi = 0; fi < numTypes; fi++)
+			typeTopicCounts[fi] = (TIntIntHashMap) in.readObject();
+		tokensPerTopic = new int[numTopics];
+		for (int ti = 0; ti < numTopics; ti++)
+			tokensPerTopic[ti] = in.readInt();
 	}
 
 
@@ -1105,7 +1137,13 @@ public class LDAHyper implements Serializable {
 
 				for (token = 0; token < seqLen; token++) {
 					type = fs.getIndexAtPosition(token);
-					likelihoods[doc][sample] += multinomial[type];
+
+					// Adding this check since testing instances may
+					//   have types not found in training instances, 
+					//  as pointed out by Steven Bethard.
+					if (type < numTypes) {
+						likelihoods[doc][sample] += multinomial[type];
+					}
 				}
 			}
 		}
@@ -1190,12 +1228,14 @@ public class LDAHyper implements Serializable {
 		int nonZeroTypeTopics = 0;
 
 		for (int type=0; type < numTypes; type++) {
-			// reuse this array as a pointer
+			int[] usedTopics = typeTopicCounts[type].keys();
 
-			for (int topic=0; topic < numTopics; topic++) {
-				if (topicCounts[topic] > 0) {
+			for (int topic : usedTopics) {
+				int count = typeTopicCounts[type].get(topic);
+				if (count > 0) {
 					nonZeroTypeTopics++;
-					logLikelihood += Dirichlet.logGammaStirling(beta + typeTopicCounts[type].get(topic));
+					logLikelihood +=
+						Dirichlet.logGammaStirling(beta + count);
 				}
 			}
 		}
@@ -1224,6 +1264,9 @@ public class LDAHyper implements Serializable {
 			args.length > 2 ? InstanceList.load (new File(args[2])) : null;
 
 		LDAHyper lda = new LDAHyper (numTopics, 50.0, 0.01);
+
+		lda.printLogLikelihood = true;
+		lda.setTopicDisplay(50,7);
 		lda.addInstances(training);
 		lda.estimate();
 	}

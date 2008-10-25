@@ -199,55 +199,37 @@ public class Vectors2Topics {
 										 docTopicsThreshold.value, docTopicsMax.value);
 			topicModel = tng;
 			
-			// LDA
-		}
-		else if (inputModelFilename.value != null) {
-
-			// Load a serialized topic model trainer
-
-			System.err.println (inputModelFilename.value);
-			LDA lda = null;
-			try {
-				ObjectInputStream ois = new ObjectInputStream (new FileInputStream(inputModelFilename.value));
-				lda = (LDA) ois.readObject();
-				ois.close();
-			} catch (Exception e) {
-				System.err.println("Exception reading file " + inputModelFilename.value + ": " + e);
-			}
-			Randoms r = randomSeed.value == 0 ? new Randoms() : new Randoms(randomSeed.value);
-			InstanceList ilist;
-			if (inputFile.value != null) {
-				ilist = InstanceList.load (new File(inputFile.value));
-				System.out.println ("Data loaded.");
-				// TODO: modify the number of topics in "lda" if necessary
-				int newDocStart = lda.getInstanceList().size();
-				int numNewDocs = ilist.size();
-				lda.addDocuments(ilist, numIterations.value, showTopicsInterval.value, outputModelInterval.value, 
-								 outputModelFilename.value, r);
-				// Do 10 iterations on just the new documents to jump-start their alignment with the existing topics
-				// TODO: Consider making the "10" a configurable option?
-				lda.estimate(newDocStart, numNewDocs, 10, 0, 0, null, r);
-				// TODO: How does this handle a growing vocabulary size???  
-				// When ilist was created with text2vectors, it likely caused new words to be added to the vocabulary
-			}
-			lda.estimate(0, lda.getInstanceList().size(), numIterations.value, 
-						 showTopicsInterval.value, outputModelInterval.value, outputModelFilename.value, r);
-			lda.printTopWords (topWords.value, true);
-			if (stateFile.value != null)
-				lda.printState (new File(stateFile.value));
-			if (docTopicsFile.value != null)
-				lda.printDocumentTopics (new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
-										 docTopicsThreshold.value, docTopicsMax.value);
-			topicModel = lda;
 		}
 		else {
 			// Start a new LDA topic model
 			
-			InstanceList training = InstanceList.load (new File(inputFile.value));
-			System.out.println ("Data loaded.");
-			LDAHyper lda = new LDAHyper (numTopics.value, alpha.value, beta.value);
+			LDAHyper lda = null;
 
-			lda.addInstances(training);
+			if (inputModelFilename.value != null) {
+				
+				try {
+					ObjectInputStream ois = new ObjectInputStream (new FileInputStream(inputModelFilename.value));
+					lda = (LDAHyper) ois.readObject();
+					ois.close();
+				} catch (Exception e) {
+					System.err.println("Unable to restore saved topic model " + inputModelFilename.value + ": " + e);
+					System.exit(1);
+				}
+				
+				// Loading new data is optional if we are restoring a saved state.
+				if (inputFile.value != null) {
+					InstanceList instances = InstanceList.load (new File(inputFile.value));
+					System.out.println ("Data loaded.");
+					lda.addInstances(instances);
+				}
+			} 
+			else {
+				InstanceList training = InstanceList.load (new File(inputFile.value));
+				System.out.println ("Data loaded.");
+				lda = new LDAHyper (numTopics.value, alpha.value, beta.value);
+				lda.addInstances(training);
+			}
+
 			lda.setTopicDisplay(showTopicsInterval.value, topWords.value);
 
 			if (outputModelInterval.value != 0) {
@@ -271,6 +253,9 @@ public class Vectors2Topics {
 
 			lda.estimate();
 
+			if (topicKeysFile.value != null) {
+				lda.printTopWords(new File(topicKeysFile.value), topWords.value, false);
+			}
 			if (stateFile.value != null)
 				lda.printState (new File(stateFile.value));
 			if (docTopicsFile.value != null)

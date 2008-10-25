@@ -3,6 +3,9 @@ package cc.mallet.fst;
 import cc.mallet.fst.Transducer.State;
 import cc.mallet.types.LabelVector;
 
+/**
+ * Interface to perform forward-backward during training of a transducer.
+ */
 public interface SumLattice {
 	public double[][][] getXis();
 	public double[][] getGammas();
