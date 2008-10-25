@@ -898,22 +898,21 @@ public class LDAHyper implements Serializable {
 	}
 	
 	// Serialization
-	
+
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 0;
 	private static final int NULL_INTEGER = -1;
-	
+
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
 
+		// Instance lists
 		out.writeObject (data);
 		out.writeObject (alphabet);
 		out.writeObject (topicAlphabet);
 
 		out.writeInt (numTopics);
-		out.writeInt (numTypes);
 		out.writeObject (alpha);
-		out.writeDouble (alphaSum);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
 
@@ -940,47 +939,23 @@ public class LDAHyper implements Serializable {
 		out.writeObject(docLengthCounts);
 		out.writeObject(topicDocCounts);
 
-		//out.writeObject (typeTopicCounts); // Seems to be buggy
-		for (int fi = 0; fi < numTypes; fi++) {
-			int[] topics = typeTopicCounts[fi].keys();
-			out.writeInt (topics.length);
-			for (int i = 0; i < topics.length; i++) {
-				out.writeInt(topics[i]);
-				out.writeInt(typeTopicCounts[fi].get(topics[i]));
-			}
-		}
+		for (int fi = 0; fi < numTypes; fi++)
+			out.writeObject (typeTopicCounts[fi]);
 
-		out.writeObject (tokensPerTopic);
-		out.writeObject (docLengthCounts);
-		out.writeObject (topicDocCounts);
-		
-		out.writeInt (iterationsSoFar);
-		out.writeInt (numIterations);
-		out.writeInt (burninPeriod);
-		out.writeInt (saveSampleInterval);
-		out.writeInt (optimizeInterval);
-		out.writeInt (showTopicsInterval);
-		out.writeInt (wordsPerTopic);
-		out.writeInt (outputModelInterval);
-		out.writeObject (outputModelFilename);
-		out.writeInt (saveStateInterval);
-		out.writeObject (stateFilename);
-		out.writeObject (random);
-		out.writeObject (formatter);
-		out.writeBoolean (printLogLikelihood);
+		for (int ti = 0; ti < numTopics; ti++)
+			out.writeInt (tokensPerTopic[ti]);
 	}
-	
+
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+		int featuresLength;
 		int version = in.readInt ();
-		
-		data = (ArrayList<Topication>) in.readObject();
+
+		data = (ArrayList<Topication>) in.readObject ();
 		alphabet = (Alphabet) in.readObject();
 		topicAlphabet = (LabelAlphabet) in.readObject();
-		
+
 		numTopics = in.readInt();
-		numTypes = in.readInt();
 		alpha = (double[]) in.readObject();
-		alphaSum = in.readDouble();
 		beta = in.readDouble();
 		betaSum = in.readDouble();
 
@@ -1003,7 +978,7 @@ public class LDAHyper implements Serializable {
 		random = (Randoms) in.readObject();
 		formatter = (NumberFormat) in.readObject();
 		printLogLikelihood = in.readBoolean();
-		
+
 		docLengthCounts = (int[]) in.readObject();
 		topicDocCounts = (int[][]) in.readObject();
 
