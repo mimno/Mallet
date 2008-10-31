@@ -8,6 +8,7 @@
 package cc.mallet.classify.tui;
 
 import java.util.logging.*;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.BitSet;
 import java.util.ArrayList;
@@ -71,8 +72,16 @@ public class Vectors2Vectors {
 		 "Reduce features to those that occur more than N times.", null);
 
 	static CommandOption.Boolean vectorToSequence = new CommandOption.Boolean
-		(Vectors2Info.class, "vector-to-sequence", "[TRUE|FALSE]", false, false,
+		(Vectors2Vectors.class, "vector-to-sequence", "[TRUE|FALSE]", false, false,
 		 "Convert FeatureVector's to FeatureSequence's.", null);
+	
+	 static CommandOption.Boolean hideTargets = new CommandOption.Boolean
+   (Vectors2Vectors.class, "hide-targets", "[TRUE|FALSE]", false, false,
+    "Hide targets.", null);
+	 
+   static CommandOption.Boolean revealTargets = new CommandOption.Boolean
+   (Vectors2Vectors.class, "reveal-targets", "[TRUE|FALSE]", false, false,
+    "Reveal targets.", null);
 
 
 	public static void main (String[] args) throws FileNotFoundException, IOException {
@@ -104,7 +113,8 @@ public class Vectors2Vectors {
 		// Read the InstanceList
 		InstanceList instances = InstanceList.load (inputFile.value);
 
-		if (t == 1.0 && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked())) {
+		if (t == 1.0 && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked())
+		    && ! (hideTargets.wasInvoked() || revealTargets.wasInvoked())) {
 			System.err.println("Vectors2Vectors was invoked, but did not change anything");
 			instances.save(trainingFile.value());
 			System.exit(0);
@@ -285,6 +295,27 @@ public class Vectors2Vectors {
 			if (instanceLists[2].size() > 0)
 				writeInstanceList(instanceLists[2], validationFile.value());
 		}
+    else if (hideTargets.wasInvoked()) {
+      Iterator<Instance> iter = instances.iterator();
+      while (iter.hasNext()) {
+        Instance instance = iter.next();
+        instance.unLock();
+        instance.setProperty("target", instance.getTarget());
+        instance.setTarget(null);
+        instance.lock();
+      }
+      writeInstanceList (instances, outputFile.value());
+    }
+    else if (revealTargets.wasInvoked()) {
+      Iterator<Instance> iter = instances.iterator();
+      while (iter.hasNext()) {
+        Instance instance = iter.next();
+        instance.unLock();
+        instance.setTarget(instance.getProperty("target"));
+        instance.lock();
+      }
+      writeInstanceList (instances, outputFile.value());
+    }
 	}
 
 	private static void writeInstanceList(InstanceList instances, File file)
