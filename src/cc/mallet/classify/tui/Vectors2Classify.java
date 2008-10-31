@@ -432,13 +432,21 @@ public abstract class Vectors2Classify
 				Trial testTrial = new Trial (classifier, ilists[1]);
 				Trial validationTrial = new Trial(classifier, ilists[2]);
 
-				if (ilists[0].size()>0) trainConfusionMatrix[c][trialIndex] = new ConfusionMatrix (trainTrial).toString();
-				if (ilists[1].size()>0) testConfusionMatrix[c][trialIndex] = new ConfusionMatrix (testTrial).toString();
-				if (ilists[2].size()>0) validationConfusionMatrix[c][trialIndex] = new ConfusionMatrix (validationTrial).toString();
+				// gdruck - only perform evaluation if requested in report options
+				if (ReportOptions[ReportOption.train][ReportOption.confusion] && ilists[0].size()>0) 
+				  trainConfusionMatrix[c][trialIndex] = new ConfusionMatrix (trainTrial).toString();
+				if (ReportOptions[ReportOption.test][ReportOption.confusion] && ilists[1].size()>0) 
+				  testConfusionMatrix[c][trialIndex] = new ConfusionMatrix (testTrial).toString();
+				if (ReportOptions[ReportOption.validation][ReportOption.confusion] && ilists[2].size()>0) 
+				  validationConfusionMatrix[c][trialIndex] = new ConfusionMatrix (validationTrial).toString();
 
-				trainAccuracy[c][trialIndex] = trainTrial.getAccuracy();
-				testAccuracy[c][trialIndex] = testTrial.getAccuracy();
-				validationAccuracy[c][trialIndex] = validationTrial.getAccuracy();
+        // gdruck - only perform evaluation if requested in report options
+				if (ReportOptions[ReportOption.train][ReportOption.accuracy]) 
+				  trainAccuracy[c][trialIndex] = trainTrial.getAccuracy();
+				if (ReportOptions[ReportOption.test][ReportOption.accuracy]) 
+				  testAccuracy[c][trialIndex] = testTrial.getAccuracy();
+				if (ReportOptions[ReportOption.validation][ReportOption.accuracy]) 
+				  validationAccuracy[c][trialIndex] = validationTrial.getAccuracy();
 
 				if (outputFile.wasInvoked()) {
 					String filename = outputFile.value;
