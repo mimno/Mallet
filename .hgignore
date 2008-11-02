@@ -9,6 +9,7 @@ mallet.jar
 lib/jython/Lib/test/output/
 doc
 class
+*.DS_Store
 
 # Eclipse config files
 .project
