@@ -103,20 +103,21 @@ public class Csv2Vectors
 				new Target2Label (),
 				(keepSequenceBigrams.value
 				 ? (Pipe) new CharSequence2TokenSequence(CharSequenceLexer.LEX_NONWHITESPACE_CLASSES)
-				 : (Pipe) new CharSequence2TokenSequence()),
+				 : (Pipe) new CharSequence2TokenSequence(CharSequenceLexer.LEX_WORD_CLASSES)),
 				(preserveCase.value
 				 ? (Pipe) new Noop()
 				 : (Pipe) new TokenSequenceLowercase()),
 				(keepSequenceBigrams.value
 				 ? (Pipe) new TokenSequenceRemoveNonAlpha(true)
 				 : (Pipe) new Noop()),
+				 new PrintInput(),
 				(removeStopWords.value
 				 ? (Pipe) new TokenSequenceRemoveStopwords(false, keepSequenceBigrams.value)
 				 : (Pipe) new Noop()),
 				(keepSequenceBigrams.value
 				 ? (Pipe) new TokenSequence2FeatureSequenceWithBigrams()
 				 : (Pipe) new TokenSequence2FeatureSequence()),
-		                (keepSequence.value || keepSequenceBigrams.value
+		        (keepSequence.value || keepSequenceBigrams.value
 				 ? (Pipe) new Noop()
 				 : (Pipe) new FeatureSequence2AugmentableFeatureVector()), 
 				// or FeatureSequence2FeatureVector

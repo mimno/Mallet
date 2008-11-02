@@ -163,7 +163,8 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 		java.util.Arrays.sort (feats);
 		return feats;
 	}
-
+	
+	
 	/** 
 	 *  Remove features from the sequence that occur fewer than 
 	 *  <code>cutoff</code> times in the corpus, as indicated by 
@@ -209,9 +210,8 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
         dictionary = newAlphabet;
 
     }
-
-
-	// Serialization
+    
+   	// Serialization
 		
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 0;

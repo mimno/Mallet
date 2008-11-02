@@ -232,7 +232,34 @@ public class RankedFeatureVector extends FeatureVector
       int idx = getIndexAtRank (rank);
       double val = getValueAtRank (rank);
       Object obj = dictionary.lookupObject (idx);
-      out.println (obj+" "+val);
+      out.print (obj+":"+val + " ");
+    }
+  }
+  
+  //added by Limin Yao
+  public void printTopK (PrintWriter out, int num)
+  {
+	  int length = numLocations();
+	  if(num>length)
+		  num=length;
+    for (int rank = 0; rank < num; rank++) {
+      int idx = getIndexAtRank (rank);
+      double val = getValueAtRank (rank);
+      Object obj = dictionary.lookupObject (idx);
+      out.print (obj+":"+val + " ");
+    }
+  }
+  
+  public void printLowerK (PrintWriter out, int num)
+  {
+	  int length = numLocations();
+	  if(num>length)
+		  num=length;
+    for (int rank = length - num; rank < length; rank++) {
+      int idx = getIndexAtRank (rank);
+      double val = getValueAtRank (rank);
+      Object obj = dictionary.lookupObject (idx);
+      out.print (obj+":"+val + " ");
     }
   }
 

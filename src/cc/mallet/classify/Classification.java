@@ -14,7 +14,12 @@
 
 package cc.mallet.classify;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 import cc.mallet.classify.Classifier;
+import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.Labeling;
@@ -75,14 +80,52 @@ public class Classification
 		return labeling.value (correctLabelIndex);
 	}
 
-	public void print ()
+	public void print() {
+		//not implemented
+	}
+	public void print (PrintWriter pw) throws FileNotFoundException
 	{
 		// xxx Fix this.
-		System.out.print (classifier.getClass().getName() + "(.");
+		/*System.out.print (classifier.getClass().getName() + "(.");
 		System.out.print (") = [");
 		for (int i = 0; i < labeling.numLocations(); i++)
 			System.out.print (labeling.labelAtLocation(i).toString()+"="+labeling.valueAtLocation(i)+" ");
-		System.out.println ("]");
+		System.out.println ("]");*/		
+		pw.print(classifier.getClass().getName());
+		pw.print(" ");
+		pw.print(instance.getSource() + " ");
+		for (int i = 0; i < labeling.numLocations(); i++)
+			pw.print (labeling.labelAtLocation(i).toString()+"="+labeling.valueAtLocation(i)+" ");
+		pw.println ();
+	}
+	
+	public void printRank (PrintWriter pw) throws FileNotFoundException
+	{
+		// xxx Fix this.
+		/*System.out.print (classifier.getClass().getName() + "(.");
+		System.out.print (") = [");
+		for (int i = 0; i < labeling.numLocations(); i++)
+			System.out.print (labeling.labelAtLocation(i).toString()+"="+labeling.valueAtLocation(i)+" ");
+		System.out.println ("]");*/		
+		pw.print(classifier.getClass().getName());
+		pw.print(" ");
+		pw.print(instance.getSource() + " ");
+		LabelVector lv = labeling.toLabelVector();
+		lv.printByRank(pw);
+		pw.println ();
 	}
 
+	public Instance toInstance() {
+		Instance ret;
+		FeatureVector fv;
+		double[] values = new double[labeling.numLocations()];
+		int[] indices = new int[labeling.numLocations()];
+		for(int i = 0; i < labeling.numLocations(); i++){
+			indices[i] = labeling.indexAtLocation(i);
+			values[i] = labeling.valueAtLocation(i);
+		}
+		fv = new FeatureVector(labeling.getAlphabet(), indices, values);
+		ret = new Instance(fv,null,null,instance.getSource());
+		return ret;
+	}
 }

@@ -25,7 +25,9 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 	private static Logger progressLogger = MalletProgressMessageLogger.getLogger(MaxEntOptimizableByLabelLikelihood.class.getName()+"-pl");
 
 	// xxx Why does TestMaximizable fail when this variance is very small?
-	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
+	//static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
+	//modified by Limin Yao, to fix overfitting in training data
+	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 0.1;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SLOPE = 0.2;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SHARPNESS = 10.0;
 	static final Class DEFAULT_MAXIMIZER_CLASS = LimitedMemoryBFGS.class;
@@ -106,11 +108,15 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 			FeatureVector fv = (FeatureVector) inst.getData ();
 			Alphabet fdict = fv.getAlphabet();
 			assert (fv.getAlphabet() == fd);
-			int li = labeling.getBestIndex();
-			MatrixOps.rowPlusEquals (constraints, numFeatures, li, fv, instanceWeight);
+			//int li = labeling.getBestIndex();						
+			//MatrixOps.rowPlusEquals (constraints, numFeatures, li, fv, instanceWeight);
+			
+			for(int pos = 0; pos < labeling.numLocations(); pos++){
+				MatrixOps.rowPlusEquals (constraints, numFeatures, labeling.indexAtLocation(pos), fv, instanceWeight*labeling.valueAtLocation(pos)); // loop over all the labels, added by Limin Yao //loop
+			}
 			// For the default feature, whose weight is 1.0
 			assert(!Double.isNaN(instanceWeight)) : "instanceWeight is NaN";
-			assert(!Double.isNaN(li)) : "bestIndex is NaN";
+			//assert(!Double.isNaN(li)) : "bestIndex is NaN";
 			boolean hasNaN = false;
 			for (int i = 0; i < fv.numLocations(); i++) {
 				if(Double.isNaN(fv.valueAtLocation(i))) {
@@ -121,7 +127,10 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 			if (hasNaN)
 				logger.info("NaN in instance: " + inst.getName());
 
-			constraints[li*numFeatures + defaultFeatureIndex] += 1.0 * instanceWeight;
+			for(int pos = 0; pos < labeling.numLocations(); pos++) {
+				constraints[labeling.indexAtLocation(pos)*numFeatures + defaultFeatureIndex] += 1.0 * instanceWeight * labeling.value(labeling.indexAtLocation(pos));
+			}
+			//constraints[li*numFeatures + defaultFeatureIndex] += 1.0 * instanceWeight;
 		}
 		//TestMaximizable.testValueAndGradientCurrentParameters (this);
 	}
@@ -184,7 +193,12 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 				this.theClassifier.getClassificationScores (instance, scores);
 				FeatureVector fv = (FeatureVector) instance.getData ();
 				int li = labeling.getBestIndex();
-				value = - (instanceWeight * Math.log (scores[li]));
+		        value = 0.0;
+				for(int pos = 0; pos < labeling.numLocations(); pos++) { //loop, added by Limin Yao
+					int ll = labeling.indexAtLocation(pos);
+					value -= (instanceWeight * labeling.valueAtLocation(pos) * Math.log (scores[ll]));					
+					}			
+				//value = - (instanceWeight * Math.log (scores[li])); 
 				if(Double.isNaN(value)) {
 					logger.fine ("MaxEntTrainer: Instance " + instance.getName() +
 							"has NaN value. log(scores)= " + Math.log(scores[li]) +
@@ -200,6 +214,8 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 //					continue;
 				}
 				cachedValue += value;
+				
+				//The model expectation? added by Limin Yao
 				for (int si = 0; si < scores.length; si++) {
 					if (scores[si] == 0) continue;
 					assert (!Double.isInfinite(scores[si]));

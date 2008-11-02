@@ -58,7 +58,9 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	public static final String INFORMATION_GAIN = "info";
 
 	// xxx Why does TestMaximizable fail when this variance is very small?
-	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
+	//static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
+	//modified by Limin Yao, to fix overfitting in training data
+	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 0.1;
 	static final Class DEFAULT_MAXIMIZER_CLASS = LimitedMemoryBFGS.class;
 
 	double gaussianPriorVariance = DEFAULT_GAUSSIAN_PRIOR_VARIANCE;
@@ -121,7 +123,9 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 			this.initialClassifier = initialClassifier;
 			if (ome == null || ome.trainingList != trainingSet) {
 				ome = new MaxEntOptimizableByLabelLikelihood (trainingSet, initialClassifier);
-				ome.setGaussianPriorVariance(gaussianPriorVariance);
+				ome.setGaussianPriorVariance(gaussianPriorVariance);  
+				//modified by Limin Yao
+				//ome.setHyperbolicPriorSlope(DEFAULT_GAUSSIAN_PRIOR_VARIANCE);
 				opt = null;
 			}
 		}

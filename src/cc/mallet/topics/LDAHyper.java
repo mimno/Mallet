@@ -759,6 +759,7 @@ public class LDAHyper implements Serializable {
 				}
 			} else {
 				out.print (ti + "\t" + formatter.format(alpha[ti]) + "\t");
+
 				int max = rfv.numLocations(); if (max > numWords) max = numWords;
 				for (int ri = 0; ri < max; ri++) 
 					out.print (alphabet.lookupObject(rfv.getIndexAtRank(ri)).toString()+" ");

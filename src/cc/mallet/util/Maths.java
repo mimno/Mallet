@@ -272,15 +272,24 @@ public final class Maths {
    * The log is w.r.t. base 2. <p>
    *
    * *Note*: If any value in <tt>p2</tt> is <tt>0.0</tt> then the KL-divergence
-   * is <tt>infinite</tt>.
+   * is <tt>infinite</tt>. Limin changes it to zero instead of infinite. 
+   * 
    */
   public static double klDivergence(double[] p1, double[] p2) {
     assert(p1.length == p2.length);
     double klDiv = 0.0;
     for (int i = 0; i < p1.length; ++i) {
+<<<<<<< local
+    	if(p1[i] == 0)
+    		continue; //added by Limin Yao
+    	if(p2[i] != 0.0) 
+    		klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
+      // klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
+=======
     	if (p1[i] == 0)
     		continue;
       klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
+>>>>>>> other
     }
     return klDiv;
   }

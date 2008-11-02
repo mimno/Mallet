@@ -197,6 +197,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 				30, 0,
 				10, meanInstancesPerLabel, classNames);
 	}
+	
 
 	public InstanceList (Randoms r, int vocabSize, int numClasses)
 	{

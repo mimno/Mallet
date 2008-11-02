@@ -14,6 +14,7 @@ package cc.mallet.classify;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.PrintStream;
 
@@ -26,6 +27,7 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.MatrixOps;
+import cc.mallet.types.RankedFeatureVector;
 
 /**
  * Maximum Entropy (AKA Multivariate Logistic Regression) classifier.
@@ -34,6 +36,7 @@ import cc.mallet.types.MatrixOps;
 
 public class MaxEnt extends Classifier implements Serializable
 {
+	static final double DEFAULT_TEMPERATURE = 1.2;
 	protected double [] parameters;										// indexed by <labelIndex,featureIndex>
 	protected int defaultFeatureIndex;
 	protected FeatureSelection featureSelection;
@@ -168,10 +171,14 @@ public class MaxEnt extends Classifier implements Serializable
 		}
 	}
 
+	//modified by Limin Yao, to deal with decreasing the peak of some labels
 	public void getClassificationScoresWithTemperature (Instance instance, double temperature, double[] scores)
 	{
 		getUnnormalizedClassificationScores(instance, scores);
-		MatrixOps.timesEquals(scores, temperature);
+
+		//scores should be divided by temperature, scores are sum of weighted features
+		MatrixOps.timesEquals(scores, 1/temperature);
+
 		// Move scores to a range where exp() is accurate, and normalize
 		int numLabels = getLabelAlphabet().size();
 		double max = MatrixOps.max (scores);
@@ -184,11 +191,13 @@ public class MaxEnt extends Classifier implements Serializable
 		}
 	}
 
+	//modified by Limin Yao, using temperature classification score
 	public Classification classify (Instance instance)
 	{
 		int numClasses = getLabelAlphabet().size();
 		double[] scores = new double[numClasses];
-		getClassificationScores (instance, scores);
+		//getClassificationScores (instance, scores);
+		getClassificationScoresWithTemperature (instance, DEFAULT_TEMPERATURE, scores);
 		// Create and return a Classification object
 		return new Classification (instance, this,
 				new LabelVector (getLabelAlphabet(),
@@ -218,7 +227,58 @@ public class MaxEnt extends Classifier implements Serializable
 			}
 		}
 	}
+	
+	//printRank, added by Limin Yao
+	public void printRank (PrintWriter out) 
+	{		
+		final Alphabet dict = getAlphabet();
+		final LabelAlphabet labelDict = getLabelAlphabet();
 
+		int numFeatures = dict.size() + 1;
+		int numLabels = labelDict.size();
+
+		// Include the feature weights according to each label
+		RankedFeatureVector rfv;
+		double[] weights = new double[numFeatures-1]; // do not deal with the default feature
+		for (int li = 0; li < numLabels; li++) {
+			out.print ("FEATURES FOR CLASS "+labelDict.lookupObject (li) + " ");
+			for (int i = 0; i < defaultFeatureIndex; i++) {
+				Object name = dict.lookupObject (i);
+				double weight = parameters [li*numFeatures + i];
+				weights[i] = weight;
+			}
+			rfv = new RankedFeatureVector(dict,weights);
+			rfv.printByRank(out);
+			out.println (" <default> "+parameters [li*numFeatures + defaultFeatureIndex] + " ");
+		}
+	}
+	
+	public void printExtremeFeatures (PrintWriter out,int num) 
+	{		
+		final Alphabet dict = getAlphabet();
+		final LabelAlphabet labelDict = getLabelAlphabet();
+
+		int numFeatures = dict.size() + 1;
+		int numLabels = labelDict.size();
+
+		// Include the feature weights according to each label
+		RankedFeatureVector rfv;
+		double[] weights = new double[numFeatures-1]; // do not deal with the default feature
+		for (int li = 0; li < numLabels; li++) {
+			out.print ("FEATURES FOR CLASS "+labelDict.lookupObject (li) + " ");
+			for (int i = 0; i < defaultFeatureIndex; i++) {
+				Object name = dict.lookupObject (i);
+				double weight = parameters [li*numFeatures + i];
+				weights[i] = weight;
+			}
+			rfv = new RankedFeatureVector(dict,weights);
+			rfv.printTopK(out,num);
+			out.print (" <default> "+parameters [li*numFeatures + defaultFeatureIndex] + " ");
+		//	rfv.printLowerK(out, num);
+			out.println();
+		}
+	}
+	
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;
 	static final int NULL_INTEGER = -1;
