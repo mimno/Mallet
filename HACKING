@@ -1,0 +1,58 @@
+Rules and Guidelines:
+========================================================
+
+1. All source contributors must use the same indentation procedure.
+   Elisp code for having Emacs or XEmacs do this is in CVS at
+   mallet/.emacs.mallet.
+   <We need to generate a textual description of the indentation style
+    so non-emacs users can match it.>
+
+2. Obey Java and MALLET naming and style conventions.
+   Use standard Java capitalization conventions.
+   Follow the naming patterns used in MALLET so far.
+   Do not use "ASCII art" (rows of asterisks, etc) to delimit
+    comments or sections---simply use whitespace.
+   <We need to specify these more exactly.>
+
+3. Code checked into the CVS repository should always compile,
+   and all JUnit tests should pass.  
+   <We need automated ways to make this easier to check.>
+
+
+To check out the MALLET code and compile it:
+========================================================
+
+1. Have a CVS pserver account on mallet.cs.umass.edu.
+
+2. Log in to the CVS server with 
+   $ cvs -d :pserver:yourlogin@mallet.cs.umass.edu:/cvsroot login
+   (replacing yourlogin with your login id) and enter your password
+
+3. Check out the MALLET code with
+   $ cvs -d :pserver:yourlogin@mallet.cs.umass.edu:/cvsroot checkout mallet
+
+4. Have Java 1.4 and GNU make in your PATH.
+
+5. Enter the directory and compile the source:
+   $ cd mallet
+   $ make
+
+   This last step is likely to fail since besides doing the core libraries
+   of Mallet, it will try to compile the user directories and there is no
+   guarantee these will compile. In that case use:
+
+   $ make mallet-base
+
+To check in code changes:
+========================================================
+
+1. Check in and use change log comments as follows
+
+   $ cvs commit -m 'Message describing change' YourChangedFile.java
+   $ cvs add YourNewFile.java ; cvs commit -m '' YourNewFile.java
+
+
+
+Questions?  Send email to mccallum@cs.umass.edu.
+========================================================
+
