@@ -55,7 +55,7 @@ public class CsvIterator implements Iterator<Instance>
 		this.targetGroup = targetGroup;
 		this.dataGroup = dataGroup;
 		this.uriGroup = uriGroup;
-		if (dataGroup < 0)
+		if (dataGroup <= 0)
 			throw new IllegalStateException ("You must extract a data field.");
 		try {
 			this.currentLine = reader.readLine();
@@ -85,11 +85,11 @@ public class CsvIterator implements Iterator<Instance>
 		String target = null;
 		Matcher matcher = lineRegex.matcher(currentLine);
 		if (matcher.find()) {
-			if (uriGroup > -1)
+			if (uriGroup > 0)
 				uriStr = matcher.group(uriGroup);
-			if (targetGroup > -1)
+			if (targetGroup > 0)
 				target = matcher.group(targetGroup);
-			if (dataGroup > -1)
+			if (dataGroup > 0)
 				data = matcher.group(dataGroup);
 		} else
 			throw new IllegalStateException ("Line #"+reader.getLineNumber()+" does not match regex");
