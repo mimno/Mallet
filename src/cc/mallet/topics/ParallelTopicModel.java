@@ -473,6 +473,11 @@ public class ParallelTopicModel {
 				System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
 				runnableCounts[type] = counts;
 			}
+
+			// some docs may be missing at the end due to integer division
+			if (thread == numThreads - 1) {
+				docsPerThread = data.size() - offset;
+			}
 			
 			runnables[thread] = new WorkerRunnable(numTopics,
 												   alpha, alphaSum, beta,
