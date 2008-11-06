@@ -276,22 +276,19 @@ public final class Maths {
    * 
    */
   public static double klDivergence(double[] p1, double[] p2) {
+
     assert(p1.length == p2.length);
+
     double klDiv = 0.0;
+
     for (int i = 0; i < p1.length; ++i) {
-<<<<<<< local
-    	if(p1[i] == 0)
-    		continue; //added by Limin Yao
-    	if(p2[i] != 0.0) 
-    		klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
-      // klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
-=======
-    	if (p1[i] == 0)
-    		continue;
-      klDiv += p1[i] * Math.log(p1[i]/p2[i])/log2;
->>>>>>> other
+    	if (p1[i] == 0) { continue; }
+    	if (p2[i] == 0.0) { continue; } // Limin
+
+		klDiv += p1[i] * Math.log( p1[i] / p2[i] );
     }
-    return klDiv;
+
+    return klDiv / log2; // moved this division out of the loop -DM
   }
 
   // gsc
@@ -343,6 +340,10 @@ public final class Maths {
   /**
    * Sums an array of numbers log(x1)...log(xn).  This saves some of
    *  the unnecessary calls to Math.log in the two-argument version.
+   * <p>
+   * Note that this implementation IGNORES elements of the input
+   *  array that are more than LOGTOLERANCE (currently 30.0) less
+   *  than the maximum element.
    * <p>
    * Cursory testing makes me wonder if this is actually much faster than
    *  repeated use of the 2-argument version, however -cas.
