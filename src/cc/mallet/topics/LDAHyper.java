@@ -325,14 +325,12 @@ public class LDAHyper implements Serializable {
 				System.out.println();
 				printTopWords (System.out, wordsPerTopic, false);
 
-				/*
-				  if (testing != null) {
-				  double el = empiricalLikelihood(1000, testing);
-				  }
-				  double ll = modelLogLikelihood();
-				  double mi = topicLabelMutualInformation();
-				  System.out.println(ll + "\t" + el + "\t" + mi);
-				*/
+				if (testing != null) {
+					  double el = empiricalLikelihood(1000, testing);
+					  double ll = modelLogLikelihood();
+					  double mi = topicLabelMutualInformation();
+					  System.out.println(ll + "\t" + el + "\t" + mi);
+				}
 			}
 
 			if (saveStateInterval != 0 && iterationsSoFar % saveStateInterval == 0) {
@@ -998,6 +996,10 @@ public class LDAHyper implements Serializable {
 	public double topicLabelMutualInformation() {
 		int doc, level, label, topic, token, type;
 		int[] docTopics;
+
+		if (data.get(0).instance.getTargetAlphabet() == null) {
+			return 0.0;
+		}
 
 		int targetAlphabetSize = data.get(0).instance.getTargetAlphabet().size();
 		int[][] topicLabelCounts = new int[ numTopics ][ targetAlphabetSize ];
