@@ -16,7 +16,6 @@ public class SimpleTokenizer extends Pipe {
 	public static final int USE_EMPTY_STOPLIST = 0;
 	public static final int USE_DEFAULT_ENGLISH_STOPLIST = 1;
 	
-	public long totalNanos = 0;
 	HashSet<String> stoplist;
 
 	public SimpleTokenizer(int languageFlag) {
@@ -25,31 +24,31 @@ public class SimpleTokenizer extends Pipe {
 		if (languageFlag == USE_DEFAULT_ENGLISH_STOPLIST) {
 			
 			// articles
-			stoplist.add("the"); stoplist.add("a");	stoplist.add("an");
+			stop("the"); stop("a");	stop("an");
 			
 			// conjunctions
-			stoplist.add("and"); stoplist.add("or");
+			stop("and"); stop("or");
 			
 			// prepositions
-			stoplist.add("of");	stoplist.add("for"); stoplist.add("in");
-			stoplist.add("on");	stoplist.add("to");	stoplist.add("with");
-			stoplist.add("by");
+			stop("of");	stop("for"); stop("in");
+			stop("on");	stop("to");	stop("with");
+			stop("by");
 			
 			// definite pronouns
-			stoplist.add("this"); stoplist.add("that"); stoplist.add("these");
-			stoplist.add("those"); stoplist.add("some"); stoplist.add("other");
+			stop("this"); stop("that"); stop("these");
+			stop("those"); stop("some"); stop("other");
 			
 			// personal pronouns
-			stoplist.add("it");	stoplist.add("its"); stoplist.add("we");
-			stoplist.add("our");
+			stop("it");	stop("its"); stop("we");
+			stop("our");
 			
 			// conjuctions
-			stoplist.add("as"); stoplist.add("but"); stoplist.add("not");
+			stop("as"); stop("but"); stop("not");
 			
 			// verbs
-			stoplist.add("do"); stoplist.add("does"); stoplist.add("is");
-			stoplist.add("be"); stoplist.add("are"); stoplist.add("can");
-			stoplist.add("was"); stoplist.add("were");
+			stop("do"); stop("does"); stop("is");
+			stop("be"); stop("are"); stop("can");
+			stop("was"); stop("were");
 		}
 	}
 
@@ -63,7 +62,7 @@ public class SimpleTokenizer extends Pipe {
 			
 			String word = null;
 			while ((word = in.readLine()) != null) {
-				stoplist.add(word);
+				stop(word);
 			}
 
 			in.close();
@@ -74,20 +73,25 @@ public class SimpleTokenizer extends Pipe {
 		
 	}
 
-	public void addStopword(String word) {
+	public SimpleTokenizer(HashSet<String> stoplist) {
+		this.stoplist = stoplist;
+	}
+
+	public SimpleTokenizer deepClone() {
+		return new SimpleTokenizer((HashSet<String>) stoplist.clone());
+	}
+
+	public void stop(String word) {
 		stoplist.add(word);
 	}
 
 	public Instance pipe(Instance instance) {
 			
-		long start = System.nanoTime();
-
 		if (instance.getData() instanceof CharSequence) {
 				
 			CharSequence characters = (CharSequence) instance.getData();
 
 			ArrayList<String> tokens = new ArrayList<String>();
-
 
 			int[] tokenBuffer = new int[1000];
 			int length = -1;
@@ -122,53 +126,12 @@ public class SimpleTokenizer extends Pipe {
 				}
 			}
 
-
-			/*
-
-
-			StringBuffer tokenBuffer = null;
-
-			// Using code points instead of chars allows us
-			//  to support extended Unicode, and has no significant
-			//  efficiency costs.
-			
-			int totalCodePoints = Character.codePointCount(characters, 0, characters.length());
-
-			for (int i=0; i < totalCodePoints; i++) {
-
-				int codePoint = Character.codePointAt(characters, i);
-
-				if (Character.isLetter(codePoint)) {
-					if (tokenBuffer == null) { tokenBuffer = new StringBuffer(); }
-					//tokenBuffer.append(Character.toChars(codePoint));
-				}
-				else if (tokenBuffer != null) {
-					String token = tokenBuffer.toString();
-					if (! stoplist.contains(token)) {
-						tokens.add(token);
-					}
-					tokenBuffer = null;
-				}
-			}
-
-			if (tokenBuffer != null) {
-				String token = tokenBuffer.toString();
-				if (! stoplist.contains(token)) {
-					tokens.add(token);
-				}
-				tokenBuffer = null;
-			}
-
-			*/
-
 			instance.setData(tokens);
 		}
 		else {
 			throw new IllegalArgumentException("Looking for a CharSequence, found a " + 
 											   instance.getData().getClass());
 		}
-
-		totalNanos += System.nanoTime() - start;
 		
 		return instance;
 	}
