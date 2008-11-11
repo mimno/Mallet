@@ -12,6 +12,8 @@ import gnu.trove.TIntIntHashMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.TreeSet;
+import java.util.Iterator;
 
 import java.util.zip.*;
 
@@ -715,53 +717,46 @@ public class LDAHyper implements Serializable {
 		printTopWords(out, numWords, useNewLines);
 		out.close();
 	}
-	
-	public void oldPrintTopWords (PrintStream out, int numWords, boolean usingNewLines) {
-		for (int topic = 0; topic < numTopics; topic++) {
-			IDSorter[] sortedTypes = getSortedTopicWords(topic);
-			if (usingNewLines) {
-				out.print ("Topic " + topic + "\n");
-				for (int i = 0; i < numWords && i < sortedTypes.length; i++)
-					out.print (alphabet.lookupObject(sortedTypes[i].getID()) + "\t" +
-								   sortedTypes[i].getWeight() + "\n");
-				out.print("\n");
-			}	else {
-				out.print (topic + "\t" + formatter.format(alpha[topic]) + "\t");
-				for (int i = 0; i < numWords && i < sortedTypes.length; i++)
-					out.print (alphabet.lookupObject(sortedTypes[i].getID()) + " ");
-				out.print ("\n");
-			}
-		}
-	}
+
+	// TreeSet implementation is ~70x faster than RankedFeatureVector -DM
 	
 	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
-		FeatureCounter[] wordCountsPerTopic = new FeatureCounter[numTopics];
-		for (int ti = 0; ti < numTopics; ti++) 
-			wordCountsPerTopic[ti] = new FeatureCounter(alphabet);
-		for (int fi = 0; fi < numTypes; fi++) {
-			int[] topics = typeTopicCounts[fi].keys();
-			for (int i = 0; i < topics.length; i++) {
-				wordCountsPerTopic[topics[i]].increment(fi, typeTopicCounts[fi].get(topics[i]));
-				//System.out.print (" "+typeTopicCounts[fi].get(topics[i]));//
-			}
-			//System.out.println();//
-		}
-		for (int ti = 0; ti < numTopics; ti++) {
-			RankedFeatureVector rfv = wordCountsPerTopic[ti].toRankedFeatureVector();
-			if (usingNewLines) {
-				out.println ("Topic " + ti);
-				int max = rfv.numLocations(); if (max > numWords) max = numWords;
-				for (int ri = 0; ri < max; ri++) {
-					int fi = rfv.getIndexAtRank(ri);
-					out.println (alphabet.lookupObject(fi).toString()+"\t"+(int)rfv.getValueAtRank(ri));
-				}
-			} else {
-				out.print (ti + "\t" + formatter.format(alpha[ti]) + "\t");
 
-				int max = rfv.numLocations(); if (max > numWords) max = numWords;
-				for (int ri = 0; ri < max; ri++) 
-					out.print (alphabet.lookupObject(rfv.getIndexAtRank(ri)).toString()+" ");
-				out.print ("\n");
+		for (int topic = 0; topic < numTopics; topic++) {
+                        
+			TreeSet<IDSorter> sortedWords = new TreeSet<IDSorter>();
+			for (int type = 0; type < numTypes; type++) {
+				if (typeTopicCounts[type].containsKey(topic)) {
+					sortedWords.add(new IDSorter(type, typeTopicCounts[type].get(topic)));
+				}
+			}
+
+			if (usingNewLines) {
+				out.println ("Topic " + topic);
+                                
+				int word = 1;
+				Iterator<IDSorter> iterator = sortedWords.iterator();
+				while (iterator.hasNext() && word < numWords) {
+					IDSorter info = iterator.next();
+                                        
+					out.println(alphabet.lookupObject(info.getID()) + "\t" +
+								(int) info.getWeight());
+					word++;
+				}
+			}
+			else {
+				out.print (topic + "\t" + formatter.format(alpha[topic]) + "\t" + tokensPerTopic[topic] + "\t");
+
+				int word = 1;
+				Iterator<IDSorter> iterator = sortedWords.iterator();
+				while (iterator.hasNext() && word < numWords) {
+                    IDSorter info = iterator.next();
+
+                    out.print(alphabet.lookupObject(info.getID()) + " ");
+                    word++;
+                }
+
+				out.println();
 			}
 		}
 	}
