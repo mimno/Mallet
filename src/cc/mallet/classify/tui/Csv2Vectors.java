@@ -110,7 +110,6 @@ public class Csv2Vectors
 				(keepSequenceBigrams.value
 				 ? (Pipe) new TokenSequenceRemoveNonAlpha(true)
 				 : (Pipe) new Noop()),
-				 new PrintInput(),
 				(removeStopWords.value
 				 ? (Pipe) new TokenSequenceRemoveStopwords(false, keepSequenceBigrams.value)
 				 : (Pipe) new Noop()),
