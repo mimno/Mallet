@@ -103,7 +103,7 @@ public class Csv2Vectors
 				new Target2Label (),
 				(keepSequenceBigrams.value
 				 ? (Pipe) new CharSequence2TokenSequence(CharSequenceLexer.LEX_NONWHITESPACE_CLASSES)
-				 : (Pipe) new CharSequence2TokenSequence(CharSequenceLexer.LEX_WORD_CLASSES)),
+				 : (Pipe) new CharSequence2TokenSequence()),
 				(preserveCase.value
 				 ? (Pipe) new Noop()
 				 : (Pipe) new TokenSequenceLowercase()),
