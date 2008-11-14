@@ -34,6 +34,10 @@ public class CharSequenceLexer implements Lexer, Serializable
 	public static final Pattern LEX_NONWHITESPACE_CLASSES	=
 	Pattern.compile ("\\p{Alpha}+|\\p{Digit}+|\\p{Punct}");
 
+	// Lowercase letters and uppercase letters
+	public static final Pattern UNICODE_LETTERS =
+		Pattern.compile("[\\u{Ll}&&\\u{Lu}]+");
+
 	Pattern regex;
 	Matcher matcher = null;
 	CharSequence input;
