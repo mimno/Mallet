@@ -36,7 +36,7 @@ public class CharSequenceLexer implements Lexer, Serializable
 
 	// Lowercase letters and uppercase letters
 	public static final Pattern UNICODE_LETTERS =
-		Pattern.compile("[\\u{Ll}&&\\u{Lu}]+");
+		Pattern.compile("[\\p{Ll}&&\\p{Lu}]+");
 
 	Pattern regex;
 	Matcher matcher = null;
