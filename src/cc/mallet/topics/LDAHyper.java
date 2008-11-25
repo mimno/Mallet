@@ -761,6 +761,41 @@ public class LDAHyper implements Serializable {
 		}
 	}
 
+	public void topicXMLReport (PrintWriter out, int numWords) {
+
+		out.println("<?xml version='1.0' ?>");
+		out.println("<topicModel>");
+
+		for (int topic = 0; topic < numTopics; topic++) {
+                        
+			out.println("  <topic id='" + topic + "' alpha='" + alpha[topic] +
+						"' totalTokens='" + tokensPerTopic[topic] + "'>");
+
+			TreeSet<IDSorter> sortedWords = new TreeSet<IDSorter>();
+			for (int type = 0; type < numTypes; type++) {
+				if (typeTopicCounts[type].containsKey(topic)) {
+					sortedWords.add(new IDSorter(type, typeTopicCounts[type].get(topic)));
+				}
+			}
+
+			
+			int word = 1;
+			Iterator<IDSorter> iterator = sortedWords.iterator();
+			while (iterator.hasNext() && word < numWords) {
+				IDSorter info = iterator.next();
+				
+				out.println("    <word rank='" + word + "'>" +
+						  alphabet.lookupObject(info.getID()) +
+						  "</word>");
+				word++;
+			}
+
+			out.println("  </topic>");
+		}
+
+		out.println("</topicModel>");
+	}
+
 	public void printDocumentTopics (File f) throws IOException {
 		printDocumentTopics (new PrintWriter (new FileWriter (f) ) );
 	}

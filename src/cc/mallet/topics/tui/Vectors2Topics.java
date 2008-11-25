@@ -54,6 +54,11 @@ public class Vectors2Topics {
          "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
+	static CommandOption.String topicReportXMLFile = new CommandOption.String
+		(Vectors2Topics.class, "xml-topic-report", "FILENAME", true, null,
+         "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
 	static CommandOption.String docTopicsFile = new CommandOption.String
 		(Vectors2Topics.class, "output-doc-topics", "FILENAME", true, null,
 		 "The filename in which to write the topic proportions per document, at the end of the iterations.  " +
@@ -256,6 +261,12 @@ public class Vectors2Topics {
 			if (topicKeysFile.value != null) {
 				lda.printTopWords(new File(topicKeysFile.value), topWords.value, false);
 			}
+			if (topicReportXMLFile.value != null) {
+				PrintWriter out = new PrintWriter(topicReportXMLFile.value);
+				lda.topicXMLReport(out, topWords.value);
+				out.close();
+			}
+
 			if (stateFile.value != null)
 				lda.printState (new File(stateFile.value));
 			if (docTopicsFile.value != null)
