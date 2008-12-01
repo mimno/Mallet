@@ -586,7 +586,14 @@ public class HMM extends Transducer implements Serializable
 					State source = (HMM.State)ti.getSourceState();
 					Integer inputFeature = (Integer)ti.getInput();
 					int index = ti.getIndex();
-					emissionEstimator[index].increment (inputAlphabet.lookupIndex (inputFeature.intValue(), false), count);
+					
+					// gdruck - 11/25/08 
+					// inputFeature.intValue() was previously used as an argument to lookupIndex. Typically
+					// alphabet entries are Strings, not integers.  The new code uses the int value directly
+					// to increment the count.
+					// emissionEstimator[index].increment (inputAlphabet.lookupIndex (inputFeature.intValue(), false), count);
+					emissionEstimator[index].increment (inputFeature.intValue(), count);
+					
 					transitionEstimator[source.getIndex()].increment (source.destinationNames[index], count);
 				}
 				// TODO consider making a designated start state
