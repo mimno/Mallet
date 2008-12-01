@@ -14,6 +14,7 @@ import cc.mallet.types.MatrixOps;
 
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.OptimizationException;
 import cc.mallet.optimize.Optimizer;
 
 import cc.mallet.util.MalletLogger;
@@ -141,7 +142,7 @@ public class CRFTrainerByValueGradients extends TransducerTrainer implements Tra
                      +(System.currentTimeMillis()-startTime)/1000 + " secs.");
 				iterationCount++;
 				runEvaluators();
-			} catch (IllegalArgumentException e) {
+			} catch (OptimizationException e) {
         		// gsc: resetting the optimizer for specified number of times
 				e.printStackTrace();
 				logger.info ("Catching exception.");
