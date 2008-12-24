@@ -459,7 +459,7 @@ public class PagedInstanceList extends InstanceList
 				}
 			
 			for (int bi=beginIndex; bi <= endIndex; bi++) {
-				this.set(bi, null);
+				super.set(bi, null);
 				inMemory.set (bi, false);
 			}
 			logger.fine ("Swapping out page " + i);
@@ -489,7 +489,7 @@ public class PagedInstanceList extends InstanceList
 	{
 		if (!inMemory.get(index))
 			swapIn (index);
-		return (Instance) this.get (index);
+		return super.get (index);
 	}
     
   /** Replaces the <code>Instance</code> at position
@@ -499,7 +499,7 @@ public class PagedInstanceList extends InstanceList
   {
 		if (!inMemory.get(index))
 			swapIn (index);
-    return this.set(index, instance);
+    return super.set(index, instance);
   }
 
   /** Appends the instance to this list. Note that since memory for
