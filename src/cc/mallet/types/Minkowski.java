@@ -39,7 +39,7 @@ public class Minkowski implements Metric {
 
     }
     
-    /*  Gives the Minkowski distance between two vectors.
+    /**  Gives the Minkowski distance between two vectors.
      *
      *  distance(x,y) := \left( \Sum_i=0^d-1 \left| x_i - y_i \right|^q \right)^\frac{1}{q}
      *  
