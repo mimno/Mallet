@@ -31,15 +31,18 @@ public class NodeClusterSampleIterator extends ClusterSampleIterator {
 																		double positiveProportion,
 																		int numberSamples) {
 		super(clustering, random, positiveProportion, numberSamples);
+		this.random=random;
+		this.positiveProportion=positiveProportion;
+		this.numberSamples=numberSamples;
 	}
 	
 	public Instance next () {
 		AgglomerativeNeighbor neighbor = null;
 		
-		if (positiveCount < positiveTarget) { // Sample positive.
+		if (positiveCount < positiveTarget && nonsingletonClusters.length>0){ // Sample positive.
 			positiveCount++;
 			int label = nonsingletonClusters[random.nextInt(nonsingletonClusters.length)];
-
+			
 			int[] instances = clustering.getIndicesWithLabel(label);
 			int[] subcluster = sampleFromArray(instances, random, 2);
 			int[] cluster1 = new int[]{subcluster[random.nextInt(subcluster.length)]}; // Singleton.
