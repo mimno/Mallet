@@ -123,7 +123,7 @@ public class MEMM extends CRF implements Serializable
 			assert (!Double.isNaN (sum));
 			if (!Double.isInfinite (sum)) {
 				for (int i = 0; i < weights.length; i++)
-					weights[i] = sum;
+					weights[i] -= sum;
 			}
 		}
 
