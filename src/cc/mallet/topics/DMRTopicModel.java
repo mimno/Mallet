@@ -254,6 +254,14 @@ public class DMRTopicModel extends LDAHyper {
 		super.printTopWords(out, numWords, usingNewLines);
 	}
 
+	public void writeParameters(File parameterFile) throws IOException {
+		if (dmrParameters != null) {
+			PrintStream out = new PrintStream(parameterFile);
+			dmrParameters.print(out);
+			out.close();
+		}
+	}
+
     private static final long serialVersionUID = 1;
     private static final int CURRENT_SERIAL_VERSION = 0;
     private static final int NULL_INTEGER = -1;
@@ -268,7 +276,12 @@ public class DMRTopicModel extends LDAHyper {
             args.length > 2 ? InstanceList.load (new File(args[2])) : null;
 
         DMRTopicModel lda = new DMRTopicModel (numTopics);
-        lda.addInstances(training);
+		lda.setOptimizeInterval(100);
+		lda.setTopicDisplay(100, 10);
+		lda.addInstances(training);
 		lda.estimate();
+
+		lda.writeParameters(new File("dmr.parameters"));
+		lda.printState(new File("dmr.state.gz"));
     }
 }

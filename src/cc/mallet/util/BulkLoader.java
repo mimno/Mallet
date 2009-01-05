@@ -82,7 +82,9 @@ public class BulkLoader {
 		StringList2FeatureSequence sl2fs = new StringList2FeatureSequence(alphabet);
 		FeatureCountPipe featureCounter = new FeatureCountPipe(alphabet, null);
 
-		pipes.add(csl);
+		if (! preserveCase.value) {
+			pipes.add(csl);
+		}
 		pipes.add(st);
 		pipes.add(sl2fs);
 		pipes.add(featureCounter);
@@ -122,7 +124,9 @@ public class BulkLoader {
 		CharSequenceLowercase csl = new CharSequenceLowercase();
 		StringList2FeatureSequence sl2fs = new StringList2FeatureSequence(alphabet);
 
-		pipes.add(csl);
+		if (! preserveCase.value) {
+			pipes.add(csl);
+		}
 		pipes.add(prunedTokenizer);
 		pipes.add(sl2fs);
 
