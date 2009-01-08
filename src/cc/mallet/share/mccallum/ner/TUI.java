@@ -131,11 +131,11 @@ public class TUI
 	static boolean doingFeatureInduction = true;
 	static boolean doingClusteredFeatureInduction = false;
 
-	private static String CAPS = "[A-ZÁÉÍÓÚÀÈÌÒÙÇÑÏÜ]";
-	private static String LOW = "[a-zàèìòùáéíóúçñïü]";
-	private static String CAPSNUM = "[A-ZÁÉÍÓÚÀÈÌÒÙÇÑÏÜ0-9]";
-	private static String ALPHA = "[A-ZÁÉÍÓÚÀÈÌÒÙÇÑÏÜa-zàèìòùáéíóúçñïü]";
-	private static String ALPHANUM = "[A-ZÁÉÍÓÚÀÈÌÒÙÇÑÏÜa-zàèìòùáéíóúçñïü0-9]";
+	private static String CAPS = "[\\p{Lu}]";
+	private static String LOW = "[\\p{Ll}]";
+	private static String CAPSNUM = "[\\p{Lu}\\p{Nd}]";
+	private static String ALPHA = "[\\p{Lu}\\p{Ll}]";
+	private static String ALPHANUM = "[\\p{Lu}\\p{Ll}\\p{Nd}]";
 	private static String PUNT = "[,\\.;:?!()]";
 	private static String QUOTE = "[\"`']";
 	
