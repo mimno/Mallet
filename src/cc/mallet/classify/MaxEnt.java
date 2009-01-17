@@ -36,7 +36,7 @@ import cc.mallet.types.RankedFeatureVector;
 
 public class MaxEnt extends Classifier implements Serializable
 {
-	static final double DEFAULT_TEMPERATURE = 1.2;
+	static final double DEFAULT_TEMPERATURE = 1.0;
 	protected double [] parameters;										// indexed by <labelIndex,featureIndex>
 	protected int defaultFeatureIndex;
 	protected FeatureSelection featureSelection;

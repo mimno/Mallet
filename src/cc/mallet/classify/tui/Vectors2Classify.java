@@ -218,6 +218,10 @@ public abstract class Vectors2Classify
 	(Vectors2Classify.class, "output-classifier", "FILENAME", true, "classifier.mallet",
 	 "The filename in which to write the classifier after it has been trained.", null);
 
+/*	static CommandOption.String pipeFile = new CommandOption.String
+	(Vectors2Classify.class, "output-pipe", "FILENAME", true, "classifier_pipe.mallet",
+	 "The filename in which to write the classifier's instancePipe after it has been trained.", null);*/
+
 	static CommandOption.String inputFile = new CommandOption.String
 	(Vectors2Classify.class, "input", "FILENAME", true, "text.vectors",
 	 "The filename from which to read the list of training instances.  Use - for stdin.", null);
@@ -463,7 +467,7 @@ public abstract class Vectors2Classify
 																								filename);
 					}
 				}
-
+				
 				// New Reporting
 
                 // raw output

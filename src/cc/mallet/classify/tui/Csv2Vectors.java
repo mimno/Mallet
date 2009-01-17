@@ -119,96 +119,40 @@ public class Csv2Vectors {
 		
 		Pipe instancePipe;
 		InstanceList previousInstanceList = null;
-		
-		if (usePipeFromVectorsFile.wasInvoked()) {
+
+		if (!usePipeFromVectorsFile.wasInvoked()) {
+			instancePipe = new SerialPipes (new Pipe[] {
+				new Target2Label (),
+				(keepSequenceBigrams.value
+				 ? (Pipe) new CharSequence2TokenSequence(CharSequenceLexer.LEX_NONWHITESPACE_CLASSES)
+				 : (Pipe) new CharSequence2TokenSequence(CharSequenceLexer.LEX_NONWHITESPACE_TOGETHER)),
+				(preserveCase.value
+				 ? (Pipe) new Noop()
+				 : (Pipe) new TokenSequenceLowercase()),
+				(keepSequenceBigrams.value
+				 ? (Pipe) new TokenSequenceRemoveNonAlpha(true)
+				 : (Pipe) new Noop()),
+				 //new PrintInput(),
+				(removeStopWords.value
+				 ? (Pipe) new TokenSequenceRemoveStopwords(false, keepSequenceBigrams.value)
+				 : (Pipe) new Noop()),
+				(keepSequenceBigrams.value
+				 ? (Pipe) new TokenSequence2FeatureSequenceWithBigrams()
+				 : (Pipe) new TokenSequence2FeatureSequence()),
+		        (keepSequence.value || keepSequenceBigrams.value
+				 ? (Pipe) new Noop()
+				 : (Pipe) new FeatureSequence2AugmentableFeatureVector()), 
+				// or FeatureSequence2FeatureVector
+				//new PrintInputAndTarget ()
+			});
+		}
+		else {
+
 
 			// Ignore all options, use a previously created pipe
 
 			previousInstanceList = InstanceList.load (usePipeFromVectorsFile.value);
 			instancePipe = previousInstanceList.getPipe();			
-		}
-		else {
-			
-			// Build a new pipe
-
-			ArrayList<Pipe> pipeList = new ArrayList<Pipe>();
-
-			// Convert the "target" object into a numeric index
-			//  into a LabelAlphabet.
-			if (labelOption.value > 0) {
-				// If the label field is not used, adding this
-				//  pipe will cause "Alphabets don't match" exceptions.
-				pipeList.add(new Target2Label());
-			}
-			
-			//
-			// Tokenize the input: first compile the tokenization pattern
-			// 
-
-			Pattern tokenPattern = null;
-
-			if (keepSequenceBigrams.value) {
-				// We do not want to record bigrams across punctuation,
-				//  so we need to keep non-word tokens.
-				tokenPattern = CharSequenceLexer.LEX_NONWHITESPACE_CLASSES;
-			}
-			else {
-				// Otherwise, try to compile the regular expression pattern.
-				
-				try {
-					tokenPattern = Pattern.compile(tokenRegex.value);
-				} catch (PatternSyntaxException pse) {
-					System.err.println("The token regular expression (" + tokenRegex.value + 
-									   ") was invalid: " + pse.getMessage());
-					System.exit(1);
-				}
-			}
-			
-			// Add the tokenizer
-			pipeList.add(new CharSequence2TokenSequence(tokenPattern));
-
-			// 
-			// Normalize the input as necessary
-			// 
-			
-			if (! preserveCase.value()) {
-				pipeList.add(new TokenSequenceLowercase());
-			}
-			
-			if (keepSequenceBigrams.value) {
-				// Remove non-word tokens, but record the fact that they
-				//  were there.
-				pipeList.add(new TokenSequenceRemoveNonAlpha(true));
-			}
-			
-			if (removeStopWords.value) {
-				pipeList.add(new TokenSequenceRemoveStopwords(false,
-															  keepSequenceBigrams.value));
-			}
-
-			// 
-			// Convert tokens to numeric indices into the Alphabet
-			//
-			
-			if (keepSequenceBigrams.value) {
-				// Output is feature sequences with bigram features
-				pipeList.add(new TokenSequence2FeatureSequenceWithBigrams());
-			}
-			else if (keepSequence.value) {
-				// Output is unigram feature sequences
-				pipeList.add(new TokenSequence2FeatureSequence());
-			}
-			else {
-				// Output is feature vectors (no sequence information)
-				pipeList.add(new TokenSequence2FeatureSequence());
-				pipeList.add(new FeatureSequence2AugmentableFeatureVector());
-			}
-
-			if (printOutput.value) {
-				pipeList.add(new PrintInputAndTarget());
-			}
-
-			instancePipe = new SerialPipes(pipeList);
 		}
 
 		//

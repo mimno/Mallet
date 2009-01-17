@@ -88,5 +88,47 @@ public class Minkowski implements Metric {
 	    return Math.pow( dist, 1/q);
     }
 
-	    
+	public double euclideanDistance(SparseVector a, SparseVector b)    {
+		double dist = 0;
+		double diff;
+		
+		if (a==null || b==null)
+		    throw new IllegalArgumentException("Distance from a null vector is undefined.");
+		int aLen = a.numLocations();
+		int bLen = b.numLocations();
+		int ia = 0;
+		int ib = 0;
+		int indicea, indiceb;
+		while (ia < aLen && ib < bLen) {
+			indicea = a.indexAtLocation(ia);
+			indiceb = b.indexAtLocation(ib);
+			if(indicea < indiceb) {
+				diff = a.valueAtLocation(ia);
+				ia ++;
+			}
+			else {
+				if(indicea == indiceb) {
+					diff = Math.abs(a.valueAtLocation(ia) - b.valueAtLocation(ib));
+					ia ++;
+					ib ++;
+				}
+				else
+				{
+					diff = b.valueAtLocation(ib);
+					ib ++;
+				}
+			}
+			dist += diff * diff;
+		}
+		while(ia < aLen) {
+			diff = a.valueAtLocation(ia);
+			dist += diff * diff;
+		}
+		while(ib < bLen) {
+			diff = b.valueAtLocation(ib);
+			dist += diff * diff;
+		}
+		dist = Math.sqrt(dist);
+		return dist;
+	}
 }

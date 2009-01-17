@@ -894,6 +894,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
 	
 	
 	protected void sortIndices ()
+	//public void sortIndices () //modified by Limin Yao
 	{
 		if (indices == null)
 			// It's dense, and thus by definition sorted.
