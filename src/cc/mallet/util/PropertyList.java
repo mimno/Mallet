@@ -113,9 +113,13 @@ public class PropertyList implements Serializable
 	{
 		return new Iterator (this);
 	}
+	
+	public static PropertyList sumDuplicateKeyValues (PropertyList pl ) {
+		return sumDuplicateKeyValues(pl,false);
+	}
 
 	// culotta 2/02/04: to increment counts of properties values.
-	public static PropertyList sumDuplicateKeyValues (PropertyList pl) {
+	public static PropertyList sumDuplicateKeyValues (PropertyList pl, boolean ignoreZeros) {
 		if (!(pl instanceof NumericProperty))
 			throw new IllegalArgumentException ("PropertyList must be Numeric to sum values");
 		HashMap key2value = new HashMap ();
@@ -135,6 +139,8 @@ public class PropertyList implements Serializable
 		while (hashIter.hasNext()) { // create new property list
 			String key = (String) hashIter.next();
 			double val = ((Double)key2value.get (key)).doubleValue();
+			if(ignoreZeros && val==0.0)
+				continue;
 			ret = PropertyList.add (key, val, ret);
 		}
 		return ret;
