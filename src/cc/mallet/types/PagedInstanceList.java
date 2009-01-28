@@ -389,7 +389,7 @@ public class PagedInstanceList extends InstanceList
 					inst.lock();
 					if (inMemory.get(newIndex))
 						throw new IllegalStateException (newIndex + " already in memory! ");
-					this.set (newIndex, inst);
+					super.set (newIndex, inst);
 					inMemory.set (newIndex);
 					if (newIndex == size()-1) // for last bin
 						break;
