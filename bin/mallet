@@ -11,7 +11,7 @@ cp=$malletdir/classes:$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
 
 MEMORY=1g
 
-JAVA_COMMAND="/usr/java/jdk1.5/bin/java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath $cp"
+JAVA_COMMAND="java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath $cp"
 
 CMD=$1
 shift
