@@ -8,10 +8,8 @@
 package cc.mallet.optimize.tests;
 
 import cc.mallet.optimize.*;
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 
 /**
  * Unit Test for class TestMaximizer.java
@@ -83,6 +81,20 @@ public class TestOptimizer extends TestCase {
 		Optimizer bfgs = new LimitedMemoryBFGS(poly);
 		bfgs.optimize();
 		assertEquals(5.0 / 6.0, poly.params[0], 1e-3);
+	}
+
+	public void testOrthantWiseLBFGSWithoutL1() {
+		SimplePoly poly = new SimplePoly();
+		Optimizer bfgs = new OrthantWiseLimitedMemoryBFGS(poly);
+		bfgs.optimize();
+		assertEquals(5.0 / 6.0, poly.params[0], 1e-3);
+	}
+
+	public void testOrthantWiseLBFGSWithL1() {
+		SimplePoly poly = new SimplePoly();
+		Optimizer bfgs = new OrthantWiseLimitedMemoryBFGS(poly, 3.0);
+		bfgs.optimize();
+		assertEquals(2.0 / 6.0, poly.params[0], 1e-3);
 	}
 
 	public void testConjugateGradient() {
