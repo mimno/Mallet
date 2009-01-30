@@ -28,7 +28,7 @@ import cc.mallet.util.PropertyList;
  * A representation of a piece of text, usually a single word, to which we can attach properties.
  */
 
-public class TokenSequence extends ArrayList<Token> implements Sequence<Token>, Serializable {
+public class TokenSequence extends ArrayList<Token> implements Sequence, Serializable {
 	//ArrayList tokens;
 	PropertyList properties = null;				// for arbitrary properties
 
