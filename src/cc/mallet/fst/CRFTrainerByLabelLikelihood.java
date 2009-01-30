@@ -97,6 +97,10 @@ public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements Tr
 		if (ocrf == null || ocrf.trainingSet != trainingSet) {
 			//ocrf = new OptimizableCRF (crf, trainingSet);
 			ocrf = new CRFOptimizableByLabelLikelihood(crf, trainingSet);
+			ocrf.setGaussianPriorVariance(gaussianPriorVariance);
+			ocrf.setHyperbolicPriorSharpness(hyperbolicPriorSharpness);
+			ocrf.setHyperbolicPriorSlope(hyperbolicPriorSlope);
+			ocrf.setUseHyperbolicPrior(usingHyperbolicPrior);
 			opt = null;
 		}
 		return ocrf;
