@@ -167,6 +167,8 @@ public class OrthantWiseLimitedMemoryBFGS implements Optimizer {
 		double sumAbsWt = 0;
 		if (l1Weight > 0) {
 			for (double param : parameters) {
+				if (Double.isInfinite(param))
+					continue;
 				sumAbsWt += Math.abs(param) * l1Weight;
 			}
 		}
@@ -181,6 +183,7 @@ public class OrthantWiseLimitedMemoryBFGS implements Optimizer {
 	 */
 	private void evalGradient() {
 		optimizable.getValueGradient(grad);
+		adjustGradForInfiniteParams(grad);
 		MatrixOps.timesEquals(grad, -1.0);
 	}
 
@@ -211,6 +214,13 @@ public class OrthantWiseLimitedMemoryBFGS implements Optimizer {
 		}
 
 		storeSrcInDest(direction, steepestDescentDirection);
+	}
+
+	private void adjustGradForInfiniteParams(double d[]) {
+		for (int i = 0; i < parameters.length; i++) {
+			if (Double.isInfinite(parameters[i]))
+				d[i] = 0;
+		}
 	}
 
 	/**
@@ -290,8 +300,19 @@ public class OrthantWiseLimitedMemoryBFGS implements Optimizer {
 		double rho = 0.0;
 		double yDotY = 0.0;
 		for (int i = 0; i < parameters.length; i++) {
-			nextS[i] = parameters[i] - oldParameters[i];
-			nextY[i] = grad[i] - oldGrad[i];
+			if (Double.isInfinite(parameters[i])
+					&& Double.isInfinite(oldParameters[i])
+					&& parameters[i] * oldParameters[i] > 0)
+				nextS[i] = 0;
+			else
+				nextS[i] = parameters[i] - oldParameters[i];
+
+			if (Double.isInfinite(grad[i]) && Double.isInfinite(oldGrad[i])
+					&& grad[i] * oldGrad[i] > 0)
+				nextY[i] = 0;
+			else
+				nextY[i] = grad[i] - oldGrad[i];
+
 			rho += nextS[i] * nextY[i];
 			yDotY += nextY[i] * nextY[i];
 		}
