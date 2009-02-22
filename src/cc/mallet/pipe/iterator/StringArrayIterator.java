@@ -30,7 +30,7 @@ public class StringArrayIterator implements Iterator<Instance>
 	public Instance next ()
 	{
 		URI uri = null;
-		try { uri = new URI ("array:" + index++); }
+		try { uri = new URI ("array:" + index); }
 		catch (Exception e) { e.printStackTrace(); throw new IllegalStateException(); }
 		return new Instance (data[index++], null, uri, null);
 	}
