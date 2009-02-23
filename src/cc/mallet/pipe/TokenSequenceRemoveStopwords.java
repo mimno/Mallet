@@ -727,8 +727,9 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		//"concludes",
 		//"based",
 		//"approach"
-		
+	};	
 		//stopwords for french, added by Limin Yao
+	static final String[] stopwordsFrench = {
 		"fut",
 		"S",
 		"ces",

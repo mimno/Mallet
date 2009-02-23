@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import cc.mallet.optimize.ConjugateGradient;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
@@ -86,13 +87,32 @@ public class RankMaxEntTrainer extends MaxEntTrainer
 		RankMaxEntTrainer.MaximizableTrainer mt =
 			new RankMaxEntTrainer.MaximizableTrainer (trainingSet, (RankMaxEnt)initialClassifier);
 		Optimizer maximizer = new LimitedMemoryBFGS(mt);
-		maximizer.optimize (); // XXX given the loop below, this seems wrong.
+
+	//	maximizer.optimize (); // XXX given the loop below, this seems wrong.
  		boolean converged;
 
-	 	for (int i = 0; i < numIterations; i++) {
-			converged = maximizer.optimize (1);
+ 		for (int i = 0; i < numIterations; i++) {
+			try {
+				converged = maximizer.optimize (1);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+				logger.info ("Catching exception; saying converged.");
+				converged = true;
+			}
 			if (converged)
-			 	break;
+				break;
+		}
+ 		if (numIterations == Integer.MAX_VALUE) {
+			// Run it again because in our and Sam Roweis' experience, BFGS can still
+			// eke out more likelihood after first convergence by re-running without
+			// being restricted by its gradient history.
+			opt = new ConjugateGradient(mt);
+			try {
+				opt.optimize ();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+				logger.info ("Catching exception; saying converged.");
+			}
 		}
 		progressLogger.info("\n"); //  progess messages are on one line; move on.
 		return mt.getClassifier ();

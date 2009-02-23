@@ -16,6 +16,7 @@ import cc.mallet.optimize.ConjugateGradient;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
+import cc.mallet.optimize.OrthantWiseLimitedMemoryBFGS;
 import cc.mallet.optimize.tests.*;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
@@ -58,14 +59,15 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	public static final String INFORMATION_GAIN = "info";
 
 	// xxx Why does TestMaximizable fail when this variance is very small?
-	//static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
+	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
 	//modified by Limin Yao, to fix overfitting in training data
-	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 0.1;
+	//static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 0.1;
+	static final double DEFAULT_L1_WEIGHT = 1.0;
 	static final Class DEFAULT_MAXIMIZER_CLASS = LimitedMemoryBFGS.class;
 
 	double gaussianPriorVariance = DEFAULT_GAUSSIAN_PRIOR_VARIANCE;
 	Class maximizerClass = DEFAULT_MAXIMIZER_CLASS;
-	
+
 	InstanceList trainingSet = null;
 	MaxEnt initialClassifier;
 	//MaxEnt me = null;  Use ome.getClassifier() instead.
@@ -76,20 +78,20 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	public MaxEntTrainer ()
 	{
 	}
-	
+
 	public MaxEntTrainer (MaxEnt theClassifierToTrain) {
 		this.initialClassifier = theClassifierToTrain;
 	}
 
 	/** Constructs a trainer with a parameter to avoid overtraining.  1.0 is
-	 * usually a reasonable default value. */	
+	 * usually a reasonable default value. */
 	public MaxEntTrainer (double gaussianPriorVariance)
 	{
 		this.gaussianPriorVariance = gaussianPriorVariance;
 	}
-	
-	
-	
+
+
+
 	public MaxEnt getClassifier () {
 		if (ome != null)
 			return ome.getClassifier();
@@ -98,7 +100,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 //			me = new MaxEnt (trainingSet.getPipe(), (double[])null);
 //		return me;
 	}
-	
+
 	public void setClassifier (MaxEnt theClassifierToTrain) {
 		// Is this necessary?  What is the caller is about to set the training set to something different? -akm
 		assert (trainingSet == null || Alphabet.alphabetsMatch(theClassifierToTrain, trainingSet));
@@ -108,22 +110,22 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 			opt = null;
 		}
 	}
-	
+
 	public Optimizable getOptimizable () {
 		return ome;
 	}
-	
+
 	public MaxEntOptimizableByLabelLikelihood getOptimizable (InstanceList trainingSet) {
 		return getOptimizable(trainingSet, getClassifier());
 	}
-	
+
 	public MaxEntOptimizableByLabelLikelihood getOptimizable (InstanceList trainingSet, MaxEnt initialClassifier) {
 		if (trainingSet != this.trainingSet || this.initialClassifier != initialClassifier) {
 			this.trainingSet = trainingSet;
 			this.initialClassifier = initialClassifier;
 			if (ome == null || ome.trainingList != trainingSet) {
 				ome = new MaxEntOptimizableByLabelLikelihood (trainingSet, initialClassifier);
-				ome.setGaussianPriorVariance(gaussianPriorVariance);  
+				ome.setGaussianPriorVariance(gaussianPriorVariance);
 				//modified by Limin Yao
 				//ome.setHyperbolicPriorSlope(DEFAULT_GAUSSIAN_PRIOR_VARIANCE);
 				opt = null;
@@ -139,15 +141,26 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 		return opt;
 	}
 
+	//commented by Limin Yao, use L1 regularization instead
 	public Optimizer getOptimizer (InstanceList trainingSet) {
-		if (trainingSet != this.trainingSet || ome == null) { 
+		if (trainingSet != this.trainingSet || ome == null) {
 			getOptimizable(trainingSet);
 			opt = null;
-		}	
+		}
 		if (opt == null)
 			opt = new LimitedMemoryBFGS (ome);
 		return opt;
 	}
+
+/*	public Optimizer getOptimizer(InstanceList trainingSet) {
+		if (trainingSet != this.trainingSet || ome == null) {
+			getOptimizable(trainingSet);
+			opt = null;
+		}
+		if (opt == null || ome != opt.getOptimizable())
+			opt = new OrthantWiseLimitedMemoryBFGS(ome, DEFAULT_L1_WEIGHT);
+		return opt;
+	}*/
 
 	/**
 	 * Specifies the maximum number of iterations to run during a single call
@@ -161,7 +174,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 		numIterations = i;
 		return this;
 	}
-	
+
 	public int getIteration () {
 		if (ome == null)
 			return 0;
@@ -169,7 +182,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 		  return Integer.MAX_VALUE;
 //			return opt.getIteration ();
 	}
-	
+
 	/**
 	 * Sets a parameter to prevent overtraining.  A smaller variance for the prior
 	 * means that feature weights are expected to hover closer to 0, so extra
@@ -369,7 +382,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 
 			FeatureInducer klfi =
 				new FeatureInducer (gainFactory,
-						errorInstances, 
+						errorInstances,
 						numFeaturesPerFeatureInduction,
 						2*numFeaturesPerFeatureInduction,
 						2*numFeaturesPerFeatureInduction);
@@ -405,7 +418,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 			}
 
 			maxent.parameters = newParameters;
-			maxent.defaultFeatureIndex = inputAlphabet.size();            
+			maxent.defaultFeatureIndex = inputAlphabet.size();
 		}
 
 		// Finished feature induction

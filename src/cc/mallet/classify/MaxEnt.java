@@ -80,13 +80,13 @@ public class MaxEnt extends Classifier implements Serializable
 	public double[] getParameters () {
 		return parameters;
 	}
-	
+
 	public int getNumParameters () {
 		assert (this.instancePipe.getDataAlphabet() != null);
 		assert (this.instancePipe.getTargetAlphabet() != null);
 		return MaxEnt.getNumParameters(this.instancePipe);
 	}
-	
+
 	public static int getNumParameters (Pipe instancePipe) {
 		return (instancePipe.getDataAlphabet().size() + 1) * instancePipe.getTargetAlphabet().size();
 	}
@@ -103,7 +103,7 @@ public class MaxEnt extends Classifier implements Serializable
 	public FeatureSelection getFeatureSelection() {
 		return featureSelection;
 	}
-	
+
 	public MaxEnt setFeatureSelection (FeatureSelection fs) {
 		featureSelection = fs;
 		return this;
@@ -113,7 +113,7 @@ public class MaxEnt extends Classifier implements Serializable
 	public FeatureSelection[] getPerClassFeatureSelection(){
 		return perClassFeatureSelection;
 	}
-	
+
 	public MaxEnt setPerClassFeatureSelection (FeatureSelection[] fss){
 		this.perClassFeatureSelection = fss;
 		return this;
@@ -131,7 +131,7 @@ public class MaxEnt extends Classifier implements Serializable
 
 	public void getUnnormalizedClassificationScores (Instance instance, double[] scores)
 	{
-		//  arrayOutOfBounds if pipe has grown since training 
+		//  arrayOutOfBounds if pipe has grown since training
 		//        int numFeatures = getAlphabet().size() + 1;
 		int numFeatures = this.defaultFeatureIndex + 1;
 
@@ -208,8 +208,8 @@ public class MaxEnt extends Classifier implements Serializable
 		print(System.out);
 	}
 
-	public void print (PrintStream out) 
-	{		
+	public void print (PrintStream out)
+	{
 		final Alphabet dict = getAlphabet();
 		final LabelAlphabet labelDict = getLabelAlphabet();
 
@@ -227,23 +227,21 @@ public class MaxEnt extends Classifier implements Serializable
 			}
 		}
 	}
-	
+
 	//printRank, added by Limin Yao
-	public void printRank (PrintWriter out) 
-	{		
+	public void printRank (PrintWriter out)
+	{
 		final Alphabet dict = getAlphabet();
 		final LabelAlphabet labelDict = getLabelAlphabet();
 
 		int numFeatures = dict.size() + 1;
 		int numLabels = labelDict.size();
-
-		// Include the feature weights according to each label
+	// Include the feature weights according to each label
 		RankedFeatureVector rfv;
 		double[] weights = new double[numFeatures-1]; // do not deal with the default feature
 		for (int li = 0; li < numLabels; li++) {
 			out.print ("FEATURES FOR CLASS "+labelDict.lookupObject (li) + " ");
 			for (int i = 0; i < defaultFeatureIndex; i++) {
-				Object name = dict.lookupObject (i);
 				double weight = parameters [li*numFeatures + i];
 				weights[i] = weight;
 			}
@@ -252,9 +250,9 @@ public class MaxEnt extends Classifier implements Serializable
 			out.println (" <default> "+parameters [li*numFeatures + defaultFeatureIndex] + " ");
 		}
 	}
-	
-	public void printExtremeFeatures (PrintWriter out,int num) 
-	{		
+
+	public void printExtremeFeatures (PrintWriter out,int num)
+	{
 		final Alphabet dict = getAlphabet();
 		final LabelAlphabet labelDict = getLabelAlphabet();
 
@@ -274,11 +272,11 @@ public class MaxEnt extends Classifier implements Serializable
 			rfv = new RankedFeatureVector(dict,weights);
 			rfv.printTopK(out,num);
 			out.print (" <default> "+parameters [li*numFeatures + defaultFeatureIndex] + " ");
-		//	rfv.printLowerK(out, num);
+			rfv.printLowerK(out, num);
 			out.println();
 		}
 	}
-	
+
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 1;
 	static final int NULL_INTEGER = -1;

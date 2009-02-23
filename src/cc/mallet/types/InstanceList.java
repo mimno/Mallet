@@ -260,9 +260,13 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 	// TODO This method should be renamed addPiped(Iterator<Instance> ii)
 	public void addThruPipe (Iterator<Instance> ii)
 	{
+		//for debug
 		Iterator<Instance> pipedInstanceIterator = pipe.newIteratorFrom(ii);
 		while (pipedInstanceIterator.hasNext())
+		{	
 			add (pipedInstanceIterator.next());
+		    //System.out.println("Add instance " + pipedInstanceIterator.next().getName());
+		}
 	}
 	
 	// gsc: method to add one instance at a time 

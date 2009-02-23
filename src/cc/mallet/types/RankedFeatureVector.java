@@ -129,6 +129,39 @@ public class RankedFeatureVector extends FeatureVector
 		}
 	}
 
+	//added by Limin Yao, rank the elements ascendingly, the smaller is in the front
+	protected void setReverseRankOrder (int extent, boolean reset)
+	{
+		int sortExtent;
+		// Set the number of cells to sort, making sure we don't go past the max.
+		// Since we are using insertion sort, sorting n-1 sorts the whole array.
+		sortExtent = (extent >= values.length) ? values.length - 1: extent;
+		if (sortedTo == SORTINIT || reset) { // reinitialize and sort
+			this.rankOrder = new int[values.length];
+			for (int i = 0; i < rankOrder.length; i++) {
+				rankOrder[i] = i;
+				assert (!Double.isNaN(values[i]));
+			}
+		}
+		// Selection sort
+		for (int i = sortedTo+1; i <= sortExtent; i++) {
+			double min = values[rankOrder[i]];
+			int minIndex = i;
+			for(int j = i+1; j < rankOrder.length; j++) {
+				if (values[rankOrder[j]] < min) {
+					min = values[rankOrder[j]];
+					minIndex = j;
+				}
+			}
+			//swap
+			int r = rankOrder[minIndex];
+			rankOrder[minIndex] = rankOrder[i];
+			rankOrder[i] = r;
+			sortedTo = i;
+		}
+	}
+
+	
 	protected void setRankOrder (int extent) {
 		setRankOrder(extent, false);
 	}
@@ -190,6 +223,7 @@ public class RankedFeatureVector extends FeatureVector
 		setRankOrder (rank);
 		return indexAtLocation(rankOrder[rank]); // was return rankOrder[rank]
 	}
+	
 
 	public Object getObjectAtRank (int rank)
 	{
@@ -212,6 +246,7 @@ public class RankedFeatureVector extends FeatureVector
 		}
 		return values[rankOrder[rank]];
 	}
+	
 
   /**
    * Prints a human-readable version of this vector, with features listed in ranked order.
@@ -253,9 +288,8 @@ public class RankedFeatureVector extends FeatureVector
   public void printLowerK (PrintWriter out, int num)
   {
 	  int length = numLocations();
-	  if(num>length)
-		  num=length;
-    for (int rank = length - num; rank < length; rank++) {
+	  assert(num < length);
+    for (int rank = length-num ; rank < length; rank++) {
       int idx = getIndexAtRank (rank);
       double val = getValueAtRank (rank);
       Object obj = dictionary.lookupObject (idx);

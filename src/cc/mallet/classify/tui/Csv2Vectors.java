@@ -43,6 +43,10 @@ public class Csv2Vectors {
 		(Csv2Vectors.class, "output", "FILE", true, new File("text.vectors"),
 		 "Write the instance list to this file; Using - indicates stdout.", null);
 
+	static CommandOption.File pipeFile = new CommandOption.File
+	(Csv2Vectors.class, "pipe", "FILE", true, new File("text.vectors"),
+	 "Write the instance list to this file; Using - indicates stdout.", null);
+
 	static CommandOption.String lineRegex = new CommandOption.String
 		(Csv2Vectors.class, "line-regex", "REGEX", true, "^(\\S*)[\\s,]*(\\S*)[\\s,]*(.*)$",
 		 "Regular expression containing regex-groups for label, name and data.", null);
@@ -172,14 +176,15 @@ public class Csv2Vectors {
 		// 
 		// Read instances from the file
 		//
-
+        System.out.println("Load data from the pipe " + inputFile.valueToString());
+        System.out.println("The output file is " + outputFile.valueToString());
 		instances.addThruPipe (new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
 												dataOption.value, labelOption.value, nameOption.value));
 		
 		// 
 		// Save instances to output file
 		//
-
+		System.out.println("Save instances to the file system!");
 		ObjectOutputStream oos;
 		if (outputFile.value.toString().equals ("-")) {
 			oos = new ObjectOutputStream(System.out);
@@ -206,6 +211,12 @@ public class Csv2Vectors {
 			oos.writeObject(previousInstanceList);
 			oos.close();
 
+		}
+		
+		if(pipeFile.wasInvoked()){
+			oos = new ObjectOutputStream(new FileOutputStream(pipeFile.value));
+			oos.writeObject(instancePipe);
+			oos.close();
 		}
 	}
 }

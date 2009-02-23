@@ -202,7 +202,7 @@ public class LDAHyper implements Serializable {
 		this.stateFilename = filename;
 	}
 	
-	private int instanceLength (Instance instance) {
+	protected int instanceLength (Instance instance) {
 		return ((FeatureSequence)instance.getData()).size();
 	}
 	
@@ -281,7 +281,7 @@ public class LDAHyper implements Serializable {
 	 *  and create histograms for use in Dirichlet hyperparameter
 	 *  optimization.
 	 */
-	private void initializeHistogramsAndCachedValues() {
+	protected void initializeHistogramsAndCachedValues() {
 
 		int maxTokens = 0;
 		int totalTokens = 0;

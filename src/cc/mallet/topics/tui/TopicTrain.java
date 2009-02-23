@@ -10,7 +10,7 @@ import cc.mallet.topics.LDAStream;
 import cc.mallet.types.InstanceList;
 import cc.mallet.util.CommandOption;
 
-//This TUI first train a topic model, then infer topics for test instances
+//This TUI first train a topic model, and save the model to modelFile
 public class TopicTrain {
 
 	/**
@@ -148,24 +148,12 @@ public class TopicTrain {
 
 		LDAStream lda = null;
 
-	/*	if (inputFile.value != null) {
-			InstanceList instances = InstanceList.load (new File(inputFile.value));
-			System.out.println ("Data loaded.");
-			InstanceList lists[] = instances.split (new java.util.Random(2), new double[] {.8, .2});
-			lda=new LDAStream(numTopics.value, alpha.value, beta.value);
-			//lda.addInstances(instances);
-			lists[0].save(new File (inputFile.value + ".train.seq"));
-			lists[1].save(new File (inputFile.value + ".seq")); // for computing empirical likelihood
-			lda.addInstances(lists[0]);
-			lda.setTestingInstances( lists[1] );
-			}*/
-
 		if (inputFile.value != null) {
 			InstanceList instances = InstanceList.load (new File(inputFile.value));
 			System.out.println ("Training Data loaded.");
 			lda=new LDAStream(numTopics.value, alpha.value, beta.value);
 			lda.addInstances(instances);
-			}
+		}
 		if(testFile.value != null) {
 			InstanceList testing = InstanceList.load(new File(testFile.value));
 			lda.setTestingInstances(testing);
@@ -189,50 +177,27 @@ public class TopicTrain {
 
 		lda.estimate();
 		//save the model, we need typeTopicCounts and tokensPerTopic for empirical likelihood
-		lda.writeModel(new ObjectOutputStream (new FileOutputStream (inputFile.value + ".model")));
+		lda.write(new File (inputFile.value + ".model"));
 
 		if (topicKeysFile.value != null) {
 			lda.printTopWords(new File(topicKeysFile.value), topWords.value, false);
 		}
+		if (topicKeysFile.value != null) {
+			lda.printTopWords(new File(topicKeysFile.value), topWords.value, false);
+		}
 		if (topicTypesFile.value != null) {
-			lda.printTopicWords(new File(topicTypesFile.value), false, 1e-4);
+			lda.printPhi(new File(topicTypesFile.value), 1e-4);
 		}
 		if (stateFile.value != null) {
 			lda.printState (lda.getData(), new File(stateFile.value));
 		}
-
 		if (docTopicsFile.value != null) {
 			lda.printDocumentTopics(lda.getData(), new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
 									docTopicsThreshold.value, docTopicsMax.value);
 
-			lda.printSerialDocumentTopics(lda.getData(), new File(docTopicsFile.value + ".mallet"),
-					docTopicsThreshold.value, docTopicsMax.value);
-			lda.printTraining(lda.getData(),new File(inputFile.value + ".train"),
-					docTopicsThreshold.value, docTopicsMax.value); //pay attention to this modification, by Limin Yao
 		}
 
-
-		System.out.print("inference started!\n");
-		if(lda.getTestingInstance()!= null) {
-				lda.inference(infIterations.value);				
-		}
-
-
-		if (stateTestFile.value != null) {
-			lda.printState (lda.getTest(), new File(stateTestFile.value));
-		}
-		if (testDocTopicsFile.value != null) {
-			lda.printDocumentTopics(lda.getTest(), new PrintWriter (new FileWriter ((new File(testDocTopicsFile.value)))),
-									docTopicsThreshold.value, docTopicsMax.value);
-			lda.printSerialDocumentTopics(lda.getTest(), new File(testDocTopicsFile.value + ".mallet"),
-					docTopicsThreshold.value, docTopicsMax.value);
-			//
-		}
-		System.out.print("save inference output completed!\n");
-		if(lda.getTestingInstance() != null) {
-			lda.printTest(new File (testFile.value + ".test"));
-			System.out.print("convert test file to featurevector completed!\n");
-		}
+	
  	}
 
 }
