@@ -524,14 +524,19 @@ public class HMM extends Transducer implements Serializable {
 		return true;
 	}
 
+	private Alphabet getTransitionAlphabet() {
+		Alphabet transitionAlphabet = new Alphabet();
+		for (int i = 0; i < numStates(); i++)
+			transitionAlphabet.lookupIndex(getState(i).getName(), true);
+		return transitionAlphabet;
+	}
+
 	public void reset() {
 		emissionEstimator = new Multinomial.LaplaceEstimator[numStates()];
 		transitionEstimator = new Multinomial.LaplaceEstimator[numStates()];
 		emissionMultinomial = new Multinomial[numStates()];
 		transitionMultinomial = new Multinomial[numStates()];
-		Alphabet transitionAlphabet = new Alphabet();
-		for (int i = 0; i < numStates(); i++)
-			transitionAlphabet.lookupIndex(getState(i).getName(), true);
+		Alphabet transitionAlphabet = getTransitionAlphabet();
 		for (int i = 0; i < numStates(); i++) {
 			emissionEstimator[i] = new Multinomial.LaplaceEstimator(
 					inputAlphabet);
@@ -543,29 +548,31 @@ public class HMM extends Transducer implements Serializable {
 					getUniformArray(transitionAlphabet.size()),
 					transitionAlphabet);
 		}
+		initialMultinomial = new Multinomial(getUniformArray(transitionAlphabet
+				.size()), transitionAlphabet);
 		initialEstimator = new Multinomial.LaplaceEstimator(transitionAlphabet);
 	}
 
-	/**
-	 * @throws UnsupportedOperationException
-	 *             Not yet implemented
-	 * @throws IllegalStateException
-	 *             If transducer is not trainable
-	 */
 	public void estimate() {
+		Alphabet transitionAlphabet = getTransitionAlphabet();
 		initialMultinomial = initialEstimator.estimate();
+		initialEstimator = new Multinomial.LaplaceEstimator(transitionAlphabet);
 		for (int i = 0; i < numStates(); i++) {
 			State s = (State) getState(i);
 			emissionMultinomial[i] = emissionEstimator[i].estimate();
 			transitionMultinomial[i] = transitionEstimator[i].estimate();
 			s.setInitialWeight(initialMultinomial.logProbability(s.getName()));
+			// reset estimators
+			emissionEstimator[i] = new Multinomial.LaplaceEstimator(
+					inputAlphabet);
+			transitionEstimator[i] = new Multinomial.LaplaceEstimator(
+					transitionAlphabet);
 		}
 	}
 
 	/**
 	 * Trains a HMM without validation and evaluation.
 	 */
-	@Deprecated
 	public boolean train(InstanceList ilist) {
 		return train(ilist, (InstanceList) null, (InstanceList) null);
 	}
@@ -573,16 +580,11 @@ public class HMM extends Transducer implements Serializable {
 	/**
 	 * Trains a HMM with <tt>evaluator</tt> set to null.
 	 */
-	@Deprecated
 	public boolean train(InstanceList ilist, InstanceList validation,
 			InstanceList testing) {
 		return train(ilist, validation, testing, (TransducerEvaluator) null);
 	}
 
-	/**
-	 * Deprecated: use HMMTrainerByLikelihood instead
-	 */
-	@Deprecated
 	public boolean train(InstanceList ilist, InstanceList validation,
 			InstanceList testing, TransducerEvaluator eval) {
 		assert (ilist.size() > 0);
@@ -643,6 +645,33 @@ public class HMM extends Transducer implements Serializable {
 			emissionEstimator[index].increment(inputFtr, count);
 			transitionEstimator[src.getIndex()]
 					.increment(dest.getName(), count);
+		}
+	}
+
+	public class WeightedIncrementor implements Transducer.Incrementor {
+		double weight = 1.0;
+
+		public WeightedIncrementor(double wt) {
+			this.weight = wt;
+		}
+
+		public void incrementFinalState(Transducer.State s, double count) {
+		}
+
+		public void incrementInitialState(Transducer.State s, double count) {
+			initialEstimator.increment(s.getName(), weight * count);
+		}
+
+		public void incrementTransition(Transducer.TransitionIterator ti,
+				double count) {
+			int inputFtr = (Integer) ti.getInput();
+			State src = (HMM.State) ((TransitionIterator) ti).getSourceState();
+			State dest = (HMM.State) ((TransitionIterator) ti)
+					.getDestinationState();
+			int index = ti.getIndex();
+			emissionEstimator[index].increment(inputFtr, weight * count);
+			transitionEstimator[src.getIndex()].increment(dest.getName(),
+					weight * count);
 		}
 	}
 
