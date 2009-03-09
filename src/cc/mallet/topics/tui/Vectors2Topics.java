@@ -10,10 +10,7 @@ package cc.mallet.topics.tui;
 import cc.mallet.util.CommandOption;
 import cc.mallet.util.Randoms;
 import cc.mallet.types.InstanceList;
-import cc.mallet.topics.PAM4L;
-import cc.mallet.topics.TopicalNGrams;
-import cc.mallet.topics.LDA;
-import cc.mallet.topics.LDAHyper;
+import cc.mallet.topics.*;
 
 import java.io.*;
 
@@ -78,6 +75,10 @@ public class Vectors2Topics {
 	static CommandOption.Integer numTopics = new CommandOption.Integer
 		(Vectors2Topics.class, "num-topics", "INTEGER", true, 10,
 		 "The number of topics to fit.", null);
+
+	static CommandOption.Integer numThreads = new CommandOption.Integer
+		(Vectors2Topics.class, "num-threads", "INTEGER", true, 1,
+		 "The number of threads for parallel training.", null);
 
 	static CommandOption.Integer numIterations = new CommandOption.Integer
 		(Vectors2Topics.class, "num-iterations", "INTEGER", true, 1000,
@@ -159,8 +160,6 @@ public class Vectors2Topics {
 								  "A tool for estimating, saving and printing diagnostics for topic models, such as LDA.");
 		CommandOption.process (Vectors2Topics.class, args);
 
-		Object topicModel = null;
-		
 		if (usePAM.value) {
 			InstanceList ilist = InstanceList.load (new File(inputFile.value));
 			System.out.println ("Data loaded.");
@@ -177,8 +176,21 @@ public class Vectors2Topics {
 			if (docTopicsFile.value != null)
 				pam.printDocumentTopics (new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
 										 docTopicsThreshold.value, docTopicsMax.value);
-			topicModel = pam;
+
 			
+			if (outputModelFilename.value != null) {
+				assert (pam != null);
+				try {
+					ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
+					oos.writeObject (pam);
+					oos.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new IllegalArgumentException ("Couldn't write topic model to filename "+outputModelFilename.value);
+				}
+			}
+			
+
 		}
 		
 		else if (useNgrams.value) {
@@ -202,94 +214,110 @@ public class Vectors2Topics {
 			if (docTopicsFile.value != null)
 				tng.printDocumentTopics (new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
 										 docTopicsThreshold.value, docTopicsMax.value);
-			topicModel = tng;
+
+			if (outputModelFilename.value != null) {
+				assert (tng != null);
+				try {
+					ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
+					oos.writeObject (tng);
+					oos.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new IllegalArgumentException ("Couldn't write topic model to filename "+outputModelFilename.value);
+				}
+			}
 			
 		}
 		else {
 			// Start a new LDA topic model
 			
-			LDAHyper lda = null;
+			ParallelTopicModel topicModel = null;
 
 			if (inputModelFilename.value != null) {
 				
 				try {
-					ObjectInputStream ois = new ObjectInputStream (new FileInputStream(inputModelFilename.value));
-					lda = (LDAHyper) ois.readObject();
-					ois.close();
+					topicModel = ParallelTopicModel.read(new File(inputModelFilename.value));
 				} catch (Exception e) {
-					System.err.println("Unable to restore saved topic model " + inputModelFilename.value + ": " + e);
+					System.err.println("Unable to restore saved topic model " + 
+									   inputModelFilename.value + ": " + e);
 					System.exit(1);
 				}
-				
+				/*
 				// Loading new data is optional if we are restoring a saved state.
 				if (inputFile.value != null) {
 					InstanceList instances = InstanceList.load (new File(inputFile.value));
 					System.out.println ("Data loaded.");
 					lda.addInstances(instances);
 				}
+				*/
 			} 
 			else {
 				InstanceList training = InstanceList.load (new File(inputFile.value));
 				System.out.println ("Data loaded.");
-				lda = new LDAHyper (numTopics.value, alpha.value, beta.value);
-				lda.addInstances(training);
+				topicModel = new ParallelTopicModel (numTopics.value, alpha.value, beta.value);
+				topicModel.addInstances(training);
 			}
 
-			lda.setTopicDisplay(showTopicsInterval.value, topWords.value);
+			topicModel.setTopicDisplay(showTopicsInterval.value, topWords.value);
 
-			if (outputModelInterval.value != 0) {
-				lda.setModelOutput(outputModelInterval.value, outputModelFilename.value);
-			}
-
+			/*
             if (testingFile.value != null) {
-                lda.setTestingInstances( InstanceList.load(new File(testingFile.value)) );
+                topicModel.setTestingInstances( InstanceList.load(new File(testingFile.value)) );
             }
+			*/
 
-            lda.setNumIterations(numIterations.value);
-            lda.setOptimizeInterval(optimizeInterval.value);
+            topicModel.setNumIterations(numIterations.value);
+            topicModel.setOptimizeInterval(optimizeInterval.value);
 
             if (randomSeed.value != 0) {
-                lda.setRandomSeed(randomSeed.value);
+                topicModel.setRandomSeed(randomSeed.value);
             }
 
             if (outputStateInterval.value != 0) {
-                lda.setSaveState(outputStateInterval.value, stateFile.value);
+                topicModel.setSaveState(outputStateInterval.value, stateFile.value);
             }
 
-			lda.estimate();
+			if (outputModelInterval.value != 0) {
+				topicModel.setSaveSerializedModel(outputModelInterval.value, outputModelFilename.value);
+			}
+
+			topicModel.setNumThreads(numThreads.value);
+
+			topicModel.estimate();
 
 			if (topicKeysFile.value != null) {
-				lda.printTopWords(new File(topicKeysFile.value), topWords.value, false);
+				topicModel.printTopWords(new File(topicKeysFile.value), topWords.value, false);
 			}
+			/*
 			if (topicReportXMLFile.value != null) {
 				PrintWriter out = new PrintWriter(topicReportXMLFile.value);
-				lda.topicXMLReport(out, topWords.value);
+				topicModel.topicXMLReport(out, topWords.value);
 				out.close();
 			}
+			*/
 
 			if (stateFile.value != null)
-				lda.printState (new File(stateFile.value));
+				topicModel.printState (new File(stateFile.value));
 			if (docTopicsFile.value != null)
-				lda.printDocumentTopics(new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
-										docTopicsThreshold.value, docTopicsMax.value);
-			topicModel = lda;
+				topicModel.printDocumentTopics(new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
+											   docTopicsThreshold.value, docTopicsMax.value);
+
+
+			if (outputModelFilename.value != null) {
+				assert (topicModel != null);
+				try {
+					ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
+					oos.writeObject (topicModel);
+					oos.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new IllegalArgumentException ("Couldn't write topic model to filename "+outputModelFilename.value);
+				}
+			}
+			
+
 		}
 
-		if (outputModelFilename.value != null) {
-			assert (topicModel != null);
-			try {
-				ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
-				oos.writeObject (topicModel);
-				oos.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new IllegalArgumentException ("Couldn't write topic model to filename "+outputModelFilename.value);
-			}
-			if (topicModel instanceof LDA)
-				System.out.println("Model written.  Vocabulary size = "+((LDA)topicModel).getInstanceList().getDataAlphabet().size());
-			else
-				System.out.println("Model written.");  // TODO: support this for TNG also.
-		}
 	}
 
 }

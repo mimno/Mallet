@@ -57,7 +57,8 @@ public class WorkerRunnable implements Runnable {
 	protected int[][] topicDocCounts; // histogram of document/topic counts, indexed by <topic index, sequence position index>
 
 	boolean shouldSaveState = false;
-
+	boolean shouldBuildLocalCounts = true;
+	
 	protected Randoms random;
 	
 	public WorkerRunnable (int numTopics,
@@ -99,6 +100,16 @@ public class WorkerRunnable implements Runnable {
 		System.err.println("WorkerRunnable Thread: " + numTopics + " topics, " + topicBits + " topic bits, " + 
 						   Integer.toBinaryString(topicMask) + " topic mask");
 
+	}
+
+	/**
+	 *  If there is only one thread, we don't need to go through 
+	 *   communication overhead. This method asks this worker not
+	 *   to prepare local type-topic counts. The method should be
+	 *   called when we are using this code in a non-threaded environment.
+	 */
+	public void makeOnlyThread() {
+		shouldBuildLocalCounts = false;
 	}
 
 	public int[] getTokensPerTopic() { return tokensPerTopic; }
@@ -256,7 +267,9 @@ public class WorkerRunnable implements Runnable {
 									   true);
 			}
 			
-			buildLocalTypeTopicCounts();
+			if (shouldBuildLocalCounts) {
+				buildLocalTypeTopicCounts();
+			}
 
 			shouldSaveState = false;
 			isFinished = true;

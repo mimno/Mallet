@@ -28,7 +28,7 @@ import cc.mallet.util.Randoms;
  * @author David Mimno, Andrew McCallum
  */
 
-public class ParallelTopicModel {
+public class ParallelTopicModel implements Serializable {
 	
 	protected ArrayList<TopicAssignment> data;  // the training instances and their topic assignments
 	protected Alphabet alphabet; // the alphabet for the input data
@@ -66,6 +66,9 @@ public class ParallelTopicModel {
 
 	protected int saveStateInterval = 0;
 	protected String stateFilename = null;
+
+	protected int saveModelInterval = 0;
+	protected String modelFilename = null;
 	
 	protected Randoms random;
 	protected NumberFormat formatter;
@@ -147,6 +150,7 @@ public class ParallelTopicModel {
 		random = new Randoms(seed);
 	}
 
+	/** Interval for optimizing Dirichlet hyperparameters */
 	public void setOptimizeInterval(int interval) {
 		this.optimizeInterval = interval;
 	}
@@ -155,7 +159,8 @@ public class ParallelTopicModel {
 		this.numThreads = threads;
 	}
 
-	/** Define how often and where to save the state 
+	/** Define how often and where to save a text representation of the current state.
+	 *  Files are GZipped.
 	 *
 	 * @param interval Save a copy of the state every <code>interval</code> iterations.
 	 * @param filename Save the state to this file, with the iteration number as a suffix
@@ -164,6 +169,16 @@ public class ParallelTopicModel {
 		this.saveStateInterval = interval;
 		this.stateFilename = filename;
 	}
+
+	/** Define how often and where to save a serialized model.
+     *
+     * @param interval Save a serialized model every <code>interval</code> iterations.
+     * @param filename Save to this file, with the iteration number as a suffix
+     */
+    public void setSaveSerializedModel(int interval, String filename) {
+        this.saveModelInterval = interval;
+		this.modelFilename = filename;
+    }
 
 	public void addInstances (InstanceList training) {
 
@@ -463,31 +478,54 @@ public class ParallelTopicModel {
 		int docsPerThread = data.size() / numThreads;
 		int offset = 0;
 
-		for (int thread = 0; thread < numThreads; thread++) {
-			int[] runnableTotals = new int[numTopics];
-			System.arraycopy(tokensPerTopic, 0, runnableTotals, 0, numTopics);
-
-			int[][] runnableCounts = new int[numTypes][];
-			for (int type = 0; type < numTypes; type++) {
-				int[] counts = new int[typeTopicCounts[type].length];
-				System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
-				runnableCounts[type] = counts;
-			}
-
-			// some docs may be missing at the end due to integer division
-			if (thread == numThreads - 1) {
-				docsPerThread = data.size() - offset;
-			}
+		if (numThreads > 1) {
+		
+			for (int thread = 0; thread < numThreads; thread++) {
+				int[] runnableTotals = new int[numTopics];
+				System.arraycopy(tokensPerTopic, 0, runnableTotals, 0, numTopics);
+				
+				int[][] runnableCounts = new int[numTypes][];
+				for (int type = 0; type < numTypes; type++) {
+					int[] counts = new int[typeTopicCounts[type].length];
+					System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
+					runnableCounts[type] = counts;
+				}
+				
+				// some docs may be missing at the end due to integer division
+				if (thread == numThreads - 1) {
+					docsPerThread = data.size() - offset;
+				}
+				
+				runnables[thread] = new WorkerRunnable(numTopics,
+													   alpha, alphaSum, beta,
+													   new Randoms(), data,
+													   runnableCounts, runnableTotals,
+													   offset, docsPerThread);
+				
+				runnables[thread].initializeAlphaStatistics(docLengthCounts.length);
+				
+				offset += docsPerThread;
 			
-			runnables[thread] = new WorkerRunnable(numTopics,
-												   alpha, alphaSum, beta,
-												   new Randoms(), data,
-												   runnableCounts, runnableTotals,
-												   offset, docsPerThread);
+			}
+		}
+		else {
+			
+			// If there is only one thread, copy the typeTopicCounts
+			//  arrays directly, rather than allocating new memory.
 
-			runnables[thread].initializeAlphaStatistics(docLengthCounts.length);
+			runnables[0] = new WorkerRunnable(numTopics,
+											  alpha, alphaSum, beta,
+											  new Randoms(), data,
+											  typeTopicCounts, tokensPerTopic,
+											  offset, docsPerThread);
 
-			offset += docsPerThread;
+			runnables[0].initializeAlphaStatistics(docLengthCounts.length);
+
+			// If there is only one thread, we 
+			//  can avoid communications overhead.
+			// This switch informs the thread not to 
+			//  gather statistics for its portion of the data.
+			runnables[0].makeOnlyThread();
 		}
 
 		ExecutorService executor = Executors.newFixedThreadPool(numThreads);
@@ -505,87 +543,89 @@ public class ParallelTopicModel {
 				this.printState(new File(stateFilename + '.' + iteration));
 			}
 
-			// Submit runnables to thread pool
+			if (saveModelInterval != 0 && iteration % saveModelInterval == 0) {
+                this.write(new File(modelFilename + '.' + iteration));
+            }
 
-			for (int thread = 0; thread < numThreads; thread++) {
-				if (iteration > burninPeriod && optimizeInterval != 0 &&
-					iteration % saveSampleInterval == 0) {
-					runnables[thread].collectAlphaStatistics();
+			if (numThreads > 1) {
+			
+				// Submit runnables to thread pool
+				
+				for (int thread = 0; thread < numThreads; thread++) {
+					if (iteration > burninPeriod && optimizeInterval != 0 &&
+						iteration % saveSampleInterval == 0) {
+						runnables[thread].collectAlphaStatistics();
+					}
+					
+					executor.submit(runnables[thread]);
+					//runnables[thread].run();
 				}
 				
-				executor.submit(runnables[thread]);
-				//runnables[thread].run();
-			}
-			
-			// I'm getting some problems that look like 
-			//  a thread hasn't started yet when it is first
-			//  polled, so it appears to be finished. 
-			// This only occurs in very short corpora.
-			try {
-				Thread.sleep(20);
-			} catch (InterruptedException e) {
-				
-			}
-
-			boolean finished = false;
-			while (! finished) {
-
+				// I'm getting some problems that look like 
+				//  a thread hasn't started yet when it is first
+				//  polled, so it appears to be finished. 
+				// This only occurs in very short corpora.
 				try {
-					Thread.sleep(10);
+					Thread.sleep(20);
 				} catch (InterruptedException e) {
 					
 				}
-
-				finished = true;
-
-				// Are all the threads done?
-				for (int thread = 0; thread < numThreads; thread++) {
-					//System.out.println("thread " + thread + " done? " + runnables[thread].isFinished);
-					finished = finished && runnables[thread].isFinished;
-				}
-
-			}
-
-			if (iteration > burninPeriod && optimizeInterval != 0 &&
-				iteration % optimizeInterval == 0) {
-
-				optimizeAlpha(runnables);
 				
-				System.out.print("[O " + (System.currentTimeMillis() - iterationStart) + "] ");
-			}
-			
-			System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
-			
-			sumTypeTopicCounts(runnables);
-
-			System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
-
-			for (int thread = 0; thread < numThreads; thread++) {
-				int[] runnableTotals = runnables[thread].getTokensPerTopic();
-				System.arraycopy(tokensPerTopic, 0, runnableTotals, 0, numTopics);
-				
-				int[][] runnableCounts = runnables[thread].getTypeTopicCounts();
-				for (int type = 0; type < numTypes; type++) {
-					int[] targetCounts = runnableCounts[type];
-					int[] sourceCounts = typeTopicCounts[type];
-
-					int index = 0;
-					while (index < sourceCounts.length) {
-
-						if (sourceCounts[index] != 0) {
-							targetCounts[index] = sourceCounts[index];
-						}
-						else if (targetCounts[index] != 0) {
-							targetCounts[index] = 0;
-						}
-						else {
-							break;
-						}
-
-						index++;
+				boolean finished = false;
+				while (! finished) {
+					
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						
 					}
-					//System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
+					
+					finished = true;
+					
+					// Are all the threads done?
+					for (int thread = 0; thread < numThreads; thread++) {
+						//System.out.println("thread " + thread + " done? " + runnables[thread].isFinished);
+						finished = finished && runnables[thread].isFinished;
+					}
+					
 				}
+				
+				//System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
+				
+				sumTypeTopicCounts(runnables);
+				
+				//System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
+				
+				for (int thread = 0; thread < numThreads; thread++) {
+					int[] runnableTotals = runnables[thread].getTokensPerTopic();
+					System.arraycopy(tokensPerTopic, 0, runnableTotals, 0, numTopics);
+					
+					int[][] runnableCounts = runnables[thread].getTypeTopicCounts();
+					for (int type = 0; type < numTypes; type++) {
+						int[] targetCounts = runnableCounts[type];
+						int[] sourceCounts = typeTopicCounts[type];
+						
+						int index = 0;
+						while (index < sourceCounts.length) {
+							
+							if (sourceCounts[index] != 0) {
+								targetCounts[index] = sourceCounts[index];
+							}
+							else if (targetCounts[index] != 0) {
+								targetCounts[index] = 0;
+							}
+							else {
+								break;
+							}
+							
+							index++;
+						}
+						//System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
+					}
+				}
+			}
+			else {
+				runnables[0].run();
 			}
 
             long elapsedMillis = System.currentTimeMillis() - iterationStart;
@@ -596,6 +636,14 @@ public class ParallelTopicModel {
                 System.out.print((elapsedMillis/1000) + "s ");
 			}   
 
+			if (iteration > burninPeriod && optimizeInterval != 0 &&
+				iteration % optimizeInterval == 0) {
+
+				optimizeAlpha(runnables);
+				
+				System.out.print("[O " + (System.currentTimeMillis() - iterationStart) + "] ");
+			}
+			
 			if (iteration % 10 == 0) {
 				System.out.println ("<" + iteration + "> ");
 				if (printLogLikelihood) System.out.println (modelLogLikelihood());
@@ -623,7 +671,7 @@ public class ParallelTopicModel {
 	}
 	
 	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
-
+		
 		FeatureCounter[] wordCountsPerTopic = new FeatureCounter[numTopics];
 
 		for (int topic = 0; topic < numTopics; topic++) {
@@ -874,6 +922,125 @@ public class ParallelTopicModel {
 
 
 		return logLikelihood;
+	}
+
+	// Serialization
+
+	private static final long serialVersionUID = 1;
+	private static final int CURRENT_SERIAL_VERSION = 0;
+	private static final int NULL_INTEGER = -1;
+
+	private void writeObject (ObjectOutputStream out) throws IOException {
+		out.writeInt (CURRENT_SERIAL_VERSION);
+		
+		out.writeObject(data);
+		out.writeObject(alphabet);
+		out.writeObject(topicAlphabet);
+
+		out.writeInt(numTopics);
+
+		out.writeInt(topicMask);
+		out.writeInt(topicBits);
+
+		out.writeInt(numTypes);
+
+		out.writeObject(alpha);
+		out.writeDouble(alphaSum);
+		out.writeDouble(beta);
+		out.writeDouble(betaSum);
+
+		out.writeObject(typeTopicCounts);
+		out.writeObject(tokensPerTopic);
+
+		out.writeObject(docLengthCounts);
+		out.writeObject(topicDocCounts);
+
+		out.writeInt(numIterations);
+		out.writeInt(burninPeriod);
+		out.writeInt(saveSampleInterval);
+		out.writeInt(optimizeInterval);
+		out.writeInt(showTopicsInterval);
+		out.writeInt(wordsPerTopic);
+
+		out.writeInt(saveStateInterval);
+		out.writeObject(stateFilename);
+
+		out.writeInt(saveModelInterval);
+		out.writeObject(modelFilename);
+
+		out.writeObject(random);
+		out.writeObject(formatter);
+		out.writeBoolean(printLogLikelihood);
+
+		out.writeInt(numThreads);
+	}
+
+	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+		
+		int version = in.readInt ();
+
+		data = (ArrayList<TopicAssignment>) in.readObject ();
+		alphabet = (Alphabet) in.readObject();
+		topicAlphabet = (LabelAlphabet) in.readObject();
+		
+		numTopics = in.readInt();
+		
+		topicMask = in.readInt();
+		topicBits = in.readInt();
+		
+		numTypes = in.readInt();
+		
+		alpha = (double[]) in.readObject();
+		alphaSum = in.readDouble();
+		beta = in.readDouble();
+		betaSum = in.readDouble();
+		
+		typeTopicCounts = (int[][]) in.readObject();
+		tokensPerTopic = (int[]) in.readObject();
+		
+		docLengthCounts = (int[]) in.readObject();
+		topicDocCounts = (int[][]) in.readObject();
+	
+		numIterations = in.readInt();
+		burninPeriod = in.readInt();
+		saveSampleInterval = in.readInt();
+		optimizeInterval = in.readInt();
+		showTopicsInterval = in.readInt();
+		wordsPerTopic = in.readInt();
+
+		saveStateInterval = in.readInt();
+		stateFilename = (String) in.readObject();
+		
+		saveModelInterval = in.readInt();
+		modelFilename = (String) in.readObject();
+		
+		random = (Randoms) in.readObject();
+		formatter = (NumberFormat) in.readObject();
+		printLogLikelihood = in.readBoolean();
+
+		numThreads = in.readInt();
+	}
+
+	public void write (File serializedModelFile) {
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream(serializedModelFile));
+			oos.writeObject(this);
+			oos.close();
+		} catch (IOException e) {
+			System.err.println("Problem serializing ParallelTopicModel to file " +
+							   serializedModelFile + ": " + e);
+		}
+	}
+        
+	public static ParallelTopicModel read (File f) throws Exception {
+
+		ParallelTopicModel topicModel = null;
+
+		ObjectInputStream ois = new ObjectInputStream (new FileInputStream(f));
+		topicModel = (ParallelTopicModel) ois.readObject();
+		ois.close();
+
+		return topicModel;
 	}
 	
 	public static void main (String[] args) {
