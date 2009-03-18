@@ -41,6 +41,11 @@ public class Vectors2Topics {
 		 "allowing incremental training.  " +
 		 "By default this is null, indicating that no file will be read.", null);
 
+    static CommandOption.String inferencerFilename = new CommandOption.String
+        (Vectors2Topics.class, "inferencer-filename", "FILENAME", true, null,
+         "A topic inferencer applies a previously trained topic model to new documents.  " +
+         "By default this is null, indicating that no file will be written.", null);
+
 	static CommandOption.String stateFile = new CommandOption.String
 		(Vectors2Topics.class, "output-state", "FILENAME", true, null,
 		 "The filename in which to write the Gibbs sampling state after at the end of the iterations.  " +
@@ -51,10 +56,22 @@ public class Vectors2Topics {
          "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
+	static CommandOption.String topicWordWeightsFile = new CommandOption.String
+		(Vectors2Topics.class, "topic-word-weights-file", "FILENAME", true, null,
+         "The filename in which to write unnormalized weights for every topic and word type.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.String wordTopicCountsFile = new CommandOption.String
+		(Vectors2Topics.class, "word-topic-counts-file", "FILENAME", true, null,
+         "The filename in which to write a sparse representation of topic-word assignments.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	/*
 	static CommandOption.String topicReportXMLFile = new CommandOption.String
 		(Vectors2Topics.class, "xml-topic-report", "FILENAME", true, null,
          "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
+	*/
 
 	static CommandOption.String docTopicsFile = new CommandOption.String
 		(Vectors2Topics.class, "output-doc-topics", "FILENAME", true, null,
@@ -150,8 +167,7 @@ public class Vectors2Topics {
 
 	static CommandOption.Integer pamNumSubtopics = new CommandOption.Integer
 		(Vectors2Topics.class, "pam-num-subtopics", "INTEGER", true, 20,
-		 "When using the Pachinko Allocation Model (PAM) set the number of supertopics.  " +
-		 "Typically this is about half the number of subtopics, although more may help.", null);
+		 "When using the Pachinko Allocation Model (PAM) set the number of subtopics.", null);
 
 	public static void main (String[] args) throws java.io.IOException
 	{
@@ -173,9 +189,11 @@ public class Vectors2Topics {
 			pam.printTopWords(topWords.value, true);
 			if (stateFile.value != null)
 				pam.printState (new File(stateFile.value));
-			if (docTopicsFile.value != null)
-				pam.printDocumentTopics (new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
-										 docTopicsThreshold.value, docTopicsMax.value);
+			if (docTopicsFile.value != null) {
+				PrintWriter out = new PrintWriter (new FileWriter ((new File(docTopicsFile.value))));
+				pam.printDocumentTopics (out, docTopicsThreshold.value, docTopicsMax.value);
+				out.close();
+			}
 
 			
 			if (outputModelFilename.value != null) {
@@ -211,9 +229,11 @@ public class Vectors2Topics {
 			tng.printTopWords(topWords.value, true);
 			if (stateFile.value != null)
 				tng.printState (new File(stateFile.value));
-			if (docTopicsFile.value != null)
-				tng.printDocumentTopics (new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
-										 docTopicsThreshold.value, docTopicsMax.value);
+			if (docTopicsFile.value != null) {
+				PrintWriter out = new PrintWriter (new FileWriter ((new File(docTopicsFile.value))));
+				tng.printDocumentTopics (out, docTopicsThreshold.value, docTopicsMax.value);
+				out.close();
+			}
 
 			if (outputModelFilename.value != null) {
 				assert (tng != null);
@@ -296,25 +316,52 @@ public class Vectors2Topics {
 			}
 			*/
 
-			if (stateFile.value != null)
+			if (stateFile.value != null) {
 				topicModel.printState (new File(stateFile.value));
-			if (docTopicsFile.value != null)
-				topicModel.printDocumentTopics(new PrintWriter (new FileWriter ((new File(docTopicsFile.value)))),
-											   docTopicsThreshold.value, docTopicsMax.value);
+			}
 
+			if (docTopicsFile.value != null) {
+				PrintWriter out = new PrintWriter (new FileWriter ((new File(docTopicsFile.value))));
+				topicModel.printDocumentTopics(out, docTopicsThreshold.value, docTopicsMax.value);
+				out.close();
+			}
+
+			if (topicWordWeightsFile.value != null) {
+				topicModel.printTopicWordWeights(new File (topicWordWeightsFile.value));
+			}
+
+			if (wordTopicCountsFile.value != null) {
+				topicModel.printTypeTopicCounts(new File (wordTopicCountsFile.value));
+			}
 
 			if (outputModelFilename.value != null) {
 				assert (topicModel != null);
 				try {
-					ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
+
+					ObjectOutputStream oos =
+						new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
 					oos.writeObject (topicModel);
 					oos.close();
+
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new IllegalArgumentException ("Couldn't write topic model to filename "+outputModelFilename.value);
 				}
 			}
-			
+
+			if (inferencerFilename.value != null) {
+				try {
+
+					ObjectOutputStream oos = 
+						new ObjectOutputStream(new FileOutputStream(inferencerFilename.value));
+					oos.writeObject(topicModel.getInferencer());
+					oos.close();
+
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+				}
+					
+			}
 
 		}
 
