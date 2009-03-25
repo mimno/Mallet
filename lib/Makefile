@@ -3,12 +3,10 @@ GRMM_JARS = \
   mtj-0.9.9.jar
 
 JARS = \
-ant.jar \
 bsh.jar \
 jdom-1.0.jar \
-junit-3.8.1.jar \
+junit-4.5.jar \
 jwnl-1.3.jar \
-lucene-1.5-rc1-dev.jar \
 openjgraph.jar \
 secondstring-serializable.jar \
 trove-2.0.2.jar \
