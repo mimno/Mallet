@@ -677,27 +677,55 @@ public InstanceList[] splitInOrder (double[] proportions) {
 	}
 
 	public double getInstanceWeight (Instance instance) {
-		if (instWeights != null && instWeights.containsKey(instance))
-			return instWeights.get(instance);
-    return 1.0;
+		if (instWeights != null) {
+			Double value = instWeights.get(instance);
+			if (value != null) {
+				return value;
+			}
+		}
+		return 1.0;
 	}
 
-	public double getInstanceWeight (int index)
-	{
-		if (index > this.size())
+	public double getInstanceWeight (int index) {
+		if (index > this.size()) {
 			throw new IllegalArgumentException("Index out of bounds: index="+index+" size="+this.size());
-		if (instWeights == null)
-			return 1.0;
-    return instWeights.get(get(index));
+		}
+
+		if (instWeights != null) {
+			Double value = instWeights.get(get(index));
+			if (value != null) {
+				return value;
+			}
+		}
+
+		return 1.0;
 	}
 
-	public void setInstanceWeight (int index, double weight)
-	{
+	public void setInstanceWeight (int index, double weight) {
 		//System.out.println ("setInstanceWeight index="+index+" weight="+weight);
-		if (weight != getInstanceWeight(index)) {
-			if (instWeights == null)
+
+		// Weights of 1.0 are not explicitly stored in the hash.
+		if (weight == 1.0) {
+			// If the weights hash does not exist, we are done.
+			if (instWeights == null) { return; }
+
+			// Otherwise, see if there is a weight currently set.
+			Instance instance = get(index);
+			Double value = instWeights.get(instance);
+
+			// If there is no value set or the value is 1.0, we're done.
+			if (value == null || value.doubleValue() == weight) { return; }
+
+			// Otherwise remove the value
+			instWeights.remove(instance);
+		}
+		else {
+			// Initialize the weights hash if it does not exist
+			if (instWeights == null) {
 				instWeights = new HashMap<Instance,Double> ();
-			instWeights.put (get(index), weight);
+			}
+			// Add the new value, overriding any previous value
+			instWeights.put(get(index), weight);
 		}
 	}
 
