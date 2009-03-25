@@ -8,6 +8,7 @@
   <property name="lib" location="lib"/>
   <property name="dist" location="dist"/>
   <property name="doc" location="doc/api"/>
+  <property name="test" location="test"/>
   <property name="java_version" value="1.5"/>
 
   <path id="project.classpath">
@@ -39,6 +40,7 @@
     <!-- Create an output directory for the final jar -->
     <mkdir dir="${dist}"/>
     <copy file="${lib}/mallet-deps.jar" todir="${dist}"/>
+    <mkdir dir="${test}"/>
   </target>
   
   <!--
@@ -84,6 +86,26 @@
   <!-- Create a jar file -->
   <target name="jar" depends="compile">
       <jar destfile="${dist}/mallet.jar" basedir="${class}"/>
+  </target>
+
+  <target name="test" depends="compile">
+
+    <junit printsummary="yes" >
+      <classpath>
+	<pathelement path="${class}"/>
+	<fileset dir="lib" includes="*.jar"/>
+      </classpath>
+      
+      <formatter type="plain"/>
+      
+      <!-- test name="cc.mallet.types.tests.TestInstanceListWeights" todir="${test}" /-->
+
+      <batchtest fork="yes" todir="${test}">
+	<fileset dir="${src}">
+	  <include name="**/*Test*.java"/>
+	</fileset>
+      </batchtest>
+    </junit>
   </target>
 
 </project>
