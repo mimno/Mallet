@@ -75,7 +75,7 @@ public class ParallelTopicModel implements Serializable {
 	
 	protected int randomSeed = -1;
 	protected NumberFormat formatter;
-	protected boolean printLogLikelihood = false;
+	protected boolean printLogLikelihood = true;
 
 	int[] typeTotals;
 	
@@ -1042,7 +1042,7 @@ public class ParallelTopicModel implements Serializable {
 	
 		for (int topic=0; topic < numTopics; topic++) {
 			logLikelihood -= 
-				Dirichlet.logGammaStirling( (beta * numTopics) +
+				Dirichlet.logGammaStirling( (beta * numTypes) +
 											tokensPerTopic[ topic ] );
 			if (Double.isNaN(logLikelihood)) {
 				System.out.println("after topic " + topic + " " + tokensPerTopic[ topic ]);
@@ -1052,7 +1052,7 @@ public class ParallelTopicModel implements Serializable {
 		}
 	
 		logLikelihood += 
-			(Dirichlet.logGammaStirling(beta * numTopics)) -
+			(Dirichlet.logGammaStirling(beta * numTypes)) -
 			(Dirichlet.logGammaStirling(beta) * nonZeroTypeTopics);
 
 		if (Double.isNaN(logLikelihood)) {
