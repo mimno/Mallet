@@ -1,0 +1,8 @@
+MALLET Sample Data Sets
+
+/web
+
+This sample data includes the text of 24 "featured articles"
+from Wikipedia, 12 from the English version, and 12 from the
+German version. They were retrieved in December 2008.
+The text is in UTF-8 encoding.
