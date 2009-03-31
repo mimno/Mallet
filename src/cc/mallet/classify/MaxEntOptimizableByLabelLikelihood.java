@@ -19,20 +19,21 @@ import cc.mallet.util.MalletLogger;
 import cc.mallet.util.MalletProgressMessageLogger;
 import cc.mallet.util.Maths;
 
-public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradientValue  //, Serializable TODO needs to be done?
-{
-	private static Logger logger = MalletLogger.getLogger(MaxEntOptimizableByLabelLikelihood.class.getName());
-	private static Logger progressLogger = MalletProgressMessageLogger.getLogger(MaxEntOptimizableByLabelLikelihood.class.getName()+"-pl");
+public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradientValue {
+
+	private static Logger logger =
+		MalletLogger.getLogger(MaxEntOptimizableByLabelLikelihood.class.getName());
+	private static Logger progressLogger =
+		MalletProgressMessageLogger.getLogger(MaxEntOptimizableByLabelLikelihood.class.getName()+"-pl");
 
 	// xxx Why does TestMaximizable fail when this variance is very small?
-	//static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
-	//modified by Limin Yao, to fix overfitting in training data
-	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 0.1;
+	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SLOPE = 0.2;
 	static final double DEFAULT_HYPERBOLIC_PRIOR_SHARPNESS = 10.0;
 	static final Class DEFAULT_MAXIMIZER_CLASS = LimitedMemoryBFGS.class;
 
 	boolean usingHyperbolicPrior = false;
+	boolean usingGaussianPrior = true;
 	double gaussianPriorVariance = DEFAULT_GAUSSIAN_PRIOR_VARIANCE;
 	double hyperbolicPriorSlope = DEFAULT_HYPERBOLIC_PRIOR_SLOPE;
 	double hyperbolicPriorSharpness = DEFAULT_HYPERBOLIC_PRIOR_SHARPNESS;
@@ -108,15 +109,11 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 			FeatureVector fv = (FeatureVector) inst.getData ();
 			Alphabet fdict = fv.getAlphabet();
 			assert (fv.getAlphabet() == fd);
-			//int li = labeling.getBestIndex();						
-			//MatrixOps.rowPlusEquals (constraints, numFeatures, li, fv, instanceWeight);
-			
-			for(int pos = 0; pos < labeling.numLocations(); pos++){
-				MatrixOps.rowPlusEquals (constraints, numFeatures, labeling.indexAtLocation(pos), fv, instanceWeight*labeling.valueAtLocation(pos)); // loop over all the labels, added by Limin Yao //loop
-			}
+			int li = labeling.getBestIndex();
+			MatrixOps.rowPlusEquals (constraints, numFeatures, li, fv, instanceWeight);
 			// For the default feature, whose weight is 1.0
 			assert(!Double.isNaN(instanceWeight)) : "instanceWeight is NaN";
-			//assert(!Double.isNaN(li)) : "bestIndex is NaN";
+			assert(!Double.isNaN(li)) : "bestIndex is NaN";
 			boolean hasNaN = false;
 			for (int i = 0; i < fv.numLocations(); i++) {
 				if(Double.isNaN(fv.valueAtLocation(i))) {
@@ -127,10 +124,7 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 			if (hasNaN)
 				logger.info("NaN in instance: " + inst.getName());
 
-			for(int pos = 0; pos < labeling.numLocations(); pos++) {
-				constraints[labeling.indexAtLocation(pos)*numFeatures + defaultFeatureIndex] += 1.0 * instanceWeight * labeling.value(labeling.indexAtLocation(pos));
-			}
-			//constraints[li*numFeatures + defaultFeatureIndex] += 1.0 * instanceWeight;
+			constraints[li*numFeatures + defaultFeatureIndex] += 1.0 * instanceWeight;
 		}
 		//TestMaximizable.testValueAndGradientCurrentParameters (this);
 	}
@@ -193,12 +187,7 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 				this.theClassifier.getClassificationScores (instance, scores);
 				FeatureVector fv = (FeatureVector) instance.getData ();
 				int li = labeling.getBestIndex();
-		        value = 0.0;
-				for(int pos = 0; pos < labeling.numLocations(); pos++) { //loop, added by Limin Yao
-					int ll = labeling.indexAtLocation(pos);
-					value -= (instanceWeight * labeling.valueAtLocation(pos) * Math.log (scores[ll]));					
-					}			
-				//value = - (instanceWeight * Math.log (scores[li])); 
+				value = - (instanceWeight * Math.log (scores[li]));
 				if(Double.isNaN(value)) {
 					logger.fine ("MaxEntTrainer: Instance " + instance.getName() +
 							"has NaN value. log(scores)= " + Math.log(scores[li]) +
@@ -214,8 +203,6 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 //					continue;
 				}
 				cachedValue += value;
-				
-				//The model expectation? added by Limin Yao
 				for (int si = 0; si < scores.length; si++) {
 					if (scores[si] == 0) continue;
 					assert (!Double.isInfinite(scores[si]));
@@ -225,6 +212,7 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 				}
 			}
 			//logger.info ("-Expectations:"); cachedGradient.print();
+
 			// Incorporate prior on parameters
 			double prior = 0;
 			if (usingHyperbolicPrior) {
@@ -232,13 +220,15 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 					for (int fi = 0; fi < numFeatures; fi++)
 						prior += (hyperbolicPriorSlope / hyperbolicPriorSharpness
 								* Math.log (Maths.cosh (hyperbolicPriorSharpness * parameters[li *numFeatures + fi])));
-			} else {
+			}
+			else if (usingGaussianPrior) {
 				for (int li = 0; li < numLabels; li++)
 					for (int fi = 0; fi < numFeatures; fi++) {
 						double param = parameters[li*numFeatures + fi];
 						prior += param * param / (2 * gaussianPriorVariance);
 					}
 			}
+
 			double oValue = cachedValue;
 			cachedValue += prior;
 			cachedValue *= -1.0; // MAXIMIZE, NOT MINIMIZE
@@ -248,8 +238,8 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 		return cachedValue;
 	}
 
-	public void getValueGradient (double [] buffer)
-	{
+	public void getValueGradient (double [] buffer) {
+
 		// Gradient is (constraint - expectation - parameters/gaussianPriorVariance)
 		if (cachedGradientStale) {
 			numGetValueGradientCalls++;
@@ -261,9 +251,9 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 			if (usingHyperbolicPrior) {
 				throw new UnsupportedOperationException ("Hyperbolic prior not yet implemented.");
 			}
-			else {
+			else if (usingGaussianPrior) {
 				MatrixOps.plusEquals (cachedGradient, parameters,
-						-1.0 / gaussianPriorVariance);
+									  -1.0 / gaussianPriorVariance);
 			}
 
 			// A parameter may be set to -infinity by an external user.
@@ -300,14 +290,27 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 	
 	
 	public MaxEntOptimizableByLabelLikelihood useGaussianPrior () {
+		this.usingGaussianPrior = true;
 		this.usingHyperbolicPrior = false;
 		return this;
 	}
 
 	public MaxEntOptimizableByLabelLikelihood useHyperbolicPrior () {
+		this.usingGaussianPrior = false;
 		this.usingHyperbolicPrior = true;
 		return this;
 	}
+
+	/**
+	 *  In some cases a prior term is implemented in the optimizer,
+	 *  (eg orthant-wise L-BFGS), so we occasionally want to only
+	 *   calculate the log likelihood.
+	 */
+	public MaxEntOptimizableByLabelLikelihood useNoPrior () {
+        this.usingGaussianPrior = false;
+        this.usingHyperbolicPrior = false;
+        return this;
+    }
 
 	/**
 	 * Sets a parameter to prevent overtraining.  A smaller variance for the prior
@@ -317,6 +320,7 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 	 */
 	public MaxEntOptimizableByLabelLikelihood setGaussianPriorVariance (double gaussianPriorVariance)
 	{
+		this.usingGaussianPrior = true;
 		this.usingHyperbolicPrior = false;
 		this.gaussianPriorVariance = gaussianPriorVariance;
 		return this;
@@ -324,6 +328,7 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 
 	public MaxEntOptimizableByLabelLikelihood setHyperbolicPriorSlope (double hyperbolicPriorSlope)
 	{
+		this.usingGaussianPrior = false;
 		this.usingHyperbolicPrior = true;
 		this.hyperbolicPriorSlope = hyperbolicPriorSlope;
 		return this;
@@ -331,6 +336,7 @@ public class MaxEntOptimizableByLabelLikelihood implements Optimizable.ByGradien
 
 	public MaxEntOptimizableByLabelLikelihood setHyperbolicPriorSharpness (double hyperbolicPriorSharpness)
 	{
+		this.usingGaussianPrior = false;
 		this.usingHyperbolicPrior = true;
 		this.hyperbolicPriorSharpness = hyperbolicPriorSharpness;
 		return this;

@@ -47,8 +47,9 @@ import cc.mallet.util.Maths;
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
-public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements ClassifierTrainer.ByOptimization<MaxEnt>, Boostable, Serializable
-{
+public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
+	implements ClassifierTrainer.ByOptimization<MaxEnt>, Boostable, Serializable {
+
 	private static Logger logger = MalletLogger.getLogger(MaxEntTrainer.class.getName());
 	private static Logger progressLogger = MalletProgressMessageLogger.getLogger(MaxEntTrainer.class.getName()+"-pl");
 
@@ -60,59 +61,68 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 
 	// xxx Why does TestMaximizable fail when this variance is very small?
 	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
-	//modified by Limin Yao, to fix overfitting in training data
-	//static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 0.1;
-	static final double DEFAULT_L1_WEIGHT = 1.0;
+	static final double DEFAULT_L1_WEIGHT = 0.0;
 	static final Class DEFAULT_MAXIMIZER_CLASS = LimitedMemoryBFGS.class;
 
 	double gaussianPriorVariance = DEFAULT_GAUSSIAN_PRIOR_VARIANCE;
+	double l1Weight = DEFAULT_L1_WEIGHT;
+
 	Class maximizerClass = DEFAULT_MAXIMIZER_CLASS;
 
 	InstanceList trainingSet = null;
 	MaxEnt initialClassifier;
-	//MaxEnt me = null;  Use ome.getClassifier() instead.
-	MaxEntOptimizableByLabelLikelihood ome = null;
-	Optimizer opt = null;
 
+	MaxEntOptimizableByLabelLikelihood optimizable = null;
+	Optimizer optimizer = null;
 
-	public MaxEntTrainer ()
-	{
-	}
+	// 
+	// CONSTRUCTORS
+	//
 
+	public MaxEntTrainer () {}
+
+	/** Construct a MaxEnt trainer using a trained classifier as
+	 *   initial values.
+	 */ 
 	public MaxEntTrainer (MaxEnt theClassifierToTrain) {
 		this.initialClassifier = theClassifierToTrain;
 	}
 
 	/** Constructs a trainer with a parameter to avoid overtraining.  1.0 is
-	 * usually a reasonable default value. */
-	public MaxEntTrainer (double gaussianPriorVariance)
-	{
+	 * the default value. */
+	public MaxEntTrainer (double gaussianPriorVariance) {
 		this.gaussianPriorVariance = gaussianPriorVariance;
 	}
 
-
+	//
+	//  CLASSIFIER OBJECT: stores parameters
+	// 
 
 	public MaxEnt getClassifier () {
-		if (ome != null)
-			return ome.getClassifier();
+		if (optimizable != null)
+			return optimizable.getClassifier();
 		return initialClassifier;
-//		if (me == null && trainingSet != null)
-//			me = new MaxEnt (trainingSet.getPipe(), (double[])null);
-//		return me;
 	}
 
+	/**
+	 *  Initialize parameters using the provided classifier. 
+	 */
 	public void setClassifier (MaxEnt theClassifierToTrain) {
 		// Is this necessary?  What is the caller is about to set the training set to something different? -akm
 		assert (trainingSet == null || Alphabet.alphabetsMatch(theClassifierToTrain, trainingSet));
 		if (this.initialClassifier != theClassifierToTrain) {
 			this.initialClassifier = theClassifierToTrain;
-			ome = null;
-			opt = null;
+			optimizable = null;
+			optimizer = null;
 		}
 	}
 
+	//
+	//  OPTIMIZABLE OBJECT: implements value and gradient functions
+	//
+
 	public Optimizable getOptimizable () {
-		return ome;
+		return optimizable;
 	}
 
 	public MaxEntOptimizableByLabelLikelihood getOptimizable (InstanceList trainingSet) {
@@ -120,47 +130,70 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	}
 
 	public MaxEntOptimizableByLabelLikelihood getOptimizable (InstanceList trainingSet, MaxEnt initialClassifier) {
+
 		if (trainingSet != this.trainingSet || this.initialClassifier != initialClassifier) {
+
 			this.trainingSet = trainingSet;
 			this.initialClassifier = initialClassifier;
-			if (ome == null || ome.trainingList != trainingSet) {
-				ome = new MaxEntOptimizableByLabelLikelihood (trainingSet, initialClassifier);
-				ome.setGaussianPriorVariance(gaussianPriorVariance);
-				//modified by Limin Yao
-				//ome.setHyperbolicPriorSlope(DEFAULT_GAUSSIAN_PRIOR_VARIANCE);
-				opt = null;
+
+			if (optimizable == null || optimizable.trainingList != trainingSet) {
+				optimizable = new MaxEntOptimizableByLabelLikelihood (trainingSet, initialClassifier);
+
+				if (l1Weight == 0.0) {
+					optimizable.setGaussianPriorVariance(gaussianPriorVariance);
+				}
+				else {
+					// the prior term for L1-regularized classifiers 
+					//  is implemented as part of the optimizer, 
+					//  so don't include a prior calculation in the value and 
+					//  gradient functions.
+					optimizable.useNoPrior();
+				}
+
+				optimizer = null;
 			}
 		}
-		return ome;
+
+		return optimizable;
 	}
+
+	//
+	//  OPTIMIZER OBJECT: maximizes value function
+	//
 
 	public Optimizer getOptimizer () {
-		if (opt == null && ome != null)
-      opt = new ConjugateGradient(ome);
-    //opt = new LimitedMemoryBFGS (ome);
-		return opt;
+		if (optimizer == null && optimizable != null) {
+			optimizer = new ConjugateGradient(optimizable);
+		}
+
+		return optimizer;
 	}
 
-	//commented by Limin Yao, use L1 regularization instead
+	/** This method is called by the train method. 
+	 *   This is the main entry point for the optimizable and optimizer
+	 *   compontents.
+	 */
 	public Optimizer getOptimizer (InstanceList trainingSet) {
-		if (trainingSet != this.trainingSet || ome == null) {
-			getOptimizable(trainingSet);
-			opt = null;
-		}
-		if (opt == null)
-			opt = new LimitedMemoryBFGS (ome);
-		return opt;
-	}
 
-/*	public Optimizer getOptimizer(InstanceList trainingSet) {
-		if (trainingSet != this.trainingSet || ome == null) {
+		// If the data is not set, or has changed, 
+		//  initialize the optimizable object and 
+		//  replace the optimizer.
+		if (trainingSet != this.trainingSet ||
+			optimizable == null) {
+
 			getOptimizable(trainingSet);
-			opt = null;
+			optimizer = null;
 		}
-		if (opt == null || ome != opt.getOptimizable())
-			opt = new OrthantWiseLimitedMemoryBFGS(ome, DEFAULT_L1_WEIGHT);
-		return opt;
-	}*/
+
+		// Build a new optimizer
+		if (optimizer == null) {
+			// If l1Weight is 0, this devolves to 
+			//  standard L-BFGS, but the implementation
+			//  may be faster.
+			optimizer = new OrthantWiseLimitedMemoryBFGS(optimizable, l1Weight);
+		}
+		return optimizer;
+	}
 
 	/**
 	 * Specifies the maximum number of iterations to run during a single call
@@ -176,11 +209,11 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	}
 
 	public int getIteration () {
-		if (ome == null)
+		if (optimizable == null)
 			return 0;
 		else
 		  return Integer.MAX_VALUE;
-//			return opt.getIteration ();
+//			return optimizer.getIteration ();
 	}
 
 	/**
@@ -189,27 +222,33 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 	 * evidence is required to set a higher weight.
 	 * @return This trainer
 	 */
-	public MaxEntTrainer setGaussianPriorVariance (double gaussianPriorVariance)
-	{
+	public MaxEntTrainer setGaussianPriorVariance (double gaussianPriorVariance) {
 		this.gaussianPriorVariance = gaussianPriorVariance;
 		return this;
 	}
 
+	/** 
+	 *  Use an L1 prior. Larger values mean parameters will be closer to 0.
+	 *   Note that this setting overrides any Gaussian prior.
+	 */
+	public MaxEntTrainer setL1Weight(double l1Weight) {
+		this.l1Weight = l1Weight;
+		return this;
+	}
 
 	public MaxEnt train (InstanceList trainingSet) {
 		return train (trainingSet, numIterations);
 	}
 
-
 	public MaxEnt train (InstanceList trainingSet, int numIterations)
 	{
 		logger.fine ("trainingSet.size() = "+trainingSet.size());
 		boolean converged;
-		getOptimizer (trainingSet);  // This will set this.opt, this.ome and this.me
+		getOptimizer (trainingSet);  // This will set this.optimizer, this.optimizable
 
 		for (int i = 0; i < numIterations; i++) {
 			try {
-				converged = opt.optimize (1);
+				converged = optimizer.optimize (1);
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");
@@ -223,10 +262,10 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 			// Run it again because in our and Sam Roweis' experience, BFGS can still
 			// eke out more likelihood after first convergence by re-running without
 			// being restricted by its gradient history.
-			opt = null;
-			getOptimizer();
+			optimizer = null;
+			getOptimizer(trainingSet);
 			try {
-				opt.optimize ();
+				optimizer.optimize ();
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");
@@ -235,7 +274,7 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 		//TestMaximizable.testValueAndGradientCurrentParameters (mt);
 		progressLogger.info("\n"); //  progress messages are on one line; move on.
 		//logger.info("MaxEnt ngetValueCalls:"+getValueCalls()+"\nMaxEnt ngetValueGradientCalls:"+getValueGradientCalls());
-		return ome.getClassifier();
+		return optimizable.getClassifier();
 	}
 
 	/**
@@ -430,14 +469,20 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt> implements Classifi
 */
 
 
-	public String toString()
-	{
-		return "MaxEntTrainer"
-		//	+ "("+maximizerClass.getName()+") "
-		+ ",numIterations=" + numIterations
-		+ ",gaussianPriorVariance="+gaussianPriorVariance;
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("MaxEntTrainer");
+		if (numIterations < Integer.MAX_VALUE) {
+			builder.append(",numIterations=" + numIterations);
+		}
+		if (l1Weight != 0.0) {
+			builder.append(",l1Weight=" + l1Weight);
+		}
+		else {
+			builder.append(",gaussianPriorVariance=" + gaussianPriorVariance);
+		}
+
+		return builder.toString();
 	}
-
-
-
 }
