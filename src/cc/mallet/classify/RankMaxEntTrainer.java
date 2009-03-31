@@ -106,9 +106,9 @@ public class RankMaxEntTrainer extends MaxEntTrainer
 			// Run it again because in our and Sam Roweis' experience, BFGS can still
 			// eke out more likelihood after first convergence by re-running without
 			// being restricted by its gradient history.
-			opt = new ConjugateGradient(mt);
+			optimizer = new ConjugateGradient(mt);
 			try {
-				opt.optimize ();
+				optimizer.optimize ();
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");
