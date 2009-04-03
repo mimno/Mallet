@@ -153,6 +153,12 @@ public class ParallelTopicModel implements Serializable {
 	/** Interval for optimizing Dirichlet hyperparameters */
 	public void setOptimizeInterval(int interval) {
 		this.optimizeInterval = interval;
+
+		// Make sure we always have at least one sample
+		//  before optimizing hyperparameters
+		if (saveSampleInterval > optimizeInterval) {
+			saveSampleInterval = optimizeInterval;
+		}
 	}
 
 	public void setNumThreads(int threads) {
@@ -672,6 +678,10 @@ public class ParallelTopicModel implements Serializable {
 				}
 			}
 			else {
+				if (iteration > burninPeriod && optimizeInterval != 0 &&
+					iteration % saveSampleInterval == 0) {
+					runnables[0].collectAlphaStatistics();
+				}
 				runnables[0].run();
 			}
 

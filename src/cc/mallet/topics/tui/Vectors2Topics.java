@@ -127,6 +127,10 @@ public class Vectors2Topics {
         (Vectors2Topics.class, "optimize-interval", "INTEGER", true, 0,
          "The number of iterations between reestimating dirichlet hyperparameters.", null);
 
+    static CommandOption.Integer optimizeBurnIn = new CommandOption.Integer
+        (Vectors2Topics.class, "optimize-burn-in", "INTEGER", true, 200,
+         "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
+
 	static CommandOption.Boolean useNgrams = new CommandOption.Boolean
 		(Vectors2Topics.class, "use-ngrams", "true|false", false, false,
 		 "Rather than using LDA, use Topical-N-Grams, which models phrases.", null);
@@ -288,6 +292,7 @@ public class Vectors2Topics {
 
             topicModel.setNumIterations(numIterations.value);
             topicModel.setOptimizeInterval(optimizeInterval.value);
+            topicModel.setBurninPeriod(optimizeBurnIn.value);
 
             if (randomSeed.value != 0) {
                 topicModel.setRandomSeed(randomSeed.value);
