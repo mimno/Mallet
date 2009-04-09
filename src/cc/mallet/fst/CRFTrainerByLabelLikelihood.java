@@ -147,6 +147,10 @@ public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements Tr
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");
 				converged = true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.info("Catching exception; saying converged.");
+				converged = true;
 			}
 			if (converged) {
 				logger.info ("CRF training has converged, i="+i);
