@@ -25,6 +25,10 @@ import cc.mallet.util.Maths;
  * @author Gregory Druck <a href="mailto:gdruck@cs.umass.edu">gdruck@cs.umass.edu</a>
  */
 
+/**
+ * @author gdruck
+ *
+ */
 public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
   
   private static Logger progressLogger = MalletProgressMessageLogger.getLogger(MaxEntOptimizableByLabelLikelihood.class.getName()+"-pl");
@@ -40,15 +44,19 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
   private double[] parameters;
   private InstanceList trainingList;
   private MaxEnt classifier;
-  private HashMap<Integer,double[]> refEx;
+  private HashMap<Integer,double[]> constraints;
   private HashMap<Integer,Integer> mapping;
   
-  public MaxEntOptimizableByGE(InstanceList trainingList, HashMap<Integer,double[]> refDist, MaxEnt classifier) {
+  /**
+   * @param trainingList List with unlabeled training instances.
+   * @param constraints Feature expectation constraints.
+   * @param initClassifier Initial classifier.
+   */
+  public MaxEntOptimizableByGE(InstanceList trainingList, HashMap<Integer,double[]> constraints, MaxEnt initClassifier) {
     useValues = false;
     temperature = 1.0;
     objWeight = 1.0;
     this.trainingList = trainingList;
-
     
     int numFeatures = trainingList.getDataAlphabet().size();
     defaultFeatureIndex = numFeatures;
@@ -58,23 +66,44 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
     cachedValue = 0;
        
     if (classifier != null) {
-      this.classifier = classifier;
+      this.classifier = initClassifier;
     }
     else {
       this.classifier = new MaxEnt(trainingList.getPipe(),parameters);
     }
     
-     this.refEx = refDist;
-  }
+     this.constraints = constraints;
+  } 
   
+  /**
+   * Sets the variance for Gaussian prior or
+   * equivalently the inverse of the weight 
+   * of the L2 regularization term.
+   * 
+   * @param variance Gaussian prior variance.
+   */
   public void setGaussianPriorVariance(double variance) {
     this.gaussianPriorVariance = variance;
   }
   
+  
+  /**
+   * Set the temperature, 1 / the exponent model predicted probabilities 
+   * are raised to when computing model expectations.  As the temperature
+   * increases, model probabilities approach 1 for the maximum probability
+   * class, and 0 for other classes.  DEFAULT: 1  
+   * 
+   * @param temp Temperature.
+   */
   public void setTemperature(double temp) {
     this.temperature = temp;
   }
   
+  /**
+   * The weight of GE term in the objective function.
+   * 
+   * @param weight GE term weight.
+   */
   public void setWeight(double weight) {
     this.objWeight = weight;
   }
@@ -83,8 +112,7 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
     return classifier;
   }
   
-  public double getValue() {
-    
+  public double getValue() {   
     if (!cacheStale) {
       return cachedValue;
     }
@@ -95,31 +123,30 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
     
     Arrays.fill(cachedGradient,0);
 
-    int numRefDist = refEx.size();
+    int numRefDist = constraints.size();
     int numFeatures = trainingList.getDataAlphabet().size() + 1;
     int numLabels = trainingList.getTargetAlphabet().size();
     double scalingFactor = objWeight;      
     
     if (mapping == null) {
+      // mapping maps between feature indices to 
+      // constraint indices
       setMapping();
     }
     
-    double[][] modelExScores = new double[numRefDist][numLabels];
-    double[][] modelExDists = new double[numRefDist][numLabels];
+    double[][] modelExpectations = new double[numRefDist][numLabels];
     double[][] ratio = new double[numRefDist][numLabels];
     double[] featureCounts = new double[numRefDist];
 
     double[][] scores = new double[trainingList.size()][numLabels];
     
     // pass 1: calculate model distribution
-    Iterator<Instance> iter = trainingList.iterator();
-    int ii = 0;
-    while (iter.hasNext()) {
-      Instance instance = iter.next();
+    for (int ii = 0; ii < trainingList.size(); ii++) {
+      Instance instance = trainingList.get(ii);
       double instanceWeight = trainingList.getInstanceWeight(instance);
       
+      // skip if labeled
       if (instance.getTarget() != null) {
-        ii++;
         continue;
       }
       
@@ -128,7 +155,7 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
       
       for (int loc = 0; loc < fv.numLocations(); loc++) {
         int featureIndex = fv.indexAtLocation(loc);
-        if (refEx.containsKey(featureIndex)) {
+        if (constraints.containsKey(featureIndex)) {
           int cIndex = mapping.get(featureIndex);            
           double val;
           if (!useValues) {
@@ -139,50 +166,50 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
           }
           featureCounts[cIndex] += val;
           for (int l = 0; l < numLabels; l++) {
-            modelExScores[cIndex][l] += scores[ii][l] * val * instanceWeight;
+            modelExpectations[cIndex][l] += scores[ii][l] * val * instanceWeight;
           }
         }
       }
       
       // special case of label regularization
-      if (refEx.containsKey(defaultFeatureIndex)) {
+      if (constraints.containsKey(defaultFeatureIndex)) {
         int cIndex = mapping.get(defaultFeatureIndex); 
         featureCounts[cIndex] += 1;
         for (int l = 0; l < numLabels; l++) {
-          modelExScores[cIndex][l] += scores[ii][l] * instanceWeight;
+          modelExpectations[cIndex][l] += scores[ii][l] * instanceWeight;
         }        
       }
-      
-      ii++;
     }
-     
-    Iterator<Integer> keys = refEx.keySet().iterator();
-    while (keys.hasNext()) {
-      int featureIndex = keys.next();
+    
+    double value = 0;
+    for (int featureIndex : constraints.keySet()) {
       int cIndex = mapping.get(featureIndex);
       if (featureCounts[cIndex] > 0) {
         for (int label = 0; label < numLabels; label++) {
-          modelExDists[cIndex][label] = modelExScores[cIndex][label] / featureCounts[cIndex];
-          ratio[cIndex][label] = refEx.get(featureIndex)[label] / modelExScores[cIndex][label];
+          double cProb = constraints.get(featureIndex)[label];
+          // normalize by count
+          modelExpectations[cIndex][label] /= featureCounts[cIndex];
+          ratio[cIndex][label] =  cProb / modelExpectations[cIndex][label];
+          // add to the cross entropy term
+          value += scalingFactor * cProb * Math.log(modelExpectations[cIndex][label]);
+          // add to the entropy term
+          value -= scalingFactor * cProb * Math.log(cProb);
         }
-        assert(Maths.almostEquals(MatrixOps.sum(modelExDists[cIndex]),1));
+        assert(Maths.almostEquals(MatrixOps.sum(modelExpectations[cIndex]),1));
       }
     }
 
     // pass 2: determine per example gradient
-    iter = trainingList.iterator();
-    ii = 0;
-    while (iter.hasNext()) {
-      Instance instance = iter.next();
+    for (int ii = 0; ii < trainingList.size(); ii++) {
+      Instance instance = trainingList.get(ii);
       
+      // skip if labeled
       if (instance.getTarget() != null) {
-        ii++;
         continue;
       }
       
       double instanceWeight = trainingList.getInstanceWeight(instance);
       FeatureVector fv = (FeatureVector) instance.getData();
-      // (this is normalized, despite the name)
 
       for (int loc = 0; loc < fv.numLocations() + 1; loc++) {
         int featureIndex;
@@ -192,11 +219,12 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
         else {
           featureIndex = fv.indexAtLocation(loc);
         }
-        if (refEx.containsKey(featureIndex)) {
+        
+        if (constraints.containsKey(featureIndex)) {
           int cIndex = mapping.get(featureIndex);
 
-          // skip if this feature never occured
-          if (MatrixOps.sum(modelExDists[cIndex]) == 0) {
+          // skip if this feature never occurred
+          if (featureCounts[cIndex] == 0) {
             continue;
           }
 
@@ -208,65 +236,37 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
             val = fv.valueAtLocation(loc);
           }
           
-          double x = 0;
+          // compute \sum_y p(y|x) \hat{g}_y / \bar{g}_y
+          double instanceExpectation = 0;
           for (int label = 0; label < numLabels; label++) {
-            x += ratio[cIndex][label] * scores[ii][label];
+            instanceExpectation += ratio[cIndex][label] * scores[ii][label];
           }
           
-          // sum over y for KL divergence
+          // define C = \sum_y p(y|x) g_y(y,x) \hat{g}_y / \bar{g}_y
+          // compute \sum_y  p(y|x) g_y(x,y) f(x,y) * (\hat{g}_y / \bar{g}_y - C)
           for (int label = 0; label < numLabels; label++) {
             if (scores[ii][label] == 0)
               continue;
             assert (!Double.isInfinite(scores[ii][label]));
-            // ratio * q(y|x) x_k
-            double weight = scalingFactor * instanceWeight * temperature * val * scores[ii][label] * (ratio[cIndex][label] - x);
+            double weight = scalingFactor * instanceWeight * temperature * (val / featureCounts[cIndex]) * scores[ii][label] * (ratio[cIndex][label] - instanceExpectation);
 
             MatrixOps.rowPlusEquals(cachedGradient, numFeatures, label, fv, weight);
             cachedGradient[numFeatures * label + defaultFeatureIndex] += weight;
           }  
         }
       }
-
-      ii++;
     }
 
-    double totalValue = 0;
-    keys = refEx.keySet().iterator();
-    while (keys.hasNext()) {
-      int featureIndex = keys.next();
-      int cIndex = mapping.get(featureIndex);
-      
-      // skip if this feature never occured
-      if (MatrixOps.sum(modelExDists[cIndex])==0) {
-        continue;
-      }
-      
-      // = H ( y_j^emp , \sum_i p(y|x) ) -- cross entropy
-      // = - \sum_j [ y_j^emp log 1/|u| \sum_i p(y|x) ],
-      // which is the (positive!) KL(y^emp||p_\Lambda(y|x)), which we negate because we want to minimize KL.
-      double value = 0.0;
-      for (int label = 0; label < numLabels; label++) {
-        // System.err.println("labeledScore[label]="+labeledScore[label]+" scoreSumNorm[label]"+scoreSumNorm[label]);
-        value -= scalingFactor * refEx.get(featureIndex)[label] * Math.log(modelExDists[cIndex][label]);
-      }
-
-      // = - H( y_j^emp)
-      for (int label = 0; label < numLabels; label++) {
-        value += scalingFactor * refEx.get(featureIndex)[label] * Math.log(refEx.get(featureIndex)[label]);
-      }
-      totalValue -= value;
-    }
-
-    cachedValue = totalValue;
+    cachedValue = value;
     cacheStale = false;
     
     double reg = getRegularization();
-    progressLogger.info ("Value (GE=" + totalValue + " Gaussian prior= " + reg + ") = " + cachedValue);
+    progressLogger.info ("Value (GE=" + value + " Gaussian prior= " + reg + ") = " + cachedValue);
     
-    return totalValue; // This is the -KL(p1||p2) = - H(p1,p2) + H(p1)
+    return value;
   }
 
-  public double getRegularization() {
+  private double getRegularization() {
     double regularization;
     if (!Double.isInfinite(gaussianPriorVariance)) {
       regularization = Math.log(gaussianPriorVariance * Math.sqrt(2 * Math.PI));
@@ -320,7 +320,7 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
   private void setMapping() {
     int cCounter = 0;
     mapping = new HashMap<Integer,Integer>();
-    Iterator<Integer> keys = refEx.keySet().iterator();
+    Iterator<Integer> keys = constraints.keySet().iterator();
     while (keys.hasNext()) {
       int featureIndex = keys.next();
       mapping.put(featureIndex, cCounter);

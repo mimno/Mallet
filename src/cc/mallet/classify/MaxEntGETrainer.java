@@ -7,9 +7,6 @@
 
 package cc.mallet.classify;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -31,6 +28,8 @@ import cc.mallet.util.MalletProgressMessageLogger;
  * SIGIR 2008
  * 
  * @author Gregory Druck <a href="mailto:gdruck@cs.umass.edu">gdruck@cs.umass.edu</a>
+ * 
+ * Better explanations of parameters is given in MaxEntOptimizableByGE
  */
 
 public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements ClassifierTrainer.ByOptimization<MaxEnt>, Boostable, Serializable {
@@ -43,95 +42,20 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
   private double temperature = 1;
   private double gaussianPriorVariance = 1;
   private String constraintsFile;
-  private HashMap<Integer,double[]> refDist;
+  private HashMap<Integer,double[]> constraints;
   private InstanceList trainingList = null;
   private MaxEnt classifier = null;
   private MaxEntOptimizableByGE ge = null;
   private Optimizer opt = null;
 
-  private boolean testConstraintsFileIndexBased(String filename) {
-    File file = new File(filename);
-    String firstLine = "";
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      firstLine = reader.readLine();
-    }
-    catch (Exception e) {  
-      e.printStackTrace();
-      System.exit(1);
-    }
-    return !firstLine.contains(":");
-  }  
-  
-  private void readConstraintsFromFile(String filename) {
-    refDist = new HashMap<Integer,double[]>();
-    
-    File file = new File(filename);
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      
-      String line = reader.readLine();
-      while (line != null) {
-        String[] split = line.split("\\s+");
-        
-        // assume the feature name has no spaces
-        String featureName = split[0];
-        int featureIndex = trainingList.getDataAlphabet().lookupIndex(featureName,false);
-        
-        assert(split.length - 1 == trainingList.getTargetAlphabet().size());
-        double[] probs = new double[split.length - 1];
-        for (int index = 1; index < split.length; index++) {
-          String[] labelSplit = split[index].split(":");   
-          int li = trainingList.getTargetAlphabet().lookupIndex(labelSplit[0],false);
-          double prob = Double.parseDouble(labelSplit[1]);
-          probs[li] = prob;
-        }
-        refDist.put(featureIndex, probs);
-        line = reader.readLine();
-      }
-    }
-    catch (Exception e) {  
-      e.printStackTrace();
-      System.exit(1);
-    }
-  }
-  
-  private void readConstraintsFromFileIndex(String filename) {
-    refDist = new HashMap<Integer,double[]>();
-    
-    File file = new File(filename);
-    try {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      
-      String line = reader.readLine();
-      while (line != null) {
-        String[] split = line.split("\\s+");
-        int featureIndex = Integer.parseInt(split[0]);
-        
-        assert(split.length - 1 == trainingList.getTargetAlphabet().size());
-        double[] probs = new double[split.length - 1];
-        for (int index = 1; index < split.length; index++) {
-          double prob = Double.parseDouble(split[index]);
-          probs[index-1] = prob;
-        }
-        refDist.put(featureIndex, probs);
-        line = reader.readLine();
-      }
-    }
-    catch (Exception e) {  
-      e.printStackTrace();
-      System.exit(1);
-    }
-  }
-
   public MaxEntGETrainer() {}
   
-  public MaxEntGETrainer(HashMap<Integer,double[]> refDist) {
-    this.refDist = refDist;
+  public MaxEntGETrainer(HashMap<Integer,double[]> constraints) {
+    this.constraints = constraints;
   }
   
-  public MaxEntGETrainer(HashMap<Integer,double[]> refDist, MaxEnt classifier) {
-    this.refDist = refDist;
+  public MaxEntGETrainer(HashMap<Integer,double[]> constraints, MaxEnt classifier) {
+    this.constraints = constraints;
     this.classifier = classifier;
   }
 
@@ -182,16 +106,12 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
   public MaxEnt train (InstanceList train, int numIterations) {
     trainingList = train;
     
-    if (refDist == null && constraintsFile != null) {
-      if (testConstraintsFileIndexBased(constraintsFile)) {
-        readConstraintsFromFileIndex(constraintsFile);
-      }
-      else {
-        readConstraintsFromFile(constraintsFile);
-      }
+    if (constraints == null && constraintsFile != null) {
+      constraints = FeatureConstraintUtil.readConstraintsFromFile(constraintsFile, trainingList);
+      System.err.println("number of constraints: " + constraints.size());
     }
     
-    ge = new MaxEntOptimizableByGE(trainingList,refDist,classifier);
+    ge = new MaxEntOptimizableByGE(trainingList,constraints,classifier);
     ge.setTemperature(temperature);
     ge.setGaussianPriorVariance(gaussianPriorVariance);
     opt = new LimitedMemoryBFGS(ge);
