@@ -24,19 +24,19 @@ public class MaxEntL1Trainer extends MaxEntTrainer {
 	}
 
 	public Optimizer getOptimizer() {
-		if (opt == null && ome != null)
-			opt = new OrthantWiseLimitedMemoryBFGS(ome, l1Weight);
-		return opt;
+		if (optimizer == null && optimizable != null)
+			optimizer = new OrthantWiseLimitedMemoryBFGS(optimizable, l1Weight);
+		return optimizer;
 	}
 
 	// commented by Limin Yao, use L1 regularization instead
 	public Optimizer getOptimizer(InstanceList trainingSet) {
-		if (trainingSet != this.trainingSet || ome == null) {
+		if (trainingSet != this.trainingSet || optimizable == null) {
 			getOptimizable(trainingSet);
-			opt = null;
+			optimizer = null;
 		}
-		if (opt == null)
-			opt = new OrthantWiseLimitedMemoryBFGS(ome, l1Weight);
-		return opt;
+		if (optimizer == null)
+			optimizer = new OrthantWiseLimitedMemoryBFGS(optimizable, l1Weight);
+		return optimizer;
 	}
 }
