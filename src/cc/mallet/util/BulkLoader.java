@@ -39,7 +39,7 @@ public class BulkLoader {
 		 "If true, final data will be a FeatureSequence rather than a FeatureVector.", null);
 
 	static CommandOption.String lineRegex = new CommandOption.String
-		(BulkLoader.class, "line-regex", "REGEX", true, "^(\\S*)[\\s,]*(\\S*)[\\s,]*(.*)$",
+		(BulkLoader.class, "line-regex", "REGEX", true, "^([^\\t]*)\\t([^\\t]*)\\t(.*)",
 		 "Regular expression containing regex-groups for label, name and data.", null);
 
     static CommandOption.Integer nameGroup = new CommandOption.Integer
