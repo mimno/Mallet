@@ -75,10 +75,13 @@ public class Csv2Vectors {
 	    (Csv2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
 		 "If true, final data will be a FeatureSequenceWithBigrams rather than a FeatureVector.", null);
     
-
 	static CommandOption.Boolean removeStopWords = new CommandOption.Boolean
 	    (Csv2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
-	     "If true, remove common \"stop words\" from the text.", null);
+	     "If true, remove common English \"stop words\" from the text.", null);
+
+	static CommandOption.File stoplistFile = new CommandOption.File
+	    (Csv2Vectors.class, "stoplist-file", "FILE", true, null,
+	     "Read \"stop words\" from a file, one per line. Implies --remove-stopwords", null);
 
 	static CommandOption.Boolean preserveCase = new CommandOption.Boolean
 		(Csv2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
@@ -181,7 +184,14 @@ public class Csv2Vectors {
 				pipeList.add(new TokenSequenceRemoveNonAlpha(true));
 			}
 			
-			if (removeStopWords.value) {
+			if (stoplistFile.value != null) {
+				pipeList.add(new TokenSequenceRemoveStopwords(stoplistFile.value, 
+															  encoding.value,
+															  false, // include default
+															  false,
+															  keepSequenceBigrams.value));
+			}
+			else if (removeStopWords.value) {
 				pipeList.add(new TokenSequenceRemoveStopwords(false,
 															  keepSequenceBigrams.value));
 			}
