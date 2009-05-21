@@ -91,8 +91,10 @@ public class CsvIterator implements Iterator<Instance>
 				target = matcher.group(targetGroup);
 			if (dataGroup > 0)
 				data = matcher.group(dataGroup);
-		} else
-			throw new IllegalStateException ("Line #"+reader.getLineNumber()+" does not match regex");
+		} else {
+			throw new IllegalStateException ("Line #"+reader.getLineNumber()+" does not match regex:\n" +
+											 currentLine);
+		}
 
 		String uri;
 		if (uriStr == null) {
