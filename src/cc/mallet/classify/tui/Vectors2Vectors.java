@@ -113,7 +113,7 @@ public class Vectors2Vectors {
 		// Read the InstanceList
 		InstanceList instances = InstanceList.load (inputFile.value);
 
-		if (t == 1.0 && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked())
+		if (t == 1.0 && !vectorToSequence.value && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked())
 		    && ! (hideTargets.wasInvoked() || revealTargets.wasInvoked())) {
 			System.err.println("Vectors2Vectors was invoked, but did not change anything");
 			instances.save(trainingFile.value());
@@ -247,6 +247,7 @@ public class Vectors2Vectors {
 			}
 			
 			if (vectorToSequence.value) {
+			  System.out.println("HERE!");
 				// Convert FeatureVector's to FeatureSequence's by simply randomizing the order
 				// of all the word occurrences, including repetitions due to values larger than 1.
 				Alphabet alpha = instances.getDataAlphabet();
@@ -282,6 +283,34 @@ public class Vectors2Vectors {
 				throw new IllegalArgumentException("You must specify a file to write to, using --output [filename]");
 			}
 		}
+		else if (vectorToSequence.value) {
+      // Convert FeatureVector's to FeatureSequence's by simply randomizing the order
+      // of all the word occurrences, including repetitions due to values larger than 1.
+      Alphabet alpha = instances.getDataAlphabet();
+      Noop pipe2 = new Noop (alpha, instances.getTargetAlphabet());
+      InstanceList instances2 = new InstanceList (pipe2);
+      for (int ii = 0; ii < instances.size(); ii++) {
+        Instance instance = instances.get(ii);
+        FeatureVector fv = (FeatureVector) instance.getData();
+        ArrayList seq = new ArrayList();
+        for (int loc = 0; loc < fv.numLocations(); loc++)
+          for (int count = 0; count < fv.valueAtLocation(loc); count++)
+            seq.add (new Integer(fv.indexAtLocation(loc)));
+        Collections.shuffle(seq);
+        int[] indices = new int[seq.size()];
+        for (int i = 0; i < indices.length; i++)
+          indices[i] = ((Integer)seq.get(i)).intValue();
+        FeatureSequence fs = new FeatureSequence (alpha, indices);
+        instance.unLock();
+        instance.setData(null); // So it can be freed by the garbage collector
+        instances2.add(pipe2.instanceFrom(new Instance(fs, instance.getTarget(), instance.getName(), instance.getSource())),
+                 instances.getInstanceWeight(ii));
+      }
+      instances = instances2;
+      if (outputFile.wasInvoked()) {
+        writeInstanceList (instances, outputFile.value());
+      }
+		}
 		else if (trainingProportion.wasInvoked() || validationProportion.wasInvoked()) {
 			
 			// Split into three lists...
@@ -304,7 +333,9 @@ public class Vectors2Vectors {
         instance.setTarget(null);
         instance.lock();
       }
-      writeInstanceList (instances, outputFile.value());
+      if (outputFile.wasInvoked()) {
+        writeInstanceList (instances, outputFile.value());
+      }
     }
     else if (revealTargets.wasInvoked()) {
       Iterator<Instance> iter = instances.iterator();
@@ -314,7 +345,9 @@ public class Vectors2Vectors {
         instance.setTarget(instance.getProperty("target"));
         instance.lock();
       }
-      writeInstanceList (instances, outputFile.value());
+      if (outputFile.wasInvoked()) {
+        writeInstanceList (instances, outputFile.value());
+      }    
     }
 	}
 

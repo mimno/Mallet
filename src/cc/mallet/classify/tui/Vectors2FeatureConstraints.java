@@ -71,6 +71,7 @@ public class Vectors2FeatureConstraints {
         features = readFeaturesFromFile(featuresFile.value, list.getDataAlphabet());        
       }
     }
+    
     // otherwise select features using specified method
     else {
       if (featureSelection.value.equals("infogain")) {
@@ -104,7 +105,7 @@ public class Vectors2FeatureConstraints {
       // For other methods, we need to get feature labels, as
       // long as they haven't been already loaded from disk.
       if (featuresAndLabels == null) {
-        FeatureConstraintUtil.labelFeatures(list,features);
+        featuresAndLabels = FeatureConstraintUtil.labelFeatures(list,features);
       }
       if (targets.value.equals("heuristic")) {
         constraints = FeatureConstraintUtil.setTargetsUsingHeuristic(featuresAndLabels,list.getTargetAlphabet().size(),majorityProb.value);
@@ -141,11 +142,12 @@ public class Vectors2FeatureConstraints {
     try {
       BufferedReader reader = new BufferedReader(new FileReader(file));
       
-      String line = reader.readLine().trim();
+      String line = reader.readLine();
       while (line != null) {
+        line = line.trim();
         int featureIndex = dataAlphabet.lookupIndex(line,false);
         features.add(featureIndex);
-        line = reader.readLine().trim();
+        line = reader.readLine();
       }
     }
     catch (Exception e) {  
