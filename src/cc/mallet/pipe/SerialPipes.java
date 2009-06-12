@@ -140,6 +140,7 @@ public class SerialPipes extends Pipe implements Serializable
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		pipes = (ArrayList) in.readObject();
+		resolveAlphabets();
 	}
 
 }
