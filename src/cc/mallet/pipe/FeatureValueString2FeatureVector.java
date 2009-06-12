@@ -29,20 +29,18 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.FeatureVector;
 
-public class FeatureValueString2FeatureVector extends Pipe implements Serializable
-{
-	public FeatureValueString2FeatureVector (Alphabet dataDict)
-	{
+public class FeatureValueString2FeatureVector extends Pipe implements Serializable {
+
+	public FeatureValueString2FeatureVector (Alphabet dataDict) {
 		super (dataDict, null);
 	}
 
-	public FeatureValueString2FeatureVector ()
-	{
+	public FeatureValueString2FeatureVector () {
 		super(new Alphabet(), null);
 	}
 	
-	public Instance pipe (Instance carrier)
-	{
+	public Instance pipe (Instance carrier) {
+
 		String[] fields = carrier.getData().toString().split("\\s+");
 
 		int numFields = fields.length;
