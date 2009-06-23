@@ -17,6 +17,7 @@ package cc.mallet.classify;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 
 import cc.mallet.classify.Classifier;
 import cc.mallet.types.FeatureVector;
@@ -31,7 +32,7 @@ import cc.mallet.types.Labeling;
  * Also has methods for comparing the correct (true) label contained in the
  * target field of the instance with the one produced by the classifier.
  */
-public class Classification
+public class Classification implements Serializable
 {
 	Instance instance;
 	Classifier classifier;

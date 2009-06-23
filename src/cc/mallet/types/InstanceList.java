@@ -702,7 +702,10 @@ public InstanceList[] splitInOrder (double[] proportions) {
 	}
 
 	public void setInstanceWeight (int index, double weight) {
-		//System.out.println ("setInstanceWeight index="+index+" weight="+weight);
+		setInstanceWeight(get(index), weight);
+	}
+
+	public void setInstanceWeight (Instance instance, double weight) {
 
 		// Weights of 1.0 are not explicitly stored in the hash.
 		if (weight == 1.0) {
@@ -710,7 +713,6 @@ public InstanceList[] splitInOrder (double[] proportions) {
 			if (instWeights == null) { return; }
 
 			// Otherwise, see if there is a weight currently set.
-			Instance instance = get(index);
 			Double value = instWeights.get(instance);
 
 			// If there is no value set or the value is 1.0, we're done.
@@ -725,7 +727,7 @@ public InstanceList[] splitInOrder (double[] proportions) {
 				instWeights = new HashMap<Instance,Double> ();
 			}
 			// Add the new value, overriding any previous value
-			instWeights.put(get(index), weight);
+			instWeights.put(instance, weight);
 		}
 	}
 
