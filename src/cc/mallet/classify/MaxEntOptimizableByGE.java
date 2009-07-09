@@ -193,7 +193,9 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
           // add to the cross entropy term
           value += scalingFactor * cProb * Math.log(modelExpectations[cIndex][label]);
           // add to the entropy term
-          value -= scalingFactor * cProb * Math.log(cProb);
+          if (cProb > 0) {
+            value -= scalingFactor * cProb * Math.log(cProb);
+          }
         }
         assert(Maths.almostEquals(MatrixOps.sum(modelExpectations[cIndex]),1));
       }
