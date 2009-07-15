@@ -782,7 +782,7 @@ public class ParallelTopicModel implements Serializable {
 			// How many words should we report? Some topics may have fewer than
 			//  the default number of words with non-zero weight.
 			int limit = numWords;
-			if (sortedWords.size() < numWords) { numWords = sortedWords.size(); }
+			if (sortedWords.size() < numWords) { limit = sortedWords.size(); }
 
 			result[topic] = new Object[limit];
 
