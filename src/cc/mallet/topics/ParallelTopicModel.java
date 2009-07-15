@@ -727,8 +727,14 @@ public class ParallelTopicModel implements Serializable {
 		out.close();
 	}
 	
-	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
-		
+
+	/**
+	 *  Return an array of sorted sets (one set per topic). Each set 
+	 *   contains IDSorter objects with integer keys into the alphabet.
+	 *   To get direct access to the Strings, use getTopWords().
+	 */
+	public TreeSet[] getSortedWords () {
+	
 		TreeSet[] topicSortedWords = new TreeSet[ numTopics ];
 
 		// Initialize the tree sets
@@ -753,6 +759,46 @@ public class ParallelTopicModel implements Serializable {
 				index++;
 			}
 		}
+
+		return topicSortedWords;
+	}
+
+	/** Return an array (one element for each topic) of arrays of words, which
+	 *  are the most probable words for that topic in descending order. These
+	 *  are returned as Objects, but will probably be Strings.
+	 *
+	 *  @param numWords The maximum length of each topic's array of words (may be less).
+	 */
+	
+	public Object[][] getTopWords(int numWords) {
+
+		TreeSet[] topicSortedWords = getSortedWords();
+		Object[][] result = new Object[ numTopics ][];
+
+		for (int topic = 0; topic < numTopics; topic++) {
+			
+			TreeSet<IDSorter> sortedWords = topicSortedWords[topic];
+			
+			// How many words should we report? Some topics may have fewer than
+			//  the default number of words with non-zero weight.
+			int limit = numWords;
+			if (sortedWords.size() < numWords) { numWords = sortedWords.size(); }
+
+			result[topic] = new Object[limit];
+
+			Iterator<IDSorter> iterator = sortedWords.iterator();
+			for (int i=0; i < limit; i++) {
+				IDSorter info = iterator.next();
+				result[topic][i] = alphabet.lookupObject(info.getID());
+			}
+		}
+
+		return result;
+	}
+
+	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
+
+		TreeSet[] topicSortedWords = getSortedWords();
 
 		// Print results for each topic
 		for (int topic = 0; topic < numTopics; topic++) {
