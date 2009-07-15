@@ -16,8 +16,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import cc.mallet.topics.LDAHyper;
+import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
+import cc.mallet.types.IDSorter;
 import cc.mallet.types.InfoGain;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
@@ -173,19 +175,21 @@ public class FeatureConstraintUtil {
 
    * @return ArrayList with the int indices of the selected features.
    */
-  public static ArrayList<Integer> selectTopLDAFeatures(int numSelFeatures, LDAHyper lda, Alphabet alphabet) {
+  public static ArrayList<Integer> selectTopLDAFeatures(int numSelFeatures, ParallelTopicModel lda, Alphabet alphabet) {
     ArrayList<Integer> features = new ArrayList<Integer>();
-    // topics, features
+
     Alphabet seqAlphabet = lda.getAlphabet();
     
-    int[][] sorted = getSortedTopic(getPrWordTopic(lda));
-    int numTopics = sorted.length;
-    int numFeatures = alphabet.size();
-    for (int pos = 0; pos < numFeatures; pos++) {
+    int numTopics = lda.getNumTopics();
+    
+    Object[][] sorted = lda.getTopWords(seqAlphabet.size());
+
+    for (int pos = 0; pos < seqAlphabet.size(); pos++) {
       for (int ti = 0; ti < numTopics; ti++) {
-        int seqFi = sorted[ti][pos];
-        int fi = alphabet.lookupIndex(seqAlphabet.lookupObject(seqFi),false);
+        Object feat = sorted[ti][pos].toString();
+        int fi = alphabet.lookupIndex(feat,false);
         if ((fi >=0) && (!features.contains(fi))) {
+          System.err.println(feat);
           features.add(fi);
           if (features.size() == numSelFeatures) {
             return features;
@@ -464,6 +468,9 @@ public class FeatureConstraintUtil {
     }
   }
   
+  /* 
+   * These functions are no longer needed.
+   * 
   private static double[][] getPrWordTopic(LDAHyper lda){
     int numTopics = lda.getNumTopics();
     int numTypes = lda.getAlphabet().size();
@@ -488,6 +495,7 @@ public class FeatureConstraintUtil {
     }
     return sortedTopicIdx;
   }
+  */
   
   
   private static int[] getMaxIndices(double[] x) {  

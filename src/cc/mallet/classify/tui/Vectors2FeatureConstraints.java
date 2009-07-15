@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import cc.mallet.classify.FeatureConstraintUtil;
-import cc.mallet.topics.LDAHyper;
+import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.InstanceList;
 import cc.mallet.util.CommandOption;
@@ -80,7 +80,7 @@ public class Vectors2FeatureConstraints {
       else if (featureSelection.value.equals("lda")) {
         try {
           ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ldaFile.value));
-          LDAHyper lda = (LDAHyper)ois.readObject();
+          ParallelTopicModel lda = (ParallelTopicModel)ois.readObject();
           features = FeatureConstraintUtil.selectTopLDAFeatures(numConstraints.value, lda, list.getDataAlphabet());
         }
         catch (Exception e) {
