@@ -87,6 +87,9 @@ public class Vectors2FeatureConstraints {
           e.printStackTrace();
         }
       }
+      else {
+        throw new RuntimeException("Unsupported value for feature selection: " + featureSelection.value);
+      }
     }
     
     // If the target method is oracle, then we do not need feature "labels".
@@ -98,7 +101,7 @@ public class Vectors2FeatureConstraints {
         constraints.put(fi, null);
       }
     }
-    if (targets.value.equals("oracle")) {
+    else if (targets.value.equals("oracle")) {
       constraints = FeatureConstraintUtil.setTargetsUsingData(list, features);
     }
     else {
@@ -106,12 +109,23 @@ public class Vectors2FeatureConstraints {
       // long as they haven't been already loaded from disk.
       if (featuresAndLabels == null) {
         featuresAndLabels = FeatureConstraintUtil.labelFeatures(list,features);
+        
+        for (int fi : featuresAndLabels.keySet()) {
+          System.err.print(list.getDataAlphabet().lookupObject(fi) + ":  ");
+          for (int li : featuresAndLabels.get(fi)) {
+            System.err.println(list.getTargetAlphabet().lookupObject(li) + " ");
+          }
+        }
+        
       }
       if (targets.value.equals("heuristic")) {
         constraints = FeatureConstraintUtil.setTargetsUsingHeuristic(featuresAndLabels,list.getTargetAlphabet().size(),majorityProb.value);
       }
       else if (targets.value.equals("voted")) {
         constraints = FeatureConstraintUtil.setTargetsUsingFeatureVoting(featuresAndLabels,list);
+      }
+      else {
+        throw new RuntimeException("Unsupported value for targets: " + targets.value);
       }
     }
     writeConstraints(constraints,constraintsFile.value,list.getDataAlphabet(),list.getTargetAlphabet());  
@@ -188,6 +202,12 @@ public class Vectors2FeatureConstraints {
   }
   
   private static void writeConstraints(HashMap<Integer,double[]> constraints, File constraintsFile, Alphabet dataAlphabet, Alphabet targetAlphabet) {
+    
+    if (constraints.size() == 0) {
+      System.err.println("No constraints written!");
+      return;
+    }
+    
     try {
       FileWriter writer = new FileWriter(constraintsFile);
       for (int fi : constraints.keySet()) {

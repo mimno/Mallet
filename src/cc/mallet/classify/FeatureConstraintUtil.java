@@ -189,7 +189,7 @@ public class FeatureConstraintUtil {
         Object feat = sorted[ti][pos].toString();
         int fi = alphabet.lookupIndex(feat,false);
         if ((fi >=0) && (!features.contains(fi))) {
-          System.err.println(feat);
+          System.err.println("Selected feature: " + feat);
           features.add(fi);
           if (features.size() == numSelFeatures) {
             return features;
@@ -338,6 +338,7 @@ public class FeatureConstraintUtil {
       // reject features with infogain
       // less than cutoff
       if (infogain.value(fi) < mean) {
+        System.err.println("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
         continue;
       }
       
