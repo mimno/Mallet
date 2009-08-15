@@ -279,6 +279,10 @@ public class Vectors2Topics {
 				InstanceList training = InstanceList.load (new File(inputFile.value));
 				System.out.println ("Data loaded.");
 				topicModel = new ParallelTopicModel (numTopics.value, alpha.value, beta.value);
+				if (randomSeed.value != 0) {
+					topicModel.setRandomSeed(randomSeed.value);
+				}
+
 				topicModel.addInstances(training);
 			}
 
@@ -293,10 +297,6 @@ public class Vectors2Topics {
             topicModel.setNumIterations(numIterations.value);
             topicModel.setOptimizeInterval(optimizeInterval.value);
             topicModel.setBurninPeriod(optimizeBurnIn.value);
-
-            if (randomSeed.value != 0) {
-                topicModel.setRandomSeed(randomSeed.value);
-            }
 
             if (outputStateInterval.value != 0) {
                 topicModel.setSaveState(outputStateInterval.value, stateFile.value);
