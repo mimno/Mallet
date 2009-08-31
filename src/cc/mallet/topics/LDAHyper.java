@@ -795,6 +795,120 @@ public class LDAHyper implements Serializable {
 
 		out.println("</topicModel>");
 	}
+	
+	public void topicXMLReportPhrases (PrintStream out, int numWords) {
+		int numTopics = this.getNumTopics();
+		gnu.trove.TObjectIntHashMap<String>[] phrases = new gnu.trove.TObjectIntHashMap[numTopics];
+		Alphabet alphabet = this.getAlphabet();
+		
+		// Get counts of phrases
+		for (int ti = 0; ti < numTopics; ti++)
+			phrases[ti] = new gnu.trove.TObjectIntHashMap<String>();
+		for (int di = 0; di < this.getData().size(); di++) {
+			LDAHyper.Topication t = this.getData().get(di);
+			Instance instance = t.instance;
+			FeatureSequence fvs = (FeatureSequence) instance.getData();
+			boolean withBigrams = false;
+			if (fvs instanceof FeatureSequenceWithBigrams) withBigrams = true;
+			int prevtopic = -1;
+			int prevfeature = -1;
+			int topic = -1;
+			StringBuffer sb = null;
+			int feature = -1;
+			int doclen = fvs.size();
+			for (int pi = 0; pi < doclen; pi++) {
+				feature = fvs.getIndexAtPosition(pi);
+				topic = this.getData().get(di).topicSequence.getIndexAtPosition(pi);
+				if (topic == prevtopic && (!withBigrams || ((FeatureSequenceWithBigrams)fvs).getBiIndexAtPosition(pi) != -1)) {
+					if (sb == null)
+						sb = new StringBuffer (alphabet.lookupObject(prevfeature).toString() + " " + alphabet.lookupObject(feature));
+					else {
+						sb.append (" ");
+						sb.append (alphabet.lookupObject(feature));
+					}
+				} else if (sb != null) {
+					String sbs = sb.toString().intern();
+					//System.out.println ("phrase:"+sbs);
+					if (phrases[prevtopic].get(sbs) == 0)
+						phrases[prevtopic].put(sbs,0);
+					phrases[prevtopic].increment(sbs);
+					prevtopic = prevfeature = -1;
+					sb = null;
+				} else {
+					prevtopic = topic;
+					prevfeature = feature;
+				}
+			}
+		}
+		// phrases[] now filled with counts
+		
+		// Now start printing the XML
+		out.println("<?xml version='1.0' ?>");
+		out.println("<topics>");
+
+		double[] probs = new double[alphabet.size()];
+		for (int ti = 0; ti < numTopics; ti++) {
+			out.print("  <topic id=\"" + ti + "\" alpha=\"" + alpha[ti] +
+					"\" totalTokens=\"" + tokensPerTopic[ti] + "\" ");
+
+			// For gathering <term> and <phrase> output temporarily 
+			// so that we can get topic-title information before printing it to "out".
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			PrintStream pout = new PrintStream (bout);
+			// For holding candidate topic titles
+			AugmentableFeatureVector titles = new AugmentableFeatureVector (new Alphabet());
+
+			// Print words
+			for (int type = 0; type < alphabet.size(); type++)
+				probs[type] = this.getCountFeatureTopic(type, ti) / (double)this.getCountTokensPerTopic(ti);
+			RankedFeatureVector rfv = new RankedFeatureVector (alphabet, probs);
+			for (int ri = 0; ri < numWords; ri++) {
+				int fi = rfv.getIndexAtRank(ri);
+				pout.println ("      <term weight=\""+probs[fi]+"\" count=\""+this.getCountFeatureTopic(fi,ti)+"\">"+alphabet.lookupObject(fi)+	"</term>");
+				if (ri < 20) // consider top 20 individual words as candidate titles
+					titles.add(alphabet.lookupObject(fi), this.getCountFeatureTopic(fi,ti));
+			}
+
+			// Print phrases
+			Object[] keys = phrases[ti].keys();
+			int[] values = phrases[ti].getValues();
+			double counts[] = new double[keys.length];
+			for (int i = 0; i < counts.length; i++)	counts[i] = values[i];
+			double countssum = MatrixOps.sum (counts);	
+			Alphabet alph = new Alphabet(keys);
+			rfv = new RankedFeatureVector (alph, counts);
+			//out.println ("topic "+ti);
+			int max = rfv.numLocations() < numWords ? rfv.numLocations() : numWords;
+			//System.out.println ("topic "+ti+" numPhrases="+rfv.numLocations());
+			for (int ri = 0; ri < max; ri++) {
+				int fi = rfv.getIndexAtRank(ri);
+				pout.println ("      <phrase weight=\""+counts[fi]/countssum+"\" count=\""+values[fi]+"\">"+alph.lookupObject(fi)+	"</phrase>");
+				// Any phrase count less than 20 is simply unreliable
+				if (ri < 20 && values[fi] > 20) 
+					titles.add(alph.lookupObject(fi), 100*values[fi]); // prefer phrases with a factor of 100 
+			}
+			
+			// Select candidate titles
+			StringBuffer titlesStringBuffer = new StringBuffer();
+			rfv = new RankedFeatureVector (titles.getAlphabet(), titles);
+			int numTitles = 10; 
+			for (int ri = 0; ri < numTitles && ri < rfv.numLocations(); ri++) {
+				// Don't add redundant titles
+				if (titlesStringBuffer.indexOf(rfv.getObjectAtRank(ri).toString()) == -1) {
+					titlesStringBuffer.append (rfv.getObjectAtRank(ri));
+					if (ri < numTitles-1)
+						titlesStringBuffer.append (", ");
+				} else
+					numTitles++;
+			}
+			out.println("titles=\"" + titlesStringBuffer.toString() + "\">");
+			out.print(pout.toString());
+			out.println("  </topic>");
+		}
+		out.println("</topics>");
+	}
+
+
 
 	public void printDocumentTopics (File f) throws IOException {
 		printDocumentTopics (new PrintWriter (new FileWriter (f) ) );
@@ -897,6 +1011,36 @@ public class LDAHyper implements Serializable {
 			}
 		}
 	}
+	
+	// Turbo topics
+	/*
+	private class CorpusWordCounts {
+		Alphabet unigramAlphabet;
+		FeatureCounter unigramCounts = new FeatureCounter(unigramAlphabet);
+		public CorpusWordCounts(Alphabet alphabet) {
+			unigramAlphabet = alphabet;
+		}
+		private double mylog(double x) { return (x == 0) ? -1000000.0 : Math.log(x); }
+		// The likelihood ratio significance test
+		private double significanceTest(int thisUnigramCount, int nextUnigramCount, int nextBigramCount, int nextTotalCount, int minCount) {
+      if (nextBigramCount < minCount) return -1.0;
+      assert(nextUnigramCount >= nextBigramCount);
+      double log_pi_vu = mylog(nextBigramCount) - mylog(thisUnigramCount);
+      double log_pi_vnu = mylog(nextUnigramCount - nextBigramCount) - mylog(nextTotalCount - nextBigramCount);
+      double log_pi_v_old = mylog(nextUnigramCount) - mylog(nextTotalCount);
+      double log_1mp_v = mylog(1 - Math.exp(log_pi_vnu));
+      double log_1mp_vu = mylog(1 - Math.exp(log_pi_vu));
+      return 2 * (nextBigramCount * log_pi_vu + 
+      		(nextUnigramCount - nextBigramCount) * log_pi_vnu - 
+      		nextUnigramCount * log_pi_v_old + 
+      		(thisUnigramCount- nextBigramCount) * (log_1mp_vu - log_1mp_v));
+		}
+		public int[] significantBigrams(int word) {
+		}
+	}
+	*/
+	
+	
 	
 	public void write (File f) {
 		try {

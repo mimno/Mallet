@@ -66,12 +66,15 @@ public class Vectors2Topics {
          "The filename in which to write a sparse representation of topic-word assignments.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	/*
 	static CommandOption.String topicReportXMLFile = new CommandOption.String
 		(Vectors2Topics.class, "xml-topic-report", "FILENAME", true, null,
          "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
-	*/
+
+	static CommandOption.String topicPhraseReportXMLFile = new CommandOption.String
+	(Vectors2Topics.class, "xml-topic-phrase-report", "FILENAME", true, null,
+       "The filename in which to write the top words and phrases for each topic and any Dirichlet parameters in XML format.  " +
+	 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String docTopicsFile = new CommandOption.String
 		(Vectors2Topics.class, "output-doc-topics", "FILENAME", true, null,
@@ -313,13 +316,18 @@ public class Vectors2Topics {
 			if (topicKeysFile.value != null) {
 				topicModel.printTopWords(new File(topicKeysFile.value), topWords.value, false);
 			}
-			/*
+
 			if (topicReportXMLFile.value != null) {
 				PrintWriter out = new PrintWriter(topicReportXMLFile.value);
 				topicModel.topicXMLReport(out, topWords.value);
 				out.close();
 			}
-			*/
+
+			if (topicPhraseReportXMLFile.value != null) {
+				PrintWriter out = new PrintWriter(topicPhraseReportXMLFile.value);
+				topicModel.topicPhraseXMLReport(out, topWords.value);
+				out.close();
+			}
 
 			if (stateFile.value != null) {
 				topicModel.printState (new File(stateFile.value));

@@ -802,36 +802,178 @@ public class ParallelTopicModel implements Serializable {
 
 		// Print results for each topic
 		for (int topic = 0; topic < numTopics; topic++) {
-
 			TreeSet<IDSorter> sortedWords = topicSortedWords[topic];
-
 			int word = 1;
 			Iterator<IDSorter> iterator = sortedWords.iterator();
 
 			if (usingNewLines) {
 				out.println (topic + "\t" + formatter.format(alpha[topic]));
-
-                while (iterator.hasNext() && word < numWords) {
-                    IDSorter info = iterator.next();
-
-                    out.println(alphabet.lookupObject(info.getID()) + "\t" + formatter.format(info.getWeight()));
-                    word++;
+				while (iterator.hasNext() && word < numWords) {
+					IDSorter info = iterator.next();
+					out.println(alphabet.lookupObject(info.getID()) + "\t" + formatter.format(info.getWeight()));
+					word++;
 				}
 			}
 			else {
 				out.print (topic + "\t" + formatter.format(alpha[topic]) + "\t");
 
-                while (iterator.hasNext() && word < numWords) {
-                    IDSorter info = iterator.next();
-
-                    out.print(alphabet.lookupObject(info.getID()) + " ");
-                    word++;
-                }
-
+				while (iterator.hasNext() && word < numWords) {
+					IDSorter info = iterator.next();
+					out.print(alphabet.lookupObject(info.getID()) + " ");
+					word++;
+				}
 				out.print ("\n");
 			}
 		}
 	}
+	
+	public void topicXMLReport (PrintWriter out, int numWords) {
+		TreeSet[] topicSortedWords = getSortedWords();
+		out.println("<?xml version='1.0' ?>");
+		out.println("<topicModel>");
+		for (int topic = 0; topic < numTopics; topic++) {
+			out.println("  <topic id='" + topic + "' alpha='" + alpha[topic] +
+						"' totalTokens='" + tokensPerTopic[topic] + "'>");
+			int word = 1;
+			Iterator<IDSorter> iterator = topicSortedWords[topic].iterator();
+			while (iterator.hasNext() && word < numWords) {
+				IDSorter info = iterator.next();
+				out.println("    <word rank='" + word + "'>" +
+						  alphabet.lookupObject(info.getID()) +
+						  "</word>");
+				word++;
+			}
+			out.println("  </topic>");
+		}
+		out.println("</topicModel>");
+	}
+
+	public void topicPhraseXMLReport(PrintWriter out, int numWords) {
+		int numTopics = this.getNumTopics();
+		gnu.trove.TObjectIntHashMap<String>[] phrases = new gnu.trove.TObjectIntHashMap[numTopics];
+		Alphabet alphabet = this.getAlphabet();
+		
+		// Get counts of phrases
+		for (int ti = 0; ti < numTopics; ti++)
+			phrases[ti] = new gnu.trove.TObjectIntHashMap<String>();
+		for (int di = 0; di < this.getData().size(); di++) {
+			TopicAssignment t = this.getData().get(di);
+			Instance instance = t.instance;
+			FeatureSequence fvs = (FeatureSequence) instance.getData();
+			boolean withBigrams = false;
+			if (fvs instanceof FeatureSequenceWithBigrams) withBigrams = true;
+			int prevtopic = -1;
+			int prevfeature = -1;
+			int topic = -1;
+			StringBuffer sb = null;
+			int feature = -1;
+			int doclen = fvs.size();
+			for (int pi = 0; pi < doclen; pi++) {
+				feature = fvs.getIndexAtPosition(pi);
+				topic = this.getData().get(di).topicSequence.getIndexAtPosition(pi);
+				if (topic == prevtopic && (!withBigrams || ((FeatureSequenceWithBigrams)fvs).getBiIndexAtPosition(pi) != -1)) {
+					if (sb == null)
+						sb = new StringBuffer (alphabet.lookupObject(prevfeature).toString() + " " + alphabet.lookupObject(feature));
+					else {
+						sb.append (" ");
+						sb.append (alphabet.lookupObject(feature));
+					}
+				} else if (sb != null) {
+					String sbs = sb.toString().intern();
+					//System.out.println ("phrase:"+sbs);
+					if (phrases[prevtopic].get(sbs) == 0)
+						phrases[prevtopic].put(sbs,0);
+					phrases[prevtopic].increment(sbs);
+					prevtopic = prevfeature = -1;
+					sb = null;
+				} else {
+					prevtopic = topic;
+					prevfeature = feature;
+				}
+			}
+		}
+		// phrases[] now filled with counts
+		
+		// Now start printing the XML
+		out.println("<?xml version='1.0' ?>");
+		out.println("<topics>");
+
+		TreeSet[] topicSortedWords = getSortedWords();
+		double[] probs = new double[alphabet.size()];
+		for (int ti = 0; ti < numTopics; ti++) {
+			out.print("  <topic id=\"" + ti + "\" alpha=\"" + alpha[ti] +
+					"\" totalTokens=\"" + tokensPerTopic[ti] + "\" ");
+
+			// For gathering <term> and <phrase> output temporarily 
+			// so that we can get topic-title information before printing it to "out".
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			PrintStream pout = new PrintStream (bout);
+			// For holding candidate topic titles
+			AugmentableFeatureVector titles = new AugmentableFeatureVector (new Alphabet());
+
+			// Print words
+			int word = 1;
+			Iterator<IDSorter> iterator = topicSortedWords[ti].iterator();
+			while (iterator.hasNext() && word < numWords) {
+				IDSorter info = iterator.next();
+				pout.println("    <word weight=\""+(info.getWeight()/tokensPerTopic[ti])+"\" count=\""+Math.round(info.getWeight())+"\">"
+							+ alphabet.lookupObject(info.getID()) +
+						  "</word>");
+				word++;
+				if (word < 20) // consider top 20 individual words as candidate titles
+					titles.add(alphabet.lookupObject(info.getID()), info.getWeight());
+			}
+
+			/*
+			for (int type = 0; type < alphabet.size(); type++)
+				probs[type] = this.getCountFeatureTopic(type, ti) / (double)this.getCountTokensPerTopic(ti);
+			RankedFeatureVector rfv = new RankedFeatureVector (alphabet, probs);
+			for (int ri = 0; ri < numWords; ri++) {
+				int fi = rfv.getIndexAtRank(ri);
+				pout.println ("      <term weight=\""+probs[fi]+"\" count=\""+this.getCountFeatureTopic(fi,ti)+"\">"+alphabet.lookupObject(fi)+	"</term>");
+				if (ri < 20) // consider top 20 individual words as candidate titles
+					titles.add(alphabet.lookupObject(fi), this.getCountFeatureTopic(fi,ti));
+			}
+			*/
+
+			// Print phrases
+			Object[] keys = phrases[ti].keys();
+			int[] values = phrases[ti].getValues();
+			double counts[] = new double[keys.length];
+			for (int i = 0; i < counts.length; i++)	counts[i] = values[i];
+			double countssum = MatrixOps.sum (counts);	
+			Alphabet alph = new Alphabet(keys);
+			RankedFeatureVector rfv = new RankedFeatureVector (alph, counts);
+			int max = rfv.numLocations() < numWords ? rfv.numLocations() : numWords;
+			for (int ri = 0; ri < max; ri++) {
+				int fi = rfv.getIndexAtRank(ri);
+				pout.println ("    <phrase weight=\""+counts[fi]/countssum+"\" count=\""+values[fi]+"\">"+alph.lookupObject(fi)+	"</phrase>");
+				// Any phrase count less than 20 is simply unreliable
+				if (ri < 20 && values[fi] > 20) 
+					titles.add(alph.lookupObject(fi), 100*values[fi]); // prefer phrases with a factor of 100 
+			}
+			
+			// Select candidate titles
+			StringBuffer titlesStringBuffer = new StringBuffer();
+			rfv = new RankedFeatureVector (titles.getAlphabet(), titles);
+			int numTitles = 10; 
+			for (int ri = 0; ri < numTitles && ri < rfv.numLocations(); ri++) {
+				// Don't add redundant titles
+				if (titlesStringBuffer.indexOf(rfv.getObjectAtRank(ri).toString()) == -1) {
+					titlesStringBuffer.append (rfv.getObjectAtRank(ri));
+					if (ri < numTitles-1)
+						titlesStringBuffer.append (", ");
+				} else
+					numTitles++;
+			}
+			out.println("titles=\"" + titlesStringBuffer.toString() + "\">");
+			out.print(bout.toString());
+			out.println("  </topic>");
+		}
+		out.println("</topics>");
+	}
+
+	
 
 	/**
 	 *  Write the internal representation of type-topic counts  
@@ -906,6 +1048,10 @@ public class ParallelTopicModel implements Serializable {
 			}
 		}
 	}
+	
+	
+	
+	
 
 	public void printDocumentTopics (File file) throws IOException {
 		PrintWriter out = new PrintWriter (new FileWriter (file) );
