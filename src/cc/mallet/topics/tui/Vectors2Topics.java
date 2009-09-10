@@ -46,6 +46,11 @@ public class Vectors2Topics {
          "A topic inferencer applies a previously trained topic model to new documents.  " +
          "By default this is null, indicating that no file will be written.", null);
 
+    static CommandOption.String evaluatorFilename = new CommandOption.String
+        (Vectors2Topics.class, "evaluator-filename", "FILENAME", true, null,
+         "A held-out likelihood evaluator for new documents.  " +
+         "By default this is null, indicating that no file will be written.", null);
+
 	static CommandOption.String stateFile = new CommandOption.String
 		(Vectors2Topics.class, "output-state", "FILENAME", true, null,
 		 "The filename in which to write the Gibbs sampling state after at the end of the iterations.  " +
@@ -368,6 +373,20 @@ public class Vectors2Topics {
 					ObjectOutputStream oos = 
 						new ObjectOutputStream(new FileOutputStream(inferencerFilename.value));
 					oos.writeObject(topicModel.getInferencer());
+					oos.close();
+
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+				}
+					
+			}
+
+			if (evaluatorFilename.value != null) {
+				try {
+
+					ObjectOutputStream oos = 
+						new ObjectOutputStream(new FileOutputStream(evaluatorFilename.value));
+					oos.writeObject(topicModel.getProbEstimator());
 					oos.close();
 
 				} catch (Exception e) {
