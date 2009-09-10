@@ -10,7 +10,7 @@
 
 /**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- */
+*/
 
 package cc.mallet.util;
 
@@ -26,22 +26,28 @@ public abstract class CommandOption
 {
 	static BshInterpreter interpreter;
 
-	// Maps a Java class to the array of CommandOption objects that are owned by it.
+	/** Maps a Java class to the array of CommandOption objects that are owned by it. */
 	static HashMap class2options = new HashMap ();
 
 	Class owner;
+	/** The name of the argument, eg "input" */
 	java.lang.String name;
+	/** The display name of the argument type, eg "[TRUE|FALSE]" or "FILE" */
 	java.lang.String argName;
-	Class argType;												// if never an argument, this null
+	
+	/** The type of the argument, if present */
+	Class argType;
 	boolean argRequired;
 	java.lang.String shortdoc;
 	java.lang.String longdoc;
 	java.lang.String fullName;
-	boolean invoked = false;							// did this command option get processed, or do we just have default value
+	
+	/** did this command option get processed, or do we just have default value */
+	boolean invoked = false;
 
 	public CommandOption (Class owner, java.lang.String name, java.lang.String argName,
-												Class argType, boolean argRequired,
-												java.lang.String shortdoc, java.lang.String longdoc)
+						  Class argType, boolean argRequired,
+						  java.lang.String shortdoc, java.lang.String longdoc)
 	{
 		this.owner = owner;
 		this.name = name;
@@ -50,7 +56,7 @@ public abstract class CommandOption
 		this.argRequired = argRequired;
 		this.shortdoc = shortdoc;
 		this.longdoc = longdoc;
-    Package p = owner.getPackage();
+		Package p = owner.getPackage();
 		this.fullName = (p != null ? p.toString() : "") + name;
 		if (interpreter == null)
 			interpreter = new BshInterpreter ();
@@ -64,60 +70,67 @@ public abstract class CommandOption
 		}
 	}
 
-	// Deprecated
+	/**  @deprecated */
 	public CommandOption (Class owner, java.lang.String name, java.lang.String argName,
-												Class argType, boolean argRequired,
-												java.lang.String shortdoc)
+						  Class argType, boolean argRequired,
+						  java.lang.String shortdoc)
 	{
 		this (owner, name, argName, argType, argRequired, shortdoc, null);
 	}
 
-	/** Give this CommandOption the opportunity to process the argi'th argument in args.
-			Return the next unprocessed index. */
-	public int process (java.lang.String[] args, int argi)
-	{
-		//System.out.println (name + " processing arg "+args[argi]);
+	/** Give this CommandOption the opportunity to process the index'th argument in args.
+		Return the next unprocessed index. */
+	public int process (java.lang.String[] args, int index) {
+
+		//System.out.println (name + " processing arg " + args[index]);
 		if (args.length == 0)
-			return argi;
+			return index;
 
-//		System.out.println(argi + ": " + args[argi]);
+		//		System.out.println(index + ": " + args[index]);
 
-		// culotta: Actually, trailing arguments not prefaced with "--"
-		// are allowed. Commenting out assertion.		
-		//		assert (args[argi].charAt(0) == '-' && args[argi].charAt(1) == '-')
-		//			: "Invalid option "+args[argi]+" : Must start with '--'";
-		if (argi >= args.length ||
-        args[argi] == null || args[argi].length() < 2 ||
-        args[argi].charAt(0) != '-' || args[argi].charAt(1) != '-')
-      return argi;
-		java.lang.String optFullName = args[argi].substring(2);
+		// Is there anything to process?
+		if (index >= args.length ||
+			args[index] == null || args[index].length() < 2 ||
+			args[index].charAt(0) != '-' || args[index].charAt(1) != '-')
+			return index;
+
+		// Determine what the command name is
+		java.lang.String optFullName = args[index].substring(2);
 		int dotIndex = optFullName.lastIndexOf('.');
 		java.lang.String optName = optFullName;
+
+		// Commands may have a package prefix
 		if (dotIndex != -1) {
 			java.lang.String optPackageName = optFullName.substring (0, dotIndex);
 			if (owner.getPackage() != null &&
-          !owner.getPackage().toString().endsWith(optPackageName))
-				return argi;
+				! owner.getPackage().toString().endsWith(optPackageName))
+				return index;
 			optName = optFullName.substring (dotIndex+1);
 		}
-		if (!name.equals(optName))
-			return argi;
-		// The command-line option at "argi" is this one.
+
+		// Does the option name match the name of this CommandOption?
+		if (! name.equals(optName))
+			return index;
+
+		// We have now determined that this CommandOption is the correct one
 		this.invoked = true;
-		argi++;
-		if (args.length > argi && (args[argi].length() < 2
-															 || (args[argi].charAt(0) != '-' && args[argi].charAt(1) != '-'))) {
-			argi = parseArg (args, argi);
-		} else {
+		index++;
+
+		if (args.length > index && (args[index].length() < 2
+									|| (args[index].charAt(0) != '-' && args[index].charAt(1) != '-'))) {
+			index = parseArg (args, index);
+		}
+		else {
 			if (argRequired) {
 				throw new IllegalArgumentException ("Missing argument for option " + optName);
-			} else {
-				// xxx This is not parallel behavior to the above parseArg(String[],int) method.
-				parseArg (args, -argi); // xxx was ""
 			}
-			//argi++;
+			else {
+				// xxx This is not parallel behavior to the above parseArg(String[],int) method.
+				parseArg (args, -index); // xxx was ""
+			}
+			//index++;
 		}
-		return argi;
+		return index;
 	}
 
 	public static BshInterpreter getInterpreter ()
@@ -149,59 +162,61 @@ public abstract class CommandOption
 		options.setSummary (summary);
 	}
 
-	public java.lang.String getFullName ()
-	{
+	public java.lang.String getFullName () {
 		return fullName;
 	}
   
-  public java.lang.String getName() {
-    return name;
-  }
+	public java.lang.String getName () {
+		return name;
+	}
 
-	public abstract java.lang.String defaultValueToString();
+	public abstract java.lang.String defaultValueToString ();
 
-	public abstract java.lang.String valueToString();
+	public abstract java.lang.String valueToString ();
 
 	/** Return true is this CommandOption was matched by one of the processed arguments. */
-	public boolean wasInvoked ()
-	{
+	public boolean wasInvoked () {
 		return invoked;
 	}
 
 	/** Called after this CommandOption matches an argument.
 
 	    The default implementation simply calls parseArg(String), and
-			returns argi+1; unless argi is negative, in which case it calls
-			parseArg((String)null) and returns argi. */
-	public int parseArg (java.lang.String args[], int argi)
-	{
-		if (argi < 0) {
+		returns index+1; unless index is negative, in which case it calls
+		parseArg((String)null) and returns index. */
+	public int parseArg (java.lang.String args[], int index) {
+		if (index < 0) {
 			parseArg ((java.lang.String)null);
-			return argi;
-		} else {
-			parseArg (args[argi]);
-			return argi+1;
+			return index;
+		}
+		else {
+			parseArg (args[index]);
+			return index+1;
 		}
 	}
 
-	public void parseArg (java.lang.String arg)
-	{
-	}
+	public void parseArg (java.lang.String arg) {}
 
 	/** To be overridden by subclasses;
 	    "list" is the the CommandOption.List that called this option */
-	public void postParsing (CommandOption.List list)
-	{
-	}
+	public void postParsing (CommandOption.List list) {}
 
 	/** For objects that can provide CommandOption.List's (which can be merged into other lists. */
-	public static interface ListProviding
-	{
+	public static interface ListProviding {
 		public CommandOption.List getCommandOptionList ();
 	}
 
-	public static class List
-	{
+	public static void printOptionValues(Class owner) {
+		CommandOption.List options = (CommandOption.List) class2options.get (owner);
+
+		for (int i=0; i < options.size(); i++) {
+			CommandOption option = options.getCommandOption(i);
+			System.out.println(option.getName() + "\t=\t" + option.valueToString());
+		}
+	}
+
+	public static class List {
+
 		ArrayList options;
 		HashMap map;
 		java.lang.String summary;
@@ -212,13 +227,16 @@ public abstract class CommandOption
 			this.summary = summary;
 
 			add (new Boolean (CommandOption.class, "help", "TRUE|FALSE", false, false,
-												"Print this command line option usage information.  "+
-												"Give argument of TRUE for longer documentation", null)
+							  "Print this command line option usage information.  "+
+							  "Give argument of TRUE for longer documentation", null)
 				{ public void postParsing(CommandOption.List list) { printUsage(value); System.exit(-1); } });
 			add (new Object	(CommandOption.class, "prefix-code", "'JAVA CODE'", true, null,
-											 "Java code you want run before any other interpreted code.  Note that the text "+
-											 "is interpretted without modification, so unlike some other Java code options, "+
-											 "you need to include any necessary 'new's when creating objects.", null));
+							 "Java code you want run before any other interpreted code.  Note that the text "+
+							 "is interpreted without modification, so unlike some other Java code options, "+
+							 "you need to include any necessary 'new's when creating objects.", null));
+			add (new File (CommandOption.class, "config", "FILE", false, null,
+						   "Read command option values from a file", null)
+				{ public void postParsing(CommandOption.List list) { readFromFile(value); } } );
 		}
 
 		public List (java.lang.String summary, CommandOption[] options) {
@@ -256,62 +274,103 @@ public abstract class CommandOption
 				add (opts.getCommandOption(i));
 		}
 
-    public void add (Class owner) {
-      CommandOption.List options = (CommandOption.List) class2options.get (owner);
-		  if (options == null)
-			  throw new IllegalArgumentException ("No CommandOptions registered for class "+owner);
-      add (options);
-    }
+		public void add (Class owner) {
+			CommandOption.List options = (CommandOption.List) class2options.get (owner);
+			if (options == null)
+				throw new IllegalArgumentException ("No CommandOptions registered for class "+owner);
+			add (options);
+		}
 
-		/** Parse and proces command-line options in args.  Return sub-array of
-				args occurring after first non-recognized arg that doesn't begin with a dash. */
+		/** 
+		 *  Load configuration information from a file. If the filename ends 
+		 *   with ".xml", the file is interpreted as a Java XML configuration file.
+		 *   Otherwise it is interpreted as a text config file (eg "key = value" on each line).
+		 *   Note that text files can only use Latin 1 (en-us) characters, while
+		 *   XML files can be UTF-8.
+		 */
+		public void readFromFile(java.io.File configurationFile) {
+			try {
+				Properties properties = new Properties();
+				
+				if (configurationFile.getName().endsWith(".xml")) {
+					properties.loadFromXML(new FileInputStream(configurationFile));
+				}
+				else {
+					properties.load(new FileInputStream(configurationFile));
+				}
+				
+				Enumeration keys = properties.propertyNames();
+				while (keys.hasMoreElements()) {
+					java.lang.String key = (java.lang.String) keys.nextElement();
+					java.lang.String[] values = properties.getProperty(key).split("\\s+");
+					
+					boolean foundValue = false;
+					for (int i = 0; i < options.size(); i++) {
+						CommandOption option = (CommandOption) options.get(i);
+						if (option.name.equals(key)) {
+							foundValue = true;
+							
+							option.parseArg(values, 0);
+							
+							break;
+						}
+					}
+				}
+				
+			} catch (Exception e) {
+				System.err.println("Unable to process configuration file: " + e.getMessage());
+			}
+		}
+		
+		/** Parse and process command-line options in args.  Return sub-array of
+			args occurring after first non-recognized arg that doesn't begin with a dash. */
 		public java.lang.String[] process (java.lang.String[] args)
 		{
-			int argi = 0;
-			while (argi < args.length) {
-				int newArgi = argi;
+			int index = 0;
+			while (index < args.length) {
+				int newIndex = index;
 				for (int i = 0; i < options.size(); i++) {
 					CommandOption o = (CommandOption)options.get(i);
-					newArgi = o.process (args, argi);
-					if (newArgi != argi) {
+					newIndex = o.process (args, index);
+					if (newIndex != index) {
 						o.postParsing(this);
 						break;
 					}
 				}
-				if (newArgi == argi) {
-					// All of the CommandOptions had their chance to claim the argi'th option,,
+				if (newIndex == index) {
+					// All of the CommandOptions had their chance to claim the index'th option,,
 					// but none of them did.
 					printUsage(false);
-					throw new IllegalArgumentException ("Unrecognized option " + argi + ": " +args[argi]);
+					throw new IllegalArgumentException ("Unrecognized option " + index + ": " +args[index]);
 				}
-				argi = newArgi;
+				index = newIndex;
 			}
 			return new java.lang.String[0];
 		}
 
 		public int processOptions (java.lang.String[] args)
 		{
-			for (int argi = 0; argi < args.length;) {
-				int newArgi = argi;
+			for (int index = 0; index < args.length;) {
+				int newIndex = index;
 				for (int i = 0; i < options.size(); i++) {
 					CommandOption o = (CommandOption)options.get(i);
-					newArgi = o.process (args, argi);
-					if (newArgi != argi) {
+					newIndex = o.process (args, index);
+					if (newIndex != index) {
 						o.postParsing(this);
 						break;
 					}
 				}
-				if (newArgi == argi) {
-          if (argi < args.length && args[argi].length() > 1 &&
-              args[argi].charAt(0) == '-' && args[argi].charAt(1) == '-') {
-            printUsage(false);
-            throw new IllegalArgumentException ("Unrecognized option "+args[argi]);
+				if (newIndex == index) {
+					if (index < args.length && args[index].length() > 1 &&
+						args[index].charAt(0) == '-' && args[index].charAt(1) == '-') {
+						printUsage(false);
+						throw new IllegalArgumentException ("Unrecognized option "+args[index]);
 					}
-          return argi;
-        }
-				argi = newArgi;
+					return index;
+				}
+				index = newIndex;
 			}
-      return args.length;
+			return args.length;
 		}
 
 		public void printUsage (boolean printLongDoc)
@@ -342,8 +401,8 @@ public abstract class CommandOption
 	{
 		public boolean value, defaultValue;;
 		public Boolean (Class owner, java.lang.String name, java.lang.String argName,
-										boolean argRequired, boolean defaultValue,
-										java.lang.String shortdoc, java.lang.String longdoc)
+						boolean argRequired, boolean defaultValue,
+						java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, Boolean.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
@@ -365,8 +424,8 @@ public abstract class CommandOption
 	{
 		public int value, defaultValue;
 		public Integer (Class owner, java.lang.String name, java.lang.String argName,
-										boolean argRequired, int defaultValue,
-										java.lang.String shortdoc, java.lang.String longdoc)
+						boolean argRequired, int defaultValue,
+						java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, Integer.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
@@ -381,36 +440,36 @@ public abstract class CommandOption
 	{
 		public int[] value, defaultValue;
 		public IntegerArray (Class owner, java.lang.String name, java.lang.String argName,
-										boolean argRequired, int[] defaultValue,
-										java.lang.String shortdoc, java.lang.String longdoc)
+							 boolean argRequired, int[] defaultValue,
+							 java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, IntegerArray.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
 		}
 		public int[] value () { return value; }
 		public void parseArg (java.lang.String arg) {
-      java.lang.String elts[] = arg.split(",");
-      value = new int[elts.length];
-      for (int i = 0; i < elts.length; i++)
-        value[i] = java.lang.Integer.parseInt(elts[i]);
-    }
+			java.lang.String elts[] = arg.split(",");
+			value = new int[elts.length];
+			for (int i = 0; i < elts.length; i++)
+				value[i] = java.lang.Integer.parseInt(elts[i]);
+		}
 		public java.lang.String defaultValueToString() {
-      StringBuffer b = new StringBuffer();
-      java.lang.String sep = "";
-      for (int i = 0; i < defaultValue.length; i++) {
-        b.append(sep).append(java.lang.Integer.toString(defaultValue[i]));
-        sep = ",";
-      }
-      return b.toString();
-    }
+			StringBuffer b = new StringBuffer();
+			java.lang.String sep = "";
+			for (int i = 0; i < defaultValue.length; i++) {
+				b.append(sep).append(java.lang.Integer.toString(defaultValue[i]));
+				sep = ",";
+			}
+			return b.toString();
+		}
 		public java.lang.String valueToString() {
-      StringBuffer b = new StringBuffer();
-      java.lang.String sep = "";
-      for (int i = 0; i < defaultValue.length; i++) {
-        b.append(sep).append(java.lang.Integer.toString(value[i]));
-        sep = ",";
-      }
-      return b.toString();
+			StringBuffer b = new StringBuffer();
+			java.lang.String sep = "";
+			for (int i = 0; i < defaultValue.length; i++) {
+				b.append(sep).append(java.lang.Integer.toString(value[i]));
+				sep = ",";
+			}
+			return b.toString();
 		}
 	}
 
@@ -418,8 +477,8 @@ public abstract class CommandOption
 	{
 		public double value, defaultValue;
 		public Double (Class owner, java.lang.String name, java.lang.String argName,
-									 boolean argRequired, double defaultValue,
-									 java.lang.String shortdoc, java.lang.String longdoc)
+					   boolean argRequired, double defaultValue,
+					   java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, Double.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
@@ -430,49 +489,49 @@ public abstract class CommandOption
 		public java.lang.String valueToString () { return java.lang.Double.toString (value); }
 	}
 
-  public static class DoubleArray extends CommandOption
-  {
-    public double[] value, defaultValue;
-    public DoubleArray (Class owner, java.lang.String name, java.lang.String argName,
-                    boolean argRequired, double[] defaultValue,
-                    java.lang.String shortdoc, java.lang.String longdoc)
-    {
-      super (owner, name, argName, IntegerArray.class, argRequired, shortdoc, longdoc);
-      this.defaultValue = value = defaultValue;
-    }
-    public double[] value () { return value; }
-    public void parseArg (java.lang.String arg) {
-      java.lang.String elts[] = arg.split(",");
-      value = new double[elts.length];
-      for (int i = 0; i < elts.length; i++)
-        value[i] = java.lang.Double.parseDouble(elts[i]);
-    }
-    public java.lang.String defaultValueToString() {
-      StringBuffer b = new StringBuffer();
-      java.lang.String sep = "";
-      for (int i = 0; i < defaultValue.length; i++) {
-        b.append(sep).append(java.lang.Double.toString(defaultValue[i]));
-        sep = ",";
-      }
-      return b.toString();
-    }
-    public java.lang.String valueToString() {
-      StringBuffer b = new StringBuffer();
-      java.lang.String sep = "";
-      for (int i = 0; i < value.length; i++) {
-        b.append(sep).append(java.lang.Double.toString(value[i]));
-        sep = ",";
-      }
-      return b.toString();
-    }
-  }
+	public static class DoubleArray extends CommandOption
+	{
+		public double[] value, defaultValue;
+		public DoubleArray (Class owner, java.lang.String name, java.lang.String argName,
+							boolean argRequired, double[] defaultValue,
+							java.lang.String shortdoc, java.lang.String longdoc)
+		{
+			super (owner, name, argName, IntegerArray.class, argRequired, shortdoc, longdoc);
+			this.defaultValue = value = defaultValue;
+		}
+		public double[] value () { return value; }
+		public void parseArg (java.lang.String arg) {
+			java.lang.String elts[] = arg.split(",");
+			value = new double[elts.length];
+			for (int i = 0; i < elts.length; i++)
+				value[i] = java.lang.Double.parseDouble(elts[i]);
+		}
+		public java.lang.String defaultValueToString() {
+			StringBuffer b = new StringBuffer();
+			java.lang.String sep = "";
+			for (int i = 0; i < defaultValue.length; i++) {
+				b.append(sep).append(java.lang.Double.toString(defaultValue[i]));
+				sep = ",";
+			}
+			return b.toString();
+		}
+		public java.lang.String valueToString() {
+			StringBuffer b = new StringBuffer();
+			java.lang.String sep = "";
+			for (int i = 0; i < value.length; i++) {
+				b.append(sep).append(java.lang.Double.toString(value[i]));
+				sep = ",";
+			}
+			return b.toString();
+		}
+	}
 
 	public static class String extends CommandOption
 	{
 		public java.lang.String value, defaultValue;
 		public String (Class owner, java.lang.String name, java.lang.String argName,
-									 boolean argRequired, java.lang.String defaultValue,
-									 java.lang.String shortdoc, java.lang.String longdoc)
+					   boolean argRequired, java.lang.String defaultValue,
+					   java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, java.lang.String.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
@@ -487,29 +546,29 @@ public abstract class CommandOption
 	{
 		public java.lang.String[] value, defaultValue;
 		public SpacedStrings (Class owner, java.lang.String name, java.lang.String argName,
-													boolean argRequired, java.lang.String[] defaultValue,
-													java.lang.String shortdoc, java.lang.String longdoc)
+							  boolean argRequired, java.lang.String[] defaultValue,
+							  java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, java.lang.String.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
 		}
 		public java.lang.String[] value () { return value; }
-		public int parseArg (java.lang.String args[], int argi)
+		public int parseArg (java.lang.String args[], int index)
 		{
 			int count = 0;
 			this.value = null;
-			while (argi < args.length
-						 && (args[argi].length() < 2
-								 || (args[argi].charAt(0) != '-' && args[argi].charAt(1) != '-'))) {
-        count++;
+			while (index < args.length
+				   && (args[index].length() < 2
+					   || (args[index].charAt(0) != '-' && args[index].charAt(1) != '-'))) {
+				count++;
 				java.lang.String[] oldValue = value;
 				value = new java.lang.String[count];
 				if (oldValue != null)
 					System.arraycopy (oldValue, 0, value, 0, oldValue.length);
-				value[count-1] = args[argi];
-				argi++;
+				value[count-1] = args[index];
+				index++;
 			}
-			return argi;
+			return index;
 		}
 		public java.lang.String defaultValueToString() {
 			if (defaultValue == null)
@@ -528,7 +587,7 @@ public abstract class CommandOption
 
 			java.lang.String val = "";
 			for (int i = 0; i < value.length; i++) {
-				val += value [i];
+				val += value [i] + " ";
 			}
 			return val;
 		}
@@ -538,8 +597,8 @@ public abstract class CommandOption
 	{
 		public java.io.File value, defaultValue;
 		public File (Class owner, java.lang.String name, java.lang.String argName,
-								 boolean argRequired, java.io.File defaultValue,
-								 java.lang.String shortdoc, java.lang.String longdoc)
+					 boolean argRequired, java.io.File defaultValue,
+					 java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, java.io.File.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
@@ -557,8 +616,8 @@ public abstract class CommandOption
 		java.lang.String[] setContents;
 		java.lang.String contentsString;
 		public Set (Class owner, java.lang.String name, java.lang.String argName,
-								boolean argRequired, java.lang.String[] setContents, int defaultIndex,
-								java.lang.String shortdoc, java.lang.String longdoc)
+					boolean argRequired, java.lang.String[] setContents, int defaultIndex,
+					java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, java.io.File.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = this.value = setContents[defaultIndex];
@@ -589,8 +648,8 @@ public abstract class CommandOption
 	{
 		public java.lang.Object value, defaultValue;
 		public Object (Class owner, java.lang.String name, java.lang.String argName,
-									 boolean argRequired, java.lang.Object defaultValue,
-									 java.lang.String shortdoc, java.lang.String longdoc)
+					   boolean argRequired, java.lang.Object defaultValue,
+					   java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, java.lang.Object.class, argRequired, shortdoc, longdoc);
 			this.defaultValue = value = defaultValue;
@@ -610,8 +669,8 @@ public abstract class CommandOption
 	public static class ObjectFromBean extends Object
 	{
 		public ObjectFromBean (Class owner, java.lang.String name, java.lang.String argName,
-									 boolean argRequired, java.lang.Object defValue,
-									 java.lang.String shortdoc, java.lang.String longdoc)
+							   boolean argRequired, java.lang.Object defValue,
+							   java.lang.String shortdoc, java.lang.String longdoc)
 		{
 			super (owner, name, argName, argRequired, java.lang.Object.class, shortdoc, longdoc);
 			defaultValue = value = defValue;
@@ -652,23 +711,23 @@ public abstract class CommandOption
 
 				boolean foundSetter = false;
 				for (int j=0; j<methods.length; j++){
-//					System.out.println("method " + j + " name is " + methods[j].getName());
-//					System.out.println("set" + Character.toUpperCase(parameterName.charAt(0)) + parameterName.substring(1));
+					//					System.out.println("method " + j + " name is " + methods[j].getName());
+					//					System.out.println("set" + Character.toUpperCase(parameterName.charAt(0)) + parameterName.substring(1));
 					if ( ("set" + Character.toUpperCase(parameterName.charAt(0)) + parameterName.substring(1)).equals(methods[j].getName()) &&
-						methods[j].getParameterTypes().length == 1){
-//						System.out.println("Matched method " + methods[j].getName());
-//						Class[] ptypes = methods[j].getParameterTypes();
-//						System.out.println("Parameter types:");
-//						for (int k=0; k<ptypes.length; k++){
-//							System.out.println("class " + k + " = " + ptypes[k].getName());
-//						}
+						 methods[j].getParameterTypes().length == 1){
+						//						System.out.println("Matched method " + methods[j].getName());
+						//						Class[] ptypes = methods[j].getParameterTypes();
+						//						System.out.println("Parameter types:");
+						//						for (int k=0; k<ptypes.length; k++){
+						//							System.out.println("class " + k + " = " + ptypes[k].getName());
+						//						}
 
 						try {
 							java.lang.Object[] parameterList = new java.lang.Object[]{parameterValueObject};
-//							System.out.println("Argument types:");
-//							for (int k=0; k<parameterList.length; k++){
-//								System.out.println("class " + k + " = " + parameterList[k].getClass().getName());
-//							}
+							//							System.out.println("Argument types:");
+							//							for (int k=0; k<parameterList.length; k++){
+							//								System.out.println("class " + k + " = " + parameterList[k].getClass().getName());
+							//							}
 							methods[j].invoke(this.value, parameterList);
 						} catch ( IllegalAccessException e) {
 							System.out.println("IllegalAccessException " + e);
