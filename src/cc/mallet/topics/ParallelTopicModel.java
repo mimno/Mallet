@@ -45,6 +45,7 @@ public class ParallelTopicModel implements Serializable {
 	protected int topicBits;
 
 	protected int numTypes;
+	protected int totalTokens;
 
 	protected double[] alpha;	 // Dirichlet(alpha,alpha,...) is the distribution over topics
 	protected double alphaSum;
@@ -77,7 +78,10 @@ public class ParallelTopicModel implements Serializable {
 	protected NumberFormat formatter;
 	protected boolean printLogLikelihood = true;
 
+	// The number of times each type appears in the corpus
 	int[] typeTotals;
+	// The max over typeTotals, used for beta optimization
+	int maxTypeCount; 
 	
 	int numThreads = 1;
 	
@@ -209,10 +213,13 @@ public class ParallelTopicModel implements Serializable {
 			}
 		}
 
+		maxTypeCount = 0;
+
 		// Allocate enough space so that we never have to worry about
 		//  overflows: either the number of topics or the number of times
 		//  the type occurs.
 		for (int type = 0; type < numTypes; type++) {
+			if (typeTotals[type] > maxTypeCount) { maxTypeCount = typeTotals[type]; }
 			typeTopicCounts[type] = new int[ Math.min(numTopics, typeTotals[type]) ];
 		}
 		
@@ -454,7 +461,7 @@ public class ParallelTopicModel implements Serializable {
 	private void initializeHistograms() {
 
 		int maxTokens = 0;
-		int totalTokens = 0;
+		totalTokens = 0;
 		int seqLen;
 
 		for (int doc = 0; doc < data.size(); doc++) {
@@ -504,6 +511,57 @@ public class ParallelTopicModel implements Serializable {
 		}
 
 		alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts);
+	}
+
+	public void optimizeBeta(WorkerRunnable[] runnables) {
+		// The histogram starts at count 0, so if all of the
+		//  tokens of the most frequent type were assigned to one topic,
+		//  we would need to store a maxTypeCount + 1 count.
+		int[] countHistogram = new int[maxTypeCount + 1];
+		
+		// Now count the number of type/topic pairs that have
+		//  each number of tokens.
+
+		int index;
+		for (int type = 0; type < numTypes; type++) {
+			int[] counts = typeTopicCounts[type];
+			index = 0;
+			while (index < counts.length &&
+				   counts[index] > 0) {
+				int count = counts[index] >> topicBits;
+				countHistogram[count]++;
+				index++;
+			}
+		}
+			
+		// Figure out how large we need to make the "observation lengths"
+		//  histogram.
+		int maxTopicSize = 0;
+		for (int topic = 0; topic < numTopics; topic++) {
+			if (tokensPerTopic[topic] > maxTopicSize) {
+				maxTopicSize = tokensPerTopic[topic];
+			}
+		}
+
+		// Now allocate it and populate it.
+		int[] topicSizeHistogram = new int[maxTopicSize + 1];
+		for (int topic = 0; topic < numTopics; topic++) {
+			topicSizeHistogram[ tokensPerTopic[topic] ]++;
+        }
+
+		betaSum = Dirichlet.learnSymmetricConcentration(countHistogram,
+														topicSizeHistogram,
+														numTypes,
+														betaSum);
+		beta = betaSum / numTypes;
+		
+
+		System.out.print("[beta: " + formatter.format(beta) + "] ");
+		// Now publish the new value
+		for (int thread = 0; thread < numThreads; thread++) {
+			runnables[thread].resetBeta(beta, betaSum);
+		}
+		
 	}
 
 	public void estimate () throws IOException {
@@ -697,13 +755,14 @@ public class ParallelTopicModel implements Serializable {
 				iteration % optimizeInterval == 0) {
 
 				optimizeAlpha(runnables);
+				optimizeBeta(runnables);
 				
 				System.out.print("[O " + (System.currentTimeMillis() - iterationStart) + "] ");
 			}
 			
 			if (iteration % 10 == 0) {
 				System.out.println ("<" + iteration + "> ");
-				if (printLogLikelihood) System.out.println (modelLogLikelihood());
+				if (printLogLikelihood) System.out.println (modelLogLikelihood() / totalTokens);
 			}
 			System.out.flush();
 		}
@@ -1139,6 +1198,7 @@ public class ParallelTopicModel implements Serializable {
 			out.print(alpha[topic] + " ");
 		}
 		out.println();
+		out.println("#beta : " + beta);
 
 		for (int doc = 0; doc < data.size(); doc++) {
 			FeatureSequence tokenSequence =	(FeatureSequence) data.get(doc).instance.getData();
@@ -1266,10 +1326,19 @@ public class ParallelTopicModel implements Serializable {
 		return logLikelihood;
 	}
 
+
+	/** Return a tool for estimating topic distributions for new documents */
 	public TopicInferencer getInferencer() {
 		return new TopicInferencer(typeTopicCounts, tokensPerTopic,
 								   data.get(0).instance.getDataAlphabet(),
 								   alpha, beta, betaSum);
+	}
+
+	/** Return a tool for evaluating the marginal probability of new documents
+	 *   under this model */
+	public MarginalProbEstimator getProbEstimator() {
+		return new MarginalProbEstimator(numTopics, alpha, alphaSum, beta,
+										 typeTopicCounts, tokensPerTopic);
 	}
 
 	// Serialization
