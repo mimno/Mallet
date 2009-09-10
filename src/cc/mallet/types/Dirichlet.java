@@ -263,7 +263,7 @@ dirichlet, then draw n samples from that multinomial. */
 	}
 
 	/** Create a set of d draws from a dirichlet-multinomial, each
-with n observations. */
+	 *  with an average of n observations. */
 	public Object[] drawObservations(int d, int n) {
 		Object[] observations = new Object[d];
 		for (int i=0; i<d; i++) {
@@ -407,6 +407,140 @@ Bernoulli numbers. */
 		return result;
 	}
 
+	/**
+	 * Learn the concentration parameter of a symmetric Dirichlet using frequency histograms.
+	 *  Since all parameters are the same, we only need to keep track of 
+	 *  the number of observation/dimension pairs with count N
+	 *
+	 * @param countHistogram An array of frequencies. If the matrix X represents observations such that x<sub>dt</sub> is how many times word t occurs in document d, <code>countHistogram[3]</code> is the total number of cells <i>in any column</i> that equal 3.
+	 * @param observationLengths A histogram of sample lengths, for example <code>observationLengths[20]</code> could be the number of documents that are exactly 20 tokens long.	 
+	 * @param numDimensions The total number of dimensions.
+	 * @param currentValue An initial starting value.
+	 */
+
+	public static double learnSymmetricConcentration(int[] countHistogram,
+													 int[] observationLengths,
+													 int numDimensions, 
+													 double currentValue) {
+		double currentDigamma;
+
+		// The histogram arrays are presumably allocated before
+		//  we knew what went in them. It is therefore likely that
+		//  the largest non-zero value may be much closer to the 
+		//  beginning than the end. We don't want to iterate over
+		//  a whole bunch of zeros, so keep track of the last value.
+		int largestNonZeroCount = 0;
+		int[] nonZeroLengthIndex = new int[ observationLengths.length ];
+		
+		for (int index = 0; index < countHistogram.length; index++) {
+			if (countHistogram[index] > 0) { largestNonZeroCount = index; }
+		}
+
+		int denseIndex = 0;
+		for (int index = 0; index < observationLengths.length; index++) {
+			if (observationLengths[index] > 0) {
+				nonZeroLengthIndex[denseIndex] = index;
+				denseIndex++;
+			}
+		}
+
+		int denseIndexSize = denseIndex;
+
+		for (int iteration = 1; iteration <= 200; iteration++) {
+			
+			double currentParameter = currentValue / numDimensions;
+
+			// Calculate the numerator
+			
+			currentDigamma = 0;
+			double numerator = 0;
+		
+			// Counts of 0 don't matter, so start with 1
+			for (int index = 1; index <= largestNonZeroCount; index++) {
+				currentDigamma += 1.0 / (currentParameter + index - 1);
+				numerator += countHistogram[index] * currentDigamma;
+			}
+			
+			// Now calculate the denominator, a sum over all observation lengths
+			
+			currentDigamma = 0;
+			double denominator = 0;
+			int previousLength = 0;
+			
+			double cachedDigamma = digamma(currentValue);
+			
+			for (denseIndex = 0; denseIndex < denseIndexSize; denseIndex++) {
+				int length = nonZeroLengthIndex[denseIndex];
+				
+				if (length - previousLength > 20) {
+					// If the next length is sufficiently far from the previous,
+					//  it's faster to recalculate from scratch.
+					currentDigamma = digamma(currentValue + length) - cachedDigamma;
+				}
+				else {
+					// Otherwise iterate up. This looks slightly different
+					//  from the previous version (no -1) because we're indexing differently.
+					for (int index = previousLength; index < length; index++) {
+						currentDigamma += 1.0 / (currentValue + index);
+					}
+				}
+				
+				denominator += currentDigamma * observationLengths[length];
+			}
+			
+			currentValue = currentParameter * numerator / denominator;
+
+
+			///System.out.println(currentValue + " = " + currentParameter + " * " + numerator + " / " + denominator);
+		}
+
+		return currentValue;
+	}
+
+	public static void testSymmetricConcentration(int numDimensions, int numObservations,
+												  int observationMeanLength) {
+
+		double logD = Math.log(numDimensions);
+
+		for (int exponent = -5; exponent < 4; exponent++) {
+			double alpha = numDimensions * 1.0;
+
+			Dirichlet prior = new Dirichlet(numDimensions, alpha / numDimensions);
+
+			int[] countHistogram = new int[ 1000000 ];
+			int[] observationLengths = new int[ 1000000 ];
+			
+			Object[] observations = prior.drawObservations(numObservations, observationMeanLength);
+
+			Dirichlet optimizedDirichlet = new Dirichlet(numDimensions, 1.0);
+			optimizedDirichlet.learnParametersWithHistogram(observations);
+
+			System.out.println(optimizedDirichlet.magnitude);
+
+			for (int i=0; i < numObservations; i++) {
+				int[] observation = (int[]) observations[i];
+				
+				int total = 0;
+				for (int k=0; k < numDimensions; k++) {
+					if (observation[k] > 0) {
+						total += observation[k];
+						countHistogram[ observation[k] ]++;
+					}
+				}
+				
+				observationLengths[ total ]++;
+			}
+			
+			double estimatedAlpha = learnSymmetricConcentration(countHistogram, observationLengths,
+																numDimensions, 1.0);
+			
+			System.out.println(alpha + "\t" + estimatedAlpha + "\t" +
+							   Math.abs(alpha - estimatedAlpha));
+		}
+		
+
+	}
+
 
 	/** 
 	 * Learn Dirichlet parameters using frequency histograms
@@ -450,11 +584,11 @@ Bernoulli numbers. */
 		for (i=0; i<observations.length; i++) {
 			histogram = observations[i];
 
-			StringBuffer out = new StringBuffer();
+			//StringBuffer out = new StringBuffer();
 			for (k = 0; k < histogram.length; k++) {
 				if (histogram[k] > 0) {
 					nonZeroLimits[i] = k;
-					out.append(k + ":" + histogram[k] + " ");
+					//out.append(k + ":" + histogram[k] + " ");
 				}
 			}
 			//System.out.println(out);
@@ -1274,6 +1408,10 @@ Bernoulli numbers. */
 
 	public static void main (String[] args) {
 
+		testSymmetricConcentration(1000, 100, 1000);
+
+		/*
+
 		Dirichlet prior = new Dirichlet(100, 1.0);
 		double[] distribution;
 		int[] x, y;
@@ -1298,6 +1436,8 @@ Bernoulli numbers. */
 			System.out.print(ewensLikelihoodRatio(x, y, 0.1) + "\t");
 			System.out.println(nonSymmetric.dirichletMultinomialLikelihoodRatio(x, y));		
 		}
+
+		*/
 	}
 
 
