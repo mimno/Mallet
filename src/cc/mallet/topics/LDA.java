@@ -17,7 +17,7 @@ import cc.mallet.util.Randoms;
 /**
  * Latent Dirichlet Allocation.
  * @author Andrew McCallum
- * @deprecated Use LDAHyper instead.
+ * @deprecated Use ParallelTopicModel instead.
  */
 
 // Think about support for incrementally adding more documents...
