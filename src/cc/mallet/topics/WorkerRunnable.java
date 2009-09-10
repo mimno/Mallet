@@ -127,6 +127,11 @@ public class WorkerRunnable implements Runnable {
 		shouldSaveState = true;
 	}
 
+	public void resetBeta(double beta, double betaSum) {
+		this.beta = beta;
+		this.betaSum = betaSum;
+	}
+
 	/**
 	 *  Once we have sampled the local counts, trash the 
 	 *   "global" type topic counts and reuse the space to 
