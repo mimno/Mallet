@@ -357,8 +357,8 @@ public class TopicInferencer implements Serializable {
 
 				// Save a sample
 				for (int topic=0; topic < numTopics; topic++) {
-					result[topic] = alpha[topic] + localTopicCounts[topic];
-					sum += result[topic];
+					result[topic] += alpha[topic] + localTopicCounts[topic];
+					sum += alpha[topic] + localTopicCounts[topic];
 				}
 			}
 		}
