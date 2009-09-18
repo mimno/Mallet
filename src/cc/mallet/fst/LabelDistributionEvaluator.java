@@ -28,6 +28,10 @@ public class LabelDistributionEvaluator extends TransducerEvaluator {
 
   private static final Logger logger = MalletLogger.getLogger (InstanceAccuracyEvaluator.class.getName());
   
+  public LabelDistributionEvaluator (InstanceList[] instanceLists, String[] descriptions) {
+    super (instanceLists, descriptions);
+  }
+  
   @Override
   public void evaluateInstanceList(TransducerTrainer transducer,
       InstanceList instances, String description) {
