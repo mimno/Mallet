@@ -49,6 +49,7 @@ public class NaiveBayesEMTrainer extends ClassifierTrainer<NaiveBayes> {
 
   public void setFeatureMultinomialEstimator (Multinomial.Estimator me) {
     featureEstimator = me;
+    nbTrainer.setFeatureMultinomialEstimator(featureEstimator);
   }
 
   public Multinomial.Estimator getPriorMultinomialEstimator () {
@@ -57,10 +58,12 @@ public class NaiveBayesEMTrainer extends ClassifierTrainer<NaiveBayes> {
 
   public void setPriorMultinomialEstimator (Multinomial.Estimator me) {
     priorEstimator = me;
+    nbTrainer.setPriorMultinomialEstimator(priorEstimator);
   }
 
   public void setDocLengthNormalization (double d) {
   	docLengthNormalization = d;
+  	nbTrainer.setDocLengthNormalization(docLengthNormalization);
   }
   
   public double getDocLengthNormalization () {

@@ -190,7 +190,8 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
 			// If l1Weight is 0, this devolves to 
 			//  standard L-BFGS, but the implementation
 			//  may be faster.
-			optimizer = new OrthantWiseLimitedMemoryBFGS(optimizable, l1Weight);
+			optimizer = new LimitedMemoryBFGS(optimizable); 
+			//OrthantWiseLimitedMemoryBFGS(optimizable, l1Weight);
 		}
 		return optimizer;
 	}
