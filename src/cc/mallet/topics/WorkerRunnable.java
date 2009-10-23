@@ -90,6 +90,7 @@ public class WorkerRunnable implements Runnable {
 		this.alphaSum = alphaSum;
 		this.alpha = alpha;
 		this.beta = beta;
+		this.betaSum = beta * numTopics;
 		this.random = random;
 		
 		this.startDoc = startDoc;
