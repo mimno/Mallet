@@ -98,7 +98,8 @@ public class TopicInferencer implements Serializable {
 			type = tokens.getIndexAtPosition(position);
 
 			// Ignore out of vocabulary terms
-			if (type < numTypes) { 
+			if (type < numTypes && typeTopicCounts[type].length != 0) { 
+
 				currentTypeTopicCounts = typeTopicCounts[type];
 
 				// This value should be a topic such that
@@ -163,7 +164,7 @@ public class TopicInferencer implements Serializable {
 				type = tokens.getIndexAtPosition(position);
 				
 				// ignore out-of-vocabulary terms
-				if (type >= numTypes) { continue; }
+				if (type >= numTypes || typeTopicCounts[type].length == 0) { continue; }
 
 				oldTopic = topics[position];
 				currentTypeTopicCounts = typeTopicCounts[type];
