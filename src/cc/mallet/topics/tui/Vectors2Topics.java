@@ -10,6 +10,7 @@ package cc.mallet.topics.tui;
 import cc.mallet.util.CommandOption;
 import cc.mallet.util.Randoms;
 import cc.mallet.types.InstanceList;
+import cc.mallet.types.FeatureSequence;
 import cc.mallet.topics.*;
 
 import java.io.*;
@@ -24,6 +25,12 @@ public class Vectors2Topics {
 		(Vectors2Topics.class, "input", "FILENAME", true, null,
 		 "The filename from which to read the list of training instances.  Use - for stdin.  " +
 		 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
+
+	static CommandOption.SpacedStrings languageInputFiles = new CommandOption.SpacedStrings
+		(Vectors2Topics.class, "language-inputs", "FILENAME [FILENAME ...]", true, null,
+		 "Filenames for polylingual topic model. Each language should have its own file, " +
+		 "with the same number of instances in each file. If a document is missing in " + 
+		 "one language, there should be an empty instance.", null);
 
     static CommandOption.String testingFile = new CommandOption.String
         (Vectors2Topics.class, "testing", "FILENAME", false, null,
@@ -260,7 +267,87 @@ public class Vectors2Topics {
 			}
 			
 		}
+		else if (languageInputFiles.value != null) {
+			// Start a new polylingual topic model
+			
+			PolylingualTopicModel topicModel = null;
+
+			InstanceList[] training = new InstanceList[ languageInputFiles.value.length ];
+			for (int i=0; i < training.length; i++) {
+				training[i] = InstanceList.load(new File(languageInputFiles.value[i]));
+				if (training[i] != null) { System.out.println(i + " is not null"); }
+				else { System.out.println(i + " is null"); }
+			}
+
+			System.out.println ("Data loaded.");
+			
+			// For historical reasons we currently only support FeatureSequence data,
+			//  not the FeatureVector, which is the default for the input functions.
+			//  Provide a warning to avoid ClassCastExceptions.
+			if (training[0].size() > 0 &&
+				training[0].get(0) != null) {
+				Object data = training[0].get(0).getData();
+				if (! (data instanceof FeatureSequence)) {
+					System.err.println("Topic modeling currently only supports feature sequences: use --keep-sequence option when importing data.");
+					System.exit(1);
+				}
+			}
+			
+			topicModel = new PolylingualTopicModel (numTopics.value, alpha.value);
+			if (randomSeed.value != 0) {
+				topicModel.setRandomSeed(randomSeed.value);
+			}
+			
+			topicModel.addInstances(training);
+
+			topicModel.setTopicDisplay(showTopicsInterval.value, topWords.value);
+
+            topicModel.setNumIterations(numIterations.value);
+            topicModel.setOptimizeInterval(optimizeInterval.value);
+            topicModel.setBurninPeriod(optimizeBurnIn.value);
+
+            if (outputStateInterval.value != 0) {
+                topicModel.setSaveState(outputStateInterval.value, stateFile.value);
+            }
+
+            if (outputModelInterval.value != 0) {
+                topicModel.setModelOutput(outputModelInterval.value, outputModelFilename.value);
+            }
+
+			topicModel.estimate();
+
+			if (topicKeysFile.value != null) {
+				topicModel.printTopWords(new File(topicKeysFile.value), topWords.value, false);
+			}
+
+			if (stateFile.value != null) {
+				topicModel.printState (new File(stateFile.value));
+			}
+
+			if (docTopicsFile.value != null) {
+				PrintWriter out = new PrintWriter (new FileWriter ((new File(docTopicsFile.value))));
+				topicModel.printDocumentTopics(out, docTopicsThreshold.value, docTopicsMax.value);
+				out.close();
+			}
+
+			if (outputModelFilename.value != null) {
+				assert (topicModel != null);
+				try {
+
+					ObjectOutputStream oos =
+						new ObjectOutputStream (new FileOutputStream (outputModelFilename.value));
+					oos.writeObject (topicModel);
+					oos.close();
+
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new IllegalArgumentException ("Couldn't write topic model to filename "+outputModelFilename.value);
+				}
+			}
+
+		}
 		else {
+
 			// Start a new LDA topic model
 			
 			ParallelTopicModel topicModel = null;
@@ -286,6 +373,16 @@ public class Vectors2Topics {
 			else {
 				InstanceList training = InstanceList.load (new File(inputFile.value));
 				System.out.println ("Data loaded.");
+
+				if (training.size() > 0 &&
+					training.get(0) != null) {
+					Object data = training.get(0).getData();
+					if (! (data instanceof FeatureSequence)) {
+						System.err.println("Topic modeling currently only supports feature sequences: use --keep-sequence option when importing data.");
+						System.exit(1);
+					}
+				}
+
 				topicModel = new ParallelTopicModel (numTopics.value, alpha.value, beta.value);
 				if (randomSeed.value != 0) {
 					topicModel.setRandomSeed(randomSeed.value);
