@@ -239,7 +239,8 @@ public class PolylingualTopicModel implements Serializable {
 			int[] typeTotals = new int[ vocabularySizes[language] ];
 			
 			for (Instance instance : training[language]) {
-				if (testingIDs.contains(instance.getName())) {
+				if (testingIDs != null &&
+					testingIDs.contains(instance.getName())) {
 					continue;
 				}
 
@@ -278,7 +279,8 @@ public class PolylingualTopicModel implements Serializable {
 		
 		for (int doc = 0; doc < numInstances; doc++) {
 
-			if (testingIDs.contains(training[0].get(doc).getName())) {
+			if (testingIDs != null && 
+				testingIDs.contains(training[0].get(doc).getName())) {
 				continue;
 			}
 
