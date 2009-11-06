@@ -23,6 +23,7 @@ if "%CMD%"=="import-file" set CLASS=cc.mallet.classify.tui.Csv2Vectors
 if "%CMD%"=="train-classifier" set CLASS=cc.mallet.classify.tui.Vectors2Classify
 if "%CMD%"=="train-topics" set CLASS=cc.mallet.topics.tui.Vectors2Topics
 if "%CMD%"=="infer-topics" set CLASS=cc.mallet.topics.tui.InferTopics
+if "%CMD%"=="estimate-topics" set CLASS=cc.mallet.topics.tui.EstimateTopics
 if "%CMD%"=="hlda" set CLASS=cc.mallet.topics.tui.HierarchicalLDATUI
 if "%CMD%"=="prune" set CLASS=cc.mallet.classify.tui.Vectors2Vectors
 if "%CMD%"=="split" set CLASS=cc.mallet.classify.tui.Vectors2Vectors
@@ -38,6 +39,7 @@ echo   import-file       load a single file into mallet instances (one per line)
 echo   train-classifier  train a classifier from Mallet data files
 echo   train-topics      train a topic model from Mallet data files
 echo   infer-topics      use a trained topic model to infer topics for new documents
+echo   estimate-topics   estimate the probability of new documents given a trained model
 echo   hlda              train a topic model using Hierarchical LDA
 echo   prune             remove features based on frequency or information gain
 echo   split             divide data into testing, training, and validation portions

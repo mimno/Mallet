@@ -97,7 +97,8 @@ public class MarginalProbEstimator implements Serializable {
 	public int[] getTokensPerTopic() { return tokensPerTopic; }
 	public int[][] getTypeTopicCounts() { return typeTopicCounts; }
 
-	public double evaluateLeftToRight (InstanceList testing, int numParticles) {
+	public double evaluateLeftToRight (InstanceList testing, int numParticles, boolean usingResampling,
+									   PrintStream docProbabilityStream) {
 		random = new Randoms();
 
 		double logNumParticles = Math.log(numParticles);
@@ -111,7 +112,7 @@ public class MarginalProbEstimator implements Serializable {
 			double[][] particleProbabilities = new double[ numParticles ][];
 			for (int particle = 0; particle < numParticles; particle++) {
 				particleProbabilities[particle] =
-					leftToRight(tokenSequence, false);
+					leftToRight(tokenSequence, usingResampling);
 			}
 
 			for (int position = 0; position < particleProbabilities[0].length; position++) {
@@ -125,7 +126,9 @@ public class MarginalProbEstimator implements Serializable {
 				}
 			}
 
-			System.out.println(docLogLikelihood);
+			if (docProbabilityStream != null) {
+				docProbabilityStream.println(docLogLikelihood);
+			}
 			totalLogLikelihood += docLogLikelihood;
 		}
 

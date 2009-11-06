@@ -26,6 +26,7 @@ Mallet 2.0 commands:
   train-classifier  train a classifier from Mallet data files
   train-topics      train a topic model from Mallet data files
   infer-topics      use a trained topic model to infer topics for new documents
+  evaluate-topics   estimate the probability of new documents under a trained model
   hlda              train a topic model using Hierarchical LDA
   prune             remove features based on frequency or information gain
   split             divide data into testing, training, and validation portions
@@ -42,6 +43,7 @@ case $CMD in
 	train-classifier) CLASS=cc.mallet.classify.tui.Vectors2Classify;;
 	train-topics) CLASS=cc.mallet.topics.tui.Vectors2Topics;;
 	infer-topics) CLASS=cc.mallet.topics.tui.InferTopics;;
+	evaluate-topics) CLASS=cc.mallet.topics.tui.EvaluateTopics;;
 	hlda) CLASS=cc.mallet.topics.tui.HierarchicalLDATUI;;
 	prune) CLASS=cc.mallet.classify.tui.Vectors2Vectors;;
 	split) CLASS=cc.mallet.classify.tui.Vectors2Vectors;;

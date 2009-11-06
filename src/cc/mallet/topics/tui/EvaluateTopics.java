@@ -19,26 +19,24 @@ public class EvaluateTopics {
 		 "for which topics should be inferred.  Use - for stdin.  " +
 		 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
 	
-    static CommandOption.String docTopicsFile = new CommandOption.String
-        (EvaluateTopics.class, "output-doc-topics", "FILENAME", true, null,
-         "The filename in which to write the inferred topic\n" +
-		 "proportions per document.  " +
+    static CommandOption.String docProbabilityFile = new CommandOption.String
+        (EvaluateTopics.class, "output-doc-probs", "FILENAME", true, null,
+         "The filename in which to write the inferred log probabilities\n" +
+		 "per document.  " +
          "By default this is null, indicating that no file will be written.", null);
 
-    static CommandOption.Double docTopicsThreshold = new CommandOption.Double
-		(EvaluateTopics.class, "doc-topics-threshold", "DECIMAL", true, 0.0,
-         "When writing topic proportions per document with --output-doc-topics, " +
-         "do not print topics with proportions less than this threshold value.", null);
-
-    static CommandOption.Integer docTopicsMax = new CommandOption.Integer
-        (EvaluateTopics.class, "doc-topics-max", "INTEGER", true, -1,
-         "When writing topic proportions per document with --output-doc-topics, " +
-         "do not print more than INTEGER number of topics.  "+
-         "A negative value indicates that all topics should be printed.", null);
+    static CommandOption.String probabilityFile = new CommandOption.String
+        (EvaluateTopics.class, "output-prob", "FILENAME", true, "-",
+         "The filename in which to write the inferred log probability of the testing set\n" +
+         "Use - for stdout, which is the default.", null);
 
 	static CommandOption.Integer numParticles = new CommandOption.Integer
         (EvaluateTopics.class, "num-particles", "INTEGER", true, 10,
          "The number of particles to use in left-to-right evaluation.", null);
+
+	static CommandOption.Boolean usingResampling = new CommandOption.Boolean
+        (EvaluateTopics.class, "use-resampling", "TRUE|FALSE", false, false,
+         "Whether to resample topics in left-to-right evaluation. Resampling is more accurate, but leads to quadratic scaling in the lenght of documents.", null);
 
 	static CommandOption.Integer numIterations = new CommandOption.Integer
         (EvaluateTopics.class, "num-iterations", "INTEGER", true, 100,
@@ -62,7 +60,7 @@ public class EvaluateTopics {
 		CommandOption.setSummary (EvaluateTopics.class,
                                   "Estimate the marginal probability of new documents under ");
         CommandOption.process (EvaluateTopics.class, args);
-		
+
 		if (evaluatorFilename.value == null) {
 			System.err.println("You must specify a serialized topic evaluator. Use --help to list options.");
 			System.exit(0);
@@ -75,12 +73,25 @@ public class EvaluateTopics {
 
 		try {
 			
+			PrintStream docProbabilityStream = null;
+			if (docProbabilityFile.value != null) {
+				docProbabilityStream = new PrintStream(docProbabilityFile.value);
+			}
+			
+			PrintStream outputStream = System.out;
+			if (probabilityFile.value != null &&
+				! probabilityFile.value.equals("-")) {
+				outputStream = new PrintStream(probabilityFile.value);
+			}
+			
 			MarginalProbEstimator evaluator = 
 				MarginalProbEstimator.read(new File(evaluatorFilename.value));
 
 			InstanceList instances = InstanceList.load (new File(inputFile.value));
 
-			System.out.println(evaluator.evaluateLeftToRight(instances, numParticles.value));
+			outputStream.println(evaluator.evaluateLeftToRight(instances, numParticles.value, 
+															   usingResampling.value,
+															   docProbabilityStream));
 			
 
 		} catch (Exception e) {
