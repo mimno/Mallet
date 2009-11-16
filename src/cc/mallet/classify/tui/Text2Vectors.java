@@ -76,6 +76,10 @@ public class Text2Vectors
 	(Text2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
 	 "If true, final data will be a FeatureSequenceWithBigrams rather than a FeatureVector.", null);
     
+    static CommandOption.Boolean saveTextInSource = new CommandOption.Boolean
+  (Text2Vectors.class, "save-text-in-source", "[TRUE|FALSE]", false, false,
+  	 "If true, save original text of document in source.", null);
+    
     static CommandOption.ObjectFromBean stringPipe = new CommandOption.ObjectFromBean
 	(Text2Vectors.class, "string-pipe", "Pipe constructor",	true, null,
 	 "Java code for the constructor of a Pipe to be run as soon as input becomes a CharSequence", null);
@@ -127,6 +131,7 @@ public class Text2Vectors
             new Target2Label(),
             new SaveDataInSource(),
             new Input2CharSequence(),
+            (saveTextInSource.wasInvoked() ? new SaveDataInSource() : new Noop()),
             (stringPipe.wasInvoked() ? (Pipe) stringPipe.value : (Pipe) new Noop()),
             (skipHeader.value
              ? (Pipe) new CharSubsequence(CharSubsequence.SKIP_HEADER)

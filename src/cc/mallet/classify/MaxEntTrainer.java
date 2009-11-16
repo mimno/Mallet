@@ -244,18 +244,17 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
 	public MaxEnt train (InstanceList trainingSet, int numIterations)
 	{
 		logger.fine ("trainingSet.size() = "+trainingSet.size());
-		boolean converged;
 		getOptimizer (trainingSet);  // This will set this.optimizer, this.optimizable
 
 		for (int i = 0; i < numIterations; i++) {
 			try {
-				converged = optimizer.optimize (1);
+				finishedTraining = optimizer.optimize (1);
 			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				logger.info ("Catching exception; saying converged.");
-				converged = true;
+				finishedTraining = true;
 			}
-			if (converged)
+			if (finishedTraining)
 				break;
 		}
 

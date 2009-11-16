@@ -160,6 +160,9 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 					"\t -infinite weight: " + numInfWeight);
 		}
 
+
+		System.err.println("Done expectation batch " + batchIndex + " " + batchAssignments[0] + "-" + batchAssignments[1]);
+		
 		return value;
 	}
 
@@ -187,6 +190,8 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		// update cache
 		cachedValue[batchIndex] = value;
 
+		System.err.println("Done value batch " + batchIndex + " " + batchAssignments[0] + "-" + batchAssignments[1]);
+		
 		return value;
 	}
 
@@ -217,6 +222,7 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		// set the cached gradient
 		batchExpectations.getParameters(gradient);
 		System.arraycopy(gradient, 0, buffer, 0, gradient.length);
+		System.err.println("Done gradient batch " + batchIndex + " " + batchAssignments[0] + "-" + batchAssignments[1]);
 	}
 
 	/**

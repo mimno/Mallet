@@ -131,6 +131,12 @@ public final class MatrixOps
         return Math.sqrt (ret);
     }
 
+    public static double twoNormSquared (double[] m) {
+      double ret = 0;
+      for (int i = 0; i < m.length; i++)
+          ret += m[i] * m[i];
+      return ret;
+  }
 
     public static double oneNorm (double[] m) {
         double ret = 0;
@@ -548,6 +554,33 @@ public final class MatrixOps
 		ret[original.length] = newValue;
   	return ret;
   }
+
+	public static double max(double[][] ds) {
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < ds.length; i++) {
+			for (int j = 0; j < ds[i].length; j++) {
+				if (ds[i][j] > max) {
+					max = ds[i][j];
+				}
+			}
+		}
+		return max;
+	}
+	
+	public static int[] maxIndex(double[][] ds) {
+		int[] maxIndices = new int[] {-1,-1};
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < ds.length; i++) {
+			for (int j = 0; j < ds[i].length; j++) {
+				if (ds[i][j] > max) {
+					max = ds[i][j];
+					maxIndices[0] = i;
+					maxIndices[1] = j;
+				}
+			}
+		}
+		return maxIndices;
+	}
 
 }
 
