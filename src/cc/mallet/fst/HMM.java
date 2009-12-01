@@ -702,6 +702,7 @@ public class HMM extends Transducer implements Serializable {
 	static final int NULL_INTEGER = -1;
 
 	/* Need to check for null pointers. */
+	/* Bug fix from Cheng-Ju Kuo cju.kuo@gmail.com */
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		int i, size;
 		out.writeInt(CURRENT_SERIAL_VERSION);
@@ -720,20 +721,37 @@ public class HMM extends Transducer implements Serializable {
 		out.writeObject(name2state);
 		if (emissionEstimator != null) {
 			size = emissionEstimator.length;
+			out.writeInt(size); 
 			for (i = 0; i < size; i++)
 				out.writeObject(emissionEstimator[i]);
 		} else
 			out.writeInt(NULL_INTEGER);
+		if (emissionMultinomial != null) {
+			size = emissionMultinomial.length;
+			out.writeInt(size);
+			for (i = 0; i < size; i++)
+				out.writeObject(emissionMultinomial[i]);
+		} else
+			out.writeInt(NULL_INTEGER);
 		if (transitionEstimator != null) {
 			size = transitionEstimator.length;
+			out.writeInt(size);
 			for (i = 0; i < size; i++)
 				out.writeObject(transitionEstimator[i]);
 		} else
 			out.writeInt(NULL_INTEGER);
+		if (transitionMultinomial != null) {
+			size = transitionMultinomial.length;
+			out.writeInt(size);
+			for (i = 0; i < size; i++)
+				out.writeObject(transitionMultinomial[i]);
+		} else
+			out.writeInt(NULL_INTEGER);
 	}
 
+	/* Bug fix from Cheng-Ju Kuo cju.kuo@gmail.com */
 	private void readObject(ObjectInputStream in) throws IOException,
-			ClassNotFoundException {
+	ClassNotFoundException {
 		int size, i;
 		int version = in.readInt();
 		inputPipe = (Pipe) in.readObject();
@@ -764,12 +782,31 @@ public class HMM extends Transducer implements Serializable {
 		}
 		size = in.readInt();
 		if (size == NULL_INTEGER) {
+			emissionMultinomial = null;
+		} else {
+			emissionMultinomial = new Multinomial[size];
+			for (i = 0; i < size; i++) {
+				emissionMultinomial[i] = (Multinomial) in.readObject();
+			}
+		}
+		size = in.readInt();
+		if (size == NULL_INTEGER) {
 			transitionEstimator = null;
 		} else {
 			transitionEstimator = new Multinomial.Estimator[size];
 			for (i = 0; i < size; i++) {
 				transitionEstimator[i] = (Multinomial.Estimator) in
-						.readObject();
+				.readObject();
+			}
+		}
+		size = in.readInt();
+		if (size == NULL_INTEGER) {
+			transitionMultinomial = null;
+		} else {
+			transitionMultinomial = new Multinomial[size];
+			for (i = 0; i < size; i++) {
+				transitionMultinomial[i] = (Multinomial) in
+				.readObject();
 			}
 		}
 	}
