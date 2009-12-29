@@ -8,8 +8,6 @@ import cc.mallet.fst.CRF;
 import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.Transducer;
-import cc.mallet.fst.CRF.Factors;
-import cc.mallet.fst.CRF.Factors.Incrementor;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.util.MalletLogger;
 

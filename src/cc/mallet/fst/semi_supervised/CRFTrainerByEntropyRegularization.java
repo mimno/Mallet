@@ -7,7 +7,6 @@ import cc.mallet.fst.CRFOptimizableByGradientValues;
 import cc.mallet.fst.CRFOptimizableByLabelLikelihood;
 import cc.mallet.fst.Transducer;
 import cc.mallet.fst.TransducerTrainer;
-import cc.mallet.fst.TransducerTrainer.ByOptimization;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
