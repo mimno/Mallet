@@ -13,8 +13,10 @@ import java.io.*;
 
 import cc.mallet.classify.Classifier;
 import cc.mallet.optimize.ConjugateGradient;
+import cc.mallet.optimize.InvalidOptimizableException;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
+import cc.mallet.optimize.OptimizationException;
 import cc.mallet.optimize.Optimizer;
 import cc.mallet.optimize.OrthantWiseLimitedMemoryBFGS;
 import cc.mallet.optimize.tests.*;
@@ -249,15 +251,20 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
 		for (int i = 0; i < numIterations; i++) {
 			try {
 				finishedTraining = optimizer.optimize (1);
-			} catch (IllegalArgumentException e) {
+		  } catch (InvalidOptimizableException e) {
+			  e.printStackTrace();
+			  logger.warning("Catching InvalidOptimizatinException! saying converged.");
+			  finishedTraining = true;
+			} catch (OptimizationException e) {
 				e.printStackTrace();
-				logger.info ("Catching exception; saying converged.");
+				logger.info ("Catching OptimizationException; saying converged.");
 				finishedTraining = true;
 			}
 			if (finishedTraining)
 				break;
 		}
 
+		// only if any number of iterations is allowed 
 		if (numIterations == Integer.MAX_VALUE) {
 			// Run it again because in our and Sam Roweis' experience, BFGS can still
 			// eke out more likelihood after first convergence by re-running without
@@ -265,10 +272,15 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
 			optimizer = null;
 			getOptimizer(trainingSet);
 			try {
-				optimizer.optimize ();
-			} catch (IllegalArgumentException e) {
+				finishedTraining = optimizer.optimize ();
+		  } catch (InvalidOptimizableException e) {
+			  e.printStackTrace();
+			  logger.warning("Catching InvalidOptimizatinException! saying converged.");
+			  finishedTraining = true;
+			} catch (OptimizationException e) {
 				e.printStackTrace();
-				logger.info ("Catching exception; saying converged.");
+				logger.info ("Catching OptimizationException; saying converged.");
+				finishedTraining = true;
 			}
 		}
 		//TestMaximizable.testValueAndGradientCurrentParameters (mt);
