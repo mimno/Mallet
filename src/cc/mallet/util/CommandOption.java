@@ -465,7 +465,7 @@ public abstract class CommandOption
 		public java.lang.String valueToString() {
 			StringBuffer b = new StringBuffer();
 			java.lang.String sep = "";
-			for (int i = 0; i < defaultValue.length; i++) {
+			for (int i = 0; i < value.length; i++) {
 				b.append(sep).append(java.lang.Integer.toString(value[i]));
 				sep = ",";
 			}
