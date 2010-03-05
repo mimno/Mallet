@@ -116,8 +116,12 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 	{
 		for (int loc = 0; loc < fv.numLocations (); loc++) {
 			int index = fv.indexAtLocation (loc);
+			// mdredze@cs.jhu.edu 3/5/10
+			// use values, instead of assuming fv is binary
+      double value = fv.valueAtLocation(loc); 
 			if (location (index) == -1) {
-				add (index, 1.0);
+				//add (index, 1.0);
+				add(index,value);
 			}
 		}
 	}
