@@ -142,7 +142,10 @@ public class LimitedMemoryBFGS implements Optimizer
 				// give up and say converged.
 				g = null; // reset search
 				step = 1.0;
-				throw new OptimizationException("could not step in current direction");
+				throw new OptimizationException("Line search could not step in the current direction. " +
+						"(This is not necessarily cause for alarm. Sometimes this happens close to the maximum," +
+						" where the function may be very flat.)");
+			
 				//return false;
 			}
 			optimizable.getParameters (parameters);
@@ -223,7 +226,9 @@ public class LimitedMemoryBFGS implements Optimizer
 				step = 1.0;
 				// xxx Temporary test; passed OK
 //				TestMaximizable.testValueAndGradientInDirection (maxable, direction);
-				throw new OptimizationException("could not step in current direction");
+				throw new OptimizationException("Line search could not step in the current direction. " +
+						"(This is not necessarily cause for alarm. Sometimes this happens close to the maximum," +
+						" where the function may be very flat.)");
 				//	return false;
 			}
 			optimizable.getParameters (parameters);
