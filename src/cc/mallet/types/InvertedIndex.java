@@ -26,6 +26,9 @@ public class InvertedIndex
 
 	public InvertedIndex (InstanceList ilist)
 	{
+		// bug fix from Georgios Paltoglou (G.Paltoglou@wlv.ac.uk)
+		this.ilist = ilist;
+
 		int numFeatures = ilist.getDataAlphabet().size();
 		ii = new ArrayList[numFeatures];
 		for (int i = 0; i < ilist.size(); i++) {
