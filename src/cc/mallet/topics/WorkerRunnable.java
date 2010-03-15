@@ -72,6 +72,7 @@ public class WorkerRunnable implements Runnable {
 		this.data = data;
 
 		this.numTopics = numTopics;
+		this.numTypes = typeTopicCounts.length;
 
 		if (Integer.bitCount(numTopics) == 1) {
 			// exact power of 2
