@@ -12,8 +12,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Iterator;
-import java.util.concurrent.*;
 
+import java.util.concurrent.*;
+import java.util.logging.*;
 import java.util.zip.*;
 
 import java.io.*;
@@ -22,6 +23,7 @@ import java.text.NumberFormat;
 import cc.mallet.types.*;
 import cc.mallet.topics.TopicAssignment;
 import cc.mallet.util.Randoms;
+import cc.mallet.util.MalletLogger;
 
 /**
  * Simple parallel threaded implementation of LDA,
@@ -32,6 +34,8 @@ import cc.mallet.util.Randoms;
  */
 
 public class ParallelTopicModel implements Serializable {
+
+    protected static Logger logger = MalletLogger.getLogger(ParallelTopicModel.class.getName());
 	
 	protected ArrayList<TopicAssignment> data;  // the training instances and their topic assignments
 	protected Alphabet alphabet; // the alphabet for the input data
@@ -52,6 +56,8 @@ public class ParallelTopicModel implements Serializable {
 	protected double beta;   // Prior on per-topic multinomial distribution over words
 	protected double betaSum;
 
+	protected boolean usingSymmetricAlpha = false;
+
 	public static final double DEFAULT_BETA = 0.01;
 	
 	protected int[][] typeTopicCounts; // indexed by <feature index, topic index>
@@ -65,6 +71,8 @@ public class ParallelTopicModel implements Serializable {
 	public int burninPeriod = 200; 
 	public int saveSampleInterval = 10; 
 	public int optimizeInterval = 50; 
+	public int temperingInterval = 0;
+
 	public int showTopicsInterval = 50;
 	public int wordsPerTopic = 7;
 
@@ -128,8 +136,8 @@ public class ParallelTopicModel implements Serializable {
 		formatter = NumberFormat.getInstance();
 		formatter.setMaximumFractionDigits(5);
 
-		System.err.println("Coded LDA: " + numTopics + " topics, " + topicBits + " topic bits, " + 
-						   Integer.toBinaryString(topicMask) + " topic mask");
+		logger.info("Coded LDA: " + numTopics + " topics, " + topicBits + " topic bits, " + 
+					Integer.toBinaryString(topicMask) + " topic mask");
 	}
 	
 	public Alphabet getAlphabet() { return alphabet; }
@@ -163,6 +171,14 @@ public class ParallelTopicModel implements Serializable {
 		if (saveSampleInterval > optimizeInterval) {
 			saveSampleInterval = optimizeInterval;
 		}
+	}
+
+	public void setSymmetricAlpha(boolean b) {
+		usingSymmetricAlpha = b;
+	}
+	
+	public void setTemperingInterval(int interval) {
+		temperingInterval = interval;
 	}
 
 	public void setNumThreads(int threads) {
@@ -256,6 +272,47 @@ public class ParallelTopicModel implements Serializable {
 		initializeHistograms();
 	}
 
+	public void initializeFromState(File stateFile) throws IOException {
+		String line;
+		String[] fields;
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(stateFile))));
+		line = reader.readLine();
+
+		// Skip some lines starting with "#" that describe the format and specify hyperparameters
+		while (line.startsWith("#")) {
+			line = reader.readLine();
+		}
+		
+		fields = line.split(" ");
+
+		for (TopicAssignment document: data) {
+			FeatureSequence tokens = (FeatureSequence) document.instance.getData();
+            FeatureSequence topicSequence =  (FeatureSequence) document.topicSequence;
+
+            int[] topics = topicSequence.getFeatures();
+            for (int position = 0; position < tokens.size(); position++) {
+				int type = tokens.getIndexAtPosition(position);
+				
+				if (type == Integer.parseInt(fields[3])) {
+					topics[position] = Integer.parseInt(fields[5]);
+				}
+				else {
+					System.err.println("instance list and state do not match: " + line);
+					throw new IllegalStateException();
+				}
+
+				line = reader.readLine();
+				if (line != null) {
+					fields = line.split(" ");
+				}
+			}
+		}
+		
+		buildInitialTypeTopicCounts();
+		initializeHistograms();
+	}
+
 	public void buildInitialTypeTopicCounts () {
 
 		// Clear the topic totals
@@ -313,7 +370,7 @@ public class ParallelTopicModel implements Serializable {
 				while (currentTypeTopicCounts[index] > 0 && currentTopic != topic) {
 					index++;
 					if (index == currentTypeTopicCounts.length) {
-						System.out.println("overflow on type " + type);
+						logger.info("overflow on type " + type);
 					}
 					currentTopic = currentTypeTopicCounts[index] & topicMask;
 				}
@@ -403,7 +460,7 @@ public class ParallelTopicModel implements Serializable {
 					while (targetCounts[targetIndex] > 0 && currentTopic != topic) {
 						targetIndex++;
 						if (targetIndex == targetCounts.length) {
-							System.out.println("overflow in merging on type " + type);
+							logger.info("overflow in merging on type " + type);
 						}
 						currentTopic = targetCounts[targetIndex] & topicMask;
 					}
@@ -472,8 +529,8 @@ public class ParallelTopicModel implements Serializable {
 			totalTokens += seqLen;
 		}
 
-		System.err.println("max tokens: " + maxTokens);
-		System.err.println("total tokens: " + totalTokens);
+		logger.info("max tokens: " + maxTokens);
+		logger.info("total tokens: " + totalTokens);
 
 		docLengthCounts = new int[maxTokens + 1];
 		topicDocCounts = new int[numTopics][maxTokens + 1];
@@ -501,16 +558,81 @@ public class ParallelTopicModel implements Serializable {
 
 			for (int topic=0; topic < numTopics; topic++) {
 
-				for (int count=0; count < sourceTopicCounts[topic].length; count++) {
-					if (sourceTopicCounts[topic][count] > 0) {
-						topicDocCounts[topic][count] += sourceTopicCounts[topic][count];
-						sourceTopicCounts[topic][count] = 0;
+				if (! usingSymmetricAlpha) {
+					for (int count=0; count < sourceTopicCounts[topic].length; count++) {
+						if (sourceTopicCounts[topic][count] > 0) {
+							topicDocCounts[topic][count] += sourceTopicCounts[topic][count];
+							sourceTopicCounts[topic][count] = 0;
+						}
+					}
+				}
+				else {
+					// For the symmetric version, we only need one 
+					//  count array, which I'm putting in the same 
+					//  data structure, but for topic 0. All other
+					//  topic histograms will be empty.
+					// I'm duplicating this for loop, which 
+					//  isn't the best thing, but it means only checking
+					//  whether we are symmetric or not numTopics times, 
+					//  instead of numTopics * longest document length.
+					for (int count=0; count < sourceTopicCounts[topic].length; count++) {
+						if (sourceTopicCounts[topic][count] > 0) {
+							topicDocCounts[0][count] += sourceTopicCounts[topic][count];
+							//             ^ the only change
+							sourceTopicCounts[topic][count] = 0;
+						}
 					}
 				}
 			}
 		}
 
-		alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts);
+		if (usingSymmetricAlpha) {
+			alphaSum = Dirichlet.learnSymmetricConcentration(topicDocCounts[0],
+															 docLengthCounts,
+															 numTopics,
+															 alphaSum);
+			for (int topic = 0; topic < numTopics; topic++) {
+				alpha[topic] = alphaSum / numTopics;
+			}
+		}
+		else {
+			alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts, 1.001, 1.0, 1);
+		}
+	}
+
+	public void temperAlpha(WorkerRunnable[] runnables) {
+		
+		// First clear the sufficient statistic histograms
+
+        Arrays.fill(docLengthCounts, 0);
+		for (int topic = 0; topic < topicDocCounts.length; topic++) {
+            Arrays.fill(topicDocCounts[topic], 0);
+        }
+
+        for (int thread = 0; thread < numThreads; thread++) {
+            int[] sourceLengthCounts = runnables[thread].getDocLengthCounts();
+            int[][] sourceTopicCounts = runnables[thread].getTopicDocCounts();
+
+            for (int count=0; count < sourceLengthCounts.length; count++) {
+				if (sourceLengthCounts[count] > 0) {
+					sourceLengthCounts[count] = 0;
+                }
+            }
+
+            for (int topic=0; topic < numTopics; topic++) {
+
+                for (int count=0; count < sourceTopicCounts[topic].length; count++) {
+					if (sourceTopicCounts[topic][count] > 0) {
+						sourceTopicCounts[topic][count] = 0;
+                    }
+                }
+            }
+        }
+
+		for (int topic = 0; topic < numTopics; topic++) {
+			alpha[topic] = 1.0;
+		}
+		alphaSum = numTopics;
 	}
 
 	public void optimizeBeta(WorkerRunnable[] runnables) {
@@ -556,7 +678,7 @@ public class ParallelTopicModel implements Serializable {
 		beta = betaSum / numTypes;
 		
 
-		System.out.print("[beta: " + formatter.format(beta) + "] ");
+		logger.info("[beta: " + formatter.format(beta) + "] ");
 		// Now publish the new value
 		for (int thread = 0; thread < numThreads; thread++) {
 			runnables[thread].resetBeta(beta, betaSum);
@@ -646,8 +768,7 @@ public class ParallelTopicModel implements Serializable {
 			long iterationStart = System.currentTimeMillis();
 
 			if (showTopicsInterval != 0 && iteration != 0 && iteration % showTopicsInterval == 0) {
-				System.out.println();
-				printTopWords (System.out, wordsPerTopic, false);
+				logger.info("\n" + displayTopWords (wordsPerTopic, false));
 			}
 
 			if (saveStateInterval != 0 && iteration % saveStateInterval == 0) {
@@ -668,6 +789,7 @@ public class ParallelTopicModel implements Serializable {
 						runnables[thread].collectAlphaStatistics();
 					}
 					
+					logger.fine("submitting thread " + thread);
 					executor.submit(runnables[thread]);
 					//runnables[thread].run();
 				}
@@ -695,7 +817,7 @@ public class ParallelTopicModel implements Serializable {
 					
 					// Are all the threads done?
 					for (int thread = 0; thread < numThreads; thread++) {
-						//System.out.println("thread " + thread + " done? " + runnables[thread].isFinished);
+						//logger.info("thread " + thread + " done? " + runnables[thread].isFinished);
 						finished = finished && runnables[thread].isFinished;
 					}
 					
@@ -745,10 +867,10 @@ public class ParallelTopicModel implements Serializable {
 
             long elapsedMillis = System.currentTimeMillis() - iterationStart;
             if (elapsedMillis < 1000) {
-				System.out.print(elapsedMillis + "ms ");
+				logger.fine(elapsedMillis + "ms ");
 			}
             else {
-                System.out.print((elapsedMillis/1000) + "s ");
+				logger.fine((elapsedMillis/1000) + "s ");
 			}   
 
 			if (iteration > burninPeriod && optimizeInterval != 0 &&
@@ -757,14 +879,17 @@ public class ParallelTopicModel implements Serializable {
 				optimizeAlpha(runnables);
 				optimizeBeta(runnables);
 				
-				System.out.print("[O " + (System.currentTimeMillis() - iterationStart) + "] ");
+				logger.fine("[O " + (System.currentTimeMillis() - iterationStart) + "] ");
 			}
 			
 			if (iteration % 10 == 0) {
-				System.out.println ("<" + iteration + "> ");
-				if (printLogLikelihood) System.out.println (modelLogLikelihood() / totalTokens);
+				if (printLogLikelihood) {
+					logger.info ("<" + iteration + "> LL/token: " + formatter.format(modelLogLikelihood() / totalTokens));
+				}
+				else {
+					logger.info ("<" + iteration + ">");
+				}
 			}
-			System.out.flush();
 		}
 
 		executor.shutdownNow();
@@ -773,11 +898,15 @@ public class ParallelTopicModel implements Serializable {
 		long minutes = seconds / 60;	seconds %= 60;
 		long hours = minutes / 60;	minutes %= 60;
 		long days = hours / 24;	hours %= 24;
-		System.out.print ("\nTotal time: ");
-		if (days != 0) { System.out.print(days); System.out.print(" days "); }
-		if (hours != 0) { System.out.print(hours); System.out.print(" hours "); }
-		if (minutes != 0) { System.out.print(minutes); System.out.print(" minutes "); }
-		System.out.print(seconds); System.out.println(" seconds");
+
+		StringBuilder timeReport = new StringBuilder();
+		timeReport.append("\nTotal time: ");
+		if (days != 0) { timeReport.append(days); timeReport.append(" days "); }
+		if (hours != 0) { timeReport.append(hours); timeReport.append(" hours "); }
+		if (minutes != 0) { timeReport.append(minutes); timeReport.append(" minutes "); }
+		timeReport.append(seconds); timeReport.append(" seconds");
+		
+		logger.info(timeReport.toString());
 	}
 	
 	public void printTopWords (File file, int numWords, boolean useNewLines) throws IOException {
@@ -856,6 +985,12 @@ public class ParallelTopicModel implements Serializable {
 	}
 
 	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
+		out.print(displayTopWords(numWords, usingNewLines));
+	}
+
+	public String displayTopWords (int numWords, boolean usingNewLines) {
+
+		StringBuilder out = new StringBuilder();
 
 		TreeSet[] topicSortedWords = getSortedWords();
 
@@ -866,24 +1001,26 @@ public class ParallelTopicModel implements Serializable {
 			Iterator<IDSorter> iterator = sortedWords.iterator();
 
 			if (usingNewLines) {
-				out.println (topic + "\t" + formatter.format(alpha[topic]));
+				out.append (topic + "\t" + formatter.format(alpha[topic]) + "\n");
 				while (iterator.hasNext() && word < numWords) {
 					IDSorter info = iterator.next();
-					out.println(alphabet.lookupObject(info.getID()) + "\t" + formatter.format(info.getWeight()));
+					out.append(alphabet.lookupObject(info.getID()) + "\t" + formatter.format(info.getWeight()) + "\n");
 					word++;
 				}
 			}
 			else {
-				out.print (topic + "\t" + formatter.format(alpha[topic]) + "\t");
+				out.append (topic + "\t" + formatter.format(alpha[topic]) + "\t");
 
 				while (iterator.hasNext() && word < numWords) {
 					IDSorter info = iterator.next();
-					out.print(alphabet.lookupObject(info.getID()) + " ");
+					out.append(alphabet.lookupObject(info.getID()) + " ");
 					word++;
 				}
-				out.print ("\n");
+				out.append ("\n");
 			}
 		}
+
+		return out.toString();
 	}
 	
 	public void topicXMLReport (PrintWriter out, int numWords) {
@@ -939,7 +1076,7 @@ public class ParallelTopicModel implements Serializable {
 					}
 				} else if (sb != null) {
 					String sbs = sb.toString().intern();
-					//System.out.println ("phrase:"+sbs);
+					//logger.info ("phrase:"+sbs);
 					if (phrases[prevtopic].get(sbs) == 0)
 						phrases[prevtopic].put(sbs,0);
 					phrases[prevtopic].increment(sbs);
@@ -1294,7 +1431,7 @@ public class ParallelTopicModel implements Serializable {
 				logLikelihood += Dirichlet.logGammaStirling(beta + count);
 
 				if (Double.isNaN(logLikelihood)) {
-					System.out.println(count);
+					System.err.println(count);
 					System.exit(1);
 				}
 
@@ -1307,7 +1444,7 @@ public class ParallelTopicModel implements Serializable {
 				Dirichlet.logGammaStirling( (beta * numTypes) +
 											tokensPerTopic[ topic ] );
 			if (Double.isNaN(logLikelihood)) {
-				System.out.println("after topic " + topic + " " + tokensPerTopic[ topic ]);
+				logger.info("after topic " + topic + " " + tokensPerTopic[ topic ]);
 				System.exit(1);
 			}
 
@@ -1318,7 +1455,7 @@ public class ParallelTopicModel implements Serializable {
 			(Dirichlet.logGammaStirling(beta) * nonZeroTypeTopics);
 
 		if (Double.isNaN(logLikelihood)) {
-			System.out.println("at the end");
+			logger.info("at the end");
 			System.exit(1);
 		}
 
@@ -1475,9 +1612,9 @@ public class ParallelTopicModel implements Serializable {
 			
 			lda.setNumThreads(Integer.parseInt(args[2]));
 			lda.estimate();
-			System.out.println("printing state");
+			logger.info("printing state");
 			lda.printState(new File("state.gz"));
-			System.out.println("finished printing");
+			logger.info("finished printing");
 
 		} catch (Exception e) {
 			e.printStackTrace();

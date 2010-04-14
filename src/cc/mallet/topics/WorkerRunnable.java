@@ -99,8 +99,8 @@ public class WorkerRunnable implements Runnable {
 
 		cachedCoefficients = new double[ numTopics ];
 
-		System.err.println("WorkerRunnable Thread: " + numTopics + " topics, " + topicBits + " topic bits, " + 
-						   Integer.toBinaryString(topicMask) + " topic mask");
+		//System.err.println("WorkerRunnable Thread: " + numTopics + " topics, " + topicBits + " topic bits, " + 
+		//				   Integer.toBinaryString(topicMask) + " topic mask");
 
 	}
 
@@ -547,12 +547,12 @@ public class WorkerRunnable implements Runnable {
 					   (currentTypeTopicCounts[index] & topicMask) != newTopic) {
 					index++;
 					if (index == currentTypeTopicCounts.length) {
-						System.out.println("type: " + type + " new topic: " + newTopic);
+						System.err.println("type: " + type + " new topic: " + newTopic);
 						for (int k=0; k<currentTypeTopicCounts.length; k++) {
-							System.out.print((currentTypeTopicCounts[k] & topicMask) + ":" + 
+							System.err.print((currentTypeTopicCounts[k] & topicMask) + ":" + 
 											 (currentTypeTopicCounts[k] >> topicBits) + " ");
 						}
-						System.out.println();
+						System.err.println();
 
 					}
 				}
