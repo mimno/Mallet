@@ -16,7 +16,7 @@ public class SimpleTokenizer extends Pipe {
 	public static final int USE_EMPTY_STOPLIST = 0;
 	public static final int USE_DEFAULT_ENGLISH_STOPLIST = 1;
 	
-	HashSet<String> stoplist;
+	protected HashSet<String> stoplist;
 
 	public SimpleTokenizer(int languageFlag) {
 		stoplist = new HashSet<String>();
