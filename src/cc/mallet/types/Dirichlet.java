@@ -551,14 +551,32 @@ Bernoulli numbers. */
 	 * @returns The sum of the learned parameters.
 	 */ 
 	public static double learnParameters(double[] parameters,
-					 int[][] observations,
-					 int[] observationLengths) {
+										 int[][] observations,
+										 int[] observationLengths) {
+
+		return learnParameters(parameters, observations, observationLengths,
+							   1.00001, 1.0, 200);
+	}
+
+	/** 
+	 * Learn Dirichlet parameters using frequency histograms
+	 * 
+	 * @param parameters A reference to the current values of the parameters, which will be updated in place
+	 * @param observations An array of count histograms. <code>observations[10][3]</code> could be the number of documents that contain exactly 3 tokens of word type 10.
+	 * @param observationLengths A histogram of sample lengths, for example <code>observationLengths[20]</code> could be the number of documents that are exactly 20 tokens long.
+	 * @param shape Gamma prior E(X) = shape * scale, var(X) = shape * scale<sup>2</sup>
+	 * @param scale 
+	 * @param numIterations 200 to 1000 generally insures convergence, but 1-5 is often enough to step in the right direction
+	 * @returns The sum of the learned parameters.
+	 */ 
+	public static double learnParameters(double[] parameters,
+										 int[][] observations,
+										 int[] observationLengths, 
+										 double shape, double scale,
+										 int numIterations) {
 		int i, k;
 
 		double parametersSum = 0;
-
-		double shape = 1.00001;
-		double scale = 1.0;
 
 		//	Initialize the parameter sum
 
@@ -594,7 +612,7 @@ Bernoulli numbers. */
 			//System.out.println(out);
 		}
 
-		for (int iteration=0; iteration<200; iteration++) {
+		for (int iteration=0; iteration<numIterations; iteration++) {
 
 			// Calculate the denominator
 			denominator = 0;
@@ -630,7 +648,7 @@ Bernoulli numbers. */
 				}
 
 				// Bayesian estimation part II
-				parameters[k] = (oldParametersK * parameters[k] + shape - 1) / denominator;
+				parameters[k] = (oldParametersK * parameters[k] + shape) / denominator;
 
 				parametersSum += parameters[k];
 			}
