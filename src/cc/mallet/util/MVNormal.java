@@ -182,6 +182,43 @@ public class MVNormal {
 		return result;
 	}
 	
+	/** Sample a vector x from N(m, (LL')<sup>-1</sup>, such that 
+	 *   sum_i x_i = 0.
+	 */
+	public static double[] nextZeroSumMVNormalWithCholesky(double[] mean, double[] precisionLowerTriangular,
+														   Randoms random) {
+
+		int n = mean.length;
+
+		double[] result = nextMVNormalWithCholesky(mean, precisionLowerTriangular, random);
+		double sum = 0.0;
+		for (int i = 0; i < n; i++) {
+			sum += result[i];
+		}
+		
+		// get the sum of each row of the inverse precision matrix
+		//  by solving the two triangular systems L(L'x) = Ly = 1, L'x = y.
+
+		double[] ones = new double[n];
+		Arrays.fill(ones, 1.0);
+
+		double[] firstSolution = solveWithForwardSubstitution(ones, precisionLowerTriangular);
+		double[] rowSums = solveWithBackSubstitution(firstSolution, precisionLowerTriangular);
+
+		double sumOfRowSums = 0.0;
+		for (int i = 0; i < n; i++) {
+			sumOfRowSums += rowSums[i];
+		}
+
+		double inverseSumOfRowSums = 1.0 / sumOfRowSums;
+
+		for (int i = 0; i < n; i++) {
+			result[i] -= inverseSumOfRowSums * rowSums[i] * sum;
+		}
+
+		return result;
+	}
+	
 	public static double[][] nextMVNormal(int n, double[] mean, double[] precision,
 										  Randoms random) {
 		double[][] result = new double[n][];
@@ -254,6 +291,55 @@ public class MVNormal {
 		}
 
 		return nextMVNormal(posteriorMean, posteriorPrecision, random);
+	}
+
+	/** 
+	 * This method returns x such that L'x = b.
+	 *  Note the transpose: this method assumes that 
+	 *  the input matrix is LOWER triangular, even though
+	 *  back substitution operates on UPPER triangular matrices.
+	 */
+	public static double[] solveWithBackSubstitution(double[] b, double[] lowerTriangular) {
+        double innerProduct;
+
+		int n = b.length;
+		double[] result = new double[n];
+
+        for (int i = n-1; i >= 0; i--) {
+			innerProduct = 0.0;
+            for (int j = i+1; j < n; j++) {
+				// Assume we're dealing with a single lower triangular
+				//  matrix from a cholesky decomposition, so index into
+				//  it as if it is the transpose.
+				innerProduct += result[j] * lowerTriangular[ (n * j) + i ];
+            }
+
+            result[i] = (b[i] - innerProduct) / lowerTriangular[ (n * i) + i ];
+        }
+
+		return result;
+	}
+
+	/** 
+	 * This method returns x such that Lx = b
+	 *  where L is lower triangular
+	 */
+	public static double[] solveWithForwardSubstitution(double[] b, double[] lowerTriangular) {
+        double innerProduct;
+
+		int n = b.length;
+		double[] result = new double[n];
+
+        for (int i = 0; i < n; i++) {
+			innerProduct = 0.0;
+            for (int j = 0; j < i; j++) {
+				innerProduct += result[j] * lowerTriangular[ (n * i) + j ];
+            }
+
+            result[i] = (b[i] - innerProduct) / lowerTriangular[ (n * i) + i ];
+        }
+
+		return result;
 	}
 
 	/**
@@ -500,6 +586,38 @@ public class MVNormal {
 
 	public static void main (String[] args) {
 
+		//double[] spd = { 19.133825, -1.180869, 6.403880, 
+		//				 -1.180869,  8.895968, 1.280748,
+		//				 6.403880,  1.280748, 9.155951 };
+		
+		double[] spd = {3.0, 0.0, -1.0, 
+						0.0, 3.0, 0.0,
+						-1.0, 0.0, 3.0};
+		
+		Randoms random = new Randoms();
+		double[] mean = { 1.0, 1.0, 1.0 };
+		double[] lower = cholesky(spd, 3);
+
+		for (int iter = 0; iter < 10; iter++) {
+			double[] sample = nextMVNormalWithCholesky(mean, lower,
+													   random);
+			for (int i=0; i<sample.length; i++) {
+				System.out.print(sample[i] + "\t");
+			}
+			System.out.println();
+		}
+
+		for (int iter = 0; iter < 10; iter++) {
+			double[] sample = nextZeroSumMVNormalWithCholesky(mean, lower,
+															  random);
+			for (int i=0; i<sample.length; i++) {
+				System.out.print(sample[i] + "\t");
+			}
+			System.out.println();
+		}
+
+
+		/*
 		int dim = 100;
 
 		double[] bandLower = bandMatrixRoot(dim, 3);
@@ -521,7 +639,7 @@ public class MVNormal {
 			cholesky(bandMatrix, dim);
 		}
 		System.out.println(System.currentTimeMillis() - startTime);
-
+		*/
 		
 		/*
 
