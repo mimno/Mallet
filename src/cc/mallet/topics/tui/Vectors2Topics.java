@@ -146,6 +146,10 @@ public class Vectors2Topics {
         (Vectors2Topics.class, "optimize-burn-in", "INTEGER", true, 200,
          "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
 
+	static CommandOption.Boolean useSymmetricAlpha = new CommandOption.Boolean
+		(Vectors2Topics.class, "use-symmetric-alpha", "true|false", false, false,
+		 "Only optimize the concentration parameter of the prior over document-topic distributions. This may reduce the number of very small, poorly estimated topics, but may disperse common words over several topics.", null);
+
 	static CommandOption.Boolean useNgrams = new CommandOption.Boolean
 		(Vectors2Topics.class, "use-ngrams", "true|false", false, false,
 		 "Rather than using LDA, use Topical-N-Grams, which models phrases.", null);
@@ -402,6 +406,7 @@ public class Vectors2Topics {
             topicModel.setNumIterations(numIterations.value);
             topicModel.setOptimizeInterval(optimizeInterval.value);
             topicModel.setBurninPeriod(optimizeBurnIn.value);
+			topicModel.setSymmetricAlpha(useSymmetricAlpha.value);
 
             if (outputStateInterval.value != 0) {
                 topicModel.setSaveState(outputStateInterval.value, stateFile.value);
