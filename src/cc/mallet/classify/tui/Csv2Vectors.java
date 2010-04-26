@@ -72,21 +72,26 @@ public class Csv2Vectors {
 	     "If true, final data will be a FeatureSequence rather than a FeatureVector.", null);
 
 	static CommandOption.Boolean keepSequenceBigrams = new CommandOption.Boolean
-	    (Csv2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
+		(Csv2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
 		 "If true, final data will be a FeatureSequenceWithBigrams rather than a FeatureVector.", null);
-    
+	
 	static CommandOption.Boolean removeStopWords = new CommandOption.Boolean
-	    (Csv2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
-	     "If true, remove common English \"stop words\" from the text.", null);
+		(Csv2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
+		 "If true, remove a default list of common English \"stop words\" from the text.", null);
 
 	static CommandOption.File stoplistFile = new CommandOption.File
-	    (Csv2Vectors.class, "stoplist-file", "FILE", true, null,
-	     "Read \"stop words\" from a file, one per line. Implies --remove-stopwords", null);
+		(Csv2Vectors.class, "stoplist-file", "FILE", true, null,
+		 "Read \"stop words\" from a file, one per line. Implies --remove-stopwords", null);
+
+	static CommandOption.File extraStopwordsFile = new CommandOption.File
+		(Csv2Vectors.class, "extra-stopwords", "FILE", true, null,
+		 "Read whitespace-separated words from this file, and add them to either " +
+		 "  the default English stoplist or the list specified by --stoplist-file.", null);
 
 	static CommandOption.Boolean preserveCase = new CommandOption.Boolean
 		(Csv2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
-	     "If true, do not force all strings to lowercase.", null);
-    
+		 "If true, do not force all strings to lowercase.", null);
+	
 	static CommandOption.String encoding = new CommandOption.String
 		(Csv2Vectors.class, "encoding", "STRING", true, Charset.defaultCharset().displayName(),
 		 "Character encoding for input file", null);
@@ -184,18 +189,40 @@ public class Csv2Vectors {
 				pipeList.add(new TokenSequenceRemoveNonAlpha(true));
 			}
 			
-			if (stoplistFile.value != null) {
-				pipeList.add(new TokenSequenceRemoveStopwords(stoplistFile.value, 
-															  encoding.value,
-															  false, // include default
-															  false,
-															  keepSequenceBigrams.value));
+			// Stopword removal.
+
+			if (stoplistFile.wasInvoked()) {
+
+				// The user specified a new list
+                
+				TokenSequenceRemoveStopwords stopwordFilter =
+					new TokenSequenceRemoveStopwords(stoplistFile.value,
+													 encoding.value,
+													 false, // don't include default list
+													 false,
+													 keepSequenceBigrams.value);
+				
+				if (extraStopwordsFile.wasInvoked()) {
+					stopwordFilter.addStopWords(extraStopwordsFile.value);
+				}
+				
+				pipeList.add(stopwordFilter);
 			}
 			else if (removeStopWords.value) {
-				pipeList.add(new TokenSequenceRemoveStopwords(false,
-															  keepSequenceBigrams.value));
+				
+				// The user did not specify a new list, so use the default
+				//  built-in English list, possibly adding extra words.
+				
+				TokenSequenceRemoveStopwords stopwordFilter =
+					new TokenSequenceRemoveStopwords(false, keepSequenceBigrams.value);
+				
+				if (extraStopwordsFile.wasInvoked()) {
+					stopwordFilter.addStopWords(extraStopwordsFile.value);
+				}
+				
+				pipeList.add(stopwordFilter);
 			}
-
+                        
 			// 
 			// Convert tokens to numeric indices into the Alphabet
 			//
@@ -229,7 +256,7 @@ public class Csv2Vectors {
 		Reader fileReader;
 
 		if (inputFile.value.toString().equals ("-")) {
-		    fileReader = new InputStreamReader (System.in);
+			fileReader = new InputStreamReader (System.in);
 		}
 		else {
 			fileReader = new InputStreamReader(new FileInputStream(inputFile.value), encoding.value);
@@ -276,5 +303,5 @@ public class Csv2Vectors {
 	}
 }
 
-    
+	
 
