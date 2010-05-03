@@ -96,7 +96,7 @@ public class SGML2TokenSequence extends Pipe implements Serializable
 				if (sgml.charAt(1) == '/')
 					nextTag = backgroundTag;
 				else{
-					//nextTag = m.group(0).intern();
+					//nextTag = m.group(0);
 					nextTag = sgml.substring(1, sgml.length()-1);
 				}
 				logger.finer("nextTag: " + nextTag);

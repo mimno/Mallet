@@ -828,7 +828,7 @@ public class LDAHyper implements Serializable {
 						sb.append (alphabet.lookupObject(feature));
 					}
 				} else if (sb != null) {
-					String sbs = sb.toString().intern();
+					String sbs = sb.toString();
 					//System.out.println ("phrase:"+sbs);
 					if (phrases[prevtopic].get(sbs) == 0)
 						phrases[prevtopic].put(sbs,0);

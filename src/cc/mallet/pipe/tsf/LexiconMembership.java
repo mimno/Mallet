@@ -45,7 +45,7 @@ public class LexiconMembership extends Pipe implements Serializable
 				break;
 			} else {
 			//	System.out.println(name + " : " + (ignoreCase ? line.toLowerCase().intern() : line.intern()) );
-				lexicon.add (ignoreCase ? line.toLowerCase().intern() : line.intern());
+				lexicon.add (ignoreCase ? line.toLowerCase() : line);
 			}
 		}
 		if (lexicon.size() == 0)

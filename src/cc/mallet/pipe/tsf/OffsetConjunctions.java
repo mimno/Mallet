@@ -143,7 +143,7 @@ public class OffsetConjunctions extends Pipe implements Serializable
 				newValue *= iters[i].getNumericValue();
 			}
 			//System.err.println ("Adding new feature " + newFeature);
-			newfs = PropertyList.add (newFeature.intern(), newValue, newfs);
+			newfs = PropertyList.add (newFeature, newValue, newfs);
 		}
 		else { // recursive step
 			while (iters[currIndex].hasNext()) {

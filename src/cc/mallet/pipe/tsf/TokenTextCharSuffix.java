@@ -45,7 +45,7 @@ public class TokenTextCharSuffix extends Pipe implements Serializable
 			String s = t.getText();
 			int slen = s.length();
 			if (slen > suffixLength)
-				t.setFeatureValue ((prefix + s.substring (slen - suffixLength, slen)).intern(), 1.0);
+				t.setFeatureValue ((prefix + s.substring (slen - suffixLength, slen)), 1.0);
 		}
 		return carrier;
 	}

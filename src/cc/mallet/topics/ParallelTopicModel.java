@@ -1075,7 +1075,7 @@ public class ParallelTopicModel implements Serializable {
 						sb.append (alphabet.lookupObject(feature));
 					}
 				} else if (sb != null) {
-					String sbs = sb.toString().intern();
+					String sbs = sb.toString();
 					//logger.info ("phrase:"+sbs);
 					if (phrases[prevtopic].get(sbs) == 0)
 						phrases[prevtopic].put(sbs,0);

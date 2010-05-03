@@ -47,7 +47,7 @@ public class StringSpan extends Token implements Span
   private static String constructTokenText (CharSequence doc, int start, int end)
   {
     CharSequence subseq = doc.subSequence(start,end);
-    return subseq.toString().intern();
+    return subseq.toString();
   }
 
   public Object getDocument ()

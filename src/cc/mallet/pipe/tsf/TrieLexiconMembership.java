@@ -45,7 +45,7 @@ public class TrieLexiconMembership extends Pipe implements Serializable {
 			if (line == null) {
 				break;
 			} else {
-				lexicon.add(line.intern());
+				lexicon.add(line);
 			}
 		}
 		if (lexicon.size() == 0)
@@ -67,7 +67,7 @@ public class TrieLexiconMembership extends Pipe implements Serializable {
 			if (line == null) {
 				break;
 			} else {
-				lexicon.add(line.intern(), includeDelims, delim);
+				lexicon.add(line, includeDelims, delim);
 			}
 		}
 		if (lexicon.size() == 0)

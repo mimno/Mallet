@@ -61,7 +61,7 @@ public class TokenTextCharNGrams extends Pipe implements Serializable
 			for (int j = 0; j < gramSizes.length; j++) {
 				int size = gramSizes[j];
 				for (int k = 0; k < (slen - size)+1; k++)
-					t.setFeatureValue ((prefix + s.substring (k, k+size)).intern(), 1.0);
+					t.setFeatureValue ((prefix + s.substring (k, k+size)), 1.0);
 			}
 		}
 		return carrier;

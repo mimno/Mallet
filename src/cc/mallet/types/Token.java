@@ -27,32 +27,27 @@ import cc.mallet.util.PropertyList;
 /** A representation of a piece of text, usually a single word, to
 		which we can attach properties. */
 
-public class Token implements Serializable, PropertyHolder
-{
+public class Token implements Serializable, PropertyHolder {
 
 	private String text;
 	PropertyList properties = null;				// for arbitrary properties
 	PropertyList features = null;					// numeric, to turn into a FeatureVector
 	
-	public Token (String s)
-	{
-		text = s.intern();
+	public Token (String s) {
+		text = s;
 	}
 
-	public String getText ()
-	{
+	public String getText () {
 		return text;
 	}
 
-	public void setText (String t)
-	{
-		text = t.intern();
+	public void setText (String t) {
+		text = t;
 	}
 
 	// xxx This implementation may change in the future!
 	// If you really just want the text, you should use Token.getText() instead.
-	public String toString ()
-	{
+	public String toString () {
 		StringBuffer sb = new StringBuffer ();
 		sb.append (getText());
 		if (features != null) {
@@ -75,8 +70,7 @@ public class Token implements Serializable, PropertyHolder
 		return sb.toString();
 	}
 	
-	public String toStringWithFeatureNames ()
-	{
+	public String toStringWithFeatureNames () {
 		StringBuffer sb = new StringBuffer ();
 		sb.append (getText());
 		if (features != null) {
@@ -89,80 +83,68 @@ public class Token implements Serializable, PropertyHolder
 		return sb.toString();
 	}
 
-	public FeatureVector toFeatureVector (Alphabet dict, boolean binary)
-	{
+	public FeatureVector toFeatureVector (Alphabet dict, boolean binary) {
 		return new FeatureVector (dict, features, binary);
 	}
 
-	public void setProperty (String key, Object value)
-	{
+	public void setProperty (String key, Object value) {
 		properties = PropertyList.add (key, value, properties);
 	}
 
-	public void setNumericProperty (String key, double value)
-	{
+	public void setNumericProperty (String key, double value) {
 		properties = PropertyList.add (key, value, properties);
 	}
 
-	public PropertyList getProperties ()
-	{
+	public PropertyList getProperties () {
 		return properties;
 	}
 
-	public void setProperties (PropertyList newProperties)
-	{
+	public void setProperties (PropertyList newProperties) {
 		properties = newProperties;
 	}
 
-	public Object getProperty (String key)
-	{
+	public Object getProperty (String key) {
 		return properties == null ? null : properties.lookupObject (key);
 	}
 
-	public double getNumericProperty (String key)
-	{
+	public double getNumericProperty (String key) {
 		return (properties == null ? 0.0 : properties.lookupNumber (key));
 	}
 
-	public boolean hasProperty (String key)
-	{
+	public boolean hasProperty (String key) {
 		return (properties != null && properties.hasProperty( key ));
 	}
 
-	public void setFeatureValue (String key, double value)
-	{
+	public void setFeatureValue (String key, double value) {
 		features = PropertyList.add (key, value, features);
 	}
 
-	public double getFeatureValue (String key)
-	{
+	public double getFeatureValue (String key) {
 		return (features == null ? 0.0 : features.lookupNumber (key));
 	}
 
-	public PropertyList getFeatures ()
-	{
+	public PropertyList getFeatures () {
 		return features;
 	}
 
-	public void setFeatures (PropertyList pl)
-	{
+	public void setFeatures (PropertyList pl) {
 		features = pl;
 	}
 
-  // Serialization
+	// Serialization
 
-  private static final long serialVersionUID = 1;
-  private static final int CURRENT_SERIAL_VERSION = 0;
-
-  private void writeObject (ObjectOutputStream out) throws IOException {
-    out.writeInt(CURRENT_SERIAL_VERSION);
-    out.defaultWriteObject ();
-  }
-
-  private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-    int version = in.readInt ();
-    in.defaultReadObject ();
-  }
+	private static final long serialVersionUID = 1;
+	private static final int CURRENT_SERIAL_VERSION = 0;
+	
+	private void writeObject (ObjectOutputStream out) throws IOException {
+		out.writeInt(CURRENT_SERIAL_VERSION);
+		out.defaultWriteObject ();
+	}
+	
+	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+		int version = in.readInt ();
+		in.defaultReadObject ();
+	}
 
 
 }

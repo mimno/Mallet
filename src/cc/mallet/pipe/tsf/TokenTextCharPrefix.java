@@ -44,7 +44,7 @@ public class TokenTextCharPrefix extends Pipe implements Serializable
 			Token t = ts.get(i);
 			String s = t.getText();
 			if (s.length() > prefixLength)
-				t.setFeatureValue ((prefix + s.substring (0, prefixLength)).intern(), 1.0);
+				t.setFeatureValue ((prefix + s.substring (0, prefixLength)), 1.0);
 		}
 		return carrier;
 	}

@@ -49,7 +49,7 @@ public class TokenText extends Pipe implements Serializable
 		for (int i = 0; i < ts.size(); i++) {
 			Token t = ts.get(i);
 			if (matchingRegex == null || matchingRegex.matcher(t.getText()).matches()) {
-				t.setFeatureValue (prefix == null ? t.getText().intern() : (prefix+t.getText()).intern(), 1.0);
+				t.setFeatureValue (prefix == null ? t.getText() : (prefix+t.getText()), 1.0);
 			}
 		}
 		return carrier;
