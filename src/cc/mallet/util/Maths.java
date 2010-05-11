@@ -412,4 +412,14 @@ public final class Maths {
       return a + Math.log (1 - Math.exp(b-a));
   }
 
+  public static double getEntropy(double[] dist) {
+  	double entropy = 0;
+  	for (int i = 0; i < dist.length; i++) {
+  		if (dist[i] != 0) {
+  			entropy -= dist[i] * Math.log(dist[i]);
+  		}
+  	}
+  	return entropy;
+  }
+  
 }
