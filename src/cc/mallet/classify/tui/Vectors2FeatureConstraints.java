@@ -48,7 +48,7 @@ public class Vectors2FeatureConstraints {
   
   public static CommandOption.String targets = new 
   CommandOption.String(Vectors2FeatureConstraints.class, "targets", "STRING",
-  true, "heuristic", "Method used to estimate constraint targets.", null);
+  true, "none | oracle | heuristic | voted", "Method used to estimate constraint targets.", null);
   
   public static CommandOption.Double majorityProb = new
   CommandOption.Double(Vectors2FeatureConstraints.class, "majority-prob", "DOUBLE",
