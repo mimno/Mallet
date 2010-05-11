@@ -131,7 +131,7 @@ public class CRF extends Transducer implements Serializable
 	
 	/** A simple, transparent container to hold the parameters or sufficient statistics for the CRF. */
 	public static class Factors implements Serializable {
-		Alphabet weightAlphabet;
+		public Alphabet weightAlphabet;
 		public SparseVector[] weights; // parameters on transitions, indexed by "weight index"
 		public double[] defaultWeights;// parameters for default features, indexed by "weight index" 
 		public boolean[] weightsFrozen; // flag, if true indicating that the weights of this "weight index" should not be changed by learning, indexed by "weight index" 
@@ -478,7 +478,6 @@ public class CRF extends Transducer implements Serializable
 			} else {
 				index -= numStateParms;
 				for (int i = 0; i < weights.length; i++) {
-
 					if (index == 0) {
 						defaultWeights[i] = value;
 						return;
@@ -486,8 +485,10 @@ public class CRF extends Transducer implements Serializable
           index--;
 					if (index < weights[i].numLocations()) {
 						weights[i].setValueAtLocation (index, value);
-					} else
+						return;
+					} else {
 						index -= weights[i].numLocations();
+					}
 				}
 				throw new IllegalArgumentException ("index too high = "+index);
 			}
@@ -1457,6 +1458,11 @@ public class CRF extends Transducer implements Serializable
 	/** Only sets the parameter from the first group of parameters. */
 	public void setParameter (int sourceStateIndex, int destStateIndex, int featureIndex, double value)
 	{
+		setParameter(sourceStateIndex, destStateIndex, featureIndex, 0, value);
+	}
+	
+	public void setParameter (int sourceStateIndex, int destStateIndex, int featureIndex, int weightIndex, double value)
+	{
 		weightsValueChanged();
 		State source = (State)getState(sourceStateIndex);
 		State dest = (State) getState(destStateIndex);
@@ -1466,7 +1472,7 @@ public class CRF extends Transducer implements Serializable
 				break;
 		if (rowIndex == source.destinationNames.length)
 			throw new IllegalArgumentException ("No transtition from state "+sourceStateIndex+" to state "+destStateIndex+".");
-		int weightsIndex = source.weightsIndices[rowIndex][0];
+		int weightsIndex = source.weightsIndices[rowIndex][weightIndex];
 		if (featureIndex < 0)
 			parameters.defaultWeights[weightsIndex] = value;
 		else {
@@ -1477,6 +1483,11 @@ public class CRF extends Transducer implements Serializable
 	/** Only gets the parameter from the first group of parameters. */
 	public double getParameter (int sourceStateIndex, int destStateIndex, int featureIndex)
 	{
+		return getParameter(sourceStateIndex,destStateIndex,featureIndex,0);
+	}
+	
+	public double getParameter (int sourceStateIndex, int destStateIndex, int featureIndex, int weightIndex)
+	{
 		State source = (State)getState(sourceStateIndex);
 		State dest = (State) getState(destStateIndex);
 		int rowIndex;
@@ -1485,7 +1496,7 @@ public class CRF extends Transducer implements Serializable
 				break;
 		if (rowIndex == source.destinationNames.length)
 			throw new IllegalArgumentException ("No transtition from state "+sourceStateIndex+" to state "+destStateIndex+".");
-		int weightsIndex = source.weightsIndices[rowIndex][0];
+		int weightsIndex = source.weightsIndices[rowIndex][weightIndex];
 		if (featureIndex < 0)
 			return parameters.defaultWeights[weightsIndex];
     return parameters.weights[weightsIndex].value (featureIndex);
@@ -1499,8 +1510,6 @@ public class CRF extends Transducer implements Serializable
 		}
 		return this.numParameters;
 	}
-
-
 
 	/** This method is deprecated. */
 	// But it is here as a reminder to do something about induceFeaturesFor(). */
