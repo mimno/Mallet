@@ -82,6 +82,18 @@ public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements Tr
 	public int getIteration () { return iterationCount; }
 	
 
+	/**
+	 * Use this method to specify whether or not factors
+	 * are added to the CRF by this trainer.  If you have
+	 * already setup the factors in your CRF, you may
+	 * not want the trainer to add additional factors. 
+	 * 
+	 * @param flag If true, this trainer adds no factors to the CRF.
+	 */
+	public void setAddNoFactors(boolean flag) {
+		this.useNoWeights = flag;
+	}
+
 	public CRFOptimizableByLabelLikelihood getOptimizableCRF (InstanceList trainingSet) {
 		if (cachedWeightsStructureStamp != crf.weightsStructureChangeStamp) {
 			if (!useNoWeights) {
