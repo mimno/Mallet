@@ -120,6 +120,9 @@ public class CRFTrainerByGE extends TransducerTrainer {
 			}
 			bfgs.reset();
 		}
+		
+		ge.shutdown();
+		
 		return converged;
 	}
 }

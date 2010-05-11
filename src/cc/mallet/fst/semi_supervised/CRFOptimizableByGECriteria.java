@@ -91,6 +91,10 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
     updateExecutor = new LatticeCreationExecutor(numThreads);
   }
 
+  public void shutdown() {
+  	updateExecutor.shutdown();
+  }
+  
   public void setGaussianPriorVariance(double priorVariance) {
   	this.priorVariance = priorVariance;
   }
@@ -315,6 +319,10 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
         CRF.Factors subsetGradient = mtGradient.get(i).subsetFactors;
         gradient.plusEquals(subsetGradient, 1.0);
       }
+    }
+    
+    public void shutdown() {
+    	executor.shutdown();
     }
 
 
