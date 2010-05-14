@@ -221,6 +221,10 @@ public class SimpleTagger
   private static final CommandOption.Boolean featureInductionOption = new CommandOption.Boolean(
           SimpleTagger.class, "feature-induction", "true|false", true, false,
      "Whether to perform feature induction during training", null);
+  
+  private static final CommandOption.Integer numThreads = new CommandOption.Integer(
+      SimpleTagger.class, "threads", "INTEGER", true, 1,
+      "Number of threads to use for CRF training.", null);
 
   private static final CommandOption.List commandOptions =
     new CommandOption.List (
@@ -244,6 +248,7 @@ public class SimpleTagger
           cacheSizeOption,
           includeInputOption,
           featureInductionOption,
+          numThreads
         });
 
   /**
@@ -287,22 +292,48 @@ public class SimpleTagger
     logger.info("Training on " + training.size() + " instances");
     if (testing != null)
       logger.info("Testing on " + testing.size() + " instances");
-    CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
-    crft.setGaussianPriorVariance(var);
-    if (featureInductionOption.value) {
-    	 crft.trainWithFeatureInduction(training, null, testing, eval, iterations, 10, 20, 500, 0.5, false, null);
-    } else {
-    	boolean converged;
-    	for (int i = 1; i <= iterations; i++) {
-    		converged = crft.train (training, 1);
-    		if (i % 1 == 0 && eval != null) // Change the 1 to higher integer to evaluate less often
-    			eval.evaluate(crft);
-    		if (viterbiOutputOption.value && i % 10 == 0)
-    			new ViterbiWriter("", new InstanceList[] {training, testing}, new String[] {"training", "testing"}).evaluate(crft);
-    		if (converged)
-    			break;
-    	}
+    
+  	assert(numThreads.value > 0);
+    if (numThreads.value > 1) {
+      CRFTrainerByThreadedLabelLikelihood crft = new CRFTrainerByThreadedLabelLikelihood (crf,numThreads.value);
+      crft.setGaussianPriorVariance(var);
+      if (featureInductionOption.value) {
+      	throw new IllegalArgumentException("Multi-threaded feature induction is not yet supported.");
+      } else {
+      	boolean converged;
+      	for (int i = 1; i <= iterations; i++) {
+      		converged = crft.train (training, 1);
+      		if (i % 1 == 0 && eval != null) // Change the 1 to higher integer to evaluate less often
+      			eval.evaluate(crft);
+      		if (viterbiOutputOption.value && i % 10 == 0)
+      			new ViterbiWriter("", new InstanceList[] {training, testing}, new String[] {"training", "testing"}).evaluate(crft);
+      		if (converged)
+      			break;
+      	}
+      }
+      crft.shutdown();
     }
+    else {
+      CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
+      crft.setGaussianPriorVariance(var);
+      if (featureInductionOption.value) {
+      	 crft.trainWithFeatureInduction(training, null, testing, eval, iterations, 10, 20, 500, 0.5, false, null);
+      } else {
+      	boolean converged;
+      	for (int i = 1; i <= iterations; i++) {
+      		converged = crft.train (training, 1);
+      		if (i % 1 == 0 && eval != null) // Change the 1 to higher integer to evaluate less often
+      			eval.evaluate(crft);
+      		if (viterbiOutputOption.value && i % 10 == 0)
+      			new ViterbiWriter("", new InstanceList[] {training, testing}, new String[] {"training", "testing"}).evaluate(crft);
+      		if (converged)
+      			break;
+      	}
+      }
+    }
+    
+    
+
     return crf;
   }
 
@@ -384,6 +415,8 @@ public class SimpleTagger
    *<dd>Number of answers to output when applying model. Default is 1.</dd>
    *<dt><code>--include-input</code> <em>boolean</em></dt>
    *<dd>Whether to include input features when printing decoding output. Default is <code>false</code>.</dd>
+   *<dt><code>--threads</code> <em>positive-integer</em></dt>
+   *<dd>Number of threads for CRF training. Default is 1.</dd>
    *</dl>
    * Remaining arguments:
    *<ul>
@@ -574,7 +607,7 @@ public class SimpleTagger
           boolean error = false;
           for (int a = 0; a < k; a++) {
             if (outputs[a].size() != input.size()) {
-              System.err.println("Failed to decode input sequence " + i + ", answer " + a);
+              logger.info("Failed to decode input sequence " + i + ", answer " + a);
               error = true;
             }
           }

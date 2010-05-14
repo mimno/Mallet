@@ -227,6 +227,7 @@ public class CRFOptimizableByBatchLabelLikelihood implements Optimizable.ByCombi
 		assert(buffer.length == crf.parameters.getNumFactors())
 			: "Incorrect buffer length: " + buffer.length + ", expected: " + crf.parameters.getNumFactors();
 
+		Arrays.fill(buffer, 0);
 		for (double[] gradient : batchGradients) {
 			MatrixOps.plusEquals(buffer, gradient);
 		}

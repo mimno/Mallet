@@ -119,10 +119,11 @@ public class ThreadedOptimizable implements Optimizable.ByGradientValue {
 			} catch (InterruptedException ie) {
 				ie.printStackTrace();
 			}
+			double cachedValue = MatrixOps.sum(batchCachedValue);
+			logger.info("getValue() (loglikelihood, optimizable by label likelihood) =" + cachedValue);
+			return cachedValue;
 		}
-		double cachedValue = MatrixOps.sum(batchCachedValue);
-		logger.info("getValue() (loglikelihood, optimizable by label likelihood) =" + cachedValue);
-		return cachedValue;
+		return MatrixOps.sum(batchCachedValue);
 	}
 
 	/**
