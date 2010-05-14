@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -553,6 +554,43 @@ public class HMM extends Transducer implements Serializable {
 		initialEstimator = new Multinomial.LaplaceEstimator(transitionAlphabet);
 	}
 
+	/**
+	 * Separate initialization of initial/transitions and emissions. All
+	 * probabilities are proportional to (1+random)^noise.
+	 * 
+	 * @author kedarb
+	 * @param random
+	 *            Random object (if null use uniform distribution)
+	 * @param noise
+	 *            Noise exponent to use. If zero, then uniform distribution.
+	 */
+	public void initTransitions(Random random, double noise) {
+		Alphabet transitionAlphabet = getTransitionAlphabet();
+		initialMultinomial = new Multinomial(getRandomArray(transitionAlphabet
+				.size(), random, noise), transitionAlphabet);
+		initialEstimator = new Multinomial.LaplaceEstimator(transitionAlphabet);
+		transitionMultinomial = new Multinomial[numStates()];
+		transitionEstimator = new Multinomial.LaplaceEstimator[numStates()];
+		for (int i = 0; i < numStates(); i++) {
+			transitionMultinomial[i] = new Multinomial(getRandomArray(
+					transitionAlphabet.size(), random, noise),
+					transitionAlphabet);
+			transitionEstimator[i] = new Multinomial.LaplaceEstimator(
+					transitionAlphabet);
+		}
+	}
+
+	public void initEmissions(Random random, double noise) {
+		emissionMultinomial = new Multinomial[numStates()];
+		emissionEstimator = new Multinomial.LaplaceEstimator[numStates()];
+		for (int i = 0; i < numStates(); i++) {
+			emissionMultinomial[i] = new Multinomial(getRandomArray(
+					inputAlphabet.size(), random, noise), inputAlphabet);
+			emissionEstimator[i] = new Multinomial.LaplaceEstimator(
+					inputAlphabet);
+		}
+	}
+
 	public void estimate() {
 		Alphabet transitionAlphabet = getTransitionAlphabet();
 		initialMultinomial = initialEstimator.estimate();
@@ -694,6 +732,20 @@ public class HMM extends Transducer implements Serializable {
 		return ret;
 	}
 
+	// kedarb: p[i] = (1+random)^noise/sum
+	private double[] getRandomArray(int size, Random random, double noise) {
+		double[] ret = new double[size];
+		double sum = 0;
+		for (int i = 0; i < size; i++) {
+			ret[i] = random == null ? 1.0 : Math.pow(1.0 + random.nextDouble(),
+					noise);
+			sum += ret[i];
+		}
+		for (int i = 0; i < size; i++)
+			ret[i] /= sum;
+		return ret;
+	}
+
 	// Serialization
 	// For HMM class
 
@@ -721,7 +773,7 @@ public class HMM extends Transducer implements Serializable {
 		out.writeObject(name2state);
 		if (emissionEstimator != null) {
 			size = emissionEstimator.length;
-			out.writeInt(size); 
+			out.writeInt(size);
 			for (i = 0; i < size; i++)
 				out.writeObject(emissionEstimator[i]);
 		} else
@@ -751,7 +803,7 @@ public class HMM extends Transducer implements Serializable {
 
 	/* Bug fix from Cheng-Ju Kuo cju.kuo@gmail.com */
 	private void readObject(ObjectInputStream in) throws IOException,
-	ClassNotFoundException {
+			ClassNotFoundException {
 		int size, i;
 		int version = in.readInt();
 		inputPipe = (Pipe) in.readObject();
@@ -796,7 +848,7 @@ public class HMM extends Transducer implements Serializable {
 			transitionEstimator = new Multinomial.Estimator[size];
 			for (i = 0; i < size; i++) {
 				transitionEstimator[i] = (Multinomial.Estimator) in
-				.readObject();
+						.readObject();
 			}
 		}
 		size = in.readInt();
@@ -805,8 +857,7 @@ public class HMM extends Transducer implements Serializable {
 		} else {
 			transitionMultinomial = new Multinomial[size];
 			for (i = 0; i < size; i++) {
-				transitionMultinomial[i] = (Multinomial) in
-				.readObject();
+				transitionMultinomial[i] = (Multinomial) in.readObject();
 			}
 		}
 	}
