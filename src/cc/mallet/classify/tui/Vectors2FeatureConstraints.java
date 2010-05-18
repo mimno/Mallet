@@ -65,6 +65,10 @@ public class Vectors2FeatureConstraints {
     // if a features file was specified, then load features from the file
     if (featuresFile.wasInvoked()) {
       if (fileContainsLabels(featuresFile.value)) {
+      	// better error message from dfrankow@gmail.com
+        if (targets.value.equals("oracle")) {
+      	  throw new RuntimeException("with --targets oracle, features file must be unlabeled");
+        }
         featuresAndLabels = readFeaturesAndLabelsFromFile(featuresFile.value, list.getDataAlphabet(), list.getTargetAlphabet());
       }
       else {
@@ -182,6 +186,11 @@ public class Vectors2FeatureConstraints {
         line = line.trim();
         String[] split = line.split("\\s+");
         int featureIndex = dataAlphabet.lookupIndex(split[0],false);
+      	// better error message from dfrankow@gmail.com
+        if (featureIndex == -1) {
+        	throw new RuntimeException("Couldn't find feature '"
+        	  + split[0] + "' in the data alphabet.");
+        }
         
         ArrayList<Integer> labels = new ArrayList<Integer>();
         for (int i = 1; i < split.length; i++) {
