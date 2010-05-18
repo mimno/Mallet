@@ -532,6 +532,7 @@ public class HMM extends Transducer implements Serializable {
 		return transitionAlphabet;
 	}
 
+	@Deprecated
 	public void reset() {
 		emissionEstimator = new Multinomial.LaplaceEstimator[numStates()];
 		transitionEstimator = new Multinomial.LaplaceEstimator[numStates()];
@@ -556,7 +557,7 @@ public class HMM extends Transducer implements Serializable {
 
 	/**
 	 * Separate initialization of initial/transitions and emissions. All
-	 * probabilities are proportional to (1+random)^noise.
+	 * probabilities are proportional to (1+Uniform[0,1])^noise.
 	 * 
 	 * @author kedarb
 	 * @param random
@@ -577,6 +578,9 @@ public class HMM extends Transducer implements Serializable {
 					transitionAlphabet);
 			transitionEstimator[i] = new Multinomial.LaplaceEstimator(
 					transitionAlphabet);
+			// set state's initial weight
+			State s = (State) getState(i);
+			s.setInitialWeight(initialMultinomial.logProbability(s.getName()));
 		}
 	}
 
