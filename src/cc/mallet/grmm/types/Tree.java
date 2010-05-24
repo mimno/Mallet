@@ -73,15 +73,16 @@ public class Tree {
 
   int maybeAddVertex (Object v)
   {
-    int foo = vertex2int.get (v);
-    if (foo == -1) {
-      foo = int2vertex.size ();
+    if (!vertex2int.containsKey (v)) {
+      int foo = int2vertex.size ();
       int2vertex.add (v);
       vertex2int.put (v, foo);
       parents.add (null);
       children.add (new ArrayList ());
+      return foo;
+    } else {
+	return vertex2int.get (v);
     }
-    return foo;
   }
 
   public void add (Object rt)
@@ -122,12 +123,11 @@ public class Tree {
 
   public Object getParent (Object child)
   {
-    int pidx = vertex2int.get (child);
-    if (pidx < 0) {
-      return null;
-    } else {
-      return parents.get (pidx);
-    }
+      if (vertex2int.containsKey (child)) {
+	  return parents.get (vertex2int.get (child));
+      } else {
+	  return null;
+      }
   }
 
   public List getChildren (Object parent)

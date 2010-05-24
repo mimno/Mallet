@@ -304,7 +304,7 @@ public class JunctionTree extends Tree {
   {
     int n = cpfs.length;
     // This will cause OpenJGraph to print all our nodes and edges
-    System.out.println(this);
+    System.out.println(dumpToString());
     // Now lets print all the cpfs
     System.out.println("Vertex CPFs");
     for (int i = 0; i < n; i++) {
