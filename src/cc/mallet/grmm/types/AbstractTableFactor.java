@@ -1092,4 +1092,16 @@ public abstract class AbstractTableFactor implements DiscreteFactor {
   protected abstract Factor slice_twovar (Variable v1, Variable v2, Assignment observed);
 
   protected abstract Factor slice_general (Variable[] vars, Assignment observed);
+
+    public String prettyOutputString () {
+	StringBuffer buf = new StringBuffer();
+	for (Iterator it = vars.iterator(); it.hasNext();) {
+	    Variable var = (Variable) it.next();
+	    buf.append (var.getLabel());
+	    buf.append (" ");
+	}
+	buf.append ("~ AbstractTableFactor\n");
+	return buf.toString();
+    }
+
 }
