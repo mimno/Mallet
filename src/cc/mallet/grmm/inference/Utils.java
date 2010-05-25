@@ -35,7 +35,15 @@ public class Utils {
    */
   public static double lookupMinusLogZ (FactorGraph mdl, Inferencer inf)
   {
-    Assignment assn = new Assignment (mdl, new int[mdl.numVariables ()]);
+    // heuristically try to find a reasonable assignment (not numerically 0 prob)
+    int [] vals = new int[mdl.numVariables()];
+    for (int vi = 0; vi < vals.length; vi++) {
+      Variable var = mdl.getVariable (vi);
+      Factor mrg = inf.lookupMarginal (var);
+      vals[vi] = mrg.argmax(); 
+    }
+
+    Assignment assn = new Assignment (mdl, vals);
     double prob = inf.lookupLogJoint (assn);
     double energy = mdl.logValue (assn);
     return prob - energy;
