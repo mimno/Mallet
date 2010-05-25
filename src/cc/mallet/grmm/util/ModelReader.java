@@ -217,7 +217,7 @@ public class ModelReader {
     return args.toArray ();
   }
 
-    private static Pattern nbrRegex = Pattern.compile ("[+-]?\\d+(?:\\.\\d+)?");
+    private static Pattern nbrRegex = Pattern.compile ("[+-]?\\d+(?:\\.\\d+)?(E[+-]\\d+)?");
 
   private Object varFromName (String name, boolean preTwiddle)
   {

@@ -40,6 +40,18 @@ public class RandomGraphs {
     return new double[] { eB, eMinusB, eMinusB, eB };
   }
 
+    private static Factor generateAttractivePotential (Random r, double edgeWeight, Variable v1, Variable v2)
+    {
+	double b = -Math.abs (r.nextGaussian ()) * edgeWeight;
+	return new BoltzmannPairFactor(v1, v2, 2*b);
+    }
+
+    private static Factor generateMixedPotential (Random r, double edgeWeight, Variable v1, Variable v2)
+    {
+	double b = r.nextGaussian () * edgeWeight;
+	return new BoltzmannPairFactor(v1, v2, 2*b);
+    }
+
   /**
    * Constructs a square grid of a given size with random attractive potentials.
    *  Graphs are generated as follows:
@@ -67,8 +79,8 @@ public class RandomGraphs {
         Variable v = mdl.get (i, j);
         Variable vRight = mdl.get (i + 1, j);
         Variable vDown = mdl.get (i, j + 1);
-        mdl.addFactor (v, vRight, generateAttractivePotentialValues (r, edgeWeight));
-        mdl.addFactor (v, vDown, generateAttractivePotentialValues (r, edgeWeight));
+        mdl.addFactor (generateAttractivePotential (r, edgeWeight, v, vRight));
+        mdl.addFactor (generateAttractivePotential (r, edgeWeight, v, vDown));
       }
     }
 
@@ -76,23 +88,21 @@ public class RandomGraphs {
     for (int i = 0; i < size-1; i++) {
       Variable v = mdl.get (i, size - 1);
       Variable vRight = mdl.get (i + 1, size - 1);
-      mdl.addFactor (v, vRight, generateAttractivePotentialValues (r, edgeWeight));
+      mdl.addFactor (generateAttractivePotential (r, edgeWeight, v, vRight));
     }
 
     // and finally right edge
     for (int i = 0; i < size-1; i++) {
       Variable v = mdl.get (size - 1, i);
       Variable vDown = mdl.get (size - 1, i + 1);
-      mdl.addFactor (v, vDown, generateAttractivePotentialValues (r, edgeWeight));
+      mdl.addFactor (generateAttractivePotential (r, edgeWeight, v, vDown));
     }
 
     // and node potentials
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
         double a = r.nextGaussian () * 0.0625;
-        double[] b = new double[] { Math.exp (a), Math.exp (-a) };
-        TableFactor ptl = new TableFactor (mdl.get (i, j), b);
-        mdl.addFactor (ptl);
+        mdl.addFactor (new BoltzmannUnaryFactor (mdl.get(i,j), -2*a));
       }
     }
 
@@ -154,8 +164,8 @@ public class RandomGraphs {
         Variable v = mdl.get(i,j);
         Variable vRight = mdl.get(i+1,j);
         Variable vDown = mdl.get(i,j+1);
-        mdl.addFactor (v, vRight, generateMixedPotentialValues (r, edgeWeight));
-        mdl.addFactor (v, vDown, generateMixedPotentialValues (r, edgeWeight));
+        mdl.addFactor (generateMixedPotential (r, edgeWeight, v, vRight));
+        mdl.addFactor (generateMixedPotential (r, edgeWeight, v, vDown));
       }
     }
 
@@ -163,14 +173,14 @@ public class RandomGraphs {
     for (int i = 0; i < size-1; i++) {
       Variable v = mdl.get (i, size - 1);
       Variable vRight = mdl.get (i + 1, size - 1);
-      mdl.addFactor (v, vRight, generateMixedPotentialValues (r, edgeWeight));
+      mdl.addFactor (generateMixedPotential (r, edgeWeight, v, vRight));
     }
 
     // and finally right edge
     for (int i = 0; i < size-1; i++) {
       Variable v = mdl.get (size - 1, i);
       Variable vDown = mdl.get (size - 1, i + 1);
-      mdl.addFactor (v, vDown, generateMixedPotentialValues (r, edgeWeight));
+      mdl.addFactor (generateMixedPotential (r, edgeWeight, v, vDown));
     }
 
     // and node potentials
@@ -224,8 +234,7 @@ public class RandomGraphs {
   public static TableFactor randomNodePotential (Random r, Variable var)
   {
     double a = r.nextGaussian ();
-    double[] b = new double[] { Math.exp(a), Math.exp(-a) };
-    TableFactor ptl = new TableFactor (var, b);
+    TableFactor ptl = new BoltzmannUnaryFactor (var, -2*a);
     return ptl;
   }
 
