@@ -7,7 +7,9 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Logger;
 
@@ -42,6 +44,7 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
   // unlabeled data
   protected InstanceList data;
   
+  private int numThreads;
 	private int cachedValueWeightsStamp = -1;
 	private int cachedGradientWeightsStamp = -1;
 
@@ -64,7 +67,8 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
 
   // thread handler used to create lattices in new threads and update the
   // gradient
-  protected transient LatticeCreationExecutor updateExecutor;
+  protected transient LatticeCreationExecutor geLatticeExecutor;
+  protected transient ThreadPoolExecutor sumLatticeExecutor;
 
   /**
    * Initializes the structures.
@@ -88,11 +92,14 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
     priorVariance = DEFAULT_GPV;
     geCriteria.setConstraintBits(data, 0, data.size());
 
-    updateExecutor = new LatticeCreationExecutor(numThreads);
+    this.numThreads = numThreads;
+    geLatticeExecutor = new LatticeCreationExecutor(numThreads);
+    sumLatticeExecutor = (ThreadPoolExecutor)Executors.newFixedThreadPool(numThreads);
   }
 
   public void shutdown() {
-  	updateExecutor.shutdown();
+  	geLatticeExecutor.shutdown();
+  	sumLatticeExecutor.shutdown();
   }
   
   public void setGaussianPriorVariance(double priorVariance) {
@@ -112,7 +119,7 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
   public void initialize(Map<Integer, SumLattice> lattices) {
   	assert(gradient.structureMatches(crf.getParameters()));
   	gradient.zero();
-    updateExecutor.initialize();
+    geLatticeExecutor.initialize();
 
     // compute the expected prior distribution over labels for all feature-label
     // pairs (constraints)
@@ -136,7 +143,7 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
     this.initialize(lattices);
     logger.info("Updating gradient...");
     long time = System.currentTimeMillis();
-    updateExecutor.computeGradient(lattices);
+    geLatticeExecutor.computeGradient(lattices);
     time = (System.currentTimeMillis() - time) / 1000;
     logger.info(String.valueOf(time) + " secs.");
   }
@@ -146,11 +153,39 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
 		  // The cached value is not up to date; it was calculated for a different set of CRF weights.
 		  cachedValueWeightsStamp = crf.getWeightsValueChangeStamp(); 
 
-	  	HashMap<Integer,SumLattice> lattices = new HashMap<Integer,SumLattice>();
-	  	for (int ii = 0; ii < data.size(); ii++) {
-	  		FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(ii).getData();
-	  		lattices.put(ii, new SumLatticeDefault(crf,fvs,true));
-	  	}
+		  // compute lattices in multiple threads
+		  ArrayList<Callable<Void>> handlers = new ArrayList<Callable<Void>>();
+      // number of instances per subset
+      int numInstancesSubset = data.size() / numThreads;
+      // range of each subset
+      int start = -1, end = -1;
+      for (int i = 0; i < numThreads; ++i) {
+        // get the indices of subset
+        if (i == 0) {
+          start = 0;
+          end = start + numInstancesSubset;
+        } else if (i == numThreads - 1) {
+          start = end;
+          end = data.size();
+        } else {
+          start = end;
+          end = start + numInstancesSubset;
+        }
+        SumLatticeHandler handler = new SumLatticeHandler(start, end);
+        handlers.add(handler);
+      }
+      // run tasks
+      try {
+      	sumLatticeExecutor.invokeAll(handlers);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+      
+      // combine lattices from multiple threads
+      HashMap<Integer,SumLattice> lattices = new HashMap<Integer,SumLattice>();
+      for (Callable<Void> handler : handlers) {
+	  		lattices.putAll(((SumLatticeHandler)handler).getLattices());
+      }
 
 	  	computeGradient(lattices);
 	  	
@@ -374,6 +409,43 @@ public class CRFOptimizableByGECriteria implements Optimizable.ByGradientValue,
       }
     }
   }
+  
+  /**
+   * Runs forward-backward for a subset of data in a new thread, uses
+   * subset-specific incrementor.
+   */
+  private class SumLatticeHandler implements Callable<Void> {
+    // start, end indices of subset of data
+    private int start;
+    private int end;
+    private HashMap<Integer,SumLatticeDefault> lattices;
+
+    /**
+     * Initializes the indices.
+     */
+    public SumLatticeHandler(int startIndex, int endIndex) {
+      this.start = startIndex;
+      this.end = endIndex;
+      this.lattices = new HashMap<Integer,SumLatticeDefault>();
+    }
+    
+    public HashMap<Integer,SumLatticeDefault> getLattices() {
+    	return lattices;
+    }
+
+		public Void call() throws Exception {
+      BitSet constraintBits = geCriteria.getConstraintBits();
+    	for (int ii = start; ii < end; ii++) {
+        if (!constraintBits.get(ii)) {
+          continue;
+        }
+  	  	FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(ii).getData();
+  	  	lattices.put(ii, new SumLatticeDefault(crf,fvs,true));
+    	}
+			return null;
+		}
+  }
+
   
   private class FactorsIncrementorPair {
     // model's Factors from a subset of data

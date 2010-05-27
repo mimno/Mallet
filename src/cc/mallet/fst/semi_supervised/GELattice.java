@@ -4,7 +4,6 @@ import java.util.BitSet;
 import java.util.Iterator;
 
 import cc.mallet.fst.Transducer;
-import cc.mallet.fst.semi_supervised.GECriteria.GECriterion;
 
 import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.MatrixOps;
@@ -92,7 +91,8 @@ public class GELattice {
       for (int li = 0; li < numLabels; ++li) {
     	// only compute the lattice 
     	// if the target expectation is greater than 0
-        if (expectation[li] > 0.0 && target[li] > 0.0) {
+        if (constraint instanceof GEL2Criterion || 
+        		(expectation[li] > 0.0 && target[li] > 0.0)) {
           // create one lattice for this feature-label constraint, 
         	// run dynamic programming
           this.initLattice();
@@ -100,7 +100,7 @@ public class GELattice {
           this.runBackward(stateLabelMap, gammas, xis, li, fi, fvs);
 
           // used to weight the contribution of this feature-label pair to the gradient
-          double targetModelExpRatio = constraint.getTargetModelExpRatio(li);
+          double targetModelExpRatio = constraint.getGradientConstant(li);
           this.updateGradientCache(fi, constraintGamma, gammas, xis, fvs,
                             targetModelExpRatio, labelExpInstance[li],
                             incrementor);

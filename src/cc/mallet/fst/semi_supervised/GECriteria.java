@@ -30,7 +30,7 @@ import cc.mallet.util.Maths;
  * @author Gaurav Chandalia
  * @author Gregory Druck
  */
-public class GECriteria {
+public abstract class GECriteria {
   private static Logger logger =
     MalletLogger.getLogger(GECriteria.class.getName());
 
@@ -220,33 +220,7 @@ public class GECriteria {
    * <b>Note:</b> Label expectations are <b>not</b> re-computed here. If
    * desired, then make a call to <tt>calculateLabelExp</tt>.
    */
-  public double getGEValue() {
-    double value = 0.0;
-    for (int fi : constraints.keySet()) {
-      GECriterion constraint = constraints.get(fi);
-      if ( constraint.getCount() > 0.0) {
-        double[] target = constraint.getTarget();
-        double[] expectation = constraint.getExpectation();
-
-        // value due to current constraint
-        double featureValue = 0.0;
-        for (int labelIndex = 0; labelIndex < stateLabelMap.getNumLabels();
-             ++labelIndex) {
-          if (expectation[labelIndex] > 0.0 && target[labelIndex] > 0.0) {
-            // p*log(q) - p*log(p)
-            featureValue +=
-            	target[labelIndex] * Math.log(expectation[labelIndex]) -
-            	target[labelIndex] * Math.log(target[labelIndex]);
-          }
-        }
-  			assert(!Double.isNaN(featureValue) &&
-               !Double.isInfinite(featureValue));
-
-        value += featureValue *  constraint.getWeight();
-      }
-    }
-    return value;
-  }
+  public abstract double getGEValue();
 
   protected void assertLabelExpNonNull() {
     Iterator<Integer> iter = constraints.keySet().iterator();
@@ -425,80 +399,5 @@ public class GECriteria {
         }
       }
     }
-  }
-
-  /**
-   * GE constraint for one input feature.
-   */
-  public static class GECriterion {
-  	protected String name;
-    protected double weight;
-
-    // target expectation
-    protected double[] target;
-    // model expectation
-    protected double[] expectation;
-
-    protected double count;
-
-    public GECriterion(String name, double[] target, double weight) {
-    	this.name = name;
-      this.weight = weight;
-      this.target = target;
-    }
-
-    /**
-     * Returns the constraint name.
-     */
-    public String getName() {
-      return name;
-    }
-
-    /**
-     * Returns the weight (gamma) for the constraint.
-     */
-    public double getWeight() {
-      return weight;
-    }
-    
-    /**
-     * Returns the target expectation for the feature.
-     */
-    public double[] getTarget() {
-      return target;
-    }
-
-    /**
-     * Returns the model expectation of the feature.
-     */
-    public double[] getExpectation() {
-      return expectation;
-    }
-
-    protected void setExpectation(double[] expectation) {
-      this.expectation = expectation;
-    }
-
-    /**
-     * Returns the count of the feature.
-     */
-    public double getCount() {
-      return count;
-    }
-
-    protected void setCount(double count) {
-      this.count = count;
-    }
-    
-    /**
-     * Returns the target/expectation ratio required in lattice computations. <p>
-     *
-     * *Note*: The ratio is divided by the feature count if the label expectations
-     * have been normalized.
-     */
-    protected double getTargetModelExpRatio(int labelIndex) {
-      return target[labelIndex] / (expectation[labelIndex] * count);
-    }
-    
   }
 }
