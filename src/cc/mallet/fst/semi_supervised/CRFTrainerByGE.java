@@ -126,11 +126,21 @@ public class CRFTrainerByGE extends TransducerTrainer {
 		
 		LimitedMemoryBFGS bfgs = new LimitedMemoryBFGS(ge);
 		
+		// if numIterations is not the default, then
+		// do not reset
+		int numResets;
+		if (numIterations == Integer.MAX_VALUE) {
+			numResets = DEFAULT_NUM_RESETS;
+		}
+		else {
+			numResets = 0;
+		}
+		
 		converged = false;
 		logger.info ("CRF about to train with "+numIterations+" iterations");
 		// sometimes resetting the optimizer helps to find
 		// a better parameter setting
-		for (int reset = 0; reset < DEFAULT_NUM_RESETS + 1; reset++) {
+		for (int reset = 0; reset < numResets + 1; reset++) {
 			for (int i = 0; i < numIterations; i++) {
 				try {
 					converged = bfgs.optimize (1);
