@@ -118,34 +118,23 @@ public class CRFTrainerByGE extends TransducerTrainer {
     	criteria = new GEL2Criteria(crf.numStates(), stateLabelMap, constraints);
     }
     
-
-    
     CRFOptimizableByGECriteria ge = 
     	new CRFOptimizableByGECriteria(criteria, crf, unlabeledSet, numThreads);
     ge.setGaussianPriorVariance(gaussianPriorVariance);
 		
 		LimitedMemoryBFGS bfgs = new LimitedMemoryBFGS(ge);
 		
-		// if numIterations is not the default, then
-		// do not reset
-		int numResets;
-		if (numIterations == Integer.MAX_VALUE) {
-			numResets = DEFAULT_NUM_RESETS;
-		}
-		else {
-			numResets = 0;
-		}
-		
 		converged = false;
 		logger.info ("CRF about to train with "+numIterations+" iterations");
 		// sometimes resetting the optimizer helps to find
 		// a better parameter setting
-		for (int reset = 0; reset < numResets + 1; reset++) {
-			for (int i = 0; i < numIterations; i++) {
+		int iter = 0;
+		for (int reset = 0; reset < DEFAULT_NUM_RESETS + 1; reset++) {
+			for (; iter < numIterations; iter++) {
 				try {
 					converged = bfgs.optimize (1);
 					iteration++;
-					logger.info ("CRF finished one iteration of maximizer, i="+i);
+					logger.info ("CRF finished one iteration of maximizer, i="+iter);
 					runEvaluators();
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
@@ -157,7 +146,7 @@ public class CRFTrainerByGE extends TransducerTrainer {
 					converged = true;
 				}
 				if (converged) {
-					logger.info ("CRF training has converged, i="+i);
+					logger.info ("CRF training has converged, i="+iter);
 					break;
 				}
 			}
