@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import cc.mallet.types.InstanceList;
@@ -97,7 +98,14 @@ public class ThreadedOptimizable implements Optimizable.ByGradientValue {
 	 * this method after training finishes.
 	 */
 	public void shutdown() {
-    assert(executor.shutdownNow().size() == 0) : "All tasks didn't finish";
+		// fix submitted by Mark Dredze (mdredze@cs.jhu.edu)
+		executor.shutdown();
+		try {
+			executor.awaitTermination(30, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		assert(executor.shutdownNow().size() == 0) : "All tasks didn't finish";
 	}
 
 	public double getValue () {
