@@ -128,9 +128,8 @@ public class Text2Vectors {
 			System.exit (-1);
 		}
 		if (classDirs.value.length == 0) {
-			System.err.println ("You must include --input DIR1 DIR2 ...' in order to specify a " +
+			throw new IllegalArgumentException ("You must include --input DIR1 DIR2 ...' in order to specify a " +
 								"list of directories containing the documents for each class.");
-			System.exit (-1);
 		}
 	
 		// Remove common prefix from all the input class directories
@@ -212,9 +211,8 @@ public class Text2Vectors {
 				try {
 					tokenPattern = Pattern.compile(tokenRegex.value);
 				} catch (PatternSyntaxException pse) {
-					System.err.println("The token regular expression (" + tokenRegex.value + 
+					throw new IllegalArgumentException("The token regular expression (" + tokenRegex.value + 
 									   ") was invalid: " + pse.getMessage());
-					System.exit(1);
 				}
 			}
                         
