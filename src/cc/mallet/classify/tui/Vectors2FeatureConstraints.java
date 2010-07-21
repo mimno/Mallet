@@ -8,12 +8,14 @@ import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import cc.mallet.classify.FeatureConstraintUtil;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.InstanceList;
 import cc.mallet.util.CommandOption;
+import cc.mallet.util.MalletLogger;
 
 /**
  * Create "feature constraints" from data for use in GE training.
@@ -22,6 +24,8 @@ import cc.mallet.util.CommandOption;
 
 public class Vectors2FeatureConstraints {
 
+	private static Logger logger = MalletLogger.getLogger(Vectors2FeatureConstraints.class.getName());
+	
   public static CommandOption.File vectorsFile = new 
     CommandOption.File(Vectors2FeatureConstraints.class, "input", "FILENAME",
     true, null, "Data file used to generate constraints.", null);
@@ -115,9 +119,9 @@ public class Vectors2FeatureConstraints {
         featuresAndLabels = FeatureConstraintUtil.labelFeatures(list,features);
         
         for (int fi : featuresAndLabels.keySet()) {
-          System.err.print(list.getDataAlphabet().lookupObject(fi) + ":  ");
+          logger.info(list.getDataAlphabet().lookupObject(fi) + ":  ");
           for (int li : featuresAndLabels.get(fi)) {
-            System.err.println(list.getTargetAlphabet().lookupObject(li) + " ");
+            logger.info(list.getTargetAlphabet().lookupObject(li) + " ");
           }
         }
         
@@ -197,7 +201,7 @@ public class Vectors2FeatureConstraints {
           // TODO should these be label names?
           int li = targetAlphabet.lookupIndex(split[i]);
           labels.add(li);
-          System.err.println("found label " + li);
+          logger.info("found label " + li);
         }
         featuresAndLabels.put(featureIndex,labels);
         line = reader.readLine();
@@ -213,7 +217,7 @@ public class Vectors2FeatureConstraints {
   private static void writeConstraints(HashMap<Integer,double[]> constraints, File constraintsFile, Alphabet dataAlphabet, Alphabet targetAlphabet) {
     
     if (constraints.size() == 0) {
-      System.err.println("No constraints written!");
+      logger.warning("No constraints written!");
       return;
     }
     
