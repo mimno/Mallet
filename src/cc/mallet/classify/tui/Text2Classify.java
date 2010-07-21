@@ -110,8 +110,6 @@ public class Text2Classify {
 		else {
 			out = new PrintStream(outputFile.value, encoding.value);
 		}
-		
-		System.out.println(classifier.getInstancePipe().getDataAlphabet().size());
 
 		// gdruck@cs.umass.edu
 		// Stop growth on the alphabets. If this is not done and new
