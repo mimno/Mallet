@@ -9,6 +9,7 @@ package cc.mallet.classify.tui;
 
 import java.util.Iterator;
 import java.util.logging.*;
+import java.util.regex.*;
 import java.io.*;
 import java.nio.charset.Charset;
 
@@ -23,63 +24,63 @@ import cc.mallet.util.*;
  *  creating an instance list.
  *  <p>
  * 
- *  @author Gregory Druck
  *  @author David Mimno
+ *  @author Gregory Druck
  */
 
-public class Text2Classify {
+public class Csv2Classify {
 
-	private static Logger logger = MalletLogger.getLogger(Text2Classify.class.getName());
+	private static Logger logger = MalletLogger.getLogger(Csv2Classify.class.getName());
 
-	static CommandOption.SpacedStrings classDirs =	new CommandOption.SpacedStrings
-	(Text2Classify.class, "input", "DIR...", true, null,
-	 "The directories containing text files to be classified, one directory per class", null);
+	static CommandOption.File inputFile =	new CommandOption.File
+		(Csv2Classify.class, "input", "FILE", true, null,
+		 "The file containing data to be classified, one instance per line", null);
 
 	static CommandOption.File outputFile = new CommandOption.File
-		(Text2Classify.class, "output", "FILE", true, new File("text.vectors"),
+		(Csv2Classify.class, "output", "FILE", true, new File("text.vectors"),
 		 "Write the instance list to this file; Using - indicates stdout.", null);
 
 	static CommandOption.String lineRegex = new CommandOption.String
-		(Text2Classify.class, "line-regex", "REGEX", true, "^(\\S*)[\\s,]*(.*)$",
+		(Csv2Classify.class, "line-regex", "REGEX", true, "^(\\S*)[\\s,]*(.*)$",
 		 "Regular expression containing regex-groups for label, name and data.", null);
 	
 	static CommandOption.Integer nameOption = new CommandOption.Integer
-		(Text2Classify.class, "name", "INTEGER", true, 1,
+		(Csv2Classify.class, "name", "INTEGER", true, 1,
 		 "The index of the group containing the instance name.\n" +
          "   Use 0 to indicate that the name field is not used.", null);
 
 	static CommandOption.Integer dataOption = new CommandOption.Integer
-		(Text2Classify.class, "data", "INTEGER", true, 2,
+		(Csv2Classify.class, "data", "INTEGER", true, 2,
 		 "The index of the group containing the data.", null);
 	
 	static CommandOption.File classifierFile = new CommandOption.File
-		(Text2Classify.class, "classifier", "FILE", true, new File("classifier"),
+		(Csv2Classify.class, "classifier", "FILE", true, new File("classifier"),
 		 "Use the pipe and alphabets from a previously created vectors file.\n" +
 		 "   Allows the creation, for example, of a test set of vectors that are\n" +
 		 "   compatible with a previously created set of training vectors", null);
 
 	static CommandOption.String encoding = new CommandOption.String
-		(Text2Classify.class, "encoding", "STRING", true, Charset.defaultCharset().displayName(),
+		(Csv2Classify.class, "encoding", "STRING", true, Charset.defaultCharset().displayName(),
 		 "Character encoding for input file", null);
 
 	public static void main (String[] args) throws FileNotFoundException, IOException {
 
 		// Process the command-line options
-		CommandOption.setSummary (Text2Classify.class,
+		CommandOption.setSummary (Csv2Classify.class,
 								  "A tool for classifying a stream of unlabeled instances");
-		CommandOption.process (Text2Classify.class, args);
+		CommandOption.process (Csv2Classify.class, args);
 		
 		// Print some helpful messages for error cases
 		if (args.length == 0) {
-			CommandOption.getList(Text2Classify.class).printUsage(false);
+			CommandOption.getList(Csv2Classify.class).printUsage(false);
 			System.exit (-1);
 		}
-		if (classDirs.value.length == 0) {
-			throw new IllegalArgumentException ("You must include --input DIR1 DIR2 ...' in order to specify a " +
-								"list of directories containing the documents.");
+		if (inputFile == null) {
+			throw new IllegalArgumentException ("You must include `--input FILE ...' in order to specify a"+
+								"file containing the instances, one per line.");
 		}
 		
-		// Read classifier from file
+	  // Read classifier from file
 		Classifier classifier = null;
 		try {
 			ObjectInputStream ois =
@@ -92,15 +93,20 @@ public class Text2Classify {
 							   ": " + e.getMessage());
 		}
 		
-		// Read instances from directories
-		File[] directories = new File[classDirs.value.length];
-		for (int i = 0; i < classDirs.value.length; i++) {
-			directories[i] = new File (classDirs.value[i]);
+		// Read instances from the file
+		Reader fileReader;
+		if (inputFile.value.toString().equals ("-")) {
+		    fileReader = new InputStreamReader (System.in);
 		}
-		Iterator<Instance> fileIterator = new UnlabeledFileIterator (directories);
+		else {
+			fileReader = new InputStreamReader(new FileInputStream(inputFile.value), encoding.value);
+		}
+		Iterator<Instance> csvIterator = 
+			new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
+							 dataOption.value, 0, nameOption.value);
 		Iterator<Instance> iterator = 
-			classifier.getInstancePipe().newIteratorFrom(fileIterator);
-		
+			classifier.getInstancePipe().newIteratorFrom(csvIterator);
+	
 		// Write classifications to the output file
 		PrintStream out = null;
 
@@ -112,7 +118,7 @@ public class Text2Classify {
 		}
 		
 		System.out.println(classifier.getInstancePipe().getDataAlphabet().size());
-
+		
 		// gdruck@cs.umass.edu
 		// Stop growth on the alphabets. If this is not done and new
 		// features are added, the feature and classifier parameter
@@ -133,12 +139,14 @@ public class Text2Classify {
 				output.append("\t" + labeling.labelAtLocation(location));
 				output.append("\t" + labeling.valueAtLocation(location));
 			}
-
 			out.println(output);
 		}
-
+		
 		if (! outputFile.value.toString().equals ("-")) {
 			out.close();
 		}
 	}
 }
+
+    
+
