@@ -108,7 +108,7 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
     
     if (constraints == null && constraintsFile != null) {
       constraints = FeatureConstraintUtil.readConstraintsFromFile(constraintsFile, trainingList);
-      System.err.println("number of constraints: " + constraints.size());
+      logger.info("number of constraints: " + constraints.size());
     }
     
     ge = new MaxEntOptimizableByGE(trainingList,constraints,classifier);
