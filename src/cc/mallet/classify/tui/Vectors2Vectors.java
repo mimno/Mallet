@@ -96,10 +96,6 @@ public class Vectors2Vectors {
 			CommandOption.getList(Vectors2Vectors.class).printUsage(false);
 			System.exit (-1);
 		}
-		if (false && !inputFile.wasInvoked()) {
-			System.err.println ("You must specify an input instance list, with --input.");
-			System.exit (-1);
-		}
 
 		Random r = randomSeed.wasInvoked() ? new Random (randomSeed.value) : new Random ();
 		double t = trainingProportion.value;
@@ -115,7 +111,7 @@ public class Vectors2Vectors {
 
 		if (t == 1.0 && !vectorToSequence.value && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked())
 		    && ! (hideTargets.wasInvoked() || revealTargets.wasInvoked())) {
-			System.err.println("Vectors2Vectors was invoked, but did not change anything");
+			logger.warning("Vectors2Vectors was invoked, but did not change anything");
 			instances.save(trainingFile.value());
 			System.exit(0);
 		}
@@ -247,7 +243,6 @@ public class Vectors2Vectors {
 			}
 			
 			if (vectorToSequence.value) {
-			  System.out.println("HERE!");
 				// Convert FeatureVector's to FeatureSequence's by simply randomizing the order
 				// of all the word occurrences, including repetitions due to values larger than 1.
 				Alphabet alpha = instances.getDataAlphabet();
