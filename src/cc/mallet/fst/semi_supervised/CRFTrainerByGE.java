@@ -110,11 +110,11 @@ public class CRFTrainerByGE extends TransducerTrainer {
     
     GECriteria criteria; 
     if (kl) {
-    	System.err.println("kl");
+    	logger.info("kl");
     	criteria = new GEKLCriteria(crf.numStates(), stateLabelMap, constraints);
     }
     else {
-    	System.err.println("l2");
+    	logger.info("l2");
     	criteria = new GEL2Criteria(crf.numStates(), stateLabelMap, constraints);
     }
     

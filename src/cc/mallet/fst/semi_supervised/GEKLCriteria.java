@@ -16,7 +16,6 @@ public class GEKLCriteria extends GECriteria {
    * desired, then make a call to <tt>calculateLabelExp</tt>.
    */
   public double getGEValue() {
-  	//System.err.println("here!!!!!!!!!");
     double value = 0.0;
     for (int fi : constraints.keySet()) {
       GECriterion constraint = constraints.get(fi);
