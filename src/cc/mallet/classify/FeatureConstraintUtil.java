@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
+import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.topics.LDAHyper;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
@@ -25,6 +27,7 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.MatrixOps;
+import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
 
 /**
@@ -34,6 +37,8 @@ import cc.mallet.util.Maths;
 
 public class FeatureConstraintUtil {
   
+	private static Logger logger = MalletLogger.getLogger(FeatureConstraintUtil.class.getName());
+	
   /**
    * Reads feature constraints from a file, whether they are stored
    * using Strings or indices.
@@ -189,7 +194,7 @@ public class FeatureConstraintUtil {
         Object feat = sorted[ti][pos].toString();
         int fi = alphabet.lookupIndex(feat,false);
         if ((fi >=0) && (!features.contains(fi))) {
-          System.err.println("Selected feature: " + feat);
+          logger.info("Selected feature: " + feat);
           features.add(fi);
           if (features.size() == numSelFeatures) {
             return features;
@@ -338,7 +343,7 @@ public class FeatureConstraintUtil {
       // reject features with infogain
       // less than cutoff
       if (infogain.value(fi) < mean) {
-        System.err.println("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
+        logger.info("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
         continue;
       }
       
