@@ -103,7 +103,7 @@ public class Csv2Classify {
 		}
 		Iterator<Instance> csvIterator = 
 			new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
-							 dataOption.value, 0, nameOption.value);
+			dataOption.value, 0, nameOption.value);
 		Iterator<Instance> iterator = 
 			classifier.getInstancePipe().newIteratorFrom(csvIterator);
 	
@@ -116,8 +116,6 @@ public class Csv2Classify {
 		else {
 			out = new PrintStream(outputFile.value, encoding.value);
 		}
-		
-		System.out.println(classifier.getInstancePipe().getDataAlphabet().size());
 		
 		// gdruck@cs.umass.edu
 		// Stop growth on the alphabets. If this is not done and new
