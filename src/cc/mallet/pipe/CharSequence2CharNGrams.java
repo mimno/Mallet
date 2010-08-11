@@ -56,7 +56,7 @@ public class CharSequence2CharNGrams extends Pipe implements Serializable
 			TokenSequence ts = (TokenSequence) carrier.getData();
 			TokenSequence ret = new TokenSequence ();
 			for (int i = 0; i < ts.size(); i++)
-				ret.add (ngramify (ts.get(i).getText()));
+				ret.add (ngramify (ts.get(i).getText()).toString());
 			carrier.setData(ret);
 		} else
 			throw new IllegalArgumentException ("Unhandled type "+carrier.getData().getClass());
