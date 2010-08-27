@@ -345,11 +345,28 @@ public abstract class Vectors2Classify
 			if (testFile.wasInvoked()){
 				testFileIlist = InstanceList.load (new File(testFile.value));
 				logger.info("Testing vectors loaded from " + testFile.value);
+				
+				if (!testFileIlist.getPipe().alphabetsMatch(trainingFileIlist.getPipe())) {
+					throw new RuntimeException( 
+							trainingFileIlist.getPipe().getDataAlphabet() + "\n" 
+							+ testFileIlist.getPipe().getDataAlphabet() + "\n" 
+							+ trainingFileIlist.getPipe().getTargetAlphabet() + "\n" 
+							+ testFileIlist.getPipe().getTargetAlphabet() + "\n"
+							+ "Training and testing alphabets don't match!\n");
+				}
 			}
 
 			if (validationFile.wasInvoked()){
 				validationFileIlist = InstanceList.load (new File(validationFile.value));
 				logger.info("validation vectors loaded from " + validationFile.value);
+				if (!validationFileIlist.getPipe().alphabetsMatch(trainingFileIlist.getPipe())) {
+					throw new RuntimeException( 
+							trainingFileIlist.getPipe().getDataAlphabet() + "\n" 
+							+ validationFileIlist.getPipe().getDataAlphabet() + "\n" 
+							+ trainingFileIlist.getPipe().getTargetAlphabet() + "\n" 
+							+ validationFileIlist.getPipe().getTargetAlphabet() + "\n"
+							+ "Training and validation alphabets don't match!\n");
+				}
 			}
 			else {
 				validationFileIlist = new InstanceList(new cc.mallet.pipe.Noop());
