@@ -223,7 +223,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 	public boolean alphabetsMatch (AlphabetCarrying object)
 	{
 		Alphabet[] oas = object.getAlphabets();
-		return  oas.length == 2 && oas[0].equals(getDataAlphabet()) && oas[1].equals(getDataAlphabet());
+		return  oas.length == 2 && oas[0].equals(getDataAlphabet()) && oas[1].equals(getTargetAlphabet());
 	}
 
 	public void setDataAlphabet (Alphabet dDict)
