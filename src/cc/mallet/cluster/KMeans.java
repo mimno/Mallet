@@ -257,7 +257,7 @@ public class KMeans extends Clusterer {
 
       }
 
-      logger.fine("Iter " + iterations + " deltaMeans = " + deltaMeans);
+      logger.info("Iter " + iterations + " deltaMeans = " + deltaMeans);
     }
 
     if (deltaMeans <= MEANS_TOLERANCE)
