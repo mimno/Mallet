@@ -219,6 +219,10 @@ public class SimpleTagger
   private static final CommandOption.Boolean connectedOption = new CommandOption.Boolean(
       SimpleTagger.class, "fully-connected", "true|false", true, true,
       "Include all allowed transitions, even those not in training data", null);
+  
+  private static final CommandOption.String weightsOption = new CommandOption.String(
+      SimpleTagger.class, "weights", "sparse|some-dense|dense", true, "some-dense",
+      "Use sparse, some dense (using a heuristic), or dense features on transitions.", null);
 
   private static final CommandOption.Boolean continueTrainingOption = new CommandOption.Boolean(
       SimpleTagger.class, "continue-training", "true|false", false, false,
@@ -261,6 +265,7 @@ public class SimpleTagger
           defaultOption,
           viterbiOutputOption,
           connectedOption,
+          weightsOption,
           continueTrainingOption,
           nBestOption,
           cacheSizeOption,
@@ -315,6 +320,23 @@ public class SimpleTagger
     if (numThreads.value > 1) {
       CRFTrainerByThreadedLabelLikelihood crft = new CRFTrainerByThreadedLabelLikelihood (crf,numThreads.value);
       crft.setGaussianPriorVariance(var);
+      
+      if (weightsOption.value.equals("dense")) {
+        crft.setUseSparseWeights(false);
+        crft.setUseSomeUnsupportedTrick(false);
+      }
+      else if (weightsOption.value.equals("some-dense")) {
+        crft.setUseSparseWeights(true);
+        crft.setUseSomeUnsupportedTrick(true);
+      }
+      else if (weightsOption.value.equals("sparse")) {
+        crft.setUseSparseWeights(true);
+        crft.setUseSomeUnsupportedTrick(false);
+      }
+      else {
+        throw new RuntimeException("Unknown weights option: " + weightsOption.value);
+      }
+      
       if (featureInductionOption.value) {
       	throw new IllegalArgumentException("Multi-threaded feature induction is not yet supported.");
       } else {
@@ -334,6 +356,23 @@ public class SimpleTagger
     else {
       CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood (crf);
       crft.setGaussianPriorVariance(var);
+      
+      if (weightsOption.value.equals("dense")) {
+        crft.setUseSparseWeights(false);
+        crft.setUseSomeUnsupportedTrick(false);
+      }
+      else if (weightsOption.value.equals("some-dense")) {
+        crft.setUseSparseWeights(true);
+        crft.setUseSomeUnsupportedTrick(true);
+      }
+      else if (weightsOption.value.equals("sparse")) {
+        crft.setUseSparseWeights(true);
+        crft.setUseSomeUnsupportedTrick(false);
+      }
+      else {
+        throw new RuntimeException("Unknown weights option: " + weightsOption.value);
+      }
+      
       if (featureInductionOption.value) {
       	 crft.trainWithFeatureInduction(training, null, testing, eval, iterations, 10, 20, 500, 0.5, false, null);
       } else {
@@ -429,6 +468,8 @@ public class SimpleTagger
    *<dd>Print Viterbi periodically during training. Default is <code>false</code>.</dd>
    *<dt><code>--fully-connected</code> <em>boolean</em></dt>
    *<dd>Include all allowed transitions, even those not in training data. Default is <code>true</code>.</dd>
+   *<dt><code>--weights</code> <em>sparse|some-dense|dense</em></dt>
+   *<dd>Create sparse, some dense (using a heuristic), or dense features on transitions. Default is <code>some-dense</code>.</dd>
    *<dt><code>--n-best</code> <em>positive-integer</em></dt>
    *<dd>Number of answers to output when applying model. Default is 1.</dd>
    *<dt><code>--include-input</code> <em>boolean</em></dt>
