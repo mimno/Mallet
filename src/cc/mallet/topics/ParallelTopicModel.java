@@ -1265,7 +1265,7 @@ public class ParallelTopicModel implements Serializable {
 	 *  @param max         Print no more than this many topics
 	 */
 	public void printDocumentTopics (PrintWriter out, double threshold, int max)	{
-		out.print ("#doc source topic proportion ...\n");
+		out.print ("#doc name topic proportion ...\n");
 		int docLen;
 		int[] topicCounts = new int[ numTopics ];
 
@@ -1283,16 +1283,19 @@ public class ParallelTopicModel implements Serializable {
 			LabelSequence topicSequence = (LabelSequence) data.get(doc).topicSequence;
 			int[] currentDocTopics = topicSequence.getFeatures();
 
-			out.print (doc); out.print (' ');
+			StringBuilder builder = new StringBuilder();
 
-			if (data.get(doc).instance.getSource() != null) {
-				out.print (data.get(doc).instance.getSource()); 
+			builder.append(doc);
+			builder.append("\t");
+
+			if (data.get(doc).instance.getName() != null) {
+				builder.append(data.get(doc).instance.getName()); 
 			}
 			else {
-				out.print ("null-source");
+				builder.append("no-name");
 			}
 
-			out.print (' ');
+			builder.append("\t");
 			docLen = currentDocTopics.length;
 
 			// Count up the tokens
@@ -1302,7 +1305,7 @@ public class ParallelTopicModel implements Serializable {
 
 			// And normalize
 			for (int topic = 0; topic < numTopics; topic++) {
-				sortedTopics[topic].set(topic, (float) topicCounts[topic] / docLen);
+				sortedTopics[topic].set(topic, (alpha[topic] + topicCounts[topic]) / (docLen + alphaSum) );
 			}
 			
 			Arrays.sort(sortedTopics);
@@ -1310,10 +1313,10 @@ public class ParallelTopicModel implements Serializable {
 			for (int i = 0; i < max; i++) {
 				if (sortedTopics[i].getWeight() < threshold) { break; }
 				
-				out.print (sortedTopics[i].getID() + " " + 
-						  sortedTopics[i].getWeight() + " ");
+				builder.append(sortedTopics[i].getID() + "\t" + 
+							   sortedTopics[i].getWeight() + "\t");
 			}
-			out.print (" \n");
+			out.println(builder);
 
 			Arrays.fill(topicCounts, 0);
 		}
