@@ -20,6 +20,7 @@ shift
 set CLASS=
 if "%CMD%"=="import-dir" set CLASS=cc.mallet.classify.tui.Text2Vectors
 if "%CMD%"=="import-file" set CLASS=cc.mallet.classify.tui.Csv2Vectors
+if "%CMD%"=="import-smvlight" set CLASS=cc.mallet.classify.tui.SvmLight2Vectors
 if "%CMD%"=="train-classifier" set CLASS=cc.mallet.classify.tui.Vectors2Classify
 if "%CMD%"=="train-topics" set CLASS=cc.mallet.topics.tui.Vectors2Topics
 if "%CMD%"=="infer-topics" set CLASS=cc.mallet.topics.tui.InferTopics
@@ -32,10 +33,10 @@ if "%CMD%"=="run" set CLASS=%1 & shift
 
 if not "%CLASS%" == "" goto gotClass
 
-
 echo Mallet 2.0 commands: 
 echo   import-dir        load the contents of a directory into mallet instances (one per file)
 echo   import-file       load a single file into mallet instances (one per line)
+echo   import-svmlight   load a single SVMLight format data file into mallet instances (one per line)
 echo   train-classifier  train a classifier from Mallet data files
 echo   train-topics      train a topic model from Mallet data files
 echo   infer-topics      use a trained topic model to infer topics for new documents
