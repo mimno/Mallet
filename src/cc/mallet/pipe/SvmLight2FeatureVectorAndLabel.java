@@ -71,6 +71,9 @@ public class SvmLight2FeatureVectorAndLabel extends Pipe {
     for (int termIndex = 1; termIndex < terms.length; termIndex++) {
       if (!terms[termIndex].equals("")) {
         String[] s = terms[termIndex].split(":");
+        if (s.length != 2) {
+          throw new RuntimeException("invalid format: " + terms[termIndex] + " (should be feature:value)");
+        }
         String feature = s[0];
         indices[termIndex-1] = getDataAlphabet().lookupIndex(feature, true);       
         values[termIndex-1] = Double.parseDouble(s[1]);
