@@ -13,6 +13,7 @@
 	 highest value, and other ranks.
 
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+   @author David North <a href="mailto:dtn-mallet@corefiling.co.uk">dtn-mallet@corefiling.co.uk</a>
  */
 
 package cc.mallet.types;
