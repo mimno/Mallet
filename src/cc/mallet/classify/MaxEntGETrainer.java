@@ -38,6 +38,10 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
   private static Logger logger = MalletLogger.getLogger(MaxEntGETrainer.class.getName());
   private static Logger progressLogger = MalletProgressMessageLogger.getLogger(MaxEntGETrainer.class.getName()+"-pl");
 
+  
+  private boolean l2 = false;
+  private boolean normalize = true;
+  private boolean useValues = false;
   private int numIterations = Integer.MAX_VALUE;
   private double temperature = 1;
   private double gaussianPriorVariance = 1;
@@ -59,6 +63,18 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
     this.classifier = classifier;
   }
 
+  public void setUseValues(boolean flag) {
+    this.useValues = flag;
+  }
+  
+  public void setL2(boolean flag) {
+    l2 = flag;
+  }
+  
+  public void setNormalize(boolean normalize) {
+    this.normalize = normalize;
+  }
+  
   public void setConstraintsFile(String filename) {
     this.constraintsFile = filename;
   }
@@ -111,9 +127,16 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
       logger.info("number of constraints: " + constraints.size());
     }
     
-    ge = new MaxEntOptimizableByGE(trainingList,constraints,classifier);
+    if (l2) {
+      ge = new MaxEntOptimizableByL2GE(trainingList,constraints,classifier,normalize);
+    }
+    else {
+      ge = new MaxEntOptimizableByKLGE(trainingList,constraints,classifier);
+    }
+
     ge.setTemperature(temperature);
     ge.setGaussianPriorVariance(gaussianPriorVariance);
+    ge.setUseValues(useValues);
     opt = new LimitedMemoryBFGS(ge);
     
     logger.fine ("trainingList.size() = "+trainingList.size());
