@@ -70,6 +70,8 @@ public class MaxEntOptimizableByKLGE extends MaxEntOptimizableByGE {
 
     double[][] scores = new double[trainingList.size()][numLabels];
     
+    double[] constraintValue = new double[numLabels];
+    
     // pass 1: calculate model distribution
     for (int ii = 0; ii < trainingList.size(); ii++) {
       Instance instance = trainingList.get(ii);
@@ -140,6 +142,8 @@ public class MaxEntOptimizableByKLGE extends MaxEntOptimizableByGE {
         continue;
       }
       
+      Arrays.fill(constraintValue,0);
+      double instanceExpectation = 0;
       double instanceWeight = trainingList.getInstanceWeight(instance);
       FeatureVector fv = (FeatureVector) instance.getData();
 
@@ -168,25 +172,28 @@ public class MaxEntOptimizableByKLGE extends MaxEntOptimizableByGE {
             val = fv.valueAtLocation(loc);
           }
           
-          // compute \sum_y p(y|x) \hat{g}_y / \bar{g}_y
-          double instanceExpectation = 0;
           for (int label = 0; label < numLabels; label++) {
-            instanceExpectation += ratio[cIndex][label] * scores[ii][label];
+            constraintValue[label] += (val / featureCounts[cIndex]) * ratio[cIndex][label];
           }
           
-          // define C = \sum_y p(y|x) g_y(y,x) \hat{g}_y / \bar{g}_y
-          // compute \sum_y  p(y|x) g_y(x,y) f(x,y) * (\hat{g}_y / \bar{g}_y - C)
+          // compute \sum_y p(y|x) \hat{g}_y / \bar{g}_y
           for (int label = 0; label < numLabels; label++) {
-            if (scores[ii][label] == 0)
-              continue;
-            assert (!Double.isInfinite(scores[ii][label]));
-            double weight = scalingFactor * instanceWeight * temperature * (val / featureCounts[cIndex]) * scores[ii][label] * (ratio[cIndex][label] - instanceExpectation);
-
-            MatrixOps.rowPlusEquals(cachedGradient, numFeatures, label, fv, weight);
-            cachedGradient[numFeatures * label + defaultFeatureIndex] += weight;
-          }  
+            instanceExpectation += (val / featureCounts[cIndex]) * ratio[cIndex][label] * scores[ii][label];
+          }
         }
       }
+
+      // define C = \sum_y p(y|x) g_y(y,x) \hat{g}_y / \bar{g}_y
+      // compute \sum_y  p(y|x) g_y(x,y) f(x,y) * (\hat{g}_y / \bar{g}_y - C)
+      for (int label = 0; label < numLabels; label++) {
+        if (scores[ii][label] == 0)
+          continue;
+        assert (!Double.isInfinite(scores[ii][label]));
+        double weight = scalingFactor * instanceWeight * temperature * scores[ii][label] * (constraintValue[label] - instanceExpectation);
+
+        MatrixOps.rowPlusEquals(cachedGradient, numFeatures, label, fv, weight);
+        cachedGradient[numFeatures * label + defaultFeatureIndex] += weight;
+      }  
     }
 
     cachedValue = value;
