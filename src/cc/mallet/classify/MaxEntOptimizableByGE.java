@@ -60,14 +60,16 @@ public abstract class MaxEntOptimizableByGE implements Optimizable.ByGradientVal
     int numFeatures = trainingList.getDataAlphabet().size();
     defaultFeatureIndex = numFeatures;
     int numLabels = trainingList.getTargetAlphabet().size();
-    parameters = new double[(numFeatures + 1) * numLabels];
+
     cachedGradient = new double[(numFeatures + 1) * numLabels];
     cachedValue = 0;
        
-    if (classifier != null) {
+    if (initClassifier != null) {
+      this.parameters = initClassifier.parameters;
       this.classifier = initClassifier;
     }
     else {
+      this.parameters = new double[(numFeatures + 1) * numLabels];
       this.classifier = new MaxEnt(trainingList.getPipe(),parameters);
     }
     
