@@ -40,12 +40,15 @@ public class Vectors2Info
 	(Vectors2Info.class, "print-labels", "[TRUE|FALSE]", false, false,
 	 "Print class labels known to instance list, one per line.", null);
 
+	static CommandOption.Boolean printFeatures = new CommandOption.Boolean
+	(Vectors2Info.class, "print-features", "[TRUE|FALSE]", false, false,
+	 "Print the data alphabet, one feature per line.", null);
+
 	static CommandOption.String printMatrix = new CommandOption.String
 	(Vectors2Info.class, "print-matrix", "STRING", false, "sic",
-	 "Print word/document matrix in the specified format (a|s)(b|i)(n|w|c|e)", null)
+	 "Print word/document matrix in the specified format (a|s)(b|i)(n|w|c|e), for (all vs. sparse), (binary vs. integer), (number vs. word vs. combined vs. empty)", null)
 	{
-		public void parseArg(java.lang.String arg)
-		{
+		public void parseArg(java.lang.String arg) {
 
 			if (arg == null) arg = this.defaultValue;
 			//System.out.println("pa arg=" + arg);
@@ -66,12 +69,11 @@ public class Vectors2Info
 		}
 	};
 
+	public static void main (String[] args) throws FileNotFoundException, IOException {
 
-	public static void main (String[] args) throws FileNotFoundException, IOException
-	{
 		// Process the command-line options
 		CommandOption.setSummary (Vectors2Info.class,
-		"A tool for printing information about instance lists of feature vectors.");
+								  "A tool for printing information about instance lists of feature vectors.");
 		CommandOption.process (Vectors2Info.class, args);
 
 		// Print some helpful messages for error cases
@@ -85,58 +87,98 @@ public class Vectors2Info
 		}
 
 		// Read the InstanceList
-		InstanceList ilist = InstanceList.load (inputFile.value);
+		InstanceList instances = InstanceList.load (inputFile.value);
 
 		if (printLabels.value) {
-			Alphabet la = ilist.getTargetAlphabet ();
-			for (int i = 0; i < la.size(); i++)
-				System.out.println (la.lookupObject (i));
+			Alphabet labelAlphabet = instances.getTargetAlphabet ();
+			for (int i = 0; i < labelAlphabet.size(); i++) {
+				System.out.println (labelAlphabet.lookupObject (i));
+			}
+			System.out.print ("\n");
+		}
+
+		if (printFeatures.value) {
+			Alphabet alphabet = instances.getDataAlphabet();
+			for (int i = 0; i < alphabet.size(); i++) {
+				System.out.println(alphabet.lookupObject(i));
+			}
 			System.out.print ("\n");
 		}
 
 		if (printInfogain.value > 0) {
-			InfoGain ig = new InfoGain (ilist);
-			for (int i = 0; i < printInfogain.value; i++)
+			InfoGain ig = new InfoGain (instances);
+			for (int i = 0; i < printInfogain.value; i++) {
 				System.out.println (""+i+" "+ig.getObjectAtRank(i));
+			}
 			System.out.print ("\n");
 		}
 
-		if (printMatrix.wasInvoked()){
-			 printInstanceList(ilist, printMatrix.value);
-
+		if (printMatrix.wasInvoked()) {
+			 printInstanceList(instances, printMatrix.value);
 		}
 
 	}
 
-	/* print an instance list according to the format string */
-	private static void printInstanceList(InstanceList ilist, String formatString)
-	{
-		//private static double[] calcFeatureCounts (InstanceList ilist)  from FeatureCounts
-		//System.out.println("PIL formatString " + formatString);
-		int numInstances = ilist.size();
-		int numClasses = ilist.getTargetAlphabet().size();
-		int numFeatures = ilist.getDataAlphabet().size();
-		Alphabet dataAlphabet = ilist.getDataAlphabet();
+	/** print an instance list according to the format string */
+	private static void printInstanceList(InstanceList instances, String formatString) {
+
+		int numInstances = instances.size();
+		int numClasses = instances.getTargetAlphabet().size();
+		int numFeatures = instances.getDataAlphabet().size();
+
+		Alphabet dataAlphabet = instances.getDataAlphabet();
 		double[] counts = new double[numFeatures];
 		double count;
-		for (int i = 0; i < ilist.size(); i++) {
-			Instance inst = ilist.get(i);
-			if (!(inst.getData() instanceof FeatureVector))
-				throw new IllegalArgumentException ("Currently only handles FeatureVector data");
-			FeatureVector fv = (FeatureVector) inst.getData ();
-			//if (ilist.getInstanceWeight(i) == 0)
-			//	continue;
-			System.out.print(inst.getName() + " " + inst.getTarget());
-			if (formatString.charAt(0) == 'a'){  // all features
-				for (int fvi=0; fvi<numFeatures; fvi++){
-					printFeature(dataAlphabet.lookupObject(fvi), fvi,  fv.value(fvi), formatString);
+
+		for (int i = 0; i < instances.size(); i++) {
+			Instance instance = instances.get(i);
+
+			if (instance.getData() instanceof FeatureVector) {
+				FeatureVector fv = (FeatureVector) instance.getData ();
+				
+				System.out.print(instance.getName() + " " + instance.getTarget());
+				
+				if (formatString.charAt(0) == 'a') {
+					// Dense: Print all features, even those with value 0.
+					for (int fvi=0; fvi<numFeatures; fvi++){
+						printFeature(dataAlphabet.lookupObject(fvi), fvi,  fv.value(fvi), formatString);
+					}
 				}
-			} else{  // sparse; only features present in vector
-				for (int l = 0; l < fv.numLocations(); l++) {
-					int fvi = fv.indexAtLocation(l);
-					printFeature(dataAlphabet.lookupObject(fvi), fvi, fv.valueAtLocation(l), formatString);
-					//System.out.print(" " + dataAlphabet.lookupObject(j) + " " + ((int) fv.valueAtLocation(j)));
+				else {
+					// Sparse: Print features with non-zero values only.
+					for (int l = 0; l < fv.numLocations(); l++) {
+						int fvi = fv.indexAtLocation(l);
+						printFeature(dataAlphabet.lookupObject(fvi), fvi, fv.valueAtLocation(l), formatString);
+						//System.out.print(" " + dataAlphabet.lookupObject(j) + " " + ((int) fv.valueAtLocation(j)));
+					}
 				}
+			}
+			else if (instance.getData() instanceof FeatureSequence) {
+				FeatureSequence featureSequence = (FeatureSequence) instance.getData();
+
+				StringBuilder output = new StringBuilder();
+
+				output.append(instance.getName() + " " + instance.getTarget());
+
+				for (int position = 0; position < featureSequence.size(); position++) {
+					int featureIndex = featureSequence.getIndexAtPosition(position);
+
+					char featureFormat = formatString.charAt(2);
+					if (featureFormat == 'w') {
+						output.append(" " + dataAlphabet.lookupObject(featureIndex));
+					}
+					else if (featureFormat == 'n') {
+						output.append(" " + featureIndex);
+					}
+					else if (featureFormat == 'c') {
+						output.append(" " + dataAlphabet.lookupObject(featureIndex) + ":" + featureIndex);
+					}
+				}
+
+				System.out.println(output);
+			}
+			else {
+				throw new IllegalArgumentException ("Printing is supported for FeatureVector and FeatureSequence data, found " + instance.getData().getClass());
 			}
 
 			System.out.println();

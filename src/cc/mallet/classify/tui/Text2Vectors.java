@@ -51,12 +51,12 @@ public class Text2Vectors {
 
 	static CommandOption.File stoplistFile = new CommandOption.File
 		(Text2Vectors.class, "stoplist-file", "FILE", true, null,
-		 "Read \"stop words\" from a file, one per line. Implies --remove-stopwords", null);
+		 "Instead of the default list, read stop words from a file, one per line. Implies --remove-stopwords", null);
 
 	static CommandOption.File extraStopwordsFile = new CommandOption.File
 		(Text2Vectors.class, "extra-stopwords", "FILE", true, null,
-		 "Read whitespace-separated words from this file, and add them to either " + 
-		 "  the default English stoplist or the list specified by --stoplist-file.", null);
+		 "Read whitespace-separated words from this file, and add them to either\n" + 
+		 "   the default English stoplist or the list specified by --stoplist-file.", null);
 
 	static CommandOption.Boolean skipHeader = new CommandOption.Boolean
 		(Text2Vectors.class, "skip-header", "[TRUE|FALSE]", false, false,
