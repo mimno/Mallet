@@ -206,6 +206,10 @@ public abstract class Vectors2Classify
 		(Vectors2Classify.class, "noOverwriteProgressMessages", "true|false", false, false,
 		 "Suppress writing-in-place on terminal for progess messages - repetitive messages "
 		 +"of which only the latest is generally of interest", null);
+	
+	static CommandOption.Integer crossValidation = new CommandOption.Integer
+	(Vectors2Classify.class, "cross-validation", "INT", true, 0,
+	    "The number of folds for cross-validation (DEFAULT=0).", null);
 
 	public static void main (String[] args) throws bsh.EvalError, java.io.IOException
 	{
@@ -290,7 +294,27 @@ public abstract class Vectors2Classify
 
 		}
 
-		int numTrials = numTrialsOption.value;
+		if (crossValidation.wasInvoked() && trainingProportionOption.wasInvoked()) {
+		  logger.warning("Both --cross-validation and --training-portion were invoked.  Using cross validation with " + 
+		      crossValidation.value + " folds.");  
+		}
+		if (crossValidation.wasInvoked() && validationProportionOption.wasInvoked()) {
+		  logger.warning("Both --cross-validation and --validation-portion were invoked.  Using cross validation with " + 
+		      crossValidation.value + " folds.");  
+		}
+		if (crossValidation.wasInvoked() &&  numTrialsOption.wasInvoked()) {
+		  logger.warning("Both --cross-validation and --num-trials were invoked.  Using cross validation with " + 
+		      crossValidation.value + " folds.");  
+		}
+		
+    int numTrials;
+    if (crossValidation.wasInvoked()) {
+      numTrials = crossValidation.value;
+    }
+    else {
+      numTrials = numTrialsOption.value;
+    }
+
 		Random r = randomSeedOption.wasInvoked() ? new Random (randomSeedOption.value) : new Random ();
 
 		int numTrainers = classifierTrainerStrings.size();
@@ -306,12 +330,17 @@ public abstract class Vectors2Classify
 		double t = trainingProportionOption.value;
 		double v = validationProportionOption.value;
 
-        if (!separateIlists) {
-			logger.info("Training portion = " + t);
-			logger.info(" Unlabeled training sub-portion = "+unlabeledProportionOption.value);
-			logger.info("Validation portion = " + v);
-			logger.info("Testing portion = " + (1 - v - t));
-        }
+		if (!separateIlists) {
+		  if (crossValidation.wasInvoked()) {
+		    logger.info("Cross-validation folds = " + crossValidation.value);
+		  }
+		  else {
+		    logger.info("Training portion = " + t);
+		    logger.info(" Unlabeled training sub-portion = "+unlabeledProportionOption.value);
+		    logger.info("Validation portion = " + v);
+		    logger.info("Testing portion = " + (1 - v - t));
+		  }
+		}
 
 		//		for (int i=0; i<3; i++){
 		//			for (int j=0; j<4; j++){
@@ -320,24 +349,44 @@ public abstract class Vectors2Classify
 		//			System.out.println();
 		//		}
 
+    CrossValidationIterator cvIter;
+    if (crossValidation.wasInvoked()) {
+      if (crossValidation.value < 2) {
+        throw new RuntimeException("At least two folds (set with --cross-validation) are required for cross validation");
+      }     
+      cvIter = new CrossValidationIterator(ilist, crossValidation.value, r);
+    }
+    else {
+      cvIter = null;
+    }
+        
     String[] trainerNames = new String[numTrainers];
 		for (int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
 			System.out.println("\n-------------------- Trial " + trialIndex + "  --------------------\n");
 			InstanceList[] ilists;
 			BitSet unlabeledIndices = null;
 			if (!separateIlists){
-				ilists = ilist.split (r, new double[] {t, 1-t-v, v});
-			} else {
+			  if (crossValidation.wasInvoked()) {
+			    InstanceList[] cvSplit = cvIter.next();
+			    ilists = new InstanceList[3];
+			    ilists[0] = cvSplit[0];
+			    ilists[1] = cvSplit[1];
+			    ilists[2] = cvSplit[0].cloneEmpty();
+			  }
+			  else {
+			    ilists = ilist.split (r, new double[] {t, 1-t-v, v});
+			  }
+			} 
+			else {
 				ilists = new InstanceList[3];
 				ilists[0] = trainingFileIlist;
 				ilists[1] = testFileIlist;
 				ilists[2] = validationFileIlist;
 			}
-			if (unlabeledProportionOption.value > 0)
-				unlabeledIndices = new cc.mallet.util.Randoms(r.nextInt())
-					.nextBitSet(ilists[0].size(),
-								unlabeledProportionOption.value);
-
+			
+      if (unlabeledProportionOption.value > 0)
+        unlabeledIndices = new cc.mallet.util.Randoms(r.nextInt())
+          .nextBitSet(ilists[0].size(), unlabeledProportionOption.value);
 
 			//InfoGain ig = new InfoGain (ilists[0]);
 			//int igl = Math.min (10, ig.numLocations());
@@ -349,7 +398,6 @@ public abstract class Vectors2Classify
 			//ilists[0].setFeatureSelection (selectedFeatures);
 			//OddsRatioFeatureInducer orfi = new OddsRatioFeatureInducer (ilists[0]);
 			//orfi.induceFeatures (ilists[0], false, true);
-
 
 			//System.out.println ("Training with "+ilists[0].size()+" instances");
 			long time[] = new long[numTrainers];
