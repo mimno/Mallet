@@ -27,8 +27,9 @@ import cc.mallet.util.MalletLogger;
 
 /**
  * Simple parallel threaded implementation of LDA,
- *  following the UCI NIPS paper, with SparseLDA 
- *  sampling scheme and data structure.
+ *  following Newman, Asuncion, Smyth and Welling, Distributed Algorithms for Topic Models
+ *  JMLR (2009), with SparseLDA sampling scheme and data structure from
+ *  Yao, Mimno and McCallum, Efficient Methods for Topic Model Inference on Streaming Document Collections, KDD (2009).
  * 
  * @author David Mimno, Andrew McCallum
  */
