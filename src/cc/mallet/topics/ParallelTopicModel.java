@@ -922,13 +922,13 @@ public class ParallelTopicModel implements Serializable {
 	 *   contains IDSorter objects with integer keys into the alphabet.
 	 *   To get direct access to the Strings, use getTopWords().
 	 */
-	public TreeSet[] getSortedWords () {
+	public ArrayList<TreeSet<IDSorter>> getSortedWords () {
 	
-		TreeSet[] topicSortedWords = new TreeSet[ numTopics ];
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = new ArrayList<TreeSet<IDSorter>>(numTopics);
 
 		// Initialize the tree sets
 		for (int topic = 0; topic < numTopics; topic++) {
-			topicSortedWords[topic] = new TreeSet<IDSorter>();
+			topicSortedWords.add(new TreeSet<IDSorter>());
 		}
 
 		// Collect counts
@@ -943,7 +943,7 @@ public class ParallelTopicModel implements Serializable {
 				int topic = topicCounts[index] & topicMask;
 				int count = topicCounts[index] >> topicBits;
 
-				topicSortedWords[topic].add(new IDSorter(type, count));
+				topicSortedWords.get(topic).add(new IDSorter(type, count));
 
 				index++;
 			}
@@ -961,12 +961,12 @@ public class ParallelTopicModel implements Serializable {
 	
 	public Object[][] getTopWords(int numWords) {
 
-		TreeSet[] topicSortedWords = getSortedWords();
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
 		Object[][] result = new Object[ numTopics ][];
 
 		for (int topic = 0; topic < numTopics; topic++) {
 			
-			TreeSet<IDSorter> sortedWords = topicSortedWords[topic];
+			TreeSet<IDSorter> sortedWords = topicSortedWords.get(topic);
 			
 			// How many words should we report? Some topics may have fewer than
 			//  the default number of words with non-zero weight.
@@ -993,11 +993,11 @@ public class ParallelTopicModel implements Serializable {
 
 		StringBuilder out = new StringBuilder();
 
-		TreeSet[] topicSortedWords = getSortedWords();
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
 
 		// Print results for each topic
 		for (int topic = 0; topic < numTopics; topic++) {
-			TreeSet<IDSorter> sortedWords = topicSortedWords[topic];
+			TreeSet<IDSorter> sortedWords = topicSortedWords.get(topic);
 			int word = 1;
 			Iterator<IDSorter> iterator = sortedWords.iterator();
 
@@ -1025,14 +1025,14 @@ public class ParallelTopicModel implements Serializable {
 	}
 	
 	public void topicXMLReport (PrintWriter out, int numWords) {
-		TreeSet[] topicSortedWords = getSortedWords();
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
 		out.println("<?xml version='1.0' ?>");
 		out.println("<topicModel>");
 		for (int topic = 0; topic < numTopics; topic++) {
 			out.println("  <topic id='" + topic + "' alpha='" + alpha[topic] +
 						"' totalTokens='" + tokensPerTopic[topic] + "'>");
 			int word = 1;
-			Iterator<IDSorter> iterator = topicSortedWords[topic].iterator();
+			Iterator<IDSorter> iterator = topicSortedWords.get(topic).iterator();
 			while (iterator.hasNext() && word < numWords) {
 				IDSorter info = iterator.next();
 				out.println("    <word rank='" + word + "'>" +
@@ -1095,7 +1095,7 @@ public class ParallelTopicModel implements Serializable {
 		out.println("<?xml version='1.0' ?>");
 		out.println("<topics>");
 
-		TreeSet[] topicSortedWords = getSortedWords();
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
 		double[] probs = new double[alphabet.size()];
 		for (int ti = 0; ti < numTopics; ti++) {
 			out.print("  <topic id=\"" + ti + "\" alpha=\"" + alpha[ti] +
@@ -1110,7 +1110,7 @@ public class ParallelTopicModel implements Serializable {
 
 			// Print words
 			int word = 1;
-			Iterator<IDSorter> iterator = topicSortedWords[ti].iterator();
+			Iterator<IDSorter> iterator = topicSortedWords.get(ti).iterator();
 			while (iterator.hasNext() && word < numWords) {
 				IDSorter info = iterator.next();
 				pout.println("    <word weight=\""+(info.getWeight()/tokensPerTopic[ti])+"\" count=\""+Math.round(info.getWeight())+"\">"
