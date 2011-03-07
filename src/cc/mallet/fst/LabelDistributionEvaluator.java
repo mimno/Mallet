@@ -9,12 +9,12 @@ package cc.mallet.fst;
 
 import java.util.logging.Logger;
 
-import com.wcohen.secondstring.PrintfFormat;
-
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
+
+import java.text.NumberFormat;
 
 /**
  * Prints predicted and true label distribution.
@@ -50,15 +50,13 @@ public class LabelDistributionEvaluator extends TransducerEvaluator {
       }
     }
 
+	NumberFormat formatter = NumberFormat.getInstance();
+	formatter.setMaximumFractionDigits(4);
+
     for (int li = 0; li < predCounts.length; li++) {
       double ppred = predCounts[li] / total;
       double ptrue = trueCounts[li] / total;
-      logger.info(description + " " + instances.getTargetAlphabet().lookupObject(li) + " predicted: " + round(ppred,4) + " - true: " + round(ptrue,4));
+      logger.info(description + " " + instances.getTargetAlphabet().lookupObject(li) + " predicted: " + formatter.format(ppred) + " - true: " + formatter.format(ptrue));
     }
-  }
-  
-  private static String round(double val, int n) {
-    String format = "%." + n + "f";
-    return new PrintfFormat(format).sprintf(val);
   }
 }
