@@ -84,9 +84,7 @@ public class CRFOptimizableByGradientValues implements Optimizable.ByGradientVal
 			for (int i = 0; i < optimizables.length; i++) {
 				MatrixOps.setAll(b2, 0);
 				optimizables[i].getValueGradient(b2);
-				System.err.println(b2[0]);
 				MatrixOps.plusEquals(cachedGradient, b2);
-				System.err.println(cachedGradient[0]);
 			}
 			cachedGradientWeightsStamp = crf.weightsValueChangeStamp;
 		}

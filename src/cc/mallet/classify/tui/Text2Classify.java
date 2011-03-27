@@ -9,12 +9,10 @@ package cc.mallet.classify.tui;
 
 import java.util.Iterator;
 import java.util.logging.*;
-import java.util.regex.*;
 import java.io.*;
 import java.nio.charset.Charset;
 
 import cc.mallet.classify.*;
-import cc.mallet.pipe.*;
 import cc.mallet.pipe.iterator.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
@@ -25,6 +23,7 @@ import cc.mallet.util.*;
  *  creating an instance list.
  *  <p>
  * 
+ *  @author Gregory Druck
  *  @author David Mimno
  */
 
@@ -32,9 +31,9 @@ public class Text2Classify {
 
 	private static Logger logger = MalletLogger.getLogger(Text2Classify.class.getName());
 
-	static CommandOption.File inputFile =	new CommandOption.File
-		(Text2Classify.class, "input", "FILE", true, null,
-		 "The file containing data to be classified, one instance per line", null);
+	static CommandOption.SpacedStrings classDirs =	new CommandOption.SpacedStrings
+	(Text2Classify.class, "input", "DIR...", true, null,
+	 "The directories containing text files to be classified, one directory per class", null);
 
 	static CommandOption.File outputFile = new CommandOption.File
 		(Text2Classify.class, "output", "FILE", true, new File("text.vectors"),
@@ -75,15 +74,13 @@ public class Text2Classify {
 			CommandOption.getList(Text2Classify.class).printUsage(false);
 			System.exit (-1);
 		}
-		if (inputFile == null) {
-			System.err.println ("You must include `--input FILE ...' in order to specify a"+
-								"file containing the instances, one per line.");
-			System.exit (-1);
+		if (classDirs.value.length == 0) {
+			throw new IllegalArgumentException ("You must include --input DIR1 DIR2 ...' in order to specify a " +
+								"list of directories containing the documents.");
 		}
 		
-		Pipe instancePipe;
+		// Read classifier from file
 		Classifier classifier = null;
-		
 		try {
 			ObjectInputStream ois =
 				new ObjectInputStream (new BufferedInputStream(new FileInputStream (classifierFile.value)));
@@ -91,34 +88,20 @@ public class Text2Classify {
 			classifier = (Classifier) ois.readObject();
 			ois.close();
 		} catch (Exception e) {
-			System.err.println("Problem loading classifier from file " + classifierFile.value +
+			throw new IllegalArgumentException("Problem loading classifier from file " + classifierFile.value +
 							   ": " + e.getMessage());
-			System.exit(-1);
 		}
 		
-		Reader fileReader;
-		
-		if (inputFile.value.toString().equals ("-")) {
-		    fileReader = new InputStreamReader (System.in);
+		// Read instances from directories
+		File[] directories = new File[classDirs.value.length];
+		for (int i = 0; i < classDirs.value.length; i++) {
+			directories[i] = new File (classDirs.value[i]);
 		}
-		else {
-			fileReader = new InputStreamReader(new FileInputStream(inputFile.value), encoding.value);
-		}
-		
-		// 
-		// Read instances from the file
-		//
-
-		Iterator<Instance> csvIterator = 
-			new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
-							 dataOption.value, 0, nameOption.value);
+		Iterator<Instance> fileIterator = new UnlabeledFileIterator (directories);
 		Iterator<Instance> iterator = 
-			classifier.getInstancePipe().newIteratorFrom(csvIterator);
-	
-		// 
-		// Write classifications to the output file
-		//
+			classifier.getInstancePipe().newIteratorFrom(fileIterator);
 		
+		// Write classifications to the output file
 		PrintStream out = null;
 
 		if (outputFile.value.toString().equals ("-")) {
@@ -128,9 +111,16 @@ public class Text2Classify {
 			out = new PrintStream(outputFile.value, encoding.value);
 		}
 
+		// gdruck@cs.umass.edu
+		// Stop growth on the alphabets. If this is not done and new
+		// features are added, the feature and classifier parameter
+		// indices will not match.  
+		classifier.getInstancePipe().getDataAlphabet().stopGrowth();
+		classifier.getInstancePipe().getTargetAlphabet().stopGrowth();
+		
 		while (iterator.hasNext()) {
 			Instance instance = iterator.next();
-
+			
 			Labeling labeling = 
 				classifier.classify(instance).getLabeling();
 
@@ -148,9 +138,5 @@ public class Text2Classify {
 		if (! outputFile.value.toString().equals ("-")) {
 			out.close();
 		}
-		
 	}
 }
-
-    
-

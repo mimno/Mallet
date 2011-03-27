@@ -11,15 +11,10 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import cc.mallet.fst.CRF;
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
-import cc.mallet.pipe.iterator.PipeInputIterator;
 import cc.mallet.types.*;
 
 /**
@@ -244,7 +239,7 @@ public class CRFExtractor implements Extractor {
       //sp.removePipe (0); TODO Fix this
     }
     //setTokenizationPipe (sp);  TODO Fix this
-  	throw new NotImplementedException ();
+  	throw new UnsupportedOperationException ("Not yet implemented...");
   }
 
   // Java serialization nonsense

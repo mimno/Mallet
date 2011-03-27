@@ -123,8 +123,9 @@ public class SGML2TokenSequence extends Pipe implements Serializable
 		carrier.setData(dataTokens);
 		carrier.setTarget(targetTokens);
 
-    if (saveSource)
-		  carrier.setSource(dataTokens);
+    if (saveSource) {
+      carrier.setSource(dataTokens);
+    }
 
 		return carrier;
 	}
@@ -173,7 +174,12 @@ public class SGML2TokenSequence extends Pipe implements Serializable
 		sgmlPattern = (Pattern) in.readObject();
 		lexer = (CharSequenceLexer) in.readObject();
 		backgroundTag = (String) in.readObject();
-    if (version == 0) saveSource = true;
+    if (version == 0) {
+      saveSource = true;
+    }
+    else {
+      saveSource = in.readBoolean();
+    }
 	}
 
 

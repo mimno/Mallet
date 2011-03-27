@@ -127,8 +127,17 @@ public class Trial extends ArrayList<Classification>
 					numCorrect++;
 			}
 		}
-		if (numInstances==0)
-			logger.warning("No class instances: dividing by 0");
+		
+		// gdruck@cs.umass.edu
+		// When no examples are predicted to have this label, 
+		// we define precision to be 1.
+		if (numInstances==0) {
+			logger.warning("No examples with predicted label " + 
+					classifier.getLabelAlphabet().lookupLabel(index) + "!");
+			assert(numCorrect == 0);
+			return 1;
+		}
+			
 		return ((double)numCorrect/(double)numInstances);
 	}
 
@@ -167,8 +176,17 @@ public class Trial extends ArrayList<Classification>
 					numCorrect++;
 			}
 		}
-		if (numInstances==0)
-			logger.warning("No class instances: dividing by 0");
+		
+		// gdruck@cs.umass.edu
+		// When no examples have this label, 
+		// we define recall to be 1.
+		if (numInstances==0) {
+			logger.warning("No examples with true label " + 
+					classifier.getLabelAlphabet().lookupLabel(labelIndex) + "!");
+			assert(numCorrect == 0);
+			return 1;
+		}
+		
 		return ((double)numCorrect/(double)numInstances);
 	}
 
@@ -196,8 +214,13 @@ public class Trial extends ArrayList<Classification>
 	{
 		double precision = getPrecision (index);
 		double recall = getRecall (index);
-		if (precision==0.0 && recall==0.0)
-			logger.warning("Precision and recall are 0: dividing by 0");
+		
+		// gdruck@cs.umass.edu
+		// When both precision and recall are 0, F1 is 0.
+		if (precision==0.0 && recall==0.0) {
+			return 0;
+		}
+
 		return 2*precision*recall/(precision+recall);
 	}
 

@@ -1540,7 +1540,7 @@ Bernoulli numbers. */
 		FeatureSequence fs = randomFeatureSequence (r, length);
 		TokenSequence ts = new TokenSequence (length);
 		for (int i = 0; i < length; i++)
-			ts.add (fs.getObjectAtPosition(i));
+			ts.add (fs.getObjectAtPosition(i).toString());
 		return ts;
 	}
 

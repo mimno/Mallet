@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
+import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.topics.LDAHyper;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
@@ -25,6 +27,7 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.MatrixOps;
+import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
 
 /**
@@ -34,6 +37,8 @@ import cc.mallet.util.Maths;
 
 public class FeatureConstraintUtil {
   
+	private static Logger logger = MalletLogger.getLogger(FeatureConstraintUtil.class.getName());
+	
   /**
    * Reads feature constraints from a file, whether they are stored
    * using Strings or indices.
@@ -189,7 +194,7 @@ public class FeatureConstraintUtil {
         Object feat = sorted[ti][pos].toString();
         int fi = alphabet.lookupIndex(feat,false);
         if ((fi >=0) && (!features.contains(fi))) {
-          System.err.println("Selected feature: " + feat);
+          logger.info("Selected feature: " + feat);
           features.add(fi);
           if (features.size() == numSelFeatures) {
             return features;
@@ -200,28 +205,39 @@ public class FeatureConstraintUtil {
     return features;
   }  
   
+  public static HashMap<Integer,double[]> setTargetsUsingData(InstanceList list, ArrayList<Integer> features) {
+    return setTargetsUsingData(list,features,true);
+  }
+  
+  public static HashMap<Integer,double[]> setTargetsUsingData(InstanceList list, ArrayList<Integer> features, boolean normalize) {
+    return setTargetsUsingData(list,features,false,normalize);
+  }
+  
   /**
    * Set target distributions using estimates from data.
    * 
-   * @param list InstanceList used to estimate target distributions.
+   * @param list InstanceList used to estimate targets.
    * @param features List of features for constraints.
-   * @return Constraints (map of feature index to target distribution), with target
-   *         distributions set using estimates from supplied data.
+   * @param normalize Whether to normalize by feature counts
+   * @return Constraints (map of feature index to target), with targets
+   *         set using estimates from supplied data.
    */
-  public static HashMap<Integer,double[]> setTargetsUsingData(InstanceList list, ArrayList<Integer> features) {
+  public static HashMap<Integer,double[]> setTargetsUsingData(InstanceList list, ArrayList<Integer> features, boolean useValues, boolean normalize) {
     HashMap<Integer,double[]> constraints = new HashMap<Integer,double[]>();
     
-    double[][] featureLabelCounts = getFeatureLabelCounts(list);
+    double[][] featureLabelCounts = getFeatureLabelCounts(list,useValues);
 
     for (int i = 0; i < features.size(); i++) {
       int fi = features.get(i);
       if (fi != list.getDataAlphabet().size()) {
         double[] prob = featureLabelCounts[fi];
-        // Smooth probability distributions by adding a (very)
-        // small count.  We just need to make sure they aren't
-        // zero in which case the KL-divergence is infinite.
-        MatrixOps.plusEquals(prob, 1e-8);
-        MatrixOps.timesEquals(prob, 1./MatrixOps.sum(prob));
+        if (normalize) {
+          // Smooth probability distributions by adding a (very)
+          // small count.  We just need to make sure they aren't
+          // zero in which case the KL-divergence is infinite.
+          MatrixOps.plusEquals(prob, 1e-8);
+          MatrixOps.timesEquals(prob, 1./MatrixOps.sum(prob));
+        }
         constraints.put(fi, prob);
       }
     }
@@ -314,12 +330,13 @@ public class FeatureConstraintUtil {
    * 
    * @param list InstanceList used to compute statistics for labeling features.
    * @param features List of features to label.
+   * @param reject Whether to reject labeling features.
    * @return Labeled features, HashMap mapping feature indices to list of labels.
    */
-  public static HashMap<Integer, ArrayList<Integer>> labelFeatures(InstanceList list, ArrayList<Integer> features) {
+  public static HashMap<Integer, ArrayList<Integer>> labelFeatures(InstanceList list, ArrayList<Integer> features, boolean reject) {
     HashMap<Integer,ArrayList<Integer>> labeledFeatures = new HashMap<Integer,ArrayList<Integer>>();
     
-    double[][] featureLabelCounts = getFeatureLabelCounts(list);
+    double[][] featureLabelCounts = getFeatureLabelCounts(list,true);
     
     int numLabels = list.getTargetAlphabet().size();
     
@@ -337,8 +354,9 @@ public class FeatureConstraintUtil {
       
       // reject features with infogain
       // less than cutoff
-      if (infogain.value(fi) < mean) {
-        System.err.println("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
+      if (reject && infogain.value(fi) < mean) {
+        //System.err.println("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
+        logger.info("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
         continue;
       }
       
@@ -357,7 +375,9 @@ public class FeatureConstraintUtil {
           if (prob[li] > threshold) {
             labels.add(li);
           }
-          if (labels.size() > (numLabels / 2)) {
+          if (reject && labels.size() > (numLabels / 2)) {
+            //System.err.println("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
+            logger.info("Oracle labeler rejected labeling: " + list.getDataAlphabet().lookupObject(fi));
             discard = true;
             break;
           }
@@ -375,7 +395,11 @@ public class FeatureConstraintUtil {
     return labeledFeatures;
   }
   
-  private static double[][] getFeatureLabelCounts(InstanceList list) {
+  public static HashMap<Integer, ArrayList<Integer>> labelFeatures(InstanceList list, ArrayList<Integer> features) {
+  	return labelFeatures(list,features,true);
+  }
+  
+  private static double[][] getFeatureLabelCounts(InstanceList list, boolean useValues) {
     int numFeatures = list.getDataAlphabet().size();
     int numLabels = list.getTargetAlphabet().size();
     
@@ -390,7 +414,13 @@ public class FeatureConstraintUtil {
         double py = instance.getLabeling().value(li);
         for (int loc = 0; loc < featureVector.numLocations(); loc++) {
           int fi = featureVector.indexAtLocation(loc);
-          double val = featureVector.valueAtLocation(loc);
+          double val;
+          if (useValues) {
+            val = featureVector.valueAtLocation(loc);
+          }
+          else {
+            val = 1.0;
+          }
           featureLabelCounts[fi][li] += py * val;
         }
       }

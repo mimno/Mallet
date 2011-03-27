@@ -51,12 +51,12 @@ public class Text2Vectors {
 
 	static CommandOption.File stoplistFile = new CommandOption.File
 		(Text2Vectors.class, "stoplist-file", "FILE", true, null,
-		 "Read \"stop words\" from a file, one per line. Implies --remove-stopwords", null);
+		 "Instead of the default list, read stop words from a file, one per line. Implies --remove-stopwords", null);
 
 	static CommandOption.File extraStopwordsFile = new CommandOption.File
 		(Text2Vectors.class, "extra-stopwords", "FILE", true, null,
-		 "Read whitespace-separated words from this file, and add them to either " + 
-		 "  the default English stoplist or the list specified by --stoplist-file.", null);
+		 "Read whitespace-separated words from this file, and add them to either\n" + 
+		 "   the default English stoplist or the list specified by --stoplist-file.", null);
 
 	static CommandOption.Boolean skipHeader = new CommandOption.Boolean
 		(Text2Vectors.class, "skip-header", "[TRUE|FALSE]", false, false,
@@ -128,9 +128,8 @@ public class Text2Vectors {
 			System.exit (-1);
 		}
 		if (classDirs.value.length == 0) {
-			System.err.println ("You must include --input DIR1 DIR2 ...' in order to specify a " +
+			throw new IllegalArgumentException ("You must include --input DIR1 DIR2 ...' in order to specify a " +
 								"list of directories containing the documents for each class.");
-			System.exit (-1);
 		}
 	
 		// Remove common prefix from all the input class directories
@@ -212,9 +211,8 @@ public class Text2Vectors {
 				try {
 					tokenPattern = Pattern.compile(tokenRegex.value);
 				} catch (PatternSyntaxException pse) {
-					System.err.println("The token regular expression (" + tokenRegex.value + 
+					throw new IllegalArgumentException("The token regular expression (" + tokenRegex.value + 
 									   ") was invalid: " + pse.getMessage());
-					System.exit(1);
 				}
 			}
                         

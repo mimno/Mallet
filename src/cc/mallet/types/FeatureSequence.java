@@ -130,12 +130,17 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 	{
 		int fi = dictionary.lookupIndex (key);
 		if (fi >= 0)
-			// This will happen if the dictionary is frozen,
-			// and key is not already in the dictionary.
 			add (fi);
-		else
+		
+		// gdruck@cs.umass.edu
+		// With the exception below, it is not possible to pipe data
+		// when growth of the alphabet is stopped.  We want to be 
+		// able to do this, for example to process new data using 
+		// an old Pipe (for example from a fixed, cached classifier
+		// that we want to apply to new data.).
+		//else
 			// xxx Should we raise an exception if the appending doesn't happen?  "yes" -akm, added 1/2008
-			throw new IllegalStateException ("Object cannot be added to FeatureSequence because its Alphabet is frozen.");
+		//	throw new IllegalStateException ("Object cannot be added to FeatureSequence because its Alphabet is frozen.");
 	}
 
 	public void addFeatureWeightsTo (double[] weights)

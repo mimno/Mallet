@@ -81,12 +81,12 @@ public class Csv2Vectors {
 
 	static CommandOption.File stoplistFile = new CommandOption.File
 		(Csv2Vectors.class, "stoplist-file", "FILE", true, null,
-		 "Read \"stop words\" from a file, one per line. Implies --remove-stopwords", null);
+		 "Instead of the default list, read stop words from a file, one per line. Implies --remove-stopwords", null);
 
 	static CommandOption.File extraStopwordsFile = new CommandOption.File
 		(Csv2Vectors.class, "extra-stopwords", "FILE", true, null,
-		 "Read whitespace-separated words from this file, and add them to either " +
-		 "  the default English stoplist or the list specified by --stoplist-file.", null);
+		 "Read whitespace-separated words from this file, and add them to either \n" +
+		 "   the default English stoplist or the list specified by --stoplist-file.", null);
 
 	static CommandOption.Boolean preserveCase = new CommandOption.Boolean
 		(Csv2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
@@ -120,9 +120,8 @@ public class Csv2Vectors {
 			System.exit (-1);
 		}
 		if (inputFile == null) {
-			System.err.println ("You must include `--input FILE ...' in order to specify a"+
+			throw new IllegalArgumentException ("You must include `--input FILE ...' in order to specify a"+
 								"file containing the instances, one per line.");
-			System.exit (-1);
 		}
 		
 		Pipe instancePipe;
@@ -166,9 +165,8 @@ public class Csv2Vectors {
 				try {
 					tokenPattern = Pattern.compile(tokenRegex.value);
 				} catch (PatternSyntaxException pse) {
-					System.err.println("The token regular expression (" + tokenRegex.value + 
+					throw new IllegalArgumentException("The token regular expression (" + tokenRegex.value + 
 									   ") was invalid: " + pse.getMessage());
-					System.exit(1);
 				}
 			}
 			

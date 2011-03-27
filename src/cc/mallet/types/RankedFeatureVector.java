@@ -13,92 +13,85 @@
 	 highest value, and other ranks.
 
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+   @author David North <a href="mailto:dtn-mallet@corefiling.co.uk">dtn-mallet@corefiling.co.uk</a>
  */
 
 package cc.mallet.types;
 
 
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.PrintStream;
-import java.io.OutputStream;
-
-import cc.mallet.types.FeatureVector;
-import cc.mallet.types.Label;
+import java.util.Collections;
+import java.util.LinkedList;
 
 public class RankedFeatureVector extends FeatureVector
 {
 	int[] rankOrder;
 	private static final int SORTINIT = -1;
 	int sortedTo = SORTINIT; /* Extent of latest sort */
-	
-	public RankedFeatureVector (Alphabet dict,
-														 int[] indices,
-														 double[] values)
+
+	public RankedFeatureVector (final Alphabet dict,
+														 final int[] indices,
+														 final double[] values)
 	{
 		super (dict, indices, values);
 	}
 
-	public RankedFeatureVector (Alphabet dict, double[] values)
+	public RankedFeatureVector (final Alphabet dict, final double[] values)
 	{
 		super (dict, values);
 	}
 
-  private static double[] subArray (double[] a, int begin, int length)
+  private static double[] subArray (final double[] a, final int begin, final int length)
   {
     double[] ret = new double[length];
     System.arraycopy(a, begin, ret, 0, length);
     return ret;
   }
 
-  public RankedFeatureVector (Alphabet dict, double[] values, int begin, int length)
+  public RankedFeatureVector (final Alphabet dict, final double[] values, final int begin, final int length)
   {
     super (dict, subArray(values, begin, length));
   }
 
 
-  public RankedFeatureVector (Alphabet dict, DenseVector v)
+  public RankedFeatureVector (final Alphabet dict, final DenseVector v)
 	{
 		this (dict, v.values);
 	}
 
-	public RankedFeatureVector (Alphabet dict, AugmentableFeatureVector v)
+	public RankedFeatureVector (final Alphabet dict, final AugmentableFeatureVector v)
 	{
 		super (dict, v.indices, v.values, v.size, v.size,
 					 true, true, true);
 	}
 
-	public RankedFeatureVector (Alphabet dict, SparseVector v)
+	public RankedFeatureVector (final Alphabet dict, final SparseVector v)
 	{
 		super (dict, v.indices, v.values);
 	}
-	
-	// xxx This bubble sort is a major inefficiency.
-	// Implement a O(n log(n)) method!
-	// No longer used!
+
 	protected void setRankOrder ()
 	{
-		this.rankOrder = new int[values.length];
-		for (int i = 0; i < rankOrder.length; i++) {
-			rankOrder[i] = i;
-			assert (!Double.isNaN(values[i]));
-		}
-		// BubbleSort from back
-		for (int i = rankOrder.length-1; i >= 0; i--) {
-			//if (i % 1000 == 0)
-			//System.out.println ("RankedFeatureVector.setRankOrder i="+i);
-			boolean swapped = false;
-			for (int j = 0; j < i; j++)
-				if (values[rankOrder[j]] < values[rankOrder[j+1]]) {
-					// swap
-					int r = rankOrder[j];
-					rankOrder[j] = rankOrder[j+1];
-					rankOrder[j+1] = r;
-				}
-		}
+	  this.rankOrder = new int[values.length];
+
+	  final java.util.List<EntryWithOriginalIndex> rankedEntries = new LinkedList<EntryWithOriginalIndex>();
+
+    for (int i = 0; i < rankOrder.length; i++) {
+      assert (!Double.isNaN(values[i]));
+      rankedEntries.add(new EntryWithOriginalIndex(values[i], i));
+    }
+
+    Collections.sort(rankedEntries);
+
+    int i = 0;
+    for (EntryWithOriginalIndex entry : rankedEntries) {
+      rankOrder[i++] = entry._originalIndex;
+    }
 	}
 
-	protected void setRankOrder (int extent, boolean reset)
+	protected void setRankOrder (final int extent, final boolean reset)
 	{
 		int sortExtent;
 		// Set the number of cells to sort, making sure we don't go past the max.
@@ -130,7 +123,7 @@ public class RankedFeatureVector extends FeatureVector
 	}
 
 	//added by Limin Yao, rank the elements ascendingly, the smaller is in the front
-	protected void setReverseRankOrder (int extent, boolean reset)
+	protected void setReverseRankOrder (final int extent, final boolean reset)
 	{
 		int sortExtent;
 		// Set the number of cells to sort, making sure we don't go past the max.
@@ -161,15 +154,16 @@ public class RankedFeatureVector extends FeatureVector
 		}
 	}
 
-	
-	protected void setRankOrder (int extent) {
+
+	protected void setRankOrder (final int extent) {
 		setRankOrder(extent, false);
 	}
-	
+
 	public int getMaxValuedIndex ()
 	{
-		if (rankOrder == null)
-			setRankOrder (0);
+		if (rankOrder == null) {
+      setRankOrder (0);
+    }
 		return getIndexAtRank(0);  // was return rankOrder[0];
 	}
 
@@ -178,10 +172,11 @@ public class RankedFeatureVector extends FeatureVector
 		return dictionary.lookupObject (getMaxValuedIndex());
 	}
 
-	public int getMaxValuedIndexIn (FeatureSelection fs)
+	public int getMaxValuedIndexIn (final FeatureSelection fs)
 	{
-		if (fs == null)
-			return getMaxValuedIndex();
+		if (fs == null) {
+      return getMaxValuedIndex();
+    }
 		assert (fs.getAlphabet() == dictionary);
 		// xxx Make this more efficient!  I'm pretty sure that Java BitSet's can do this more efficiently
 		int i = 0;
@@ -194,22 +189,24 @@ public class RankedFeatureVector extends FeatureVector
 		return getIndexAtRank(i); // was return rankOrder[i]
 	}
 
-	public Object getMaxValuedObjectIn (FeatureSelection fs)
+	public Object getMaxValuedObjectIn (final FeatureSelection fs)
 	{
 		return dictionary.lookupObject (getMaxValuedIndexIn(fs));
 	}
 
 	public double getMaxValue ()
 	{
-		if (rankOrder == null)
-			setRankOrder (0);
+		if (rankOrder == null) {
+      setRankOrder (0);
+    }
 		return values[rankOrder[0]];
 	}
 
-	public double getMaxValueIn (FeatureSelection fs)
+	public double getMaxValueIn (final FeatureSelection fs)
 	{
-		if (fs == null)
-			return getMaxValue();
+		if (fs == null) {
+      return getMaxValue();
+    }
 		int i = 0;
 		while (!fs.contains(i)) {
 			setRankOrder (i);
@@ -217,15 +214,15 @@ public class RankedFeatureVector extends FeatureVector
 		}
 		return values[rankOrder[i]];
 	}
-	
-	public int getIndexAtRank (int rank)
+
+	public int getIndexAtRank (final int rank)
 	{
 		setRankOrder (rank);
 		return indexAtLocation(rankOrder[rank]); // was return rankOrder[rank]
 	}
-	
 
-	public Object getObjectAtRank (int rank)
+
+	public Object getObjectAtRank (final int rank)
 	{
 		setRankOrder (rank);
 		return dictionary.lookupObject (getIndexAtRank(rank)); // was return dictionary.lookupObject (rankOrder[rank]);
@@ -233,8 +230,9 @@ public class RankedFeatureVector extends FeatureVector
 
 	public double getValueAtRank (int rank)
 	{
-		if (values == null)
-			return 1.0;
+		if (values == null) {
+      return 1.0;
+    }
 		setRankOrder (rank);
 		if (rank >= rankOrder.length) {
 			rank = rankOrder.length -1;
@@ -246,13 +244,13 @@ public class RankedFeatureVector extends FeatureVector
 		}
 		return values[rankOrder[rank]];
 	}
-	
+
 
   /**
    * Prints a human-readable version of this vector, with features listed in ranked order.
    * @param out Stream to write to
    */
-  public void printByRank (OutputStream out)
+  public void printByRank (final OutputStream out)
   {
     printByRank(new PrintWriter (new OutputStreamWriter (out), true));
   }
@@ -261,7 +259,7 @@ public class RankedFeatureVector extends FeatureVector
    * Prints a human-readable version of this vector, with features listed in ranked order.
    * @param out Writer to write to
    */
-  public void printByRank (PrintWriter out)
+  public void printByRank (final PrintWriter out)
   {
     for (int rank = 0; rank < numLocations (); rank++) {
       int idx = getIndexAtRank (rank);
@@ -270,13 +268,14 @@ public class RankedFeatureVector extends FeatureVector
       out.print (obj+":"+val + " ");
     }
   }
-  
+
   //added by Limin Yao
-  public void printTopK (PrintWriter out, int num)
+  public void printTopK (final PrintWriter out, int num)
   {
 	  int length = numLocations();
-	  if(num>length)
-		  num=length;
+	  if(num>length) {
+      num=length;
+    }
     for (int rank = 0; rank < num; rank++) {
       int idx = getIndexAtRank (rank);
       double val = getValueAtRank (rank);
@@ -284,8 +283,8 @@ public class RankedFeatureVector extends FeatureVector
       out.print (obj+":"+val + " ");
     }
   }
-  
-  public void printLowerK (PrintWriter out, int num)
+
+  public void printLowerK (final PrintWriter out, final int num)
   {
 	  int length = numLocations();
 	  assert(num < length);
@@ -297,18 +296,18 @@ public class RankedFeatureVector extends FeatureVector
     }
   }
 
-	public int getRank (Object o)
+	public int getRank (final Object o)
 	{
 		throw new UnsupportedOperationException ("Not yet implemented");
 	}
 
-	public int getRank (int index)
+	public int getRank (final int index)
 	{
 		throw new UnsupportedOperationException ("Not yet implemented");
 	}
 
-	
-	public void set (int i, double v)
+
+	public void set (final int i, final double v)
 	{
 		throw new UnsupportedOperationException (RankedFeatureVector.class.getName() + " is immutable");
 	}
@@ -323,5 +322,23 @@ public class RankedFeatureVector extends FeatureVector
 	{
 		public RankedFeatureVector[] newRankedFeatureVectors (InstanceList ilist);
 	}
-	
+
+	private static class EntryWithOriginalIndex implements Comparable<EntryWithOriginalIndex> {
+	  private final double _value;
+	  private final int _originalIndex;
+
+    public EntryWithOriginalIndex(final double value, final int originalIndex) {
+      _value = value;
+      _originalIndex = originalIndex;
+    }
+
+    /**
+     * Sort by value. Greater comes to the left of smaller.
+     */
+    public int compareTo(final EntryWithOriginalIndex other) {
+      return Double.compare(other._value, _value);
+    }
+
+	}
+
 }

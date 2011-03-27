@@ -58,6 +58,10 @@ public class BulkLoader {
         (BulkLoader.class, "prune-count", "N", false, 0,
          "Reduce features to those that occur more than N times.", null);
 	
+    static CommandOption.Double docProportionCutoff = new CommandOption.Double
+        (BulkLoader.class, "prune-doc-frequency", "N", false, 1.0,
+         "Remove features that occur in more than (X*100)% of documents. 0.05 is equivalent to IDF of 3.0.", null);
+	
     /**
      *  Read the data from inputFile, then write all the words
      *   that do not occur <tt>pruneCount.value</tt> times or more to the pruned word file.
@@ -81,13 +85,19 @@ public class BulkLoader {
         SimpleTokenizer st = prunedTokenizer.deepClone();
 		StringList2FeatureSequence sl2fs = new StringList2FeatureSequence(alphabet);
 		FeatureCountPipe featureCounter = new FeatureCountPipe(alphabet, null);
+		FeatureDocFreqPipe docCounter = new FeatureDocFreqPipe(alphabet, null);
 
 		if (! preserveCase.value) {
 			pipes.add(csl);
 		}
 		pipes.add(st);
 		pipes.add(sl2fs);
-		pipes.add(featureCounter);
+		if (pruneCount.value > 0) {
+			pipes.add(featureCounter);
+		}
+		if (docProportionCutoff.value < 1.0) {
+			pipes.add(docCounter);
+		}
 
 		Pipe serialPipe = new SerialPipes(pipes);
 
@@ -105,7 +115,12 @@ public class BulkLoader {
             iterator.next();
 		}
 
-		featureCounter.addPrunedWordsToStoplist(prunedTokenizer, pruneCount.value);
+		if (pruneCount.value > 0) {
+			featureCounter.addPrunedWordsToStoplist(prunedTokenizer, pruneCount.value);
+		}
+		if (docProportionCutoff.value < 1.0) {
+			docCounter.addPrunedWordsToStoplist(prunedTokenizer, docProportionCutoff.value);
+		}
 	}
 
 
@@ -159,7 +174,7 @@ public class BulkLoader {
 			tokenizer = new SimpleTokenizer(SimpleTokenizer.USE_EMPTY_STOPLIST);
 		}
 
-		if (pruneCount.value > 0) {
+		if (pruneCount.value > 0 || docProportionCutoff.value < 1.0) {
 			generateStoplist(tokenizer);
 		}
 

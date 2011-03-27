@@ -1076,7 +1076,8 @@ public class HMM extends Transducer implements Serializable {
 					// double logEmissionProb =
 					// hmm.emissionMultinomial[source.getIndex()].logProbability
 					// (inputSeq.get (inputPosition));
-					double logEmissionProb = hmm.emissionMultinomial[transIndex]
+					int destIndex = source.getDestinationState(transIndex).getIndex();
+					double logEmissionProb = hmm.emissionMultinomial[destIndex]
 							.logProbability(inputSeq.get(inputPosition));
 					double logTransitionProb = hmm.transitionMultinomial[source
 							.getIndex()]

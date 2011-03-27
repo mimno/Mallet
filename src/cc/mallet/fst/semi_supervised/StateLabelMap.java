@@ -1,3 +1,10 @@
+/* Copyright (C) 2008 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.fst.semi_supervised;
 
 import java.util.HashMap;
@@ -31,6 +38,8 @@ import cc.mallet.types.Alphabet;
  * @author Gaurav Chandalia
  */
 public class StateLabelMap {
+  public final static int START_LABEL = -2;
+  
   // mapping labels to integers
   private Alphabet stateAlphabet;
 
@@ -50,6 +59,11 @@ public class StateLabelMap {
   // value: indices of states that are associated with the label
   private HashMap<Integer, LinkedHashSet<Integer>> labelToState;
 
+  
+  public StateLabelMap(Alphabet labelAlphabet, boolean isOneToOneMap) {
+    this(labelAlphabet,isOneToOneMap,-1);
+  }
+  
   /**
    * Initializes the state and label maps.
    *
@@ -61,12 +75,13 @@ public class StateLabelMap {
    *
    * @param labelAlphabet Target alphabet that maps label names to integers.
    * @param isOneToOneMap True if a one to one mapping of states and labels
-   *        is to be created.
+   *        is to be created (ignoring the start label)
+   * @param startStateIndex Index of special START state or -1
    */
-  public StateLabelMap(Alphabet labelAlphabet, boolean isOneToOneMap) {
+  public StateLabelMap(Alphabet labelAlphabet, boolean isOneToOneMap, int startStateIndex) {
     this.labelAlphabet = labelAlphabet;
     this.isOneToOneMap = isOneToOneMap;
-
+    
     stateToLabel = new HashMap<Integer, Integer>();
     labelToState = new HashMap<Integer, LinkedHashSet<Integer>>();
 
@@ -96,8 +111,25 @@ public class StateLabelMap {
                           new LinkedHashSet<Integer>());
       }
     }
+    
+    if (startStateIndex != -1) {
+      addStartState(startStateIndex);
+    }
   }
-   
+  
+  /**
+   * If there is a special start state in the CRF
+   * that is not included in the label set, then
+   * we need to add it here.  Constraints can then
+   * check if a state maps to the special START_LABEL,
+   * and handle this appropriately.  
+   * 
+   * @param index Index of the special start state in the CRF.
+   */
+  public void addStartState(int index) {
+    this.stateToLabel.put(index, START_LABEL);
+  }
+  
   /**
    * Returns <tt>true</tt> if there is a one-to-one mapping between the states
    * and labels and <tt>false</tt> otherwise.
@@ -147,7 +179,7 @@ public class StateLabelMap {
     if (labelIndex == null) {
       return -1;
     }
-    return labelIndex.intValue();
+    return labelIndex;
   }
 
   /**

@@ -8,10 +8,7 @@ jdom-1.0.jar \
 junit-4.5.jar \
 jwnl-1.3.jar \
 openjgraph.jar \
-secondstring-serializable.jar \
 trove-2.0.2.jar \
-xml-apis.jar \
-xmlParserAPIs.jar \
 $(GRMM_JARS)
 
 OLD = \

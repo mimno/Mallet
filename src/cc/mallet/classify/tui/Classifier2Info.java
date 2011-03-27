@@ -20,7 +20,7 @@ import cc.mallet.pipe.iterator.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 /**
- * Diagnostic facilities for a vector file.
+ * Diagnostic facilities for a classifier.
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 

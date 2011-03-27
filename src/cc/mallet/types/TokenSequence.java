@@ -84,6 +84,10 @@ public class TokenSequence extends ArrayList<Token> implements Sequence, Seriali
 		return sb.toString();
 	}
 
+	// gdruck
+	// This method causes a compiler error in Eclipse Helios.
+	// Removed support for adding Objects other than String.
+	/*
 	public void add (Object o) {
 		if (o instanceof Token)
 			add( (Token)o );
@@ -91,6 +95,11 @@ public class TokenSequence extends ArrayList<Token> implements Sequence, Seriali
 			add( (TokenSequence)o );
 		else
 			add( new Token( o.toString() ) );
+	}
+	*/
+	
+	public void add(String string) {
+		add(new Token(string));
 	}
 
 	// added by Fuchun Peng, Oct. 24, 2003

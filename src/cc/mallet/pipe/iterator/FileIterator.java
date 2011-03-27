@@ -55,19 +55,24 @@ public class FileIterator implements Iterator<Instance>
 	int commonPrefixIndex;
 
 	/** Special value that means to use the directories[i].getPath() as the target name */
-	// xxx Note that these are specific to UNIX directory delimiter characters!  Fix this.
 
 	/** Use as label names the directories specified in the constructor,
 	 * optionally removing common prefix of all starting directories
 	 */
+	
+	// gdruck@cs.umass.edu 08/09/10:
+	// generalize regular expressions to work with Windows filenames
+	public static final String sep = "\\" + File.separatorChar;
 	public static final Pattern STARTING_DIRECTORIES = Pattern.compile ("_STARTING_DIRECTORIES_");
 	/** Use as label names the first directory in the filename. */
-	public static final Pattern FIRST_DIRECTORY = Pattern.compile ("/?([^/]*)/.+");
+	public static final Pattern FIRST_DIRECTORY = 
+		Pattern.compile (sep+"?([^"+sep+"]*)"+sep+".+");
 	/** Use as label name the last directory in the filename. */
-	public static final Pattern LAST_DIRECTORY = Pattern.compile(".*/([^/]+)/[^/]+"); // was ("([^/]*)/[^/]+");
+	public static final Pattern LAST_DIRECTORY = 
+		Pattern.compile(".*"+sep+"([^"+sep+"]+)"+sep+"[^"+sep+"]+"); // was ("([^/]*)/[^/]+");
 	/** Use as label names all the directory names in the filename. */
-	public static final Pattern ALL_DIRECTORIES = Pattern.compile ("^(.*)/[^/]+");
-
+	public static final Pattern ALL_DIRECTORIES = 
+		Pattern.compile ("^(.*)"+sep+"[^"+sep+"]+");
 
 	// added by Fuchun Peng	
 	public ArrayList<File> getFileArray()
