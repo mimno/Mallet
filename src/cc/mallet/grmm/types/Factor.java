@@ -197,6 +197,8 @@ public interface Factor extends Cloneable, Serializable {
 
   String dumpToString ();
 
+    String prettyOutputString ();
+
   Factor slice (Assignment assn);
 
   AbstractTableFactor asTable ();

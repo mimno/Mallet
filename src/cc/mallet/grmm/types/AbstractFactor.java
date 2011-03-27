@@ -8,6 +8,7 @@ package cc.mallet.grmm.types;
 
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import cc.mallet.util.Randoms;
 
@@ -209,5 +210,16 @@ public abstract class AbstractFactor implements Factor {
   }
 
   protected void setVarSet (VarSet vars) { this.vars = vars; }
+
+    public String prettyOutputString () {
+	StringBuffer buf = new StringBuffer();
+	for (Iterator it = vars.iterator(); it.hasNext();) {
+	    Variable var = (Variable) it.next();
+	    buf.append (var.getLabel());
+	    buf.append (" ");
+	}
+	buf.append ("~ Factor\n");
+	return buf.toString();
+    }
 
 }

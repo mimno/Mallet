@@ -75,6 +75,7 @@ public class ModelReader {
     String line;
     while ((line = in.readLine ()) != null) {
       try {
+	if (Pattern.matches ("^\\s*$", line)) { continue; }
         String[] fields = line.split ("\\s+");
         if (fields[0].equalsIgnoreCase ("VAR")) {
           // a variable declaration
@@ -175,7 +176,19 @@ public class ModelReader {
     try {
       return factorClass.getDeclaredConstructor (argClass);
     } catch (NoSuchMethodException e) {
-      throw new RuntimeException ("Invalid arguments for factor "+factorClass);
+	StringBuffer buf = new StringBuffer("Invalid argments for factor "+factorClass+"\n");
+	buf.append ("Args were:\n");
+	for (int i = 0; i < args.length; i++) { 
+	    buf.append(args[i]);
+	    buf.append(" ");
+	}
+	buf.append("\n");
+	for (int i = 0; i < args.length; i++) { 
+	    buf.append(args[i].getClass());
+	    buf.append(" ");
+	}
+	buf.append("\n");
+	throw new RuntimeException (buf.toString());
     }
   }
 
@@ -204,7 +217,7 @@ public class ModelReader {
     return args.toArray ();
   }
 
-  private static Pattern nbrRegex = Pattern.compile ("[+-]?(\\d+(\\.[\\d]*)|\\.\\d+)");
+    private static Pattern nbrRegex = Pattern.compile ("[+-]?\\d+(?:\\.\\d+)?");
 
   private Object varFromName (String name, boolean preTwiddle)
   {

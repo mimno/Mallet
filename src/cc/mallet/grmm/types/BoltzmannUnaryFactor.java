@@ -14,99 +14,24 @@ import cc.mallet.util.Randoms;
  *  if all x are equal, and <tt>exp^{-theta}</tt> otherwise.
  * $Id: BoltzmannUnaryFactor.java,v 1.1 2007/10/22 21:37:44 mccallum Exp $
  */
-public class BoltzmannUnaryFactor extends AbstractFactor implements ParameterizedFactor {
+public class BoltzmannUnaryFactor extends TableFactor {
 
-  private Variable theta;
+  private double theta;  // parameter
   private Variable var;  // The binary variable
 
-  public BoltzmannUnaryFactor (Variable var, Variable alpha)
+  public BoltzmannUnaryFactor (Variable var, double theta)
   {
-    super (BoltzmannUnaryFactor.combineVariables (alpha, var));
-    this.theta = alpha;
+    super (var, theta2values (theta));
+    this.theta = theta;
     this.var = var;
     if (var.getNumOutcomes () != 2) {
         throw new IllegalArgumentException ("Discrete variable "+var+" in BoltzmannUnary must be binary.");
     }
-    if (!alpha.isContinuous ()) {
-        throw new IllegalArgumentException ("Parameter "+alpha+" in BoltzmannUnary must be continuous.");
-    }
   }
 
-  private static VarSet combineVariables (Variable alpha, Variable var)
+  private static double[] theta2values (double theta)
   {
-    VarSet ret = new HashVarSet ();
-    ret.add (alpha);
-    ret.add (var);
-    return ret;
-  }
-
-  protected Factor extractMaxInternal (VarSet varSet)
-  {
-    throw new UnsupportedOperationException ();
-  }
-
-  protected double lookupValueInternal (int i)
-  {
-    throw new UnsupportedOperationException ();
-  }
-
-  protected Factor marginalizeInternal (VarSet varsToKeep)
-  {
-    throw new UnsupportedOperationException ();
-  }
-
-  /* Inefficient, but this will seldom be called. */
-  public double value (AssignmentIterator it)
-  {
-    Assignment assn = it.assignment();
-    Factor tbl = sliceForAlpha (assn);
-    return tbl.value (assn);
-  }
-
-  private Factor sliceForAlpha (Assignment assn)
-  {
-    double alph = assn.getDouble (theta);
-    double[] vals = new double[] { 0.0, -alph };
-    return LogTableFactor.makeFromLogValues (var, vals);
-  }
-
-  public Factor normalize ()
-  {
-    throw new UnsupportedOperationException ();
-  }
-
-  public Assignment sample (Randoms r)
-  {
-    throw new UnsupportedOperationException ();
-  }
-
-  public double logValue (AssignmentIterator it)
-  {
-    return Math.log (value (it));
-  }
-
-  public Factor slice (Assignment assn)
-  {
-    Factor alphSlice = sliceForAlpha (assn);
-    // recursively slice, in case assn includes some of the xs
-    return alphSlice.slice (assn);
-  }
-
-  public String dumpToString ()
-  {
-    StringBuffer buf = new StringBuffer ();
-    buf.append ("Potts Alpha=");
-    buf.append (theta);
-    buf.append (var);
-    return buf.toString ();
-  }
-
-  public double sumGradLog (Factor q, Variable param, Assignment paramAssn)
-  {
-    if (param != theta) throw new IllegalArgumentException ();
-    Factor q_xs = q.marginalize (var);
-    Assignment assn = new Assignment (var, 1);
-    return - q_xs.value (assn);
+      return new double[] { 1, Math.exp(theta) };
   }
 
   /*
@@ -132,7 +57,7 @@ public class BoltzmannUnaryFactor extends AbstractFactor implements Parameterize
 
   public boolean isNaN ()
   {
-    return false;
+      return Double.isNaN (theta);
   }
 
   public boolean equals (Object o)
@@ -142,7 +67,7 @@ public class BoltzmannUnaryFactor extends AbstractFactor implements Parameterize
 
     final BoltzmannUnaryFactor that = (BoltzmannUnaryFactor) o;
 
-    if (theta != null ? !theta.equals (that.theta) : that.theta != null) return false;
+    if (theta != that.theta) return false;
     if (var != null ? !var.equals (that.var) : that.var != null) return false;
 
     return true;
@@ -151,9 +76,20 @@ public class BoltzmannUnaryFactor extends AbstractFactor implements Parameterize
   public int hashCode ()
   {
     int result;
-    result = (theta != null ? theta.hashCode () : 0);
+    result = new Double(theta).hashCode();
     result = 29 * result + (var != null ? var.hashCode () : 0);
     return result;
   }
+
+    public String prettyOutputString ()
+    {
+	return var.getLabel() + " ~ Unary " + Double.toString(theta);
+    }
+
+    public Factor multiply (Factor other) {
+	Factor result = new TableFactor (this);
+	result.multiplyBy (other);
+	return result;
+    }
 
 }
