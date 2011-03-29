@@ -217,7 +217,11 @@ public class ModelReader {
     return args.toArray ();
   }
 
+<<<<<<< /disk/scratch/umass/clone/mallet/src/cc/mallet/grmm/util/ModelReader.java
     private static Pattern nbrRegex = Pattern.compile ("[+-]?\\d+(?:\\.\\d+)?(E[+-]\\d+)?");
+=======
+    private static Pattern nbrRegex = Pattern.compile ("[+-]?\\d+(?:\\.\\d+)?");
+>>>>>>> /tmp/ModelReader.java~other.Tl9Fy2
 
   private Object varFromName (String name, boolean preTwiddle)
   {
