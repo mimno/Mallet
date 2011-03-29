@@ -136,10 +136,10 @@ public class GenericAcrfTui {
   {
     BshInterpreter interpreter = CommandOption.getInterpreter ();
     try {
-      interpreter.eval ("import edu.umass.cs.mallet.base.extract.*");
-      interpreter.eval ("import edu.umass.cs.mallet.grmm.inference.*");
-      interpreter.eval ("import edu.umass.cs.mallet.grmm.learning.*");
-      interpreter.eval ("import edu.umass.cs.mallet.grmm.learning.templates.*");
+      interpreter.eval ("import cc.mallet.base.extract.*");
+      interpreter.eval ("import cc.mallet.grmm.inference.*");
+      interpreter.eval ("import cc.mallet.grmm.learning.*");
+      interpreter.eval ("import cc.mallet.grmm.learning.templates.*");
     } catch (EvalError e) {
       throw new RuntimeException (e);
     }
