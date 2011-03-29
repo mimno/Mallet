@@ -51,6 +51,8 @@ public class CPT implements DiscreteFactor {
     return "CPT: Child ["+child+"]\n  Factor: "+subFactor.toString ();
   }
 
+  public String prettyOutputString() { return toString(); }
+
   public double value (Assignment assn) {return subFactor.value (assn);}
 
   public double value (AssignmentIterator it) {return subFactor.value (it);}

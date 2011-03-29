@@ -1072,6 +1072,8 @@ public class FactorGraph implements Factor {
     return TableFactor.multiplyAll (factors).asTable ();
   }
 
+  public String prettyOutputString() { return toString(); }
+
   public String toString ()
   {
     StringBuffer buf = new StringBuffer ();

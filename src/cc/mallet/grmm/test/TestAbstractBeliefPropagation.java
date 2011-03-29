@@ -54,6 +54,8 @@ public class TestAbstractBeliefPropagation extends TestCase {
 
   static FactorGraph createBoltzmannChain (int len)
   {
+    Randoms r = new Randoms (3241321);
+
     List<Variable> vars = new ArrayList<Variable> ();
     for (int i = 0; i < len; i++) {
       Variable x_i = new Variable (2);
@@ -65,9 +67,7 @@ public class TestAbstractBeliefPropagation extends TestCase {
 
     // node factors
     for (int i = 0; i < len; i++) {
-      Variable u = new Variable (Variable.CONTINUOUS);
-      u.setLabel ("U_"+i);
-      factors.add (new UniformFactor (u, -4.0, 4.0));
+      double u = r.nextUniform (-4.0, 4.0);
       factors.add (new BoltzmannUnaryFactor (vars.get (i), u));
     }
 
