@@ -17,6 +17,8 @@ import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Labels;
 import cc.mallet.types.LabelsSequence;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.AlphabetCarrying;
 
 import gnu.trove.THashMap;
 import gnu.trove.TIntArrayList;
@@ -28,7 +30,7 @@ import gnu.trove.TIntArrayList;
  * <p/>
  * $Id: LabelsAssignment.java,v 1.1 2007/10/22 21:37:58 mccallum Exp $
  */
-public class LabelsAssignment extends Assignment {
+public class LabelsAssignment extends Assignment implements AlphabetCarrying {
 
   // these are just for printing; race conditions don't matter
   private static int NEXT_ID = 0;
@@ -136,4 +138,8 @@ public class LabelsAssignment extends Assignment {
   {
     return idx2var[0][lvl].getLabelAlphabet ();
   }
+
+	public Alphabet getAlphabet() { return getOutputAlphabet(0); }
+	public Alphabet[] getAlphabets() { return new Alphabet[] { getAlphabet() }; } //hack
+
 }

@@ -34,9 +34,6 @@ public class Labels implements AlphabetCarrying, Serializable
 	
 	public Labels (Label[] labels)
 	{
-		for (int i = 0; i < labels.length-1; i++)
-			if (!Alphabet.alphabetsMatch(labels[i], labels[i+1])) 
-				throw new IllegalArgumentException ("Alphabets do not match");
 		this.labels = new Label[labels.length];
 		System.arraycopy (labels, 0, this.labels, 0, labels.length);
 	}

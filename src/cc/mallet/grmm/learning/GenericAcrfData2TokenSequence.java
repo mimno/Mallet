@@ -54,12 +54,14 @@ public class GenericAcrfData2TokenSequence extends Pipe {
   public GenericAcrfData2TokenSequence ()
   {
     super (new Alphabet(), new LabelAlphabet());
+		labelDicts.add (getTargetAlphabet());
   }
 
   public GenericAcrfData2TokenSequence (int numLabels)
   {
     super (new Alphabet(), new LabelAlphabet());
     this.numLabels = numLabels;
+		labelDicts.add (getTargetAlphabet());
   }
 
   public void setIncludeTokenText (boolean includeTokenText)
