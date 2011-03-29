@@ -511,11 +511,15 @@ public class Assignment extends AbstractFactor implements Serializable {
 
   private int colOfVar (Variable var, boolean doAdd)
   {
-    int ci = var2idx.get (var);
-    if (doAdd && ci == -1) {
-      ci = addVar (var);
-    }
-    return ci;
+		if (var2idx.containsKey (var)) {
+			return var2idx.get (var);
+		} else {
+			if (doAdd) {
+				return addVar (var);
+			} else {
+				return -1;
+			}
+		}
   }
 
   private int addVar (Variable var)

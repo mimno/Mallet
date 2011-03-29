@@ -79,7 +79,11 @@ public class GibbsSampler implements Sampler {
 
   private Assignment initialAssignment (FactorGraph mdl)
   {
-    Assignment assn = new Assignment ();
+		Assignment assn = new Assignment (mdl, new int [mdl.numVariables()]);
+		if (mdl.logValue (assn) > Double.NEGATIVE_INFINITY)
+			return assn;
+		 
+		assn = new Assignment ();
     return initialAssignmentRec (mdl, assn, 0);
   }
 
