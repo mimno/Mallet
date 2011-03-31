@@ -414,6 +414,55 @@ public class TestTableFactor extends TestCase {
     assertTrue (ans.almostEquals (f1));
   }
 
+  // thanks to John Pate <j.k.pate@sms.ed.ac.uk>
+  public void testVariableReordering () {
+
+    Variable var0 = new Variable (2);
+    Variable var1 = new Variable (3);
+
+    Randoms r = new Randoms (17671);
+
+    double[] probs = new double[] {
+      r.nextDouble(),
+      r.nextDouble(),
+      r.nextDouble(),
+      r.nextDouble(),
+      r.nextDouble(),
+      r.nextDouble()
+    };
+
+    TableFactor nothingReordered = new TableFactor(
+      new Variable[] { var0, var1 },
+      probs
+    );
+
+
+    double[] probsToReorder = new double[] {
+      probs[0],
+      probs[3],
+      probs[1],
+      probs[4],
+      probs[2],
+      probs[5]
+    };
+
+    TableFactor reOrderedToMatch = new TableFactor(
+      new Variable[] { var1, var0 },
+      probsToReorder
+    );
+
+    TableFactor reOrderedToMisMatch = new TableFactor(
+      new Variable[] { var1, var0 },
+      probs
+    );
+
+    System.out.println( "\nShould be true: " + nothingReordered.almostEquals( reOrderedToMatch ) );
+    System.out.println( "Should be false: " + nothingReordered.almostEquals( reOrderedToMisMatch ) );
+
+    assertTrue( nothingReordered.almostEquals( reOrderedToMatch ) );
+    assertFalse( nothingReordered.almostEquals( reOrderedToMisMatch ) );
+  }
+
   public static Test suite ()
   {
     return new TestSuite (TestTableFactor.class);

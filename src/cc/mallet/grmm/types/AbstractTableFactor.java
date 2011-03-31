@@ -42,6 +42,9 @@ public abstract class AbstractTableFactor implements DiscreteFactor {
    * Number of variables in this potential.
    */
   private int numVars;
+  private int[] reorderingMap;
+  private int[] sizesAsPassed;
+  private int[] sizesAsSorted;
 
   protected Matrix probs;
 
@@ -56,28 +59,39 @@ public abstract class AbstractTableFactor implements DiscreteFactor {
     initVars (Arrays.asList (allVars.toArray ()));
   }
 
-  private void initVars (Variable allVars[])
+  private void initVars (Variable varsAsPassed[])
   {
-    int sizes[] = new int[allVars.length];
+      sizesAsPassed = new int[ varsAsPassed.length];
+      sizesAsSorted = new int[ varsAsPassed.length];
+      reorderingMap = new int[ varsAsPassed.length];
+      Variable[] allVars = varsAsPassed.clone();
 
-    vars = new HashVarSet (Arrays.asList (allVars));
+      vars = new HashVarSet (Arrays.asList (allVars));
 //    vars = new  (universe, Arrays.asList (allVars));
 
-//    Arrays.sort (allVars);
-    for (int i = 0; i < allVars.length; i++) {
-      Variable var = vars.get (i);
-      if (var.isContinuous ()) {
-        throw new IllegalArgumentException ("Attempt to create table over continous variable "+allVars[i]);
+      Arrays.sort (allVars);
+
+      // store the mapping between the order in which the variables were given and the (canonically
+      // sorted) order we are storing them in and set sizes
+      for (int i = 0; i < allVars.length; i++) {
+          Variable var = vars.get (i);
+          if (var.isContinuous ()) {
+              throw new IllegalArgumentException ("Attempt to create table over continous variable "+allVars[i]);
+          }
+          sizesAsSorted[i] = var.getNumOutcomes ();
+
+          int j = 0;
+          while( varsAsPassed[j] != var ) { j++; }
+          reorderingMap[j] = i;
+          sizesAsPassed[j] = vars.get(i).getNumOutcomes();
       }
-      sizes[i] = var.getNumOutcomes ();
-    }
 
-    probs = new Matrixn (sizes);
-    if (probs.numLocations () == 0) {
-      System.err.println ("Warning: empty potential created");
-    }
+      probs = new Matrixn (sizesAsSorted);
+      if (probs.numLocations () == 0) {
+          System.err.println ("Warning: empty potential created");
+      }
 
-    numVars = allVars.length;
+      numVars = allVars.length;
   }
 
   private void initVars (Collection allVars)
@@ -90,12 +104,21 @@ public abstract class AbstractTableFactor implements DiscreteFactor {
     if (probArray.length != probs.numLocations ()) {
       /* This shouldn't be a runtime exception. So sue me. */
       throw new RuntimeException
-              ("Attempt to initialize potential with bad number of prababilities.\n"
+              ("Attempt to initialize potential with bad number of probabilities.\n"
               + "Needed " + probs.numLocations () + " got " + probArray.length);
     }
 
     for (int i = 0; i < probArray.length; i++) {
-      probs.setValueAtLocation (i, probArray[i]);
+      int[] indicesAsPassed = new int[sizesAsPassed.length];
+      Matrixn.singleToIndices( i, indicesAsPassed, sizesAsPassed );
+      int[] indicesAsSorted = new int[sizesAsPassed.length];
+
+      for(int j = 0; j < sizesAsPassed.length; j++ ) {
+        indicesAsSorted[ j ] = indicesAsPassed[ reorderingMap[j] ];
+      }
+
+      int singleIndexAsSorted = Matrixn.singleIndex( sizesAsSorted, indicesAsSorted );
+      probs.setValueAtLocation (singleIndexAsSorted, probArray[i]);
     }
   }
 
