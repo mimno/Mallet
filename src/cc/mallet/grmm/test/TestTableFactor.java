@@ -366,6 +366,8 @@ public class TestTableFactor extends TestCase {
   public void testMultiplyAll ()
   {
     for (int rep = 0; rep < 100; rep++) {
+      Universe.resetUniverse();
+
       Variable v1 = new Variable (2);
       Variable v2 = new Variable (2);
       Variable[] vars = new Variable[] { v1, v2 };

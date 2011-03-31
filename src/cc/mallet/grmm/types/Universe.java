@@ -26,11 +26,17 @@ public class Universe implements Serializable {
 
   private BidirectionalIntObjectMap variableAlphabet;
 
-  public static final Universe DEFAULT = new Universe ();
+  public static Universe DEFAULT = new Universe ();
 
   public Universe ()
   {
     variableAlphabet = new BidirectionalIntObjectMap ();
+  }
+
+  public static void resetUniverse()
+  {
+      DEFAULT = new Universe();
+      allProjectionCaches = new THashMap();
   }
 
   public int add (Variable var)
@@ -77,6 +83,8 @@ public class Universe implements Serializable {
   }
 
   // maintaining global projection caches
+
+  // this can get dangerous if variables are thrown away willy nilly (as in test cases) -cas
 
   static THashMap allProjectionCaches = new THashMap ();
 
