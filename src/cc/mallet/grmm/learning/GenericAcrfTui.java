@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import cc.mallet.grmm.inference.Inferencer;
+import cc.mallet.optimize.Optimizer;
 import cc.mallet.pipe.*;
 import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.pipe.iterator.PipeInputIterator;
@@ -63,6 +64,18 @@ public class GenericAcrfTui {
           (GenericAcrfTui.class, "eval", "STRING", true, "LOG",
                   "Evaluator to use.  Java code grokking performed.", null);
 
+  private static CommandOption.Boolean usePiecewiseTraining = new CommandOption.Boolean
+            (GenericAcrfTui.class, "piecewise", "true|false", true, false,
+                    "Whether to use piecewise training.", null);
+
+  private  static CommandOption.Boolean usePwplTraining = new CommandOption.Boolean
+            (GenericAcrfTui.class, "pwpl", "true|false", true, false,
+                    "Whether to use pwpl training.", null);
+
+  private  static CommandOption.Boolean usePlTraining = new CommandOption.Boolean
+            (GenericAcrfTui.class, "pl", "true|false", true, false,
+                    "Whether to use Besag pseudolikelihood.", null);
+
   static CommandOption.Boolean cacheUnrolledGraph = new CommandOption.Boolean
           (GenericAcrfTui.class, "cache-graphs", "true|false", true, false,
                   "Whether to use memory-intensive caching.", null);
@@ -78,6 +91,19 @@ public class GenericAcrfTui {
 
 
   private static BshInterpreter interpreter = setupInterpreter ();
+
+    private static ACRFTrainer createTrainer ()
+    {
+      if (usePiecewiseTraining.value) {
+        return new PiecewiseACRFTrainer();
+      } else if (usePwplTraining.value) {
+        return new PwplACRFTrainer();
+      } else if (usePlTraining.value) {
+        return new PseudolikelihoodACRFTrainer ();
+      } else {
+        return new DefaultAcrfTrainer ();
+      }
+    }
 
   public static void main (String[] args) throws IOException, EvalError
   {
@@ -122,14 +148,15 @@ public class GenericAcrfTui {
     acrf.setInferencer (inf);
     acrf.setViterbiInferencer (maxInf);
 
-    ACRFTrainer trainer = new DefaultAcrfTrainer ();
+    ACRFTrainer trainer = createTrainer();
+    System.err.println ("ACRF Trainer = "+trainer);
     trainer.train (acrf, training, null, testing, eval, 9999);
     timing.tick ("Training");
 
     FileUtils.writeGzippedObject (new File ("acrf.ser.gz"), acrf);
     timing.tick ("Serializing");
 
-    System.out.println ("Total time (ms) = " + timing.elapsedTime ());
+    System.err.println ("Total time (ms) = " + timing.elapsedTime ());
   }
 
   private static BshInterpreter setupInterpreter ()
