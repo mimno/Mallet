@@ -81,7 +81,7 @@ public class CachingOptimizable {
   }
 
    /**/
-   public static abstract class ByGradient extends Base implements Optimizable.ByGradient {
+   public static abstract class ByGradient extends Base implements Optimizable.ByGradientValue {
 
     protected abstract double computeValue ();
 

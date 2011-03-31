@@ -50,7 +50,7 @@ public class PwplACRFTrainer extends DefaultAcrfTrainer {
   private double wrongWrongThreshold = 0.1;
   private File outputPrefix = new File (".");
 
-  public Optimizable.ByGradient createOptimizable (ACRF acrf, InstanceList training)
+  public Optimizable.ByGradientValue createOptimizable (ACRF acrf, InstanceList training)
   {
     return new PwplACRFTrainer.Maxable (acrf, training);
   }

@@ -115,12 +115,12 @@ public class DefaultAcrfTrainer implements ACRFTrainer {
                         ACRFEvaluator eval,
                         int numIter)
   {
-    Optimizable.ByGradientValue macrf = createMaximizable (acrf, trainingList);
+    Optimizable.ByGradientValue macrf = createOptimizable (acrf, trainingList);
     return train (acrf, trainingList, validationList, testSet,
             eval, numIter, macrf);
   }
 
-  protected Optimizable.ByGradientValue createMaximizable (ACRF acrf, InstanceList trainingList)
+  protected Optimizable.ByGradientValue createOptimizable (ACRF acrf, InstanceList trainingList)
   {
     return acrf.getMaximizable (trainingList);
   }
@@ -164,7 +164,7 @@ public class DefaultAcrfTrainer implements ACRFTrainer {
       InstanceList subset = training.split (new double[]
               {SIZE[i], 1 - SIZE[i]})[0];
       logger.info ("Training on subset of size " + subset.size ());
-      Optimizable.ByGradientValue subset_macrf = createMaximizable (acrf, subset);
+      Optimizable.ByGradientValue subset_macrf = createOptimizable (acrf, subset);
       train (acrf, training, validation, null, eval,
               SUBSET_ITER, subset_macrf);
       logger.info ("Subset training " + i + " finished...");
@@ -312,7 +312,7 @@ public class DefaultAcrfTrainer implements ACRFTrainer {
                         int numIter)
   {
 
-    Optimizable.ByGradientValue macrf = createMaximizable (acrf, trainingList);
+    Optimizable.ByGradientValue macrf = createOptimizable (acrf, trainingList);
     train (acrf, trainingList, validationList, testSet, eval, 5, macrf);
     ACRF.Template[] tmpls = acrf.getTemplates ();
     for (int ti = 0; ti < tmpls.length; ti++)

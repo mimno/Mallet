@@ -37,7 +37,7 @@ public class PiecewiseACRFTrainer extends DefaultAcrfTrainer {
   private static final Logger logger = MalletLogger.getLogger (PiecewiseACRFTrainer.class.getName());
   private static final boolean printGradient = false;
 
-  public Optimizable.ByGradient createOptimizable (ACRF acrf, InstanceList training)
+  public Optimizable.ByGradientValue createOptimizable (ACRF acrf, InstanceList training)
   {
     return new Maxable (acrf, training);
   }

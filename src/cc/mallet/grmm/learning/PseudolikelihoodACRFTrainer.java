@@ -55,7 +55,7 @@ public class PseudolikelihoodACRFTrainer extends DefaultAcrfTrainer {
     this.structureType = structureType;
   }
 
-  public Optimizable.ByGradient createOptimizable (ACRF acrf, InstanceList training)
+  public Optimizable.ByGradientValue createOptimizable (ACRF acrf, InstanceList training)
   {
     return new Maxable (acrf, training);
   }
