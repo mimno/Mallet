@@ -1,6 +1,7 @@
 package cc.mallet.topics;
 
 import cc.mallet.optimize.LimitedMemoryBFGS;
+import cc.mallet.optimize.OptimizationException;
 
 import cc.mallet.types.*;
 import cc.mallet.classify.MaxEnt;
@@ -220,14 +221,14 @@ public class DMRTopicModel extends LDAHyper {
 		// Optimize once
 		try {
 			optimizer.optimize();
-		} catch (IllegalArgumentException e) {
+		} catch (OptimizationException e) {
 			// step size too small
 		}
 
 		// Restart with a fresh initialization to improve likelihood
 		try {
 			optimizer.optimize();
-		} catch (IllegalArgumentException e) {
+		} catch (OptimizationException e) {
 			// step size too small
 		}
         dmrParameters = optimizable.getClassifier();
