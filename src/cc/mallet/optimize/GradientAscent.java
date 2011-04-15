@@ -62,6 +62,17 @@ public class GradientAscent implements Optimizer
     this.lineMaximizer = lineMaximizer;
   }*/
 
+  
+  /**
+   * Sets the tolerance in the convergence test:
+   * 2.0*|value-old_value| <= tolerance*(|value|+|old_value|+eps)
+   * Default value is 0.001.
+   * @param tolerance tolerance for convergence test
+   */
+  public void setTolerance(double tolerance) {
+    this.tolerance = tolerance;
+  }
+  
   public double getInitialStepSize ()
   {
     return initialStepSize;
