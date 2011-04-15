@@ -582,6 +582,14 @@ public final class MatrixOps
 		return maxIndices;
 	}
 
+  public static void expNormalize(double[] scores) {
+    double max = MatrixOps.max (scores);
+    double sum = 0;
+    for (int i = 0; i < scores.length; i++)
+      sum += (scores[i] = Math.exp (scores[i] - max));
+    for (int i = 0; i < scores.length; i++) 
+      scores[i] /= sum;
+  }
 }
 
 
