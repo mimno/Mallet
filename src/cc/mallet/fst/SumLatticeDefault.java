@@ -350,6 +350,10 @@ public class SumLatticeDefault implements SumLattice
 
 	public int length () { return latticeLength; }
 
+	public Sequence getInput() { 
+	  return input;
+	}
+	
 	public double getAlpha (int ip, State s) {
 		LatticeNode node = getLatticeNode (ip, s.getIndex ());
 		return node.alpha;
