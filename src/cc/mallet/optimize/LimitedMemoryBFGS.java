@@ -54,11 +54,13 @@ public class LimitedMemoryBFGS implements Optimizer
 	public boolean isConverged () { return converged; }
 
 
-	/*
-	public void setLineMaximizer (LineOptimizer.ByGradient maxer)
-	{
-		lineMaximizer = maxer;
-	}*/
+	/**
+	 * Sets the LineOptimizer.ByGradient to use in L-BFGS optimization.
+	 * @param lineOpt line optimizer for L-BFGS
+	 */
+	public void setLineOptimizer(LineOptimizer.ByGradient lineOpt) {
+		lineMaximizer = lineOpt;
+	}
 
 	// State of search
 	// g = gradient
