@@ -99,13 +99,13 @@ public class SelfTransitionGEConstraint implements GEConstraint {
     this.expectation = 0;
   }
   
-  public void computeExpectations(ArrayList<SumLatticeDefault> lattices, InstanceList data) {
+  public void computeExpectations(ArrayList<SumLatticeDefault> lattices) {
     double[][][] xis;
     for (int i = 0; i < lattices.size(); i++) {
-      SumLattice lattice = lattices.get(i);
+      SumLatticeDefault lattice = lattices.get(i);
       xis = lattice.getXis();
       int numStates = xis[0].length;
-      FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(i).getData();
+      FeatureVectorSequence fvs = (FeatureVectorSequence)lattice.getInput();
       for (int ip = 0; ip < fvs.size(); ++ip) {
         for (int si = 0; si < numStates; si++) {
           this.expectation += Math.exp(xis[ip][si][si]);

@@ -51,7 +51,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
   // the gradient / value need to be re-computed
   private int cache;
   private double cachedValue;
-  private double[] cachedGradient;
+  private CRF.Factors cachedGradient;
   
   // lists of source states / transition indices
   // for each destination state
@@ -81,7 +81,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
     this.constraints = constraints;
     this.cache = Integer.MAX_VALUE;
     this.cachedValue = Double.NaN;
-    this.cachedGradient = new double[crf.getNumParameters()];
+    this.cachedGradient = new CRF.Factors(crf);
     this.data = data;
     this.numThreads = numThreads;
     this.weight = weight;
@@ -95,7 +95,9 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
     }
     this.gpv = DEFAULT_GPV;
     
-    this.executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(numThreads);
+    if (numThreads > 1) {
+      this.executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(numThreads);
+    }
     
     createReverseTransitionMatrices(crf);
   }
@@ -160,6 +162,8 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
   public void cacheValueAndGradient() {
     
     // compute and cache lattices
+    //System.gc();
+    //System.err.println("Used Memory "+String.format("%.3f", (Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/1000000.) + " before lattice");   
     ArrayList<SumLatticeDefault> lattices = new ArrayList<SumLatticeDefault>();
     if (numThreads == 1) {
       for (int ii = 0; ii < data.size(); ii++) {
@@ -212,9 +216,11 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
     
     for (GEConstraint constraint : constraints) {
       constraint.zeroExpectations();
-      constraint.computeExpectations(lattices,data);
+      constraint.computeExpectations(lattices);
     }
     System.err.println("Done computing expectations.");
+    //System.gc();
+    //System.err.println("Used Memory "+String.format("%.3f", (Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/1000000.) + " after lattice");  
     
     // compute GE value
     this.cachedValue = 0;
@@ -222,7 +228,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
       this.cachedValue += constraint.getValue();
     }
     
-    CRF.Factors gradient = new CRF.Factors(crf);
+    cachedGradient.zero();
     
     // compute GE gradient
     if (numThreads == 1) {
@@ -230,7 +236,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
         if (instancesWithConstraints.get(ii)) {
           SumLatticeDefault lattice = lattices.get(ii);
           FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(ii).getData();
-          new GELattice(fvs, lattice.getGammas(), lattice.getXis(), crf, reverseTrans, reverseTransIndices, gradient,this.constraints, false);
+          new GELattice(fvs, lattice.getGammas(), lattice.getXis(), crf, reverseTrans, reverseTransIndices, cachedGradient,this.constraints, false);
         }
       }
     }
@@ -271,23 +277,19 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
       }
       
       for (Callable<Void> task : tasks) {
-        gradient.plusEquals(((GELatticeTask)task).getGradient(), 1);
+        cachedGradient.plusEquals(((GELatticeTask)task).getGradient(), 1);
       }
     }
 
     System.err.println("Done computing gradient.");
 
     this.cachedValue += crf.getParameters().gaussianPrior(gpv);
-    gradient.plusEqualsGaussianPriorGradient(crf.getParameters(), gpv);
+    cachedGradient.plusEqualsGaussianPriorGradient(crf.getParameters(), gpv);
     
-    System.err.println("Done computing regularization.");
-    
-    this.cachedGradient = new double[crf.getNumParameters()];
-    gradient.getParameters(this.cachedGradient);   
+    System.err.println("Done computing regularization.");   
     
     if (weight != 1) {
       this.cachedValue *= weight;
-      MatrixOps.timesEquals(cachedGradient, weight); 
     }
     System.err.println("GE Value = " + this.cachedValue);
   }
@@ -301,7 +303,10 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
       cacheValueAndGradient();
       cache = crf.getWeightsValueChangeStamp();
     }
-    System.arraycopy(this.cachedGradient, 0, buffer, 0, buffer.length);
+    cachedGradient.getParameters(buffer);
+    if (weight != 1) {
+      MatrixOps.timesEquals(buffer, weight);
+    }
   }
 
   public double getValue() {
@@ -316,7 +321,8 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
    * Should be called after training is complete 
    * to shutdown all threads.
    */
-  public void shutdown() {    
+  public void shutdown() { 
+    if (executor == null) return;
     executor.shutdown();
     try {
       executor.awaitTermination(30, TimeUnit.SECONDS);

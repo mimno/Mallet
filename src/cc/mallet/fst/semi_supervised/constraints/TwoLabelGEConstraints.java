@@ -126,11 +126,12 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
     }
   }
   
-  public void computeExpectations(ArrayList<SumLatticeDefault> lattices, InstanceList data) {
+  public void computeExpectations(ArrayList<SumLatticeDefault> lattices) {
     double[][][] xis;
     TIntArrayList cache = new TIntArrayList();
     for (int i = 0; i < lattices.size(); i++) {
-      FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(i).getData();
+      if (lattices.get(i) == null) { continue; }
+      FeatureVectorSequence fvs = (FeatureVectorSequence)lattices.get(i).getInput();
       SumLattice lattice = lattices.get(i);
       xis = lattice.getXis();
       for (int ip = 1; ip < fvs.size(); ++ip) {

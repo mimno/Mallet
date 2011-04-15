@@ -78,13 +78,16 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
   public BitSet preProcess(InstanceList data) {
     // count
     int ii = 0;
+    int fi;
+    FeatureVector fv;
     BitSet bitSet = new BitSet(data.size());
     for (Instance instance : data) {
       FeatureVectorSequence fvs = (FeatureVectorSequence)instance.getData();
       for (int ip = 0; ip < fvs.size(); ip++) {
-        for (int fi : constraints.keys()) {
-          // binary constraint features
-          if (fvs.get(ip).location(fi) >= 0) {
+        fv = fvs.get(ip);
+        for (int loc = 0; loc < fv.numLocations(); loc++) {
+          fi = fv.indexAtLocation(loc);
+          if (constraints.containsKey(fi)) {
             constraints.get(fi).count += 1;
             bitSet.set(ii);
           }
@@ -112,24 +115,32 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
     }
   }
   
-  public void computeExpectations(ArrayList<SumLatticeDefault> lattices, InstanceList data) {
-    double[][] gammas;
+  public void computeExpectations(ArrayList<SumLatticeDefault> lattices) {
+    double[][] gammas;    
+    TIntArrayList cache = new TIntArrayList();
+    OneLabelGEConstraint constraint;
     for (int i = 0; i < lattices.size(); i++) {
-      FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(i).getData();
-      SumLattice lattice = lattices.get(i);
-      if (lattice == null) { continue; }
+      if (lattices.get(i) == null) { continue; }
+      SumLatticeDefault lattice = lattices.get(i);
+      FeatureVectorSequence fvs = (FeatureVectorSequence)lattice.getInput();
       gammas = lattice.getGammas();
       for (int ip = 0; ip < fvs.size(); ++ip) {
+        cache.resetQuick();
+        FeatureVector fv = fvs.getFeatureVector(ip);
+        int fi;
+        for (int loc = 0; loc < fv.numLocations(); loc++) {
+          fi = fv.indexAtLocation(loc);
+          // binary constraint features
+          if (constraints.containsKey(fi)) {
+            cache.add(fi);
+          }
+        }
         for (int s = 0; s < map.getNumStates(); ++s) {
           int li = map.getLabelIndex(s);
           if (li != StateLabelMap.START_LABEL) {
             double gammaProb = Math.exp(gammas[ip+1][s]);
-            for (int fi : constraints.keys()) {
-              OneLabelGEConstraint constraint = constraints.get(fi);
-              // binary constraint features
-              if (fvs.getFeatureVector(ip).value(fi) > 0.0) {
-                constraint.expectation[li] += gammaProb;
-              }
+            for (int j = 0; j < cache.size(); j++) {
+              constraints.get(cache.getQuick(j)).expectation[li] += gammaProb;
             }
           }
         }

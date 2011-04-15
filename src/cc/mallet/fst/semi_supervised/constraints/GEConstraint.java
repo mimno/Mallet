@@ -22,7 +22,7 @@ import java.util.BitSet;
  * @author Gregory Druck
  */
 public interface GEConstraint {
-
+  
   /**
    * Computes the constraint feature value
    * (over all constraint features) for FeatureVector fv
@@ -49,7 +49,7 @@ public interface GEConstraint {
    * @param lattices Cached SumLattices
    * @param data Unlabeled data
    */
-  void computeExpectations(ArrayList<SumLatticeDefault> lattices, InstanceList data);
+  void computeExpectations(ArrayList<SumLatticeDefault> lattices);
   
   
   /**
