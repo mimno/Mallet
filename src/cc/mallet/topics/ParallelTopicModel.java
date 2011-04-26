@@ -1411,7 +1411,7 @@ public class ParallelTopicModel implements Serializable {
 
 			Arrays.fill(topicCounts, 0);
 		}
-	
+
 		// add the parameter sum term
 		logLikelihood += data.size() * Dirichlet.logGammaStirling(alphaSum);
 
@@ -1435,8 +1435,12 @@ public class ParallelTopicModel implements Serializable {
 				logLikelihood += Dirichlet.logGammaStirling(beta + count);
 
 				if (Double.isNaN(logLikelihood)) {
-					System.err.println(count);
-					System.exit(1);
+					logger.warning("NaN in log likelihood calculation");
+					return 0;
+				}
+				else if (Double.isInfinite(logLikelihood)) {
+					logger.warning("infinite log likelihood");
+					return 0;
 				}
 
 				index++;
@@ -1447,9 +1451,14 @@ public class ParallelTopicModel implements Serializable {
 			logLikelihood -= 
 				Dirichlet.logGammaStirling( (beta * numTypes) +
 											tokensPerTopic[ topic ] );
+
 			if (Double.isNaN(logLikelihood)) {
-				logger.info("after topic " + topic + " " + tokensPerTopic[ topic ]);
-				System.exit(1);
+				logger.info("NaN after topic " + topic + " " + tokensPerTopic[ topic ]);
+				return 0;
+			}
+			else if (Double.isInfinite(logLikelihood)) {
+				logger.info("Infinite value after topic " + topic + " " + tokensPerTopic[ topic ]);
+				return 0;
 			}
 
 		}
@@ -1460,9 +1469,11 @@ public class ParallelTopicModel implements Serializable {
 
 		if (Double.isNaN(logLikelihood)) {
 			logger.info("at the end");
-			System.exit(1);
 		}
-
+		else if (Double.isInfinite(logLikelihood)) {
+			logger.info("Infinite value beta " + beta + " * " + numTypes);
+			return 0;
+		}
 
 		return logLikelihood;
 	}
@@ -1597,6 +1608,8 @@ public class ParallelTopicModel implements Serializable {
 		ObjectInputStream ois = new ObjectInputStream (new FileInputStream(f));
 		topicModel = (ParallelTopicModel) ois.readObject();
 		ois.close();
+
+		topicModel.initializeHistograms();
 
 		return topicModel;
 	}
