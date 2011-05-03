@@ -37,8 +37,8 @@ public class Csv2Classify {
 		 "The file containing data to be classified, one instance per line", null);
 
 	static CommandOption.File outputFile = new CommandOption.File
-		(Csv2Classify.class, "output", "FILE", true, new File("text.vectors"),
-		 "Write the instance list to this file; Using - indicates stdout.", null);
+		(Csv2Classify.class, "output", "FILE", true, new File("output"),
+		 "Write predictions to this file; Using - indicates stdout.", null);
 
 	static CommandOption.String lineRegex = new CommandOption.String
 		(Csv2Classify.class, "line-regex", "REGEX", true, "^(\\S*)[\\s,]*(.*)$",

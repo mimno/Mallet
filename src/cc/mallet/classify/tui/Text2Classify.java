@@ -36,21 +36,8 @@ public class Text2Classify {
 	 "The directories containing text files to be classified, one directory per class", null);
 
 	static CommandOption.File outputFile = new CommandOption.File
-		(Text2Classify.class, "output", "FILE", true, new File("text.vectors"),
-		 "Write the instance list to this file; Using - indicates stdout.", null);
-
-	static CommandOption.String lineRegex = new CommandOption.String
-		(Text2Classify.class, "line-regex", "REGEX", true, "^(\\S*)[\\s,]*(.*)$",
-		 "Regular expression containing regex-groups for label, name and data.", null);
-	
-	static CommandOption.Integer nameOption = new CommandOption.Integer
-		(Text2Classify.class, "name", "INTEGER", true, 1,
-		 "The index of the group containing the instance name.\n" +
-         "   Use 0 to indicate that the name field is not used.", null);
-
-	static CommandOption.Integer dataOption = new CommandOption.Integer
-		(Text2Classify.class, "data", "INTEGER", true, 2,
-		 "The index of the group containing the data.", null);
+		(Text2Classify.class, "output", "FILE", true, new File("output"),
+		 "Write predictions to this file; Using - indicates stdout.", null);
 	
 	static CommandOption.File classifierFile = new CommandOption.File
 		(Text2Classify.class, "classifier", "FILE", true, new File("classifier"),
