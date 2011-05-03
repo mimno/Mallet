@@ -7,6 +7,8 @@
 
 package cc.mallet.pipe;
 
+import java.util.ArrayList;
+
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
@@ -65,9 +67,8 @@ public class SvmLight2FeatureVectorAndLabel extends Pipe {
     carrier.setTarget(label);
     
     // the rest are feature-value pairs
-    int numFeatures = terms.length - 1;
-    int[] indices = new int[numFeatures];
-    double[] values = new double[numFeatures];
+    ArrayList<Integer> indices = new ArrayList<Integer>();
+    ArrayList<Double> values = new ArrayList<Double>();
     for (int termIndex = 1; termIndex < terms.length; termIndex++) {
       if (!terms[termIndex].equals("")) {
         String[] s = terms[termIndex].split(":");
@@ -75,12 +76,26 @@ public class SvmLight2FeatureVectorAndLabel extends Pipe {
           throw new RuntimeException("invalid format: " + terms[termIndex] + " (should be feature:value)");
         }
         String feature = s[0];
-        indices[termIndex-1] = getDataAlphabet().lookupIndex(feature, true);       
-        values[termIndex-1] = Double.parseDouble(s[1]);
+        int index = getDataAlphabet().lookupIndex(feature, true);
+        
+        // index may be -1 if growth of the
+        // data alphabet is stopped
+        if (index >= 0) {
+          indices.add(index);
+          values.add(Double.parseDouble(s[1]));
+        }
       }
     }
     
-    FeatureVector fv = new FeatureVector(getDataAlphabet(), indices, values);
+    assert(indices.size() == values.size());
+    int[] indicesArr = new int[indices.size()];
+    double[] valuesArr = new double[values.size()];
+    for (int i = 0; i < indicesArr.length; i++) {
+      indicesArr[i] = indices.get(i);
+      valuesArr[i] = values.get(i);
+    }
+    
+    FeatureVector fv = new FeatureVector(getDataAlphabet(), indicesArr, valuesArr);
     carrier.setData(fv);
     return carrier;
   }

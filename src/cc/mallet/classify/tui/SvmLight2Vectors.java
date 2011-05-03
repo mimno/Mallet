@@ -107,10 +107,11 @@ public class SvmLight2Vectors {
 		if (inputFiles.value.length != outputFiles.value.length) {
 			throw new RuntimeException("Number of input and output files must be the same.");
 		}
-
+		
+		InstanceList[] instances = new InstanceList[inputFiles.value.length];
 		for (int fileIndex = 0; fileIndex < inputFiles.value.length; fileIndex++) {
 			// Create the instance list and open the input file
-			InstanceList instances = new InstanceList (instancePipe);
+			instances[fileIndex] = new InstanceList (instancePipe);
 			Reader fileReader;
 			if (inputFiles.value[fileIndex].equals ("-")) {
 				fileReader = new InputStreamReader (System.in);
@@ -120,18 +121,17 @@ public class SvmLight2Vectors {
 			}
 			
 			// Read instances from the file
-			instances.addThruPipe (new SelectiveFileLineIterator (fileReader, "^\\s*#.+"));
-			
-			// Save instances to output file
-			ObjectOutputStream oos;
-			if (outputFiles.value[fileIndex].toString().equals ("-")) {
-				oos = new ObjectOutputStream(System.out);
-			}
-			else {
-				oos = new ObjectOutputStream(new FileOutputStream(outputFiles.value[fileIndex]));
-			}
-			oos.writeObject(instances);
-			oos.close();
+			instances[fileIndex].addThruPipe (new SelectiveFileLineIterator (fileReader, "^\\s*#.+"));
+		}
+
+		// gdruck@cs.umass.edu
+		// If we have multiple files, the data or target alphabet may have new 
+		// elements added to it with each new file. If we save each InstanceList
+		// immediately after processing each file, then Alphabets won't be the 
+		// same.  Instead, process all files before writing the InstanceLists.
+		for (int fileIndex = 0; fileIndex < inputFiles.value.length; fileIndex++) {
+		  // Save instances to output file
+		  instances[fileIndex].save(new File(outputFiles.value[fileIndex]));
 		}
 
 		//  If we are reusing a pipe from an instance list 
@@ -140,8 +140,8 @@ public class SvmLight2Vectors {
 		//  we now save that original instance list back to disk
 		//  with the new alphabet.
 		if (usePipeFromVectorsFile.wasInvoked()) {
-			System.out.println(" Rewriting extended pipe from " + usePipeFromVectorsFile.value);
-			System.out.println("  Instance ID = " + previousInstanceList.getPipe().getInstanceId());
+			logger.info(" Rewriting extended pipe from " + usePipeFromVectorsFile.value);
+			logger.info("  Instance ID = " + previousInstanceList.getPipe().getInstanceId());
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(usePipeFromVectorsFile.value));
 			oos.writeObject(previousInstanceList);
 			oos.close();

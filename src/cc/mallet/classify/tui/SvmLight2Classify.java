@@ -43,21 +43,7 @@ public class SvmLight2Classify {
 	static CommandOption.File outputFile = new CommandOption.File(
 		SvmLight2Classify.class, "output", "FILE", true,
 		new File("text.vectors"),
-		"Write the instance list to this file; Using - indicates stdout.", null);
-
-	static CommandOption.String lineRegex = new CommandOption.String(
-		SvmLight2Classify.class, "line-regex", "REGEX", true,
-		"^(\\S*)[\\s,]*(.*)$",
-		"Regular expression containing regex-groups for label, name and data.", null);
-
-	static CommandOption.Integer nameOption = new CommandOption.Integer(
-		SvmLight2Classify.class, "name", "INTEGER", true, 1,
-		"The index of the group containing the instance name.\n"
-		+ "   Use 0 to indicate that the name field is not used.", null);
-
-	static CommandOption.Integer dataOption = new CommandOption.Integer(
-		SvmLight2Classify.class, "data", "INTEGER", true, 2,
-		"The index of the group containing the data.", null);
+		"Write predictions to this file; Using - indicates stdout.", null);
 
 	static CommandOption.File classifierFile = new CommandOption.File(
 		SvmLight2Classify.class, "classifier", "FILE", true, new File("classifier"),
@@ -100,14 +86,15 @@ public class SvmLight2Classify {
 			  "Problem loading classifier from file " + classifierFile.value + ": "+ e.getMessage());
 		}
 
-		Pipe instancePipe;
-
+		// gdruck@cs.umass.edu
+		// Stop growth on the alphabets. If this is not done and new
+		// features are added, the feature and classifier parameter
+		// indices will not match.
+		classifier.getInstancePipe().getDataAlphabet().stopGrowth();
+		classifier.getInstancePipe().getTargetAlphabet().stopGrowth();
+		
 		// Build a new pipe
-		ArrayList<Pipe> pipeList = new ArrayList<Pipe>();
-		pipeList.add(new SvmLight2FeatureVectorAndLabel());
-		instancePipe = new SerialPipes(pipeList);
-
-		InstanceList instances = new InstanceList(instancePipe);
+		InstanceList instances = new InstanceList(classifier.getInstancePipe());
 		Reader fileReader;
 		if (inputFile.equals("-")) {
 			fileReader = new InputStreamReader(System.in);
@@ -126,13 +113,6 @@ public class SvmLight2Classify {
 		} else {
 			out = new PrintStream(outputFile.value, encoding.value);
 		}
-
-		// gdruck@cs.umass.edu
-		// Stop growth on the alphabets. If this is not done and new
-		// features are added, the feature and classifier parameter
-		// indices will not match.
-		classifier.getInstancePipe().getDataAlphabet().stopGrowth();
-		classifier.getInstancePipe().getTargetAlphabet().stopGrowth();
 
 		while (iterator.hasNext()) {
 			Instance instance = iterator.next();
