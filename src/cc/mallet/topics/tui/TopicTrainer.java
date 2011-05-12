@@ -98,6 +98,11 @@ public class TopicTrainer {
          "The filename in which to write a sparse representation of topic-word assignments.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
+	static CommandOption.String diagnosticsFile = new CommandOption.String
+		(TopicTrainer.class, "diagnostics-file", "FILENAME", true, null,
+         "The filename in which to write measures of topic quality, in XML format.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
 	static CommandOption.String topicReportXMLFile = new CommandOption.String
 		(TopicTrainer.class, "xml-topic-report", "FILENAME", true, null,
          "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
@@ -251,6 +256,13 @@ public class TopicTrainer {
 
 		if (topicKeysFile.value != null) {
 			topicModel.printTopWords(new File(topicKeysFile.value), topWords.value, false);
+		}
+
+		if (diagnosticsFile.value != null) {
+			PrintWriter out = new PrintWriter(diagnosticsFile.value);
+			TopicModelDiagnostics diagnostics = new TopicModelDiagnostics(topicModel, topWords.value);
+			out.println(diagnostics.toXML());
+			out.close();
 		}
 
 		if (topicReportXMLFile.value != null) {
