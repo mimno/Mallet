@@ -168,6 +168,10 @@ public class TopicModelDiagnostics {
 		}
 	}
 
+	public int[][] getCodocumentMatrix(int topic) {
+		return topicCodocumentMatrices[topic];
+	}
+
 	public TopicScores getTokensPerTopic(int[] tokensPerTopic) {
 		TopicScores scores = new TopicScores("tokens", numTopics, numTopWords);
 
@@ -493,6 +497,8 @@ public class TopicModelDiagnostics {
 
 		for (int topic = 0; topic < numTopics; topic++) {
 			
+			int[][] matrix = topicCodocumentMatrices[topic];
+
 			formatter.format("<topic id='%d'", topic);
 
 			for (TopicScores scores: diagnostics) {
@@ -515,7 +521,7 @@ public class TopicModelDiagnostics {
 				double probability = info.getWeight() / tokensPerTopic[topic];
 				cumulativeProbability += probability;
 				
-				formatter.format("<word rank='%d' count='%.0f' prob='%.5f' cumulative='%.5f'", position+1, info.getWeight(), probability, cumulativeProbability);
+				formatter.format("<word rank='%d' count='%.0f' prob='%.5f' cumulative='%.5f' docs='%d'", position+1, info.getWeight(), probability, cumulativeProbability, matrix[position][position]);
 
 				for(TopicScores scores: diagnostics) {
 					if (scores.wordScoresDefined) {
