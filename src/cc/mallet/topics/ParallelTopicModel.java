@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Iterator;
+import java.util.Formatter;
+import java.util.Locale;
 
 import java.util.concurrent.*;
 import java.util.logging.*;
@@ -35,6 +37,8 @@ import cc.mallet.util.MalletLogger;
  */
 
 public class ParallelTopicModel implements Serializable {
+
+	public static final int UNASSIGNED_TOPIC = -1;
 
     protected static Logger logger = MalletLogger.getLogger(ParallelTopicModel.class.getName());
 	
@@ -344,6 +348,8 @@ public class ParallelTopicModel implements Serializable {
             for (int position = 0; position < tokens.size(); position++) {
 
 				int topic = topics[position];
+				
+				if (topic == UNASSIGNED_TOPIC) { continue; }
 
 				tokensPerTopic[topic]++;
 				
@@ -1350,16 +1356,25 @@ public class ParallelTopicModel implements Serializable {
 				source = data.get(doc).instance.getSource().toString();
 			}
 
+			Formatter output = new Formatter(new StringBuilder(), Locale.US);
+
 			for (int pi = 0; pi < topicSequence.getLength(); pi++) {
 				int type = tokenSequence.getIndexAtPosition(pi);
 				int topic = topicSequence.getIndexAtPosition(pi);
+
+				output.format("%d %s %d %d %s %d\n", doc, source, pi, type, alphabet.lookupObject(type), topic);
+
+				/*
 				out.print(doc); out.print(' ');
 				out.print(source); out.print(' '); 
 				out.print(pi); out.print(' ');
 				out.print(type); out.print(' ');
 				out.print(alphabet.lookupObject(type)); out.print(' ');
 				out.print(topic); out.println();
+				*/
 			}
+
+			out.print(output);
 		}
 	}
 	

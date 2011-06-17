@@ -174,6 +174,8 @@ public class WorkerRunnable implements Runnable {
 
 				int topic = topics[position];
 
+				if (topic == ParallelTopicModel.UNASSIGNED_TOPIC) { continue; }
+
 				tokensPerTopic[topic]++;
 				
 				// The format for these arrays is 
@@ -302,6 +304,7 @@ public class WorkerRunnable implements Runnable {
 
 		//		populate topic counts
 		for (int position = 0; position < docLength; position++) {
+			if (oneDocTopics[position] == ParallelTopicModel.UNASSIGNED_TOPIC) { continue; }
 			localTopicCounts[oneDocTopics[position]]++;
 		}
 
@@ -350,62 +353,64 @@ public class WorkerRunnable implements Runnable {
 
 			currentTypeTopicCounts = typeTopicCounts[type];
 
-			//	Remove this token from all counts. 
-
-			// Remove this topic's contribution to the 
-			//  normalizing constants
-			smoothingOnlyMass -= alpha[oldTopic] * beta / 
-				(tokensPerTopic[oldTopic] + betaSum);
-			topicBetaMass -= beta * localTopicCounts[oldTopic] /
-				(tokensPerTopic[oldTopic] + betaSum);
-			
-			// Decrement the local doc/topic counts
-
-			localTopicCounts[oldTopic]--;
-
-			// Maintain the dense index, if we are deleting
-			//  the old topic
-			if (localTopicCounts[oldTopic] == 0) {
-
-				// First get to the dense location associated with
-				//  the old topic.
+			if (oldTopic != ParallelTopicModel.UNASSIGNED_TOPIC) {
+				//	Remove this token from all counts. 
 				
-				denseIndex = 0;
-
-				// We know it's in there somewhere, so we don't 
-				//  need bounds checking.
-				while (localTopicIndex[denseIndex] != oldTopic) {
-					denseIndex++;
-				}
+				// Remove this topic's contribution to the 
+				//  normalizing constants
+				smoothingOnlyMass -= alpha[oldTopic] * beta / 
+					(tokensPerTopic[oldTopic] + betaSum);
+				topicBetaMass -= beta * localTopicCounts[oldTopic] /
+					(tokensPerTopic[oldTopic] + betaSum);
 				
-				// shift all remaining dense indices to the left.
-				while (denseIndex < nonZeroTopics) {
-					if (denseIndex < localTopicIndex.length - 1) {
-						localTopicIndex[denseIndex] = 
-							localTopicIndex[denseIndex + 1];
+				// Decrement the local doc/topic counts
+				
+				localTopicCounts[oldTopic]--;
+				
+				// Maintain the dense index, if we are deleting
+				//  the old topic
+				if (localTopicCounts[oldTopic] == 0) {
+					
+					// First get to the dense location associated with
+					//  the old topic.
+					
+					denseIndex = 0;
+					
+					// We know it's in there somewhere, so we don't 
+					//  need bounds checking.
+					while (localTopicIndex[denseIndex] != oldTopic) {
+						denseIndex++;
 					}
-					denseIndex++;
+				
+					// shift all remaining dense indices to the left.
+					while (denseIndex < nonZeroTopics) {
+						if (denseIndex < localTopicIndex.length - 1) {
+							localTopicIndex[denseIndex] = 
+								localTopicIndex[denseIndex + 1];
+						}
+						denseIndex++;
+					}
+					
+					nonZeroTopics --;
 				}
 
-				nonZeroTopics --;
-			}
-
-			// Decrement the global topic count totals
-			tokensPerTopic[oldTopic]--;
-			assert(tokensPerTopic[oldTopic] >= 0) : "old Topic " + oldTopic + " below 0";
+				// Decrement the global topic count totals
+				tokensPerTopic[oldTopic]--;
+				assert(tokensPerTopic[oldTopic] >= 0) : "old Topic " + oldTopic + " below 0";
 			
 
-			// Add the old topic's contribution back into the
-			//  normalizing constants.
-			smoothingOnlyMass += alpha[oldTopic] * beta / 
-				(tokensPerTopic[oldTopic] + betaSum);
-			topicBetaMass += beta * localTopicCounts[oldTopic] /
-				(tokensPerTopic[oldTopic] + betaSum);
+				// Add the old topic's contribution back into the
+				//  normalizing constants.
+				smoothingOnlyMass += alpha[oldTopic] * beta / 
+					(tokensPerTopic[oldTopic] + betaSum);
+				topicBetaMass += beta * localTopicCounts[oldTopic] /
+					(tokensPerTopic[oldTopic] + betaSum);
 
-			// Reset the cached coefficient for this topic
-			cachedCoefficients[oldTopic] = 
-				(alpha[oldTopic] + localTopicCounts[oldTopic]) /
-				(tokensPerTopic[oldTopic] + betaSum);
+				// Reset the cached coefficient for this topic
+				cachedCoefficients[oldTopic] = 
+					(alpha[oldTopic] + localTopicCounts[oldTopic]) /
+					(tokensPerTopic[oldTopic] + betaSum);
+			}
 
 
 			// Now go over the type/topic counts, decrementing
@@ -415,7 +420,7 @@ public class WorkerRunnable implements Runnable {
 			int index = 0;
 			int currentTopic, currentValue;
 
-			boolean alreadyDecremented = false;
+			boolean alreadyDecremented = (oldTopic == ParallelTopicModel.UNASSIGNED_TOPIC);
 
 			topicTermMass = 0.0;
 
