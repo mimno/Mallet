@@ -1463,7 +1463,7 @@ public class ParallelTopicModel implements Serializable {
 
 		// And the topics
 
-		// Count the number of type-topic pairs
+		// Count the number of type-topic pairs that are not just (logGamma(beta) - logGamma(beta))
 		int nonZeroTypeTopics = 0;
 
 		for (int type=0; type < numTypes; type++) {
@@ -1509,9 +1509,13 @@ public class ParallelTopicModel implements Serializable {
 
 		}
 	
+		// logGamma(|V|*beta) for every topic
 		logLikelihood += 
-			(Dirichlet.logGammaStirling(beta * numTypes)) -
-			(Dirichlet.logGammaStirling(beta) * nonZeroTypeTopics);
+			Dirichlet.logGammaStirling(beta * numTypes) * numTopics;
+
+		// logGamma(beta) for all type/topic pairs with non-zero count
+		logLikelihood -=
+			Dirichlet.logGammaStirling(beta) * nonZeroTypeTopics;
 
 		if (Double.isNaN(logLikelihood)) {
 			logger.info("at the end");
