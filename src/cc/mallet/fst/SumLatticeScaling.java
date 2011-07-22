@@ -337,6 +337,10 @@ public class SumLatticeScaling implements SumLattice {
 	public LabelVector getLabelingAtPosition(int outputPosition) {
 		throw new RuntimeException("Not implemented for SumLatticeScaling!");
 	}
+	
+	public Sequence getInput() { 
+	  return input;
+	}
 
 	public Transducer getTransducer() {
 		return t;

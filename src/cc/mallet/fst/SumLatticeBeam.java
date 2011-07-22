@@ -457,6 +457,10 @@ public class SumLatticeBeam implements SumLattice  // CPAL - like Lattice but us
 		}
 
 	}
+	
+	public Sequence getInput() { 
+	  return input;
+	}
 
 	// CPAL - a simple node holding a weight and position of the state
 	private class NBForBackNode
