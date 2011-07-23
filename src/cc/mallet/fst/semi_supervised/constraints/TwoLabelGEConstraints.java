@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 
 import cc.mallet.fst.SumLattice;
-import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
@@ -97,7 +96,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
     return bitSet;
   }    
   
-  public double getConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
+  public double getCompositeConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
     // to avoid complications with the start state,
     // only consider transitions into states at 
     // position >= 1
@@ -126,7 +125,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
     }
   }
   
-  public void computeExpectations(ArrayList<SumLatticeDefault> lattices) {
+  public void computeExpectations(ArrayList<SumLattice> lattices) {
     double[][][] xis;
     TIntArrayList cache = new TIntArrayList();
     for (int i = 0; i < lattices.size(); i++) {

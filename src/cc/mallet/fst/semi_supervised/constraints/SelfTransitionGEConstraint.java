@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 
 import cc.mallet.fst.SumLattice;
-import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
@@ -73,7 +72,7 @@ public class SelfTransitionGEConstraint implements GEConstraint {
     return bitSet;
   }    
   
-  public double getConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
+  public double getCompositeConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
     if (si1 == si2) {
       return this.weight * (selfTransProb / expectation);
     }
@@ -99,10 +98,10 @@ public class SelfTransitionGEConstraint implements GEConstraint {
     this.expectation = 0;
   }
   
-  public void computeExpectations(ArrayList<SumLatticeDefault> lattices) {
+  public void computeExpectations(ArrayList<SumLattice> lattices) {
     double[][][] xis;
     for (int i = 0; i < lattices.size(); i++) {
-      SumLatticeDefault lattice = lattices.get(i);
+      SumLattice lattice = lattices.get(i);
       xis = lattice.getXis();
       int numStates = xis[0].length;
       FeatureVectorSequence fvs = (FeatureVectorSequence)lattice.getInput();
