@@ -155,14 +155,14 @@ public class GELattice {
           int curr = prevState.getDestinationState(ci).getIndex();
           double dot = 0;
           for (GEConstraint constraint : constraints2) {
-            dot += constraint.getConstraintFeatureValue(fv, ip, prev, curr);
+            dot += constraint.getCompositeConstraintFeatureValue(fv, ip, prev, curr);
           }
 
           // avoid recomputing one-state constraint features #labels times
           if (!oneStateValComputed[curr]) {
             double osVal = 0;
             for (GEConstraint constraint : constraints1) {
-              osVal += constraint.getConstraintFeatureValue(fv, ip, prev, curr);
+              osVal += constraint.getCompositeConstraintFeatureValue(fv, ip, prev, curr);
             }
             if (osVal < 0) {
               dotEx += Math.exp(gammas[ip+1][curr]) * osVal;
@@ -319,7 +319,7 @@ public class GELattice {
         for (int si2 = 0; si2 < numStates; si2++) {
           double dot = 0;
           for (GEConstraint constraint : constraints) {
-            dot += constraint.getConstraintFeatureValue(fvs.get(ip), ip, si1, si2);
+            dot += constraint.getCompositeConstraintFeatureValue(fvs.get(ip), ip, si1, si2);
           }
           double prob = Math.exp(xis[ip][si1][si2]);
           ex1 += prob * dot;

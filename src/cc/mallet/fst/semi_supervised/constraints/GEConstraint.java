@@ -7,7 +7,7 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
-import cc.mallet.fst.SumLatticeDefault;
+import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.InstanceList;
@@ -34,7 +34,7 @@ public interface GEConstraint {
    * @param destIndex Destination state index for transition
    * @return Constraint feature value
    */
-  double getConstraintFeatureValue(FeatureVector input, int inputPosition, int srcIndex, int destIndex);
+  double getCompositeConstraintFeatureValue(FeatureVector input, int inputPosition, int srcIndex, int destIndex);
   
   /**
    * Returns the total constraint value.
@@ -49,7 +49,7 @@ public interface GEConstraint {
    * @param lattices Cached SumLattices
    * @param data Unlabeled data
    */
-  void computeExpectations(ArrayList<SumLatticeDefault> lattices);
+  void computeExpectations(ArrayList<SumLattice> lattices);
   
   
   /**

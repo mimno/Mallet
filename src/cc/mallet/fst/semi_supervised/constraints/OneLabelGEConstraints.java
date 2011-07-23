@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 
 import cc.mallet.fst.SumLattice;
-import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
@@ -72,6 +71,9 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
         cache.add(fi);
       }
     }
+    if (constraints.containsKey(fv.getAlphabet().size())) {
+      cache.add(fv.getAlphabet().size());
+    }
   }
   
   // find examples that contain constrained input features
@@ -92,13 +94,18 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
             bitSet.set(ii);
           }
         }
+        if (constraints.containsKey(fv.getAlphabet().size())) {
+          bitSet.set(ii);
+          constraints.get(fv.getAlphabet().size()).count += 1;
+        }
       }
+
       ii++;
     }
     return bitSet;
   }    
   
-  public double getConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
+  public double getCompositeConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
     double value = 0;
     int li2 = map.getLabelIndex(si2);
     for (int i = 0; i < cache.size(); i++) {
@@ -115,13 +122,12 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
     }
   }
   
-  public void computeExpectations(ArrayList<SumLatticeDefault> lattices) {
+  public void computeExpectations(ArrayList<SumLattice> lattices) {
     double[][] gammas;    
     TIntArrayList cache = new TIntArrayList();
-    OneLabelGEConstraint constraint;
     for (int i = 0; i < lattices.size(); i++) {
       if (lattices.get(i) == null) { continue; }
-      SumLatticeDefault lattice = lattices.get(i);
+      SumLattice lattice = lattices.get(i);
       FeatureVectorSequence fvs = (FeatureVectorSequence)lattice.getInput();
       gammas = lattice.getGammas();
       for (int ip = 0; ip < fvs.size(); ++ip) {
@@ -134,6 +140,9 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
           if (constraints.containsKey(fi)) {
             cache.add(fi);
           }
+        }
+        if (constraints.containsKey(fv.getAlphabet().size())) {
+          cache.add(fv.getAlphabet().size());
         }
         for (int s = 0; s < map.getNumStates(); ++s) {
           int li = map.getLabelIndex(s);

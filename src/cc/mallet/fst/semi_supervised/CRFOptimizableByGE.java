@@ -15,6 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import cc.mallet.fst.CRF;
+import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.semi_supervised.constraints.GEConstraint;
 import cc.mallet.optimize.Optimizable;
@@ -164,7 +165,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
     // compute and cache lattices
     //System.gc();
     //System.err.println("Used Memory "+String.format("%.3f", (Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/1000000.) + " before lattice");   
-    ArrayList<SumLatticeDefault> lattices = new ArrayList<SumLatticeDefault>();
+    ArrayList<SumLattice> lattices = new ArrayList<SumLattice>();
     if (numThreads == 1) {
       for (int ii = 0; ii < data.size(); ii++) {
         if (instancesWithConstraints.get(ii)) {
@@ -234,7 +235,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
     if (numThreads == 1) {
       for (int ii = 0; ii < data.size(); ii++) {
         if (instancesWithConstraints.get(ii)) {
-          SumLatticeDefault lattice = lattices.get(ii);
+          SumLattice lattice = lattices.get(ii);
           FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(ii).getData();
           new GELattice(fvs, lattice.getGammas(), lattice.getXis(), crf, reverseTrans, reverseTransIndices, cachedGradient,this.constraints, false);
         }
@@ -303,6 +304,7 @@ public class CRFOptimizableByGE implements Optimizable.ByGradientValue {
       cacheValueAndGradient();
       cache = crf.getWeightsValueChangeStamp();
     }
+    // TODO this will also multiply the prior, if active!
     cachedGradient.getParameters(buffer);
     if (weight != 1) {
       MatrixOps.timesEquals(buffer, weight);
@@ -378,7 +380,7 @@ class GELatticeTask implements Callable<Void> {
   private int start;
   private int end;
   private ArrayList<GEConstraint> constraints;
-  private ArrayList<SumLatticeDefault> lattices;
+  private ArrayList<SumLattice> lattices;
   private InstanceList data;
   private CRF crf;
   private CRF.Factors gradient;
@@ -398,7 +400,7 @@ class GELatticeTask implements Callable<Void> {
    * @param start Position in unlabeled data where this thread starts computing
    * @param end Position in unlabeled data where this thread stops computing
    */
-  public GELatticeTask(CRF crf, InstanceList data, ArrayList<SumLatticeDefault> lattices, 
+  public GELatticeTask(CRF crf, InstanceList data, ArrayList<SumLattice> lattices, 
       ArrayList<GEConstraint> constraints, BitSet instancesWithConstraints, 
       int[][] reverseTrans, int[][] reverseTransIndices,
       int start, int end) {
@@ -421,7 +423,7 @@ class GELatticeTask implements Callable<Void> {
   public Void call() throws Exception {
     for (int ii = start; ii < end; ii++) {
       if (instancesWithConstraints.get(ii)) {
-        SumLatticeDefault lattice = lattices.get(ii);
+        SumLattice lattice = lattices.get(ii);
         FeatureVectorSequence fvs = (FeatureVectorSequence)data.get(ii).getData();
         new GELattice(fvs, lattice.getGammas(), lattice.getXis(),
           crf, reverseTrans, reverseTransIndices, gradient,this.constraints, false);

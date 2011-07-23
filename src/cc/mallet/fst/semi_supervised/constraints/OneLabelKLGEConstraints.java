@@ -10,6 +10,8 @@ package cc.mallet.fst.semi_supervised.constraints;
 import gnu.trove.TIntObjectHashMap;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.util.Maths;
 
 /** 
  * @author Gregory Druck
@@ -30,6 +32,7 @@ public class OneLabelKLGEConstraints extends OneLabelGEConstraints {
   
   @Override
   public void addConstraint(int fi, double[] target, double weight) {
+    assert(Maths.almostEquals(MatrixOps.sum(target),1));
     constraints.put(fi,new OneLabelGEKLConstraint(target,weight));
   }
 
