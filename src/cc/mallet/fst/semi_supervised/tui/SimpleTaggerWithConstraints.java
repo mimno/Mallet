@@ -34,8 +34,6 @@ import cc.mallet.fst.semi_supervised.FSTConstraintUtil;
 import cc.mallet.fst.semi_supervised.constraints.GEConstraint;
 import cc.mallet.fst.semi_supervised.constraints.OneLabelKLGEConstraints;
 import cc.mallet.fst.semi_supervised.constraints.OneLabelL2RangeGEConstraints;
-import cc.mallet.fst.semi_supervised.constraints.PRConstraint;
-import cc.mallet.fst.semi_supervised.pr.CRFTrainerByPR;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.types.Alphabet;
@@ -238,6 +236,7 @@ public class SimpleTaggerWithConstraints
    * @param var Gaussian prior variance
    * @return the trained model
    */
+  /*
   public static CRF trainPR(InstanceList training, InstanceList testing,
       ArrayList<PRConstraint> constraints, CRF crf,
       TransducerEvaluator eval, int iterations, double var) {
@@ -255,6 +254,7 @@ public class SimpleTaggerWithConstraints
 
     return crf;
   }
+  */
   
   public static CRF getCRF(InstanceList training, int[] orders, String defaultLabel, String forbidden, String allowed, boolean connected) { 
     Pattern forbiddenPat = Pattern.compile(forbidden);
