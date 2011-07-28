@@ -8,9 +8,13 @@
 package cc.mallet.classify;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import cc.mallet.classify.constraints.ge.MaxEntGEConstraint;
+import cc.mallet.classify.constraints.ge.MaxEntKLFLGEConstraints;
+import cc.mallet.classify.constraints.ge.MaxEntL2FLGEConstraints;
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.optimize.Optimizer;
@@ -38,15 +42,18 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
   private static Logger logger = MalletLogger.getLogger(MaxEntGETrainer.class.getName());
   private static Logger progressLogger = MalletProgressMessageLogger.getLogger(MaxEntGETrainer.class.getName()+"-pl");
 
-  
+  // these are for using this code from the command line
   private boolean l2 = false;
   private boolean normalize = true;
   private boolean useValues = false;
-  private int numIterations = Integer.MAX_VALUE;
+  private String constraintsFile;
+  
+  private int numIterations = 0;
+  private int maxIterations = Integer.MAX_VALUE;
   private double temperature = 1;
   private double gaussianPriorVariance = 1;
-  private String constraintsFile;
-  private HashMap<Integer,double[]> constraints;
+
+  protected ArrayList<MaxEntGEConstraint> constraints;
   private InstanceList trainingList = null;
   private MaxEnt classifier = null;
   private MaxEntOptimizableByGE ge = null;
@@ -54,25 +61,13 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
 
   public MaxEntGETrainer() {}
   
-  public MaxEntGETrainer(HashMap<Integer,double[]> constraints) {
+  public MaxEntGETrainer(ArrayList<MaxEntGEConstraint> constraints) {
     this.constraints = constraints;
   }
   
-  public MaxEntGETrainer(HashMap<Integer,double[]> constraints, MaxEnt classifier) {
+  public MaxEntGETrainer(ArrayList<MaxEntGEConstraint> constraints, MaxEnt classifier) {
     this.constraints = constraints;
     this.classifier = classifier;
-  }
-
-  public void setUseValues(boolean flag) {
-    this.useValues = flag;
-  }
-  
-  public void setL2(boolean flag) {
-    l2 = flag;
-  }
-  
-  public void setNormalize(boolean normalize) {
-    this.normalize = normalize;
   }
   
   public void setConstraintsFile(String filename) {
@@ -90,13 +85,38 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
   public MaxEnt getClassifier () {
     return classifier;
   }
+
+  public void setUseValues(boolean flag) {
+    this.useValues = flag;
+  }
   
-  public Optimizable getOptimizable () {
+  public void setL2(boolean flag) {
+    l2 = flag;
+  }
+  
+  public void setNormalize(boolean normalize) {
+    this.normalize = normalize;
+  }
+  
+  public Optimizable.ByGradientValue getOptimizable (InstanceList trainingList) {
+    if (ge == null) {
+      ge = new MaxEntOptimizableByGE(trainingList,constraints,classifier);
+      ge.setTemperature(temperature);
+      ge.setGaussianPriorVariance(gaussianPriorVariance);
+    }
     return ge;
   }
 
   public Optimizer getOptimizer () {
+    getOptimizable(trainingList);
+    if (opt == null) {
+      opt = new LimitedMemoryBFGS(ge);
+    }
     return opt;
+  }
+  
+  public void setOptimizer(Optimizer opt) { 
+    this.opt = opt;
   }
 
   /**
@@ -104,63 +124,71 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
    * to <code>train</code> or <code>trainWithFeatureInduction</code>.
    * @return This trainer
    */
-  public void setNumIterations (int i) {
-    numIterations = i;
+  public void setMaxIterations (int iter) {
+    maxIterations = iter;
   }
   
   public int getIteration () {
-    if (ge == null)
-      return 0;
-    else
-      return Integer.MAX_VALUE;
+    return numIterations;
   }
 
   public MaxEnt train (InstanceList trainingList) {
-    return train (trainingList, numIterations);
+    return train (trainingList, maxIterations);
   }
 
-  public MaxEnt train (InstanceList train, int numIterations) {
+  public MaxEnt train (InstanceList train, int maxIterations) {
     trainingList = train;
-    
-    if (constraints == null && constraintsFile != null) {
-      constraints = FeatureConstraintUtil.readConstraintsFromFile(constraintsFile, trainingList);
-      logger.info("number of constraints: " + constraints.size());
-    }
-    
-    if (l2) {
-      ge = new MaxEntOptimizableByL2GE(trainingList,constraints,classifier,normalize);
-    }
-    else {
-      ge = new MaxEntOptimizableByKLGE(trainingList,constraints,classifier);
-    }
 
-    ge.setTemperature(temperature);
-    ge.setGaussianPriorVariance(gaussianPriorVariance);
-    ge.setUseValues(useValues);
-    opt = new LimitedMemoryBFGS(ge);
+    if (constraints == null && constraintsFile != null) {
+      HashMap<Integer,double[]> constraintsMap = 
+        FeatureConstraintUtil.readConstraintsFromFile(constraintsFile, trainingList);
+
+      logger.info("number of constraints: " + constraintsMap.size());
+      constraints = new ArrayList<MaxEntGEConstraint>();
+      if (l2) {
+        MaxEntL2FLGEConstraints geConstraints = new MaxEntL2FLGEConstraints(train.getDataAlphabet().size(),
+            train.getTargetAlphabet().size(),useValues,normalize);
+        for (int fi : constraintsMap.keySet()) {
+          geConstraints.addConstraint(fi, constraintsMap.get(fi), 1);
+        }
+        constraints.add(geConstraints);
+      }
+      else {
+        MaxEntKLFLGEConstraints geConstraints = new MaxEntKLFLGEConstraints(train.getDataAlphabet().size(),
+            train.getTargetAlphabet().size(),useValues);
+        for (int fi : constraintsMap.keySet()) {
+          geConstraints.addConstraint(fi, constraintsMap.get(fi), 1);
+        }
+        constraints = new ArrayList<MaxEntGEConstraint>();
+        constraints.add(geConstraints);
+      }
+    }
+    
+    getOptimizable(trainingList);
+    getOptimizer();
+    
+    if (opt instanceof LimitedMemoryBFGS) {
+      ((LimitedMemoryBFGS)opt).reset();
+    }    
     
     logger.fine ("trainingList.size() = "+trainingList.size());
-    boolean converged;
 
-    for (int i = 0; i < numIterations; i++) {
-      try {
-        converged = opt.optimize (1);
-      } catch (Exception e) {
-        e.printStackTrace();
-        logger.info ("Catching exception; saying converged.");
-        converged = true;
-      }
-      if (converged)
-        break;
+    try {
+      opt.optimize(maxIterations);
+      numIterations += maxIterations;
+    } catch (Exception e) {
+      e.printStackTrace();
+      logger.info ("Catching exception; saying converged.");
     }
 
-    if (numIterations == Integer.MAX_VALUE) {
+    if (maxIterations == Integer.MAX_VALUE && opt instanceof LimitedMemoryBFGS) {
       // Run it again because in our and Sam Roweis' experience, BFGS can still
       // eke out more likelihood after first convergence by re-running without
       // being restricted by its gradient history.
-      opt = new LimitedMemoryBFGS(ge);
+      ((LimitedMemoryBFGS)opt).reset();
       try {
-        opt.optimize ();
+        opt.optimize(maxIterations);
+        numIterations += maxIterations;
       } catch (Exception e) {
         e.printStackTrace();
         logger.info ("Catching exception; saying converged.");
@@ -172,4 +200,3 @@ public class MaxEntGETrainer extends ClassifierTrainer<MaxEnt> implements Classi
     return classifier;
   }
 }
-
