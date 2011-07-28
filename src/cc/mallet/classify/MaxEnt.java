@@ -5,10 +5,6 @@ This software is provided under the terms of the Common Public License,
 version 1.0, as published by http://www.opensource.org.  For further
 information, see the file `LICENSE' included with this distribution. */
 
-
-
-
-
 package cc.mallet.classify;
 
 import java.io.IOException;
@@ -36,7 +32,6 @@ import cc.mallet.types.RankedFeatureVector;
 
 public class MaxEnt extends Classifier implements Serializable
 {
-	static final double DEFAULT_TEMPERATURE = 1.0;
 	protected double [] parameters;										// indexed by <labelIndex,featureIndex>
 	protected int defaultFeatureIndex;
 	protected FeatureSelection featureSelection;
@@ -197,7 +192,7 @@ public class MaxEnt extends Classifier implements Serializable
 		int numClasses = getLabelAlphabet().size();
 		double[] scores = new double[numClasses];
 		//getClassificationScores (instance, scores);
-		getClassificationScoresWithTemperature (instance, DEFAULT_TEMPERATURE, scores);
+		getClassificationScores(instance, scores);
 		// Create and return a Classification object
 		return new Classification (instance, this,
 				new LabelVector (getLabelAlphabet(),

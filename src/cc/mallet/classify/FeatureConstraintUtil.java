@@ -20,6 +20,7 @@ import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.topics.LDAHyper;
 import cc.mallet.topics.ParallelTopicModel;
 import cc.mallet.types.Alphabet;
+import cc.mallet.types.Dirichlet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.IDSorter;
 import cc.mallet.types.InfoGain;
@@ -27,8 +28,10 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.MatrixOps;
+import cc.mallet.types.Multinomial;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
+import cc.mallet.util.Randoms;
 
 /**
  * Utility functions for creating feature constraints that can be used with GE training.
@@ -80,11 +83,12 @@ public class FeatureConstraintUtil {
         String featureName = split[0];
         int featureIndex = data.getDataAlphabet().lookupIndex(featureName,false);
         
-        assert(split.length - 1 == data.getTargetAlphabet().size());
+        assert(split.length - 1 == data.getTargetAlphabet().size()) : split.length + " " + data.getTargetAlphabet().size();
         double[] probs = new double[split.length - 1];
         for (int index = 1; index < split.length; index++) {
           String[] labelSplit = split[index].split(":");   
           int li = data.getTargetAlphabet().lookupIndex(labelSplit[0],false);
+          assert(li != -1) : "Label " + labelSplit[0] + " not found";
           double prob = Double.parseDouble(labelSplit[1]);
           probs[li] = prob;
         }
@@ -239,6 +243,43 @@ public class FeatureConstraintUtil {
           MatrixOps.timesEquals(prob, 1./MatrixOps.sum(prob));
         }
         constraints.put(fi, prob);
+      }
+    }
+    return constraints;
+  }
+  
+  public static HashMap<Integer,double[]> setTargetsUsingDataWithNoise(InstanceList list, ArrayList<Integer> features, boolean useValues, 
+      boolean normalize, double noise, int seed) {
+    HashMap<Integer,double[]> constraints = new HashMap<Integer,double[]>();
+    
+    double[][] featureLabelCounts = getFeatureLabelCounts(list,useValues);
+
+    Randoms random = new Randoms(seed);
+    
+    for (int i = 0; i < features.size(); i++) {
+      int fi = features.get(i);
+      if (fi != list.getDataAlphabet().size()) {
+        double[] dataEst = featureLabelCounts[fi];
+        double sum = MatrixOps.sum(dataEst);
+        
+        Dirichlet dirichlet = new Dirichlet(dataEst.length,1.0);
+        Multinomial multinomial = dirichlet.randomMultinomial(random);
+        double[] noiseEst =  new double[dataEst.length];
+        multinomial.addProbabilitiesTo(noiseEst);
+        
+        double[] est = new double[dataEst.length];
+        for (int j = 0; j < dataEst.length; j++) {
+          est[j] = (1-noise) * dataEst[j] + noise * sum * noiseEst[j];
+          System.err.println(dataEst[j] + " + " + noiseEst[j] + " --> " + est[j]);
+        }
+
+        if (normalize) {
+          // Smooth probability distributions by adding a (very)
+          // small count.  We just need to make sure they aren't
+          // zero in which case the KL-divergence is infinite.
+          MatrixOps.normalize(est);
+        }
+        constraints.put(fi, est);
       }
     }
     return constraints;
@@ -399,7 +440,7 @@ public class FeatureConstraintUtil {
   	return labelFeatures(list,features,true);
   }
   
-  private static double[][] getFeatureLabelCounts(InstanceList list, boolean useValues) {
+  public static double[][] getFeatureLabelCounts(InstanceList list, boolean useValues) {
     int numFeatures = list.getDataAlphabet().size();
     int numLabels = list.getTargetAlphabet().size();
     

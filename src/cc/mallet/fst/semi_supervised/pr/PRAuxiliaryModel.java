@@ -60,7 +60,7 @@ public class PRAuxiliaryModel extends Transducer {
     double value = 0;
     int index = 0;
     for (PRConstraint constraint : constraints) {
-      value += constraint.getProjectionValue(parameters[index]);
+      value += constraint.getAuxiliaryValueContribution(parameters[index]);
       index++;
     }
     return value;
@@ -70,7 +70,7 @@ public class PRAuxiliaryModel extends Transducer {
     double value = 0;
     int index = 0;
     for (PRConstraint constraint : constraints) {
-      value += constraint.getCompleteValue(parameters[index]);
+      value += constraint.getCompleteValueContribution(parameters[index]);
       index++;
     }
     return value;
@@ -105,7 +105,7 @@ public class PRAuxiliaryModel extends Transducer {
     int si1 = iter.getSourceState().getIndex(); 
     int si2 = iter.getDestinationState().getIndex();
     for (PRConstraint constraint : constraints) {
-      constraint.incrementExpectation((FeatureVector)input.get(position), position, si1, si2, prob);
+      constraint.incrementExpectations((FeatureVector)input.get(position), position, si1, si2, prob);
     }
   }
   

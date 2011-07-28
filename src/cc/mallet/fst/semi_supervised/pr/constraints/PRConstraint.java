@@ -25,11 +25,11 @@ public interface PRConstraint {
   
   double getScore(FeatureVector input, int inputPosition, int srcIndex, int destIndex, double[] parameters);
   
-  void incrementExpectation(FeatureVector input, int inputPosition, int srcIndex, int destIndex, double prob);
+  void incrementExpectations(FeatureVector input, int inputPosition, int srcIndex, int destIndex, double prob);
 
-  double getProjectionValue(double[] parameters);
+  double getAuxiliaryValueContribution(double[] parameters);
   
-  double getCompleteValue(double[] parameters);
+  double getCompleteValueContribution(double[] parameters);
   
   void getGradient(double[] parameters, double[] gradient);
   

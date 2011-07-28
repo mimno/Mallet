@@ -133,7 +133,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     return dot;
   }
 
-  public void incrementExpectation(FeatureVector input, int inputPosition,
+  public void incrementExpectations(FeatureVector input, int inputPosition,
       int srcIndex, int destIndex, double prob) {
     int li2 = map.getLabelIndex(destIndex);
     for (int i = 0; i < cache.size(); i++) {
@@ -161,7 +161,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     }
   }
 
-  public double getProjectionValue(double[] parameters) {
+  public double getAuxiliaryValueContribution(double[] parameters) {
     double value = 0;
     for (int fi : constraints.keys()) {
       OneLabelL2IndPRConstraint constraint = constraints.get(fi);
@@ -171,7 +171,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   }
 
   // TODO
-  public double getCompleteValue(double[] parameters) {
+  public double getCompleteValueContribution(double[] parameters) {
     double value = 0;
     for (int fi : constraints.keys()) {
       OneLabelL2IndPRConstraint constraint = constraints.get(fi);

@@ -57,9 +57,9 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
 
 	int numIterations = Integer.MAX_VALUE;
 
-	public static final String EXP_GAIN = "exp";
-	public static final String GRADIENT_GAIN = "grad";
-	public static final String INFORMATION_GAIN = "info";
+	//public static final String EXP_GAIN = "exp";
+	//public static final String GRADIENT_GAIN = "grad";
+	//public static final String INFORMATION_GAIN = "info";
 
 	// xxx Why does TestMaximizable fail when this variance is very small?
 	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
@@ -178,11 +178,10 @@ public class MaxEntTrainer extends ClassifierTrainer<MaxEnt>
 	public Optimizer getOptimizer (InstanceList trainingSet) {
 
 		// If the data is not set, or has changed, 
-		//  initialize the optimizable object and 
-		//  replace the optimizer.
+		// initialize the optimizable object and 
+		// replace the optimizer.
 		if (trainingSet != this.trainingSet ||
 			optimizable == null) {
-
 			getOptimizable(trainingSet);
 			optimizer = null;
 		}
