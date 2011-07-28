@@ -24,7 +24,7 @@ import java.util.BitSet;
 public interface GEConstraint {
   
   /**
-   * Computes the constraint feature value
+   * Computes the composite constraint feature value
    * (over all constraint features) for FeatureVector fv
    * and a transition from state li1 to li2.
    * 
