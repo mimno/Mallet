@@ -25,8 +25,10 @@ public class FSTConstraintUtil {
         // assume the feature name has no spaces
         String featureName = split[0];
         int featureIndex = data.getDataAlphabet().lookupIndex(featureName,false);
+        if (featureIndex == -1) { 
+          throw new RuntimeException("Feature " + featureName + " not found in the alphabet!");
+        }
         
-        assert(split.length - 1 == data.getTargetAlphabet().size()) : split.length + " " + data.getTargetAlphabet().size();
         double[][] probs = new double[data.getTargetAlphabet().size()][2];
         for (int i = 0; i < probs.length; i++) Arrays.fill(probs[i ],Double.NEGATIVE_INFINITY);
         for (int index = 1; index < split.length; index++) {
