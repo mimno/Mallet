@@ -248,43 +248,6 @@ public class FeatureConstraintUtil {
     return constraints;
   }
   
-  public static HashMap<Integer,double[]> setTargetsUsingDataWithNoise(InstanceList list, ArrayList<Integer> features, boolean useValues, 
-      boolean normalize, double noise, int seed) {
-    HashMap<Integer,double[]> constraints = new HashMap<Integer,double[]>();
-    
-    double[][] featureLabelCounts = getFeatureLabelCounts(list,useValues);
-
-    Randoms random = new Randoms(seed);
-    
-    for (int i = 0; i < features.size(); i++) {
-      int fi = features.get(i);
-      if (fi != list.getDataAlphabet().size()) {
-        double[] dataEst = featureLabelCounts[fi];
-        double sum = MatrixOps.sum(dataEst);
-        
-        Dirichlet dirichlet = new Dirichlet(dataEst.length,1.0);
-        Multinomial multinomial = dirichlet.randomMultinomial(random);
-        double[] noiseEst =  new double[dataEst.length];
-        multinomial.addProbabilitiesTo(noiseEst);
-        
-        double[] est = new double[dataEst.length];
-        for (int j = 0; j < dataEst.length; j++) {
-          est[j] = (1-noise) * dataEst[j] + noise * sum * noiseEst[j];
-          System.err.println(dataEst[j] + " + " + noiseEst[j] + " --> " + est[j]);
-        }
-
-        if (normalize) {
-          // Smooth probability distributions by adding a (very)
-          // small count.  We just need to make sure they aren't
-          // zero in which case the KL-divergence is infinite.
-          MatrixOps.normalize(est);
-        }
-        constraints.put(fi, est);
-      }
-    }
-    return constraints;
-  }
-  
   /**
    * Set target distributions using "Schapire" heuristic described in 
    * "Learning from Labeled Features using Generalized Expectation Criteria"
