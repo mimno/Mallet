@@ -171,6 +171,22 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
       this.count = 0;
     }
     
+    public double getCount() {
+      return count;
+    }
+    
+    public double[] getTarget() {
+      return target;
+    }
+    
+    public double[] getExpectation() {
+      return expectation;
+    }
+    
+    public double getWeight() { 
+      return weight;
+    }
+    
     public abstract double getValue(int li);
   }
 }
