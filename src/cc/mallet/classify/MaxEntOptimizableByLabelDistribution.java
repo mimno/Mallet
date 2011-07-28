@@ -108,6 +108,7 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 			//  version: rather than only picking out the "best" index, 
 			//  loop over all label indices.
 			
+      assert(labeling.numLocations() == trainingSet.getTargetAlphabet().size());
 			for (int pos = 0; pos < labeling.numLocations(); pos++){
 				MatrixOps.rowPlusEquals (constraints, numFeatures,
 										 labeling.indexAtLocation(pos),
@@ -196,10 +197,18 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 				this.theClassifier.getClassificationScores (instance, scores);
 				FeatureVector fv = (FeatureVector) instance.getData ();
 
-		        value = 0.0;
+				value = 0.0;
 				for(int pos = 0; pos < labeling.numLocations(); pos++) { //loop, added by Limin Yao
-					int ll = labeling.indexAtLocation(pos);
-					value -= (instanceWeight * labeling.valueAtLocation(pos) * Math.log (scores[ll]));					
+				  int ll = labeling.indexAtLocation(pos);
+				  if (scores[ll] == 0  && labeling.valueAtLocation(pos) > 0) {
+				    logger.warning ("Instance "+instance.getSource() + " has infinite value; skipping value and gradient");
+				    cachedValue = Double.NEGATIVE_INFINITY;
+				    cachedValueStale = false;
+				    return cachedValue;
+				  }
+				  else if (labeling.valueAtLocation(pos) != 0) {
+				    value -= (instanceWeight * labeling.valueAtLocation(pos) * Math.log (scores[ll]));
+				  }
 				}			
 
 				if (Double.isNaN(value)) {
@@ -239,7 +248,7 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 			cachedValue += prior;
 			cachedValue *= -1.0; // MAXIMIZE, NOT MINIMIZE
 			cachedValueStale = false;
-			progressLogger.info ("Value (labelProb="+oValue+" prior="+prior+") loglikelihood = "+cachedValue);
+			progressLogger.info ("Value (labelProb="+(-oValue)+" prior="+(-prior)+") loglikelihood = "+cachedValue);
 		}
 		return cachedValue;
 	}
