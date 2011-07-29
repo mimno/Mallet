@@ -116,7 +116,7 @@ public abstract class MaxEntFLGEConstraints implements MaxEntGEConstraint {
     // default feature, for label regularization
     if (constraints.containsKey(numFeatures)) {
       indexCache.add(numFeatures);
-      valueCache.add(1);
+      if (useValues) valueCache.add(1);
     }
   }
 

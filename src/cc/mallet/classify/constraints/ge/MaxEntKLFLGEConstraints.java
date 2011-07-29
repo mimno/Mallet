@@ -11,13 +11,8 @@ public class MaxEntKLFLGEConstraints extends MaxEntFLGEConstraints {
     for (int fi : constraints.keys()) {
       MaxEntFLGEConstraint constraint = constraints.get(fi);
       if (constraint.count > 0.0) {
-
-        //if (fi < 100) System.err.println(fi);
         double constraintValue = 0.0;
         for (int labelIndex = 0; labelIndex < numLabels; ++labelIndex) {
-          
-          //if (fi < 100) System.err.println(constraint.expectation[labelIndex] / constraint.count + " " + constraint.target[labelIndex]);
-          
           if (constraint.target[labelIndex] > 0.0) {
             // if target is non-zero and expectation is 0, infinite penalty
             if (constraint.expectation[labelIndex] == 0.0) {
@@ -46,7 +41,6 @@ public class MaxEntKLFLGEConstraints extends MaxEntFLGEConstraints {
     constraints.put(fi,new MaxEntKLFLGEConstraint(ex,weight));
   }
   
-
   protected class MaxEntKLFLGEConstraint extends MaxEntFLGEConstraint {
     public MaxEntKLFLGEConstraint(double[] target, double weight) {
       super(target, weight);
