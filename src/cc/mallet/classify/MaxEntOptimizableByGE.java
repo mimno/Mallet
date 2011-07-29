@@ -98,10 +98,11 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
   
   
   /**
-   * Set the temperature, 1 / the exponent model predicted probabilities 
-   * are raised to when computing model expectations.  As the temperature
-   * increases, model probabilities approach 1 for the maximum probability
-   * class, and 0 for other classes.  DEFAULT: 1  
+   * Model probabilities are raised to the power 1/temperature and 
+   * renormalized. As the temperature decreases, model probabilities 
+   * approach 1 for the maximum probability class, and 0 for other classes. 
+   * 
+   * DEFAULT: 1  
    * 
    * @param temp Temperature.
    */
