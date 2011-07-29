@@ -1,3 +1,10 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.fst.semi_supervised.pr;
 
 import java.io.Serializable;
@@ -18,6 +25,13 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
+
+/**
+ * M-step/M-projection for PR.
+ *
+ * @author Kedar Bellare
+ * @author Gregory Druck
+ */
 
 public class CRFOptimizableByKL implements Serializable, ByGradientValue {
 	private static Logger logger = MalletLogger.getLogger(CRFOptimizableByKL.class.getName());

@@ -1,9 +1,22 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.classify.constraints.pr;
 
 import java.util.BitSet;
 
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.InstanceList;
+
+/**
+ * Interface for expectation constraints for use with Posterior Regularization (PR).
+ * 
+ * @author Gregory Druck
+ */
 
 public interface MaxEntPRConstraint {
 

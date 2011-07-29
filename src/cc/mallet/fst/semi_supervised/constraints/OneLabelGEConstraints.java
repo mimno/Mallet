@@ -24,6 +24,8 @@ import cc.mallet.types.InstanceList;
  * A set of constraints on distributions over single
  * labels conditioned on the presence of input features.  
  * 
+ * Subclasses are to be used with GE.
+ * 
  * Multiple constraints are grouped together here
  * to make things more efficient.
  * 

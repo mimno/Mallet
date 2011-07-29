@@ -1,24 +1,30 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.fst.semi_supervised.pr;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.SumLattice;
-import cc.mallet.fst.SumLatticeFactory;
 import cc.mallet.fst.Transducer;
 import cc.mallet.fst.Transducer.State;
-import cc.mallet.fst.Transducer.TransitionIterator;
-import cc.mallet.types.DenseVector;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
+
+/**
+ * SumLatticeDefault that caches dot products.
+ *
+ * @author Gregory Druck
+ */
 
 /** Default, full dynamic programming implementation of the Forward-Backward "Sum-(Product)-Lattice" algorithm */
 public class SumLatticeDefaultCachedDot implements SumLattice

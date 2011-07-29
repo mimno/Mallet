@@ -13,8 +13,11 @@ import gnu.trove.TIntIntHashMap;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 
 /** 
- * A set of KL divergence constraints on distributions over consecutive
+ * A set of constraints on distributions over consecutive
  * labels conditioned an input features.  
+ * 
+ * This is to be used with GE, and penalizes the
+ * KL divergence between model and target distributions.
  * 
  * Multiple constraints are grouped together here
  * to make things more efficient.

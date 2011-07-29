@@ -12,6 +12,15 @@ import gnu.trove.TIntObjectHashMap;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 
 /** 
+ * A set of constraints on distributions over consecutive
+ * labels conditioned an input features.  
+ * 
+ * This is to be used with GE, and penalizes the
+ * L_2^2 difference between model and target distributions.
+ * 
+ * Multiple constraints are grouped together here
+ * to make things more efficient.
+ * 
  * @author Gregory Druck
  */
 public class OneLabelL2GEConstraints extends OneLabelGEConstraints {

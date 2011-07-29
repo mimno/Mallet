@@ -1,3 +1,10 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.fst.semi_supervised.pr;
 
 import cc.mallet.fst.SumLattice;
@@ -7,6 +14,13 @@ import cc.mallet.fst.Transducer.TransitionIterator;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.Sequence;
 
+/**
+ * Lattice for M-step/M-projection in PR.
+ *
+ * @author Kedar Bellare
+ * @author Gregory Druck
+ */
+
 public class SumLatticeKL implements SumLattice {
 	// "ip" == "input position", "op" == "output position", "i" == "state index"
 	Transducer t;
@@ -15,8 +29,7 @@ public class SumLatticeKL implements SumLattice {
 	double[][][] xis;
 	Sequence input;
 
-	protected SumLatticeKL() {
-	}
+	protected SumLatticeKL() {}
 
 	// If outputAlphabet is non-null, this will create a LabelVector
 	// for each position in the output sequence indicating the

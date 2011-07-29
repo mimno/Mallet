@@ -1,7 +1,21 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.classify.constraints.pr;
 
 import gnu.trove.TIntIntHashMap;
 import cc.mallet.types.FeatureVector;
+
+/**
+ * Expectation constraint for use with Posterior Regularization (PR).
+ * Penalizes L_2^2 difference from target distribution.
+ * 
+ * @author Gregory Druck
+ */
 
 public class MaxEntL2FLPRConstraints extends MaxEntFLPRConstraints {
   

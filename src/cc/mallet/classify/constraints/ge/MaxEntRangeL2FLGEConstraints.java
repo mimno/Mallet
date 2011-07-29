@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Univ. of Massachusetts Amherst, Computer Science Dept.
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
    http://www.cs.umass.edu/~mccallum/mallet
    This software is provided under the terms of the Common Public License,
@@ -20,8 +20,8 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
 /**
- * A set of constraints on distributions over single
- * labels conditioned on the presence of input features.  
+ * Expectation constraint for use with GE.
+ * Penalizes L_2^2 difference from zero-penalty region [lower,upper]. 
  * 
  * Multiple constraints are grouped together here
  * to make things more efficient.

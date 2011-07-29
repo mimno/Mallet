@@ -22,8 +22,10 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
 /**
- * A set of constraints on distributions over single
- * labels conditioned on the presence of input features.  
+ * A set of constraints on individual input feature label pairs.   
+ * 
+ * This is to be used with GE, and penalizes the
+ * L_2^2 difference between model and target distributions.
  * 
  * Multiple constraints are grouped together here
  * to make things more efficient.

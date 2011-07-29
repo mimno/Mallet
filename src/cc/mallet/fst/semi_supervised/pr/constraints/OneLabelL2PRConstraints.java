@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Univ. of Massachusetts Amherst, Computer Science Dept.
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
    http://www.cs.umass.edu/~mccallum/mallet
    This software is provided under the terms of the Common Public License,
@@ -20,7 +20,10 @@ import cc.mallet.types.InstanceList;
 
 /**
  * A set of constraints on distributions over single
- * labels conditioned on the presence of input features.  
+ * labels conditioned on the presence of input features. 
+ * 
+ * This is to be used with PR, and penalizes
+ * L_2^2 difference from target expectations.
  * 
  * Multiple constraints are grouped together here
  * to make things more efficient.

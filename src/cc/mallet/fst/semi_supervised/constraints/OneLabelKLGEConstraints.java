@@ -14,6 +14,15 @@ import cc.mallet.types.MatrixOps;
 import cc.mallet.util.Maths;
 
 /** 
+ * A set of constraints on distributions over consecutive
+ * labels conditioned an input features.  
+ * 
+ * This is to be used with GE, and penalizes the
+ * KL divergence between model and target distributions.
+ * 
+ * Multiple constraints are grouped together here
+ * to make things more efficient.
+ * 
  * @author Gregory Druck
  */
 public class OneLabelKLGEConstraints extends OneLabelGEConstraints {

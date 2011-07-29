@@ -1,4 +1,21 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.classify.constraints.ge;
+
+/**
+ * Expectation constraint for use with GE.
+ * Penalizes KL divergence from target distribution. 
+ * 
+ * Multiple constraints are grouped together here
+ * to make things more efficient.
+ * 
+ * @author Gregory Druck
+ */
 
 public class MaxEntKLFLGEConstraints extends MaxEntFLGEConstraints {
   

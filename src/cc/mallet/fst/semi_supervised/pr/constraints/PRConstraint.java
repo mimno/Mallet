@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Univ. of Massachusetts Amherst, Computer Science Dept.
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
    http://www.cs.umass.edu/~mccallum/mallet
    This software is provided under the terms of the Common Public License,
@@ -14,7 +14,7 @@ import cc.mallet.types.InstanceList;
 import java.util.BitSet;
 
 /**
- * Interface for GE constraint that considers
+ * Interface for PR constraint that considers
  * either one or two states.
  * 
  * @author Gregory Druck

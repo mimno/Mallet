@@ -18,7 +18,7 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
 /** 
- * Constraint on the probability of self-transitions in the FST.
+ * GE Constraint on the probability of self-transitions in the FST.
  * 
  * @author Gregory Druck
  */

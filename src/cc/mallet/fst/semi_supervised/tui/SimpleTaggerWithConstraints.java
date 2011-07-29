@@ -1,9 +1,9 @@
-/* Copyright (C) 2003 University of Pennsylvania.
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
-http://www.cs.umass.edu/~mccallum/mallet
-This software is provided under the terms of the Common Public License,
-version 1.0, as published by http://www.opensource.org.  For further
-information, see the file `LICENSE' included with this distribution. */
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
 
 package cc.mallet.fst.semi_supervised.tui;
 
@@ -48,6 +48,9 @@ import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
 
 /**
+ * Version of SimpleTagger that trains CRFs with expectation constraints
+ * rather than labeled data.
+ * 
  * This class's main method trains, tests, or runs a generic CRF-based
  * sequence tagger.
  * <p>

@@ -1,3 +1,10 @@
+/* Copyright (C) 2011 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
 package cc.mallet.fst.semi_supervised.pr;
 
 import java.util.ArrayList;
@@ -8,6 +15,12 @@ import cc.mallet.fst.Transducer;
 import cc.mallet.fst.semi_supervised.pr.constraints.PRConstraint;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Sequence;
+
+/**
+ * Auxiliar model (q) for E-step/I-projection in Posterior Regularization (PR).
+ *
+ * @author Gregory Druck
+ */
 
 public class PRAuxiliaryModel extends Transducer {
 
