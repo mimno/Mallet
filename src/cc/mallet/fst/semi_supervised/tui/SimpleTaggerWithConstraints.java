@@ -259,7 +259,7 @@ public class SimpleTaggerWithConstraints
     
     CRFTrainerByPR trainer = new CRFTrainerByPR(crf,constraints,numThreads.value);
     trainer.addEvaluator(eval);
-    trainer.setPGpv(var);
+    trainer.setPGaussianPriorVariance(var);
     trainer.train(training,iterations,iterations);
 
     return crf;

@@ -37,6 +37,7 @@ public class CRFTrainerByPR extends TransducerTrainer implements TransducerTrain
   private ArrayList<PRConstraint> constraints;
   private LimitedMemoryBFGS bfgs;
   private CRF crf;
+  private StateLabelMap stateLabelMap;
   
   public CRFTrainerByPR(CRF crf, ArrayList<PRConstraint> constraints) {
   	this(crf,constraints,1);
@@ -50,6 +51,7 @@ public class CRFTrainerByPR extends TransducerTrainer implements TransducerTrain
     this.pGpv = 10;
     this.tolerance = 0.001;
     this.numThreads = numThreads;
+    this.stateLabelMap = new StateLabelMap(crf.getOutputAlphabet(),true);
   }
   
   @Override
@@ -67,7 +69,12 @@ public class CRFTrainerByPR extends TransducerTrainer implements TransducerTrain
     return converged;
   }
   
-  public void setPGpv(double pGpv) {
+  // map between states in CRF FST and labels
+  public void setStateLabelMap(StateLabelMap map) {
+    this.stateLabelMap = map;
+  }
+  
+  public void setPGaussianPriorVariance(double pGpv) {
     this.pGpv = pGpv;
   }
   
@@ -88,11 +95,10 @@ public class CRFTrainerByPR extends TransducerTrainer implements TransducerTrain
     double oldValue = 0;
     int max = iter + maxIter;
     
-    StateLabelMap map = new StateLabelMap(crf.getOutputAlphabet(),true);
     BitSet constrainedInstances = new BitSet();
     for (PRConstraint constraint : constraints) {
       constrainedInstances.or(constraint.preProcess(train));
-      constraint.setStateLabelMap(map);
+      constraint.setStateLabelMap(stateLabelMap);
     }
     
     int removed = 0;
