@@ -575,7 +575,6 @@ public class SimpleTaggerWithConstraints
             crf, eval, iterationsOption.value, gaussianVarianceOption.value, numResets.value);
       }
       else if (learningOption.value.equalsIgnoreCase("pr")) {
-        //throw new RuntimeException("In development");
         ArrayList<PRConstraint> constraintsList = new  ArrayList<PRConstraint>();
         if (penaltyOption.value.equalsIgnoreCase("l2")) {
           OneLabelL2IndPRConstraints prConstraints = new OneLabelL2IndPRConstraints(true);

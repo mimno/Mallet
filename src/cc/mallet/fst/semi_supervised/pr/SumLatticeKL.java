@@ -76,6 +76,8 @@ public class SumLatticeKL implements SumLattice {
 					  cachedDots[ip][i][destination.getIndex()] = weight; 
 					}
 					if (incrementor != null) {
+					  // this is used to gather "constraints",
+					  // so only probabilities under q are used
 						incrementor.incrementTransition(iter, p);
 					}
 				}

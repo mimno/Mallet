@@ -172,7 +172,6 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     return value;
   }
 
-  // TODO
   public double getCompleteValueContribution(double[] parameters) {
     double value = 0;
     for (int fi : constraints.keys()) {
@@ -238,7 +237,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     
     public void getExpectations(double[] expectations) {
       for (int i = 0; i < paramIndices.size(); i++) {
-        expectations[paramIndices.get(i)] += expectation[i];
+        expectations[paramIndices.get(i)] = expectation[i];
       }
     }
     
