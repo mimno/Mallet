@@ -14,6 +14,7 @@ import java.io.*;
 import java.text.NumberFormat;
 
 import cc.mallet.types.*;
+import cc.mallet.util.CommandOption;
 import cc.mallet.util.Randoms;
 
 /**
@@ -23,8 +24,106 @@ import cc.mallet.util.Randoms;
  */
 
 public class PolylingualTopicModel implements Serializable {
+
+	static CommandOption.SpacedStrings languageInputFiles = new CommandOption.SpacedStrings
+		(PolylingualTopicModel.class, "language-inputs", "FILENAME [FILENAME ...]", true, null,
+		  "Filenames for polylingual topic model. Each language should have its own file, " +
+		  "with the same number of instances in each file. If a document is missing in " + 
+		 "one language, there should be an empty instance.", null);
+
+	static CommandOption.String outputModelFilename = new CommandOption.String
+		(PolylingualTopicModel.class, "output-model", "FILENAME", true, null,
+		  "The filename in which to write the binary topic model at the end of the iterations.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.String inputModelFilename = new CommandOption.String
+		(PolylingualTopicModel.class, "input-model", "FILENAME", true, null,
+		  "The filename from which to read the binary topic model to which the --input will be appended, " +
+		  "allowing incremental training.  " +
+		 "By default this is null, indicating that no file will be read.", null);
+
+	static CommandOption.String inferencerFilename = new CommandOption.String
+		(PolylingualTopicModel.class, "inferencer-filename", "FILENAME", true, null,
+		  "A topic inferencer applies a previously trained topic model to new documents.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.String evaluatorFilename = new CommandOption.String
+		(PolylingualTopicModel.class, "evaluator-filename", "FILENAME", true, null,
+		  "A held-out likelihood evaluator for new documents.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.String stateFile = new CommandOption.String
+		(PolylingualTopicModel.class, "output-state", "FILENAME", true, null,
+		  "The filename in which to write the Gibbs sampling state after at the end of the iterations.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.String topicKeysFile = new CommandOption.String
+		(PolylingualTopicModel.class, "output-topic-keys", "FILENAME", true, null,
+		  "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.String docTopicsFile = new CommandOption.String
+		(PolylingualTopicModel.class, "output-doc-topics", "FILENAME", true, null,
+		  "The filename in which to write the topic proportions per document, at the end of the iterations.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.Double docTopicsThreshold = new CommandOption.Double
+		(PolylingualTopicModel.class, "doc-topics-threshold", "DECIMAL", true, 0.0,
+		  "When writing topic proportions per document with --output-doc-topics, " +
+		 "do not print topics with proportions less than this threshold value.", null);
+
+	static CommandOption.Integer docTopicsMax = new CommandOption.Integer
+		(PolylingualTopicModel.class, "doc-topics-max", "INTEGER", true, -1,
+		  "When writing topic proportions per document with --output-doc-topics, " +
+		  "do not print more than INTEGER number of topics.  "+
+		 "A negative value indicates that all topics should be printed.", null);
+
+	static CommandOption.Integer outputModelIntervalOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "output-model-interval", "INTEGER", true, 0,
+		  "The number of iterations between writing the model (and its Gibbs sampling state) to a binary file.  " +
+		 "You must also set the --output-model to use this option, whose argument will be the prefix of the filenames.", null);
+
+	static CommandOption.Integer outputStateIntervalOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "output-state-interval", "INTEGER", true, 0,
+		  "The number of iterations between writing the sampling state to a text file.  " +
+		 "You must also set the --output-state to use this option, whose argument will be the prefix of the filenames.", null);
+
+	static CommandOption.Integer numTopicsOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "num-topics", "INTEGER", true, 10,
+		 "The number of topics to fit.", null);
+
+	static CommandOption.Integer numIterationsOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "num-iterations", "INTEGER", true, 1000,
+		 "The number of iterations of Gibbs sampling.", null);
+
+	static CommandOption.Integer randomSeedOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "random-seed", "INTEGER", true, 0,
+		 "The random seed for the Gibbs sampler.  Default is 0, which will use the clock.", null);
+
+	static CommandOption.Integer topWordsOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "num-top-words", "INTEGER", true, 20,
+		 "The number of most probable words to print for each topic after model estimation.", null);
+
+	static CommandOption.Integer showTopicsIntervalOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "show-topics-interval", "INTEGER", true, 50,
+		 "The number of iterations between printing a brief summary of the topics so far.", null);
+
+	static CommandOption.Integer optimizeIntervalOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "optimize-interval", "INTEGER", true, 0,
+		 "The number of iterations between reestimating dirichlet hyperparameters.", null);
+
+	static CommandOption.Integer optimizeBurnInOption = new CommandOption.Integer
+		(PolylingualTopicModel.class, "optimize-burn-in", "INTEGER", true, 200,
+		 "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
+
+	static CommandOption.Double alphaOption = new CommandOption.Double
+		(PolylingualTopicModel.class, "alpha", "DECIMAL", true, 50.0,
+		 "Alpha parameter: smoothing over topic distribution.",null);
+
+	static CommandOption.Double betaOption = new CommandOption.Double
+		(PolylingualTopicModel.class, "beta", "DECIMAL", true, 0.01,
+		 "Beta parameter: smoothing over unigram distribution.",null);
 	
-	// Analogous to a cc.mallet.classify.Classification
 	public class TopicAssignment implements Serializable {
 		public Instance[] instances;
 		public LabelSequence[] topicSequences;
@@ -90,8 +189,8 @@ public class PolylingualTopicModel implements Serializable {
 	public int showTopicsInterval = 10; // was 50;
 	public int wordsPerTopic = 7;
 
-	protected int outputModelInterval = 0;
-	protected String outputModelFilename;
+	protected int saveModelInterval = 0;
+	protected String modelFilename;
 
 	protected int saveStateInterval = 0;
 	protected String stateFilename = null;
@@ -186,8 +285,8 @@ public class PolylingualTopicModel implements Serializable {
 	}
 
 	public void setModelOutput(int interval, String filename) {
-		this.outputModelInterval = interval;
-		this.outputModelFilename = filename;
+		this.saveModelInterval = interval;
+		this.modelFilename = filename;
 	}
 	
 	/** Define how often and where to save the state 
@@ -466,8 +565,8 @@ public class PolylingualTopicModel implements Serializable {
 			}
 
 			/*
-			  if (outputModelInterval != 0 && iterations % outputModelInterval == 0) {
-			  this.write (new File(outputModelFilename+'.'+iterations));
+			  if (saveModelInterval != 0 && iterations % saveModelInterval == 0) {
+			  this.write (new File(modelFilename+'.'+iterations));
 			  }
 			*/
 
@@ -1245,32 +1344,253 @@ public class PolylingualTopicModel implements Serializable {
 		return logLikelihood;
 	}
 	
+    /** Return a tool for estimating topic distributions for new documents */
+    public TopicInferencer getInferencer(int language) {
+		return new TopicInferencer(languageTypeTopicCounts[language], languageTokensPerTopic[language],
+                                   alphabets[language],
+								   alpha, betas[language], betaSums[language]);
+    }
+
+	// Serialization
+
+	private static final long serialVersionUID = 1;
+	private static final int CURRENT_SERIAL_VERSION = 0;
+	private static final int NULL_INTEGER = -1;
+
+	private void writeObject (ObjectOutputStream out) throws IOException {
+		out.writeInt (CURRENT_SERIAL_VERSION);
+		
+		out.writeInt(numLanguages);
+		out.writeObject(data);
+		out.writeObject(topicAlphabet);
+
+		out.writeInt(numTopics);
+
+		out.writeObject(testingIDs);
+
+		out.writeInt(topicMask);
+		out.writeInt(topicBits);
+
+		out.writeObject(alphabets);
+		out.writeObject(vocabularySizes);
+
+		out.writeObject(alpha);
+		out.writeDouble(alphaSum);
+		out.writeObject(betas);
+		out.writeObject(betaSums);
+
+		out.writeObject(languageMaxTypeCounts);
+
+		out.writeObject(languageTypeTopicCounts);
+		out.writeObject(languageTokensPerTopic);
+
+		out.writeObject(languageSmoothingOnlyMasses);
+		out.writeObject(languageCachedCoefficients);
+
+		out.writeObject(docLengthCounts);
+		out.writeObject(topicDocCounts);
+
+		out.writeInt(numIterations);
+		out.writeInt(burninPeriod);
+		out.writeInt(saveSampleInterval);
+		out.writeInt(optimizeInterval);
+		out.writeInt(showTopicsInterval);
+		out.writeInt(wordsPerTopic);
+
+		out.writeInt(saveStateInterval);
+		out.writeObject(stateFilename);
+
+		out.writeInt(saveModelInterval);
+		out.writeObject(modelFilename);
+
+		out.writeObject(random);
+		out.writeObject(formatter);
+		out.writeBoolean(printLogLikelihood);
+
+	}
+
+	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+		
+		int version = in.readInt();
+
+		numLanguages = in.readInt();
+		data = (ArrayList<TopicAssignment>) in.readObject ();
+		topicAlphabet = (LabelAlphabet) in.readObject();
+		
+		numTopics = in.readInt();
+		
+		testingIDs = (HashSet<String>) in.readObject();
+
+		topicMask = in.readInt();
+		topicBits = in.readInt();
+		
+		alphabets = (Alphabet[]) in.readObject();
+		vocabularySizes = (int[]) in.readObject();
+		
+		alpha = (double[]) in.readObject();
+		alphaSum = in.readDouble();
+		betas = (double[]) in.readObject();
+		betaSums = (double[]) in.readObject();
+
+		languageMaxTypeCounts = (int[]) in.readObject();
+		
+		languageTypeTopicCounts = (int[][][]) in.readObject();
+		languageTokensPerTopic = (int[][]) in.readObject();
+		
+		languageSmoothingOnlyMasses = (double[]) in.readObject();
+		languageCachedCoefficients = (double[][]) in.readObject();
+
+		docLengthCounts = (int[]) in.readObject();
+		topicDocCounts = (int[][]) in.readObject();
+		
+		numIterations = in.readInt();
+		burninPeriod = in.readInt();
+		saveSampleInterval = in.readInt();
+		optimizeInterval = in.readInt();
+		showTopicsInterval = in.readInt();
+		wordsPerTopic = in.readInt();
+
+		saveStateInterval = in.readInt();
+		stateFilename = (String) in.readObject();
+		
+		saveModelInterval = in.readInt();
+		modelFilename = (String) in.readObject();
+		
+		random = (Randoms) in.readObject();
+		formatter = (NumberFormat) in.readObject();
+		printLogLikelihood = in.readBoolean();
+
+	}
+
+	public void write (File serializedModelFile) {
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream(serializedModelFile));
+			oos.writeObject(this);
+			oos.close();
+		} catch (IOException e) {
+			System.err.println("Problem serializing PolylingualTopicModel to file " +
+							   serializedModelFile + ": " + e);
+		}
+	}
+
+	public static PolylingualTopicModel read (File f) throws Exception {
+
+		PolylingualTopicModel topicModel = null;
+
+		ObjectInputStream ois = new ObjectInputStream (new FileInputStream(f));
+		topicModel = (PolylingualTopicModel) ois.readObject();
+		ois.close();
+
+		topicModel.initializeHistograms();
+
+		return topicModel;
+	}
+
+
 	public static void main (String[] args) throws IOException {
 
-		if (args.length < 4) {
-			System.err.println("Usage: PolylingualTopicModel [num topics] [file to save state] [testing IDs file] [language 0 instances] ...");
-			System.exit(1);
+		CommandOption.setSummary (PolylingualTopicModel.class,
+								  "A tool for estimating, saving and printing diagnostics for topic models over comparable corpora.");
+		CommandOption.process (PolylingualTopicModel.class, args);
+
+		PolylingualTopicModel topicModel = null;
+
+		if (inputModelFilename.value != null) {
+
+			try {
+				topicModel = PolylingualTopicModel.read(new File(inputModelFilename.value));
+			} catch (Exception e) {
+				System.err.println("Unable to restore saved topic model " + 
+								   inputModelFilename.value + ": " + e);
+				System.exit(1);
+			}
 		}
+		else {
 
-		int numTopics = Integer.parseInt(args[0]);
-		String stateFileName = args[1];
-		File testingIDsFile = new File(args[2]);
+			int numLanguages = languageInputFiles.value.length;
+			
+			InstanceList[] training = new InstanceList[ numLanguages ];
+			for (int i=0; i < training.length; i++) {
+				training[i] = InstanceList.load(new File(languageInputFiles.value[i]));
+				if (training[i] != null) { System.out.println(i + " is not null"); }
+				else { System.out.println(i + " is null"); }
+			}
 
-		InstanceList[] training = new InstanceList[ args.length - 3 ];
-		for (int language=0; language < training.length; language++) {
-			training[language] = InstanceList.load(new File(args[language + 3]));
-			System.err.println("loaded " + args[language + 3]);
-		}
-
-		PolylingualTopicModel lda = new PolylingualTopicModel (numTopics, 2.0);
-		lda.printLogLikelihood = true;
-		lda.setTopicDisplay(50, 7);
-		lda.loadTestingIDs(testingIDsFile);
-		lda.addInstances(training);
-		lda.setSaveState(200, stateFileName);
+			System.out.println ("Data loaded.");
 		
-		lda.estimate();
-		lda.printState(new File(stateFileName));
+			// For historical reasons we currently only support FeatureSequence data,
+			//  not the FeatureVector, which is the default for the input functions.
+			//  Provide a warning to avoid ClassCastExceptions.
+			if (training[0].size() > 0 &&
+				training[0].get(0) != null) {
+				Object data = training[0].get(0).getData();
+				if (! (data instanceof FeatureSequence)) {
+					System.err.println("Topic modeling currently only supports feature sequences: use --keep-sequence option when importing data.");
+					System.exit(1);
+				}
+			}
+			
+			topicModel = new PolylingualTopicModel (numTopicsOption.value, alphaOption.value);
+			if (randomSeedOption.value != 0) {
+				topicModel.setRandomSeed(randomSeedOption.value);
+			}
+			
+			topicModel.addInstances(training);
+		}
+
+		topicModel.setTopicDisplay(showTopicsIntervalOption.value, topWordsOption.value);
+
+		topicModel.setNumIterations(numIterationsOption.value);
+		topicModel.setOptimizeInterval(optimizeIntervalOption.value);
+		topicModel.setBurninPeriod(optimizeBurnInOption.value);
+
+		if (outputStateIntervalOption.value != 0) {
+			topicModel.setSaveState(outputStateIntervalOption.value, stateFile.value);
+		}
+
+		if (outputModelIntervalOption.value != 0) {
+			topicModel.setModelOutput(outputModelIntervalOption.value, outputModelFilename.value);
+		}
+
+		topicModel.estimate();
+
+		if (topicKeysFile.value != null) {
+			topicModel.printTopWords(new File(topicKeysFile.value), topWordsOption.value, false);
+		}
+
+		if (stateFile.value != null) {
+			topicModel.printState (new File(stateFile.value));
+		}
+
+		if (docTopicsFile.value != null) {
+			PrintWriter out = new PrintWriter (new FileWriter ((new File(docTopicsFile.value))));
+			topicModel.printDocumentTopics(out, docTopicsThreshold.value, docTopicsMax.value);
+			out.close();
+		}
+
+		if (inferencerFilename.value != null) {
+			try {
+				for (int language = 0; language < topicModel.numLanguages; language++) {
+
+					ObjectOutputStream oos =
+						new ObjectOutputStream(new FileOutputStream(inferencerFilename.value + "." + language));
+					oos.writeObject(topicModel.getInferencer(language));
+					oos.close();
+				}
+
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+
+			}
+
+		}
+
+		if (outputModelFilename.value != null) {
+			assert (topicModel != null);
+			
+			topicModel.write(new File(outputModelFilename.value));
+		}
+
 	}
 	
 }
