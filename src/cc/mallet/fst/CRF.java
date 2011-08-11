@@ -1353,7 +1353,7 @@ public class CRF extends Transducer implements Serializable
 				while ((thisIdx = fs.nextSelectedIndex (thisIdx + 1)) >= 0) {
 					idxs[j++] = thisIdx;
 				}
-				newWeights[i] = new SparseVector (idxs, new double [nfeatures], nfeatures, nfeatures, false, false, false);
+				newWeights[i] = new IndexedSparseVector (idxs, new double [nfeatures], nfeatures, nfeatures, false, false, false);
 			}
 			newWeights [i].plusEqualsSparse (parameters.weights [i]);
 			numWeights += (nfeatures + 1);
