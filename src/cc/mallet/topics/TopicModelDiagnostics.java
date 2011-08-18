@@ -14,6 +14,10 @@ public class TopicModelDiagnostics {
 	int numTopics;
 	int numTopWords;
 
+	public static final int TWO_PERCENT_INDEX = 1;
+	public static final int FIFTY_PERCENT_INDEX = 6;
+	public static final double[] DEFAULT_DOC_PROPORTIONS = { 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5 };
+
 	/**  All words in sorted order, with counts */
 	ArrayList<TreeSet<IDSorter>> topicSortedWords;
 	
@@ -26,7 +30,14 @@ public class TopicModelDiagnostics {
 	Alphabet alphabet;
 
 	int[][][] topicCodocumentMatrices;
-	double[][] docTopicProportions;
+
+	int[] numRank1Documents;
+	int[] numNonZeroDocuments;
+	int[][] numDocumentsAtProportions;
+
+	// This quantity is used in entropy calculation
+	double[] sumCountTimesLogCount;
+
 	int[] wordTypeCounts;
 	int numTokens = 0;
 
@@ -40,6 +51,11 @@ public class TopicModelDiagnostics {
 		topicSortedWords = model.getSortedWords();
 
 		topicTopWords = new String[numTopics][numTopWords];
+
+		numRank1Documents = new int[numTopics];
+		numNonZeroDocuments = new int[numTopics];
+		numDocumentsAtProportions = new int[numTopics][ DEFAULT_DOC_PROPORTIONS.length ];
+		sumCountTimesLogCount = new double[numTopics];
 
 		diagnostics = new ArrayList<TopicScores>();
 
@@ -64,6 +80,7 @@ public class TopicModelDiagnostics {
 		collectDocumentStatistics();
 		
 		diagnostics.add(getTokensPerTopic(model.tokensPerTopic));
+		diagnostics.add(getDocumentEntropy(model.tokensPerTopic));
 		diagnostics.add(getWordLengthScores());
 		diagnostics.add(getCoherence());
 		diagnostics.add(getDistanceFromUniform());
@@ -71,6 +88,8 @@ public class TopicModelDiagnostics {
 		diagnostics.add(getEffectiveNumberOfWords());
 		diagnostics.add(getTokenDocumentDiscrepancies());
 		diagnostics.add(getRank1Percent());
+		diagnostics.add(getDocumentPercentRatio(FIFTY_PERCENT_INDEX, TWO_PERCENT_INDEX));
+		diagnostics.add(getDocumentPercent(5));
 	}
 
 	public void collectDocumentStatistics () {
@@ -92,7 +111,6 @@ public class TopicModelDiagnostics {
 		TIntHashSet[] docTopicWordIndices = new TIntHashSet[numTopics];
 		
 		int numDocs = model.getData().size();
-		docTopicProportions = new double[numDocs][numTopics];
 
 		// The count of each topic, again cleared after every document.
 		int[] topicCounts = new int[numTopics];
@@ -127,7 +145,6 @@ public class TopicModelDiagnostics {
 				wordTypeCounts[type]++;
 
 				topicCounts[topic]++;
-				docTopicProportions[doc][topic]++;
 				
 				if (topicTopWordIndices[topic].contains(type)) {
 					docTopicWordIndices[topic].add(type);
@@ -137,12 +154,30 @@ public class TopicModelDiagnostics {
 			int docLength = tokens.size();
 
 			if (docLength > 0) {
+				int maxTopic = -1;
+				int maxCount = -1;
+
 				for (int topic = 0; topic < numTopics; topic++) {
-					docTopicProportions[doc][topic] /= docLength;
 					
-					TIntHashSet supportedWords = docTopicWordIndices[topic];
-					int[] indices = topicWordIndicesInOrder[topic];
 					if (topicCounts[topic] > 0) {
+						numNonZeroDocuments[topic]++;
+						
+						if (topicCounts[topic] > maxCount) { 
+							maxTopic = topic;
+							maxCount = topicCounts[topic];
+						}
+
+						sumCountTimesLogCount[topic] += topicCounts[topic] * Math.log(topicCounts[topic]);
+						
+						double proportion = (model.alpha[topic] + topicCounts[topic]) / (model.alphaSum + docLength);
+						for (int i = 0; i < DEFAULT_DOC_PROPORTIONS.length; i++) {
+							if (proportion < DEFAULT_DOC_PROPORTIONS[i]) { break; }
+							numDocumentsAtProportions[topic][i]++;
+						}
+
+						TIntHashSet supportedWords = docTopicWordIndices[topic];
+						int[] indices = topicWordIndicesInOrder[topic];
+
 						for (int i = 0; i < numTopWords; i++) {
 							if (supportedWords.contains(indices[i])) {
 								for (int j = i; j < numTopWords; j++) {
@@ -162,6 +197,10 @@ public class TopicModelDiagnostics {
 						topicCounts[topic] = 0;
 					}
 				}
+
+				if (maxTopic > -1) {
+					numRank1Documents[maxTopic]++;
+				}
 			}
 
 			doc++;
@@ -177,6 +216,16 @@ public class TopicModelDiagnostics {
 
 		for (int topic = 0; topic < numTopics; topic++) {
 			scores.setTopicScore(topic, tokensPerTopic[topic]);
+		}
+
+		return scores;
+	}
+
+	public TopicScores getDocumentEntropy(int[] tokensPerTopic) {
+		TopicScores scores = new TopicScores("document_entropy", numTopics, numTopWords);
+
+		for (int topic = 0; topic < numTopics; topic++) {
+			scores.setTopicScore(topic, -sumCountTimesLogCount[topic] / tokensPerTopic[topic] + Math.log(tokensPerTopic[topic]));
 		}
 
 		return scores;
@@ -340,6 +389,28 @@ public class TopicModelDiagnostics {
 		TopicScores scores = new TopicScores("word-length", numTopics, numTopWords);
 		scores.wordScoresDefined = true;
 
+		for (int topic = 0; topic < numTopics; topic++) {
+			int total = 0;
+            for (int position = 0; position < topicTopWords[topic].length; position++) {
+                if (topicTopWords[topic][position] == null) { break; }
+				
+				int length = topicTopWords[topic][position].length();
+				total += length;
+
+				scores.setTopicWordScore(topic, position, length);
+			}
+			scores.setTopicScore(topic, (double) total / topicTopWords[topic].length);
+		}
+
+		return scores;
+	}
+
+	/** Low-quality topics often have lots of unusually short words. */
+	public TopicScores getWordLengthStandardDeviation() {
+
+		TopicScores scores = new TopicScores("word-length-sd", numTopics, numTopWords);
+		scores.wordScoresDefined = true;
+
 		// Get the mean length
 
 		double meanLength = 0.0;
@@ -401,7 +472,7 @@ public class TopicModelDiagnostics {
 				double rowScore = 0.0;
 				double minScore = 0.0;
 				for (int col = 0; col < row; col++) {
-					double score = Math.log( (matrix[row][col] + 1.0) / (matrix[col][col] + 1.0) );
+					double score = Math.log( (matrix[row][col] + model.beta) / (matrix[col][col] + model.beta) );
 					rowScore += score;
 					if (score < minScore) { minScore = score; }
 				}
@@ -418,41 +489,46 @@ public class TopicModelDiagnostics {
 	public TopicScores getRank1Percent() {
         TopicScores scores = new TopicScores("rank_1_docs", numTopics, numTopWords);
 
-		int[] numRank1Documents = new int[numTopics];
-		int[] numNonZeroDocuments = new int[numTopics];
-
-		for (int doc = 0; doc < docTopicProportions.length; doc++) {
-			//			StringBuilder out = new StringBuilder();
-			//Formatter formatter = new Formatter(out, Locale.US);
-
-			int maxTopic = -1;
-			double maxTopicProb = 0.0;
-			for (int topic = 0; topic < numTopics; topic++) {
-				//formatter.format("%.4f ", docTopicProportions[doc][topic]);
-				if (docTopicProportions[doc][topic] > 0.0) {
-					numNonZeroDocuments[topic]++;
-				}
-				if (docTopicProportions[doc][topic] > maxTopicProb) {
-					maxTopic = topic;
-					maxTopicProb = docTopicProportions[doc][topic];
-				}
-			}
-			//System.out.println(out);
-
-			//assert(maxTopic != -1) : "Did not find a maximum topic";
-
-			// Documents with length 0 can cause all probabilities to be 0.0
-			if (maxTopic != -1) {
-				numRank1Documents[maxTopic]++;
-			}
-		}
-
 		for (int topic = 0; topic < numTopics; topic++) {
 			scores.setTopicScore(topic, (double) numRank1Documents[topic] / numNonZeroDocuments[topic]);
 		}
 
 		return scores;
 	}
+
+	public TopicScores getDocumentPercentRatio(int numeratorIndex, int denominatorIndex) {
+        TopicScores scores = new TopicScores("allocation_ratio", numTopics, numTopWords);
+
+		if (numeratorIndex > numDocumentsAtProportions[0].length || denominatorIndex > numDocumentsAtProportions[0].length) {
+			System.err.println("Invalid proportion indices (max " + (numDocumentsAtProportions[0].length - 1) + ") : " + 
+							   numeratorIndex + ", " + denominatorIndex);
+			return scores;
+		}
+
+		for (int topic = 0; topic < numTopics; topic++) {
+			scores.setTopicScore(topic, (double) numDocumentsAtProportions[topic][numeratorIndex] / 
+								 numDocumentsAtProportions[topic][denominatorIndex]);
+		}
+
+		return scores;
+	}
+
+	public TopicScores getDocumentPercent(int i) {
+        TopicScores scores = new TopicScores("allocation_count", numTopics, numTopWords);
+
+		if (i > numDocumentsAtProportions[0].length) {
+			System.err.println("Invalid proportion indices (max " + (numDocumentsAtProportions[0].length - 1) + ") : " + i);
+			return scores;
+		}
+
+		for (int topic = 0; topic < numTopics; topic++) {
+			scores.setTopicScore(topic, (double) numDocumentsAtProportions[topic][i] / numNonZeroDocuments[topic]);
+		}
+
+		return scores;
+	}
+
+	
 
 	public String toString() {
 
