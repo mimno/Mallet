@@ -207,7 +207,7 @@ public class MaxEntOptimizableByGE implements Optimizable.ByGradientValue {
     double reg = getRegularization();
     progressLogger.info ("Value (GE=" + value + " Gaussian prior= " + reg + ") = " + cachedValue);
     
-    return value;
+    return cachedValue;
   }
 
   protected double getRegularization() {
