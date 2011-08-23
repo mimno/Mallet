@@ -7,6 +7,9 @@
 
 package cc.mallet.classify.constraints.ge;
 
+import cc.mallet.types.MatrixOps;
+import cc.mallet.util.Maths;
+
 /**
  * Expectation constraint for use with GE.
  * Penalizes KL divergence from target distribution. 
@@ -55,6 +58,7 @@ public class MaxEntKLFLGEConstraints extends MaxEntFLGEConstraints {
 
   @Override
   public void addConstraint(int fi, double[] ex, double weight) {
+    assert(Maths.almostEquals(MatrixOps.sum(ex),1));
     constraints.put(fi,new MaxEntKLFLGEConstraint(ex,weight));
   }
   
