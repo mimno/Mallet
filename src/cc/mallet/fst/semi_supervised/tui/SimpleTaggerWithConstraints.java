@@ -226,7 +226,6 @@ public class SimpleTaggerWithConstraints
     
     CRFTrainerByGE trainer = new CRFTrainerByGE(crf,constraints,numThreads.value);
     if (eval != null) trainer.addEvaluator(eval);
-    System.err.println(var);
     trainer.setGaussianPriorVariance(var);
     trainer.setNumResets(resets);
     trainer.train(training,iterations);
@@ -534,15 +533,14 @@ public class SimpleTaggerWithConstraints
             double[] prob = new double[dist.length];
             for (int li = 0; li < dist.length; li++) {
               prob[li] = dist[li][0];
-              if (dist[li][0] != dist[li][1]) {
+              if (!Maths.almostEquals(dist[li][0],dist[li][1])) {
                 allSame = false;
                 break;
               }
-              else {
-                if (!Double.isInfinite(dist[li][0])) {
-                  sum += dist[li][0];
-                }
+              else if (Double.isInfinite(prob[li])) {
+                prob[li] = 0;
               }
+              sum += prob[li];
             }
             
             if (!allSame) {
