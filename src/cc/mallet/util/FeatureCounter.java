@@ -5,12 +5,19 @@ import gnu.trove.*;
 
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.logging.*;
 import java.io.*;
 
 import java.text.NumberFormat;
 
 public class FeatureCounter {
 
+	protected static Logger logger = MalletLogger.getLogger(FeatureCounter.class.getName());
+
+	static cc.mallet.util.CommandOption.String inputFile = new cc.mallet.util.CommandOption.String
+		(FeatureCounter.class, "input", "FILENAME", true, null,
+		 "Filename for the input instance list", null);
+	
 	double[] featureCounts;
 	InstanceList instances;
 	int numFeatures;
@@ -31,7 +38,7 @@ public class FeatureCounter {
 		int index = 0;
 
 		if (instances.size() == 0) { 
-			System.err.println("Instance list is empty");
+			logger.info("Instance list is empty");
 			return;
 		}
 
@@ -74,6 +81,9 @@ public class FeatureCounter {
 				if (index % 1000 == 0) { System.err.println(index); }
 			}
 		}
+		else {
+			logger.info("Unsupported data class: " + instances.get(0).getData().getClass().getName());
+		}
 	}
 
 	public void printCounts() {
@@ -99,7 +109,11 @@ public class FeatureCounter {
 	}
 
 	public static void main (String[] args) throws Exception {
-		InstanceList instances = InstanceList.load(new File(args[0]));
+		CommandOption.setSummary (FeatureCounter.class,
+								  "Print feature counts and instances per feature (eg document frequencies) in an instance list");
+		CommandOption.process (FeatureCounter.class, args);
+
+		InstanceList instances = InstanceList.load (new File(inputFile.value));
 		FeatureCounter counter = new FeatureCounter(instances);
 		counter.count();
 		counter.printCounts();
