@@ -32,11 +32,11 @@ public class Vectors2Topics {
 		 "with the same number of instances in each file. If a document is missing in " + 
 		 "one language, there should be an empty instance.", null);
 
-    static CommandOption.String testingFile = new CommandOption.String
-        (Vectors2Topics.class, "testing", "FILENAME", false, null,
-         "The filename from which to read the list of instances for empirical likelihood calculation.  Use - for stdin.  " +
-         "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
-    
+	static CommandOption.String testingFile = new CommandOption.String
+		(Vectors2Topics.class, "testing", "FILENAME", false, null,
+		 "The filename from which to read the list of instances for empirical likelihood calculation.  Use - for stdin.  " +
+		 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
+	
 	static CommandOption.String outputModelFilename = new CommandOption.String
 		(Vectors2Topics.class, "output-model", "FILENAME", true, null,
 		 "The filename in which to write the binary topic model at the end of the iterations.  " +
@@ -48,15 +48,15 @@ public class Vectors2Topics {
 		 "allowing incremental training.  " +
 		 "By default this is null, indicating that no file will be read.", null);
 
-    static CommandOption.String inferencerFilename = new CommandOption.String
-        (Vectors2Topics.class, "inferencer-filename", "FILENAME", true, null,
-         "A topic inferencer applies a previously trained topic model to new documents.  " +
-         "By default this is null, indicating that no file will be written.", null);
+	static CommandOption.String inferencerFilename = new CommandOption.String
+		(Vectors2Topics.class, "inferencer-filename", "FILENAME", true, null,
+		 "A topic inferencer applies a previously trained topic model to new documents.  " +
+		 "By default this is null, indicating that no file will be written.", null);
 
-    static CommandOption.String evaluatorFilename = new CommandOption.String
-        (Vectors2Topics.class, "evaluator-filename", "FILENAME", true, null,
-         "A held-out likelihood evaluator for new documents.  " +
-         "By default this is null, indicating that no file will be written.", null);
+	static CommandOption.String evaluatorFilename = new CommandOption.String
+		(Vectors2Topics.class, "evaluator-filename", "FILENAME", true, null,
+		 "A held-out likelihood evaluator for new documents.  " +
+		 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String stateFile = new CommandOption.String
 		(Vectors2Topics.class, "output-state", "FILENAME", true, null,
@@ -65,27 +65,27 @@ public class Vectors2Topics {
 
 	static CommandOption.String topicKeysFile = new CommandOption.String
 		(Vectors2Topics.class, "output-topic-keys", "FILENAME", true, null,
-         "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
+		 "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String topicWordWeightsFile = new CommandOption.String
 		(Vectors2Topics.class, "topic-word-weights-file", "FILENAME", true, null,
-         "The filename in which to write unnormalized weights for every topic and word type.  " +
+		 "The filename in which to write unnormalized weights for every topic and word type.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String wordTopicCountsFile = new CommandOption.String
 		(Vectors2Topics.class, "word-topic-counts-file", "FILENAME", true, null,
-         "The filename in which to write a sparse representation of topic-word assignments.  " +
+		 "The filename in which to write a sparse representation of topic-word assignments.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String topicReportXMLFile = new CommandOption.String
 		(Vectors2Topics.class, "xml-topic-report", "FILENAME", true, null,
-         "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
+		 "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String topicPhraseReportXMLFile = new CommandOption.String
 	(Vectors2Topics.class, "xml-topic-phrase-report", "FILENAME", true, null,
-       "The filename in which to write the top words and phrases for each topic and any Dirichlet parameters in XML format.  " +
+	   "The filename in which to write the top words and phrases for each topic and any Dirichlet parameters in XML format.  " +
 	 "By default this is null, indicating that no file will be written.", null);
 
 	static CommandOption.String docTopicsFile = new CommandOption.String
@@ -133,18 +133,18 @@ public class Vectors2Topics {
 		 "The number of iterations between writing the model (and its Gibbs sampling state) to a binary file.  " +
 		 "You must also set the --output-model to use this option, whose argument will be the prefix of the filenames.", null);
 
-    static CommandOption.Integer outputStateInterval = new CommandOption.Integer
-        (Vectors2Topics.class, "output-state-interval", "INTEGER", true, 0,
-         "The number of iterations between writing the sampling state to a text file.  " +
-         "You must also set the --output-state to use this option, whose argument will be the prefix of the filenames.", null);
+	static CommandOption.Integer outputStateInterval = new CommandOption.Integer
+		(Vectors2Topics.class, "output-state-interval", "INTEGER", true, 0,
+		 "The number of iterations between writing the sampling state to a text file.  " +
+		 "You must also set the --output-state to use this option, whose argument will be the prefix of the filenames.", null);
 
-    static CommandOption.Integer optimizeInterval = new CommandOption.Integer
-        (Vectors2Topics.class, "optimize-interval", "INTEGER", true, 0,
-         "The number of iterations between reestimating dirichlet hyperparameters.", null);
+	static CommandOption.Integer optimizeInterval = new CommandOption.Integer
+		(Vectors2Topics.class, "optimize-interval", "INTEGER", true, 0,
+		 "The number of iterations between reestimating dirichlet hyperparameters.", null);
 
-    static CommandOption.Integer optimizeBurnIn = new CommandOption.Integer
-        (Vectors2Topics.class, "optimize-burn-in", "INTEGER", true, 200,
-         "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
+	static CommandOption.Integer optimizeBurnIn = new CommandOption.Integer
+		(Vectors2Topics.class, "optimize-burn-in", "INTEGER", true, 200,
+		 "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
 
 	static CommandOption.Boolean useSymmetricAlpha = new CommandOption.Boolean
 		(Vectors2Topics.class, "use-symmetric-alpha", "true|false", false, false,
@@ -276,6 +276,8 @@ public class Vectors2Topics {
 			
 			PolylingualTopicModel topicModel = null;
 
+			int numLanguages = languageInputFiles.value.length;
+
 			InstanceList[] training = new InstanceList[ languageInputFiles.value.length ];
 			for (int i=0; i < training.length; i++) {
 				training[i] = InstanceList.load(new File(languageInputFiles.value[i]));
@@ -306,17 +308,17 @@ public class Vectors2Topics {
 
 			topicModel.setTopicDisplay(showTopicsInterval.value, topWords.value);
 
-            topicModel.setNumIterations(numIterations.value);
-            topicModel.setOptimizeInterval(optimizeInterval.value);
-            topicModel.setBurninPeriod(optimizeBurnIn.value);
+			topicModel.setNumIterations(numIterations.value);
+			topicModel.setOptimizeInterval(optimizeInterval.value);
+			topicModel.setBurninPeriod(optimizeBurnIn.value);
 
-            if (outputStateInterval.value != 0) {
-                topicModel.setSaveState(outputStateInterval.value, stateFile.value);
-            }
+			if (outputStateInterval.value != 0) {
+				topicModel.setSaveState(outputStateInterval.value, stateFile.value);
+			}
 
-            if (outputModelInterval.value != 0) {
-                topicModel.setModelOutput(outputModelInterval.value, outputModelFilename.value);
-            }
+			if (outputModelInterval.value != 0) {
+				topicModel.setModelOutput(outputModelInterval.value, outputModelFilename.value);
+			}
 
 			topicModel.estimate();
 
@@ -333,6 +335,22 @@ public class Vectors2Topics {
 				topicModel.printDocumentTopics(out, docTopicsThreshold.value, docTopicsMax.value);
 				out.close();
 			}
+
+            if (inferencerFilename.value != null) {
+                try {
+					for (int language = 0; language < numLanguages; language++) {
+
+						ObjectOutputStream oos =
+							new ObjectOutputStream(new FileOutputStream(inferencerFilename.value + "." + language));
+						oos.writeObject(topicModel.getInferencer(language));
+						oos.close();
+					}
+
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
+
+            }
 
 			if (outputModelFilename.value != null) {
 				assert (topicModel != null);
@@ -398,19 +416,19 @@ public class Vectors2Topics {
 			topicModel.setTopicDisplay(showTopicsInterval.value, topWords.value);
 
 			/*
-            if (testingFile.value != null) {
-                topicModel.setTestingInstances( InstanceList.load(new File(testingFile.value)) );
-            }
+			if (testingFile.value != null) {
+				topicModel.setTestingInstances( InstanceList.load(new File(testingFile.value)) );
+			}
 			*/
 
-            topicModel.setNumIterations(numIterations.value);
-            topicModel.setOptimizeInterval(optimizeInterval.value);
-            topicModel.setBurninPeriod(optimizeBurnIn.value);
+			topicModel.setNumIterations(numIterations.value);
+			topicModel.setOptimizeInterval(optimizeInterval.value);
+			topicModel.setBurninPeriod(optimizeBurnIn.value);
 			topicModel.setSymmetricAlpha(useSymmetricAlpha.value);
 
-            if (outputStateInterval.value != 0) {
-                topicModel.setSaveState(outputStateInterval.value, stateFile.value);
-            }
+			if (outputStateInterval.value != 0) {
+				topicModel.setSaveState(outputStateInterval.value, stateFile.value);
+			}
 
 			if (outputModelInterval.value != 0) {
 				topicModel.setSaveSerializedModel(outputModelInterval.value, outputModelFilename.value);

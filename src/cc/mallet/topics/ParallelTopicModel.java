@@ -1004,7 +1004,7 @@ public class ParallelTopicModel implements Serializable {
 		// Print results for each topic
 		for (int topic = 0; topic < numTopics; topic++) {
 			TreeSet<IDSorter> sortedWords = topicSortedWords.get(topic);
-			int word = 1;
+			int word = 0;
 			Iterator<IDSorter> iterator = sortedWords.iterator();
 
 			if (usingNewLines) {
@@ -1039,7 +1039,7 @@ public class ParallelTopicModel implements Serializable {
 						"' totalTokens='" + tokensPerTopic[topic] + "'>");
 			int word = 1;
 			Iterator<IDSorter> iterator = topicSortedWords.get(topic).iterator();
-			while (iterator.hasNext() && word < numWords) {
+			while (iterator.hasNext() && word <= numWords) {
 				IDSorter info = iterator.next();
 				out.println("	<word rank='" + word + "'>" +
 						  alphabet.lookupObject(info.getID()) +
@@ -1115,7 +1115,7 @@ public class ParallelTopicModel implements Serializable {
 			AugmentableFeatureVector titles = new AugmentableFeatureVector (new Alphabet());
 
 			// Print words
-			int word = 1;
+			int word = 0;
 			Iterator<IDSorter> iterator = topicSortedWords.get(ti).iterator();
 			while (iterator.hasNext() && word < numWords) {
 				IDSorter info = iterator.next();
