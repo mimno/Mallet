@@ -12,6 +12,7 @@ import cc.mallet.util.Randoms;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.FeatureSequence;
 import cc.mallet.topics.*;
+import cc.mallet.pipe.iterator.DBInstanceIterator;
 
 import java.io.*;
 
@@ -393,7 +394,20 @@ public class Vectors2Topics {
 				*/
 			} 
 			else {
-				InstanceList training = InstanceList.load (new File(inputFile.value));
+				InstanceList training = null;
+				try {
+					if (inputFile.value.startsWith("db:")) {
+						training = DBInstanceIterator.getInstances(inputFile.value.substring(3));
+					}
+					else {
+						training = InstanceList.load (new File(inputFile.value));
+					}
+				} catch (Exception e) {
+					System.err.println("Unable to restore instance list " + 
+									   inputFile.value + ": " + e);
+					System.exit(1);					
+				}
+
 				System.out.println ("Data loaded.");
 
 				if (training.size() > 0 &&
