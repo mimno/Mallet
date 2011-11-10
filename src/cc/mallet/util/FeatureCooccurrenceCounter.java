@@ -4,10 +4,31 @@ import cc.mallet.types.*;
 import gnu.trove.*;
 
 import java.util.Arrays;
+import java.util.logging.*;
 import java.text.NumberFormat;
 import java.io.*;
 
 public class FeatureCooccurrenceCounter {
+
+	private static Logger logger = MalletLogger.getLogger(FeatureCooccurrenceCounter.class.getName());
+	
+	static CommandOption.String inputFile = new CommandOption.String
+		(FeatureCooccurrenceCounter.class, "input", "FILENAME", true, null,
+		  "The filename from which to read the list of training instances.  Use - for stdin.  " +
+		 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
+	
+	static CommandOption.String weightsFile = new CommandOption.String
+		(FeatureCooccurrenceCounter.class, "weights-filename", "FILENAME", true, null,
+		 "The filename to write the word-word weights file.", null);
+	
+	static CommandOption.Double idfCutoff = new CommandOption.Double
+		(FeatureCooccurrenceCounter.class, "idf-cutoff", "NUMBER", true, 3.0,
+		 "Words with IDF below this threshold will not be linked to any other word.", null);
+	
+	static CommandOption.String unlinkedFile = new CommandOption.String
+		(FeatureCooccurrenceCounter.class, "unlinked-filename", "FILENAME", true, null,
+		 "A file to write words that were not linked.", null);
+
 
 	TIntIntHashMap[] featureFeatureCounts;
 	InstanceList instances;
@@ -83,9 +104,10 @@ public class FeatureCooccurrenceCounter {
 			neither * (Math.log(neither / total) - logNotLeft - logNotRight);
 		
 		return g2;
+		
 	}
 
-	public void printCounts() {
+	public void printCounts() throws IOException {
 		
 		NumberFormat formatter = NumberFormat.getInstance();
 		formatter.setMaximumFractionDigits(3);
@@ -98,6 +120,22 @@ public class FeatureCooccurrenceCounter {
 			logCache[n] = Math.log(n);
 		}
 
+		if (unlinkedFile.value != null) {
+			PrintWriter out = new PrintWriter(unlinkedFile.value);
+
+			for (int feature = 0; feature < numFeatures; feature++) {
+				double featureIDF = logTotalDocs - logCache[documentFrequencies[feature]];
+
+				if (featureIDF < idfCutoff.value) {
+					out.println(alphabet.lookupObject(feature));
+				}
+			}
+			
+			out.close();
+		}
+
+		PrintWriter out = new PrintWriter(weightsFile.value);
+
 		for (int feature = 0; feature < numFeatures; feature++) {
 
 			TIntIntHashMap featureCounts = featureFeatureCounts[feature];
@@ -108,23 +146,21 @@ public class FeatureCooccurrenceCounter {
 			StringBuilder output = new StringBuilder();
 			output.append(alphabet.lookupObject(feature));
 			output.append("\t");
-			//output.append(formatter.format(logTotalDocs - logCache[documentFrequencies[feature]]));
-
 			output.append("1.0");
 
-			if (documentFrequencies[feature] <= 5) { System.out.println(output); continue; }
+			if (documentFrequencies[feature] <= 5) { out.println(output); continue; }
 
-			if (featureIDF - 3.0 > 0) {
+			if (featureIDF - idfCutoff.value > 0) {
 				IDSorter[] sortedWeights = new IDSorter[keys.length];
 				
 				int i = 0;
 				for (int key: keys) {
 					double keyIDF = (logTotalDocs - logCache[documentFrequencies[key]]);
 
-					if (keyIDF - 3.0 > 0) {
+					if (keyIDF - idfCutoff.value > 0) {
 						sortedWeights[i] =
 							new IDSorter(key,
-										 ((keyIDF - 3.0) / (featureIDF - 3.0)) *
+										 ((keyIDF - idfCutoff.value) / (featureIDF - idfCutoff.value)) *
 										 ((double) featureCounts.get(key) / (documentFrequencies[feature]) ));
 					}
 					else { 
@@ -150,14 +186,20 @@ public class FeatureCooccurrenceCounter {
 				}
 			}
 
-			System.out.println(output);
+			out.println(output);
 		}
 		
+		out.close();
 	}
 
 	public static void main (String[] args) throws Exception {
-		InstanceList instances = InstanceList.load(new File(args[0]));
-		FeatureCooccurrenceCounter counter = new FeatureCooccurrenceCounter(instances);
+		CommandOption.setSummary (FeatureCooccurrenceCounter.class,
+								  "Build a file containing weights between word types");
+		CommandOption.process (FeatureCooccurrenceCounter.class, args);
+
+		InstanceList training = InstanceList.load (new File(inputFile.value));
+
+		FeatureCooccurrenceCounter counter = new FeatureCooccurrenceCounter(training);
 		counter.count();
 		counter.printCounts();
 	}
