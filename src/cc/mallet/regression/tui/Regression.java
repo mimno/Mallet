@@ -34,6 +34,9 @@ public class Regression {
 		this.data = data;
 		this.regularization = regularization;
 		LeastSquares model = new LeastSquares(data, regularization);
+		
+		model.printSummary();
+
 		coefficients = new double[ model.getNumParameters() ];
 		model.getParameters(coefficients);
 		regression = model.getRegression();
@@ -58,7 +61,9 @@ public class Regression {
 		double regularization = regularizationOption.value;
 
 		Regression regression = new Regression(data, regularization);
-		regression.printParameters(outputFile.value);
+		if (outputFile.value != null) {
+			regression.printParameters(outputFile.value);
+		}
 		
 	}
 

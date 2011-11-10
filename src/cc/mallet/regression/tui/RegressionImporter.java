@@ -69,6 +69,11 @@ public class RegressionImporter {
 			// Break data string into tokens
 			pipeList.add(new FeatureValueString2FeatureVector());
 		}
+		else if (fieldNames.value != null) {
+			// Break the data into an array on whitespace and then convert 
+			//  that to a feature vector, using user-specified names.
+			pipeList.add(new ValueString2FeatureVector(fieldNames.value));
+		}
 		else {
 			// Break the data into an array on whitespace and then convert 
 			//  that to a feature vector.
