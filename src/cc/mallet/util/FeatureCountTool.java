@@ -10,12 +10,12 @@ import java.io.*;
 
 import java.text.NumberFormat;
 
-public class FeatureCounter {
+public class FeatureCountTool {
 
-	protected static Logger logger = MalletLogger.getLogger(FeatureCounter.class.getName());
+	protected static Logger logger = MalletLogger.getLogger(FeatureCountTool.class.getName());
 
 	static cc.mallet.util.CommandOption.String inputFile = new cc.mallet.util.CommandOption.String
-		(FeatureCounter.class, "input", "FILENAME", true, null,
+		(FeatureCountTool.class, "input", "FILENAME", true, null,
 		 "Filename for the input instance list", null);
 	
 	double[] featureCounts;
@@ -23,7 +23,7 @@ public class FeatureCounter {
 	int numFeatures;
 	int[] documentFrequencies;
 
-	public FeatureCounter (InstanceList instances) {
+	public FeatureCountTool (InstanceList instances) {
 		this.instances = instances;
 		numFeatures = instances.getDataAlphabet().size();
 
@@ -109,12 +109,12 @@ public class FeatureCounter {
 	}
 
 	public static void main (String[] args) throws Exception {
-		CommandOption.setSummary (FeatureCounter.class,
+		CommandOption.setSummary (FeatureCountTool.class,
 								  "Print feature counts and instances per feature (eg document frequencies) in an instance list");
-		CommandOption.process (FeatureCounter.class, args);
+		CommandOption.process (FeatureCountTool.class, args);
 
 		InstanceList instances = InstanceList.load (new File(inputFile.value));
-		FeatureCounter counter = new FeatureCounter(instances);
+		FeatureCountTool counter = new FeatureCountTool(instances);
 		counter.count();
 		counter.printCounts();
 	}
