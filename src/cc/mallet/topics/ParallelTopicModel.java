@@ -150,6 +150,9 @@ public class ParallelTopicModel implements Serializable {
 	public int getNumTopics() { return numTopics; }
 	public ArrayList<TopicAssignment> getData() { return data; }
 	
+	public int[][] getTypeTopicCounts() { return typeTopicCounts; }
+	public int[] getTokensPerTopic() { return tokensPerTopic; }
+
 	public void setNumIterations (int numIterations) {
 		this.numIterations = numIterations;
 	}
