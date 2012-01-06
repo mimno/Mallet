@@ -606,7 +606,16 @@ public class ParallelTopicModel implements Serializable {
 			}
 		}
 		else {
-			alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts, 1.001, 1.0, 1);
+			try {
+				alphaSum = Dirichlet.learnParameters(alpha, topicDocCounts, docLengthCounts, 1.001, 1.0, 1);
+			} catch (RuntimeException e) {
+				// Dirichlet optimization has become unstable. This is known to happen for very small corpora (~5 docs).
+				logger.warning("Dirichlet optimization has become unstable. Resetting to alpha_t = 1.0.");
+				alphaSum = numTopics;
+				for (int topic = 0; topic < numTopics; topic++) {
+					alpha[topic] = 1.0;
+				}
+			}
 		}
 	}
 

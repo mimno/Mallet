@@ -648,11 +648,13 @@ Bernoulli numbers. */
 				}
 
 				// Bayesian estimation part II
-				parameters[k] = (oldParametersK * parameters[k] + shape) / denominator;
+				parameters[k] = oldParametersK * (parameters[k] + shape) / denominator;
 
 				parametersSum += parameters[k];
 			}
 		}
+
+		if (parametersSum < 0.0) { throw new RuntimeException("sum: " + parametersSum); }
 
 		return parametersSum;
 	}
