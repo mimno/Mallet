@@ -20,7 +20,7 @@ shift
 set CLASS=
 if "%CMD%"=="import-dir" set CLASS=cc.mallet.classify.tui.Text2Vectors
 if "%CMD%"=="import-file" set CLASS=cc.mallet.classify.tui.Csv2Vectors
-if "%CMD%"=="import-smvlight" set CLASS=cc.mallet.classify.tui.SvmLight2Vectors
+if "%CMD%"=="import-svmlight" set CLASS=cc.mallet.classify.tui.SvmLight2Vectors
 if "%CMD%"=="train-classifier" set CLASS=cc.mallet.classify.tui.Vectors2Classify
 if "%CMD%"=="train-topics" set CLASS=cc.mallet.topics.tui.Vectors2Topics
 if "%CMD%"=="infer-topics" set CLASS=cc.mallet.topics.tui.InferTopics
