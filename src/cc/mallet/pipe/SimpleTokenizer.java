@@ -87,6 +87,8 @@ public class SimpleTokenizer extends Pipe {
 
 	public Instance pipe(Instance instance) {
 			
+		int underscoreCodePoint = Character.codePointAt("_", 0);
+
 		if (instance.getData() instanceof CharSequence) {
 				
 			CharSequence characters = (CharSequence) instance.getData();
@@ -108,7 +110,8 @@ public class SimpleTokenizer extends Pipe {
 				int codePointType = Character.getType(codePoint);
 
 				if (codePointType == Character.LOWERCASE_LETTER ||
-					codePointType == Character.UPPERCASE_LETTER) {
+					codePointType == Character.UPPERCASE_LETTER ||
+					codePoint == underscoreCodePoint) {
 					length++;
 					tokenBuffer[length] = codePoint;
 				}
