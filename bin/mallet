@@ -47,7 +47,7 @@ case $CMD in
         classify-dir) CLASS=cc.mallet.classify.tui.Text2Classify;;
         classify-file) CLASS=cc.mallet.classify.tui.Csv2Classify;;
         classify-svmlight) CLASS=cc.mallet.classify.tui.SvmLight2Classify;;
-	train-topics) CLASS=cc.mallet.topics.tui.Vectors2Topics;;
+	train-topics) CLASS=cc.mallet.topics.tui.TopicTrainer;;
 	infer-topics) CLASS=cc.mallet.topics.tui.InferTopics;;
 	evaluate-topics) CLASS=cc.mallet.topics.tui.EvaluateTopics;;
 	hlda) CLASS=cc.mallet.topics.tui.HierarchicalLDATUI;;
