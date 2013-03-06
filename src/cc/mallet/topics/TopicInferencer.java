@@ -408,7 +408,7 @@ public class TopicInferencer implements Serializable {
 
 		PrintWriter out = new PrintWriter(distributionsFile);
 		
-		out.print ("#doc source topic proportion ...\n");
+		out.print ("#doc name topic proportion ...\n");
 
 		IDSorter[] sortedTopics = new IDSorter[ numTopics ];
 		for (int topic = 0; topic < numTopics; topic++) {
@@ -424,19 +424,21 @@ public class TopicInferencer implements Serializable {
 
 		for (Instance instance: instances) {
 			
+			StringBuilder builder = new StringBuilder();
+
 			double[] topicDistribution =
 				getSampledDistribution(instance, numIterations,
 									   thinning, burnIn);
-			out.print (doc); out.print (' ');
+			builder.append(doc);
+			builder.append("\t");
 
-			// Print the Source field of the instance
-			if (instance.getSource() != null) {
-				out.print (instance.getSource());
+			if (instance.getName() != null) {
+				builder.append(instance.getName()); 
 			}
 			else {
-				out.print ("null-source");
+				builder.append("no-name");
 			}
-			out.print (' ');
+			builder.append("\t");
 
 			for (int topic = 0; topic < numTopics; topic++) {
 				sortedTopics[topic].set(topic, topicDistribution[topic]);
@@ -446,10 +448,10 @@ public class TopicInferencer implements Serializable {
 			for (int i = 0; i < max; i++) {
 				if (sortedTopics[i].getWeight() < threshold) { break; }
 
-				out.print (sortedTopics[i].getID() + " " +
-						   sortedTopics[i].getWeight() + " ");
+				builder.append(sortedTopics[i].getID() + "\t" +
+							   sortedTopics[i].getWeight() + "\t");
 			}
-			out.print (" \n");
+			out.println(builder);
 			doc++;
 		}
 
