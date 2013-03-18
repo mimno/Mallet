@@ -14,7 +14,7 @@ import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 
 /**
- * Replace the data string with a lowercased version. 
+ * Replace the data string or string buffer with a lowercased version. 
  *  This can improve performance over TokenSequenceLowercase.
  */
 
@@ -22,12 +22,12 @@ public class CharSequenceLowercase extends Pipe implements Serializable {
 	
 	public Instance pipe (Instance carrier) {
 
-		if (carrier.getData() instanceof String) {
-			String data = (String) carrier.getData();
-			carrier.setData(data.toLowerCase());
+		if (carrier.getData() instanceof CharSequence) {
+			CharSequence data = (CharSequence) carrier.getData();
+			carrier.setData(data.toString().toLowerCase());
 		}
 		else {
-			throw new IllegalArgumentException("CharSequenceLowercase expects a String, found a " + carrier.getData().getClass());
+			throw new IllegalArgumentException("CharSequenceLowercase expects a CharSequence, found a " + carrier.getData().getClass());
 		}
 
 		return carrier;
