@@ -927,6 +927,192 @@ public class ParallelTopicModel implements Serializable {
 		
 		logger.info(timeReport.toString());
 	}
+
+	/** This method implements iterated conditional modes, which is equivalent to Gibbs sampling,
+	 *   but replacing sampling from the conditional distribution with taking the maximum 
+	 *   topic. It tends to converge within a small number of iterations for models that have 
+	 *   reached a good state through Gibbs sampling. */ 
+	public void maximize(int iterations) {
+
+		int iteration = 0;
+
+		int totalChange = Integer.MAX_VALUE;
+		
+		double[] topicCoefficients = new double[numTopics];
+				
+		int currentTopic, currentValue;
+
+		while (iteration < iterations && totalChange > 0) {
+
+			long iterationStart = System.currentTimeMillis();
+
+			totalChange = 0;
+			   
+			// Loop over every document in the corpus
+			for (int doc = 0; doc < data.size(); doc++) {
+				FeatureSequence tokenSequence =
+					(FeatureSequence) data.get(doc).instance.getData();
+				LabelSequence topicSequence =
+					(LabelSequence) data.get(doc).topicSequence;
+				
+				int[] oneDocTopics = topicSequence.getFeatures();
+
+				int[] currentTypeTopicCounts;
+				int type, oldTopic, newTopic;
+
+				int docLength = tokenSequence.getLength();
+
+				int[] localTopicCounts = new int[numTopics];
+
+				//populate topic counts
+				for (int position = 0; position < docLength; position++) {
+					localTopicCounts[oneDocTopics[position]]++;
+				}
+				
+				int globalMaxTopic = 0;
+				double globalMaxScore = 0.0;
+				for (int topic = 0; topic < numTopics; topic++) {
+					topicCoefficients[topic] = (alpha[topic] + localTopicCounts[topic]) / (betaSum + tokensPerTopic[topic]);
+					if (beta * topicCoefficients[topic] > globalMaxScore) {
+						globalMaxTopic = topic;
+						globalMaxScore = beta * topicCoefficients[topic];
+					}
+				}
+
+				double score, maxScore;
+				double[] topicTermScores = new double[numTopics];
+
+				//Iterate over the positions (words) in the document 
+				for (int position = 0; position < docLength; position++) {
+					type = tokenSequence.getIndexAtPosition(position);
+					oldTopic = oneDocTopics[position];
+
+					// Grab the relevant row from our two-dimensional array
+					currentTypeTopicCounts = typeTopicCounts[type];
+
+					//Remove this token from all counts. 
+					localTopicCounts[oldTopic]--;
+					tokensPerTopic[oldTopic]--;
+					
+					// Recalculate the word-invariant part
+					topicCoefficients[oldTopic] = (alpha[oldTopic] + localTopicCounts[oldTopic]) / (betaSum + tokensPerTopic[oldTopic]);
+
+					// If the topic we just decremented was the previous max topic, search
+					//  for a new max topic.
+					if (oldTopic == globalMaxTopic) {
+						globalMaxScore = beta * topicCoefficients[oldTopic];
+						for (int topic = 0; topic < numTopics; topic++) {
+							if (beta * topicCoefficients[topic] > globalMaxScore) {
+								globalMaxTopic = topic;
+								globalMaxScore = beta * topicCoefficients[topic];
+							}
+						}
+					}
+
+					newTopic = globalMaxTopic;
+					maxScore = globalMaxScore;
+					
+					assert(tokensPerTopic[oldTopic] >= 0) : "old Topic " + oldTopic + " below 0";
+
+					int index = 0;
+					boolean alreadyDecremented = false;
+
+					while (index < currentTypeTopicCounts.length && 
+						   currentTypeTopicCounts[index] > 0) {
+						currentTopic = currentTypeTopicCounts[index] & topicMask;
+						currentValue = currentTypeTopicCounts[index] >> topicBits;
+
+						if (! alreadyDecremented && currentTopic == oldTopic) {
+
+							// We're decrementing and adding up the 
+							//  sampling weights at the same time, but
+							//  decrementing may require us to reorder
+							//  the topics, so after we're done here,
+							//  look at this cell in the array again.
+
+							currentValue --;
+							if (currentValue == 0) {
+								currentTypeTopicCounts[index] = 0;
+							}
+							else {
+								currentTypeTopicCounts[index] = (currentValue << topicBits) + oldTopic;
+							}
+							
+							// Shift the reduced value to the right, if necessary.
+
+							int subIndex = index;
+							while (subIndex < currentTypeTopicCounts.length - 1 && 
+								   currentTypeTopicCounts[subIndex] < currentTypeTopicCounts[subIndex + 1]) {
+								int temp = currentTypeTopicCounts[subIndex];
+								currentTypeTopicCounts[subIndex] = currentTypeTopicCounts[subIndex + 1];
+								currentTypeTopicCounts[subIndex + 1] = temp;
+								
+								subIndex++;
+							}
+
+							alreadyDecremented = true;
+						}
+						else {
+							score = 
+								topicCoefficients[currentTopic] * (beta + currentValue);
+							if (score > maxScore) {
+								newTopic = currentTopic;
+								maxScore = score;
+							}
+
+							index++;
+						}
+					}
+
+					// Put that new topic into the counts
+					oneDocTopics[position] = newTopic;
+					localTopicCounts[newTopic]++;
+					tokensPerTopic[newTopic]++;
+
+					index = 0;
+					boolean foundTopic = false;
+					while (! foundTopic && index < currentTypeTopicCounts.length) {
+						currentTopic = currentTypeTopicCounts[index] & topicMask;
+						currentValue = currentTypeTopicCounts[index] >> topicBits;
+
+						if (currentTopic == newTopic) {
+							currentTypeTopicCounts[index] = ((currentValue + 1) << topicBits) + newTopic;
+
+							while (index > 0 && currentTypeTopicCounts[index] > currentTypeTopicCounts[index - 1]) {
+								int temp = currentTypeTopicCounts[index];
+								currentTypeTopicCounts[index] = currentTypeTopicCounts[index - 1];
+								currentTypeTopicCounts[index - 1] = temp;
+							}
+							foundTopic = true;
+						}
+						else if (currentValue == 0) {
+							currentTypeTopicCounts[index] = (1 << topicBits) + newTopic;
+							foundTopic = true;
+						}
+
+						index++;
+					}
+
+					topicCoefficients[newTopic] = (alpha[newTopic] + localTopicCounts[newTopic]) / (betaSum + tokensPerTopic[newTopic]);
+					if (beta * topicCoefficients[newTopic] > globalMaxScore) {
+						globalMaxScore = beta * topicCoefficients[newTopic];
+						globalMaxTopic = newTopic;
+					}
+
+					if (newTopic != oldTopic) {
+						totalChange++;
+					}
+				}
+
+				
+			}
+			
+			long elapsedMillis = System.currentTimeMillis() - iterationStart;
+			logger.info(iteration + "\t" + elapsedMillis + "ms\t" + totalChange + "\t" + (modelLogLikelihood() / totalTokens));
+			
+			iteration++;
+		}
+	}
 	
 	public void printTopWords (File file, int numWords, boolean useNewLines) throws IOException {
 		PrintStream out = new PrintStream (file);
