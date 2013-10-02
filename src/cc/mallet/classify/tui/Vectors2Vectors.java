@@ -71,6 +71,18 @@ public class Vectors2Vectors {
 		(Vectors2Vectors.class, "prune-count", "N", false, 0,
 		 "Reduce features to those that occur more than N times.", null);
 
+	static CommandOption.Integer pruneDocFreq = new CommandOption.Integer
+		(Vectors2Vectors.class, "prune-document-freq", "N", false, 0,
+		 "Reduce features to those that occur in more than N contexts.", null);
+
+	static CommandOption.Double minIDF = new CommandOption.Double
+		(Vectors2Vectors.class, "min-idf", "NUMBER", false, 0,
+		 "Remove features with inverse document frequency less than this value.", null);
+
+	static CommandOption.Double maxIDF = new CommandOption.Double
+		(Vectors2Vectors.class, "max-idf", "NUMBER", false, Double.POSITIVE_INFINITY,
+		 "Remove features with inverse document frequency greater than this value.", null);
+
 	static CommandOption.Boolean vectorToSequence = new CommandOption.Boolean
 		(Vectors2Vectors.class, "vector-to-sequence", "[TRUE|FALSE]", false, false,
 		 "Convert FeatureVector's to FeatureSequence's.", null);
@@ -116,7 +128,7 @@ public class Vectors2Vectors {
 			System.exit(0);
 		}
 
-		if (pruneInfogain.wasInvoked() || pruneCount.wasInvoked()) {
+		if (pruneInfogain.wasInvoked() || pruneCount.wasInvoked() || minIDF.wasInvoked() || maxIDF.wasInvoked()) {
 			
 			// Are we also splitting the instances?
 			//  Current code doesn't want to do this, so I'm 
@@ -125,7 +137,7 @@ public class Vectors2Vectors {
 				throw new UnsupportedOperationException("Infogain/count processing of test or validation lists not yet supported.");
 			}
 			
-			if (pruneCount.value > 0) {
+			if (pruneCount.wasInvoked() || minIDF.wasInvoked() || maxIDF.wasInvoked()) {
 
 				// Check which type of data element the instances contain
                 Instance firstInstance = instances.get(0);
