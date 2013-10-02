@@ -144,6 +144,10 @@ public class TopicTrainer {
 		(TopicTrainer.class, "num-iterations", "INTEGER", true, 1000,
 		 "The number of iterations of Gibbs sampling.", null);
 
+	static CommandOption.Integer numMaximizationIterations = new CommandOption.Integer
+		(TopicTrainer.class, "num-icm-iterations", "INTEGER", true, 0,
+		 "The number of iterations of iterated conditional modes (topic maximization).", null);
+
 	static CommandOption.Boolean noInference = new CommandOption.Boolean
 		(TopicTrainer.class, "no-inference", "true|false", false, false,
 		 "Do not perform inference, just load a saved model and create a report. Equivalent to --num-iterations 0.", null);
@@ -266,6 +270,10 @@ public class TopicTrainer {
 		
 		if (! noInference.value()) {
 			topicModel.estimate();
+		}
+
+		if (numMaximizationIterations.value > 0) {
+			topicModel.maximize(numMaximizationIterations.value);
 		}
 
 		if (topicKeysFile.value != null) {
