@@ -102,12 +102,12 @@ public class RTopicModel {
 			double[] topicNormalizers = new double[model.numTopics];
 			if (smoothed) {
 				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / subCorpusTokensPerTopic[topic];
+					topicNormalizers[topic] = 1.0 / (subCorpusTokensPerTopic[topic] + model.numTypes * model.beta);
 				}
 			}
 			else {
 				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / (subCorpusTokensPerTopic[topic] + model.numTypes * model.beta);
+					topicNormalizers[topic] = 1.0 / subCorpusTokensPerTopic[topic];
 				}
 			}
 
@@ -152,12 +152,12 @@ public class RTopicModel {
 			double[] topicNormalizers = new double[model.numTopics];
 			if (smoothed) {
 				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / model.tokensPerTopic[topic];
+					topicNormalizers[topic] = 1.0 / (model.tokensPerTopic[topic] + model.numTypes * model.beta);
 				}
 			}
 			else {
 				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / (model.tokensPerTopic[topic] + model.numTypes * model.beta);
+					topicNormalizers[topic] = 1.0 / model.tokensPerTopic[topic];
 				}
 			}
 
@@ -228,5 +228,13 @@ public class RTopicModel {
 		}
 		
 		return result;
+	}
+
+	public void writeState(String filename) {
+		try {
+			model.printState(new File(filename));
+		} catch (Exception e) {
+			System.err.println(e);
+		}
 	}
 }
