@@ -31,6 +31,14 @@ public class FeatureCountTool {
 		documentFrequencies = new int[numFeatures];
 	}
 
+	public double[] getFeatureCounts() {
+		return featureCounts;
+	}
+
+	public int[] getDocumentFrequencies() {
+		return documentFrequencies;
+	}
+
 	public void count() {
 
 		TIntIntHashMap docCounts = new TIntIntHashMap();
@@ -52,7 +60,7 @@ public class FeatureCountTool {
 				}
 				
 				int[] keys = docCounts.keys();
-				for (int i = 0; i < keys.length - 1; i++) {
+				for (int i = 0; i < keys.length; i++) {
 					int feature = keys[i];
 					featureCounts[feature] += docCounts.get(feature);
 					documentFrequencies[feature]++;
