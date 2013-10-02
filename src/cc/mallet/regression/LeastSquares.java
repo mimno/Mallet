@@ -123,6 +123,18 @@ public class LeastSquares {
 		meanSquaredError = sumSquaredError / degreesOfFreedom;
 	}
 
+	public double[] pValues() {
+		double[] values = new double[dimension];
+		for (int index=0; index < dimension; index++) {
+			double standardError = Math.sqrt(meanSquaredError *
+											 xTransposeXInverse[(dimension * index) + index]);
+			values[index] = 2 * (1.0 - StatFunctions.pt(Math.abs(parameters[index] / standardError),
+														degreesOfFreedom));
+		}
+		
+		return values;
+	}
+
 	/** Print a summary of the regression, similar to summary(lm(...)) in R */
 	public void printSummary() {
 		double standardError, tPercentile;
