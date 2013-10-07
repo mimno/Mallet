@@ -311,6 +311,7 @@ public abstract class CommandOption
 							foundValue = true;
 							
 							option.parseArg(values, 0);
+							option.invoked = true;
 							
 							break;
 						}
