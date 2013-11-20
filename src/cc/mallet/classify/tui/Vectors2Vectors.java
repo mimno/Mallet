@@ -87,13 +87,13 @@ public class Vectors2Vectors {
 		(Vectors2Vectors.class, "vector-to-sequence", "[TRUE|FALSE]", false, false,
 		 "Convert FeatureVector's to FeatureSequence's.", null);
 	
-	 static CommandOption.Boolean hideTargets = new CommandOption.Boolean
-   (Vectors2Vectors.class, "hide-targets", "[TRUE|FALSE]", false, false,
-    "Hide targets.", null);
+	static CommandOption.Boolean hideTargets = new CommandOption.Boolean
+		(Vectors2Vectors.class, "hide-targets", "[TRUE|FALSE]", false, false,
+		 "Hide targets.", null);
 	 
-   static CommandOption.Boolean revealTargets = new CommandOption.Boolean
-   (Vectors2Vectors.class, "reveal-targets", "[TRUE|FALSE]", false, false,
-    "Reveal targets.", null);
+	static CommandOption.Boolean revealTargets = new CommandOption.Boolean
+		(Vectors2Vectors.class, "reveal-targets", "[TRUE|FALSE]", false, false,
+		 "Reveal targets.", null);
 
 
 	public static void main (String[] args) throws FileNotFoundException, IOException {
@@ -117,12 +117,14 @@ public class Vectors2Vectors {
 		logger.info ("Testing portion = "+(1-v-t));
 		logger.info ("Prune info gain = "+pruneInfogain.value);
 		logger.info ("Prune count = "+pruneCount.value);
+		logger.info ("Prune df = "+pruneDocFreq.value);
+		logger.info ("idf range = "+minIDF.value + "-" + maxIDF.value);
 
 		// Read the InstanceList
 		InstanceList instances = InstanceList.load (inputFile.value);
 
-		if (t == 1.0 && !vectorToSequence.value && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked())
-		    && ! (hideTargets.wasInvoked() || revealTargets.wasInvoked())) {
+		if (t == 1.0 && !vectorToSequence.value && ! (pruneInfogain.wasInvoked() || pruneCount.wasInvoked() || pruneDocFreq.wasInvoked() || minIDF.wasInvoked() || maxIDF.wasInvoked())
+			&& ! (hideTargets.wasInvoked() || revealTargets.wasInvoked())) {
 			logger.warning("Vectors2Vectors was invoked, but did not change anything");
 			instances.save(trainingFile.value());
 			System.exit(0);
@@ -140,50 +142,50 @@ public class Vectors2Vectors {
 			if (pruneCount.wasInvoked() || minIDF.wasInvoked() || maxIDF.wasInvoked()) {
 
 				// Check which type of data element the instances contain
-                Instance firstInstance = instances.get(0);
-                if (firstInstance.getData() instanceof FeatureSequence) {
-                    // Version for feature sequences
-                    
-                    Alphabet oldAlphabet = instances.getDataAlphabet();
-                    Alphabet newAlphabet = new Alphabet();
-                    
-                    // It's necessary to create a new instance list in
-                    //  order to make sure that the data alphabet is correct.
-                    Noop newPipe = new Noop (newAlphabet, instances.getTargetAlphabet());
-                    InstanceList newInstanceList = new InstanceList (newPipe);
-                    
+				Instance firstInstance = instances.get(0);
+				if (firstInstance.getData() instanceof FeatureSequence) {
+					// Version for feature sequences
+					
+					Alphabet oldAlphabet = instances.getDataAlphabet();
+					Alphabet newAlphabet = new Alphabet();
+					
+					// It's necessary to create a new instance list in
+					//  order to make sure that the data alphabet is correct.
+					Noop newPipe = new Noop (newAlphabet, instances.getTargetAlphabet());
+					InstanceList newInstanceList = new InstanceList (newPipe);
+					
 					// Iterate over the instances in the old list, adding
-                    //  up occurrences of features.
-                    int numFeatures = oldAlphabet.size();
-                    double[] counts = new double[numFeatures];
-                    for (int ii = 0; ii < instances.size(); ii++) {
-                        Instance instance = instances.get(ii);
-                        FeatureSequence fs = (FeatureSequence) instance.getData();
-                        
-                        fs.addFeatureWeightsTo(counts);
-                    }
-                    
-                    Instance instance, newInstance;
+					//  up occurrences of features.
+					int numFeatures = oldAlphabet.size();
+					double[] counts = new double[numFeatures];
+					for (int ii = 0; ii < instances.size(); ii++) {
+						Instance instance = instances.get(ii);
+						FeatureSequence fs = (FeatureSequence) instance.getData();
+						
+						fs.addFeatureWeightsTo(counts);
+					}
+					
+					Instance instance, newInstance;
 
-                    // Next, iterate over the same list again, adding 
-                    //  each instance to the new list after pruning.
-                    while (instances.size() > 0) {
-                        instance = instances.get(0);
-                        FeatureSequence fs = (FeatureSequence) instance.getData();
-                        
-                        fs.prune(counts, newAlphabet, pruneCount.value);
-                        
+					// Next, iterate over the same list again, adding 
+					//  each instance to the new list after pruning.
+					while (instances.size() > 0) {
+						instance = instances.get(0);
+						FeatureSequence fs = (FeatureSequence) instance.getData();
+						
+						fs.prune(counts, newAlphabet, pruneCount.value);
+						
 						newInstanceList.add(newPipe.instanceFrom(new Instance(fs, instance.getTarget(),
 																			  instance.getName(),
 																			  instance.getSource())));
 						instances.remove(0);
-                    }
-                    
-                    logger.info("features: " + oldAlphabet.size() + 
-                                " -> " + newAlphabet.size());
-                    
-                    // Make the new list the official list.
-                    instances = newInstanceList;
+					}
+					
+					logger.info("features: " + oldAlphabet.size() + 
+								" -> " + newAlphabet.size());
+					
+					// Make the new list the official list.
+					instances = newInstanceList;
 
 
 				}
@@ -291,37 +293,37 @@ public class Vectors2Vectors {
 			}
 		}
 		else if (vectorToSequence.value) {
-      // Convert FeatureVector's to FeatureSequence's by simply randomizing the order
-      // of all the word occurrences, including repetitions due to values larger than 1.
-      Alphabet alpha = instances.getDataAlphabet();
-      Noop pipe2 = new Noop (alpha, instances.getTargetAlphabet());
-      InstanceList instances2 = new InstanceList (pipe2);
-      for (int ii = 0; ii < instances.size(); ii++) {
-        Instance instance = instances.get(ii);
-        FeatureVector fv = (FeatureVector) instance.getData();
-        ArrayList seq = new ArrayList();
-        for (int loc = 0; loc < fv.numLocations(); loc++)
-          for (int count = 0; count < fv.valueAtLocation(loc); count++)
-            seq.add (new Integer(fv.indexAtLocation(loc)));
-        Collections.shuffle(seq);
-        int[] indices = new int[seq.size()];
-        for (int i = 0; i < indices.length; i++)
-          indices[i] = ((Integer)seq.get(i)).intValue();
-        FeatureSequence fs = new FeatureSequence (alpha, indices);
-        instance.unLock();
-        instance.setData(null); // So it can be freed by the garbage collector
-        instances2.add(pipe2.instanceFrom(new Instance(fs, instance.getTarget(), instance.getName(), instance.getSource())),
-                 instances.getInstanceWeight(ii));
-      }
-      instances = instances2;
-      if (outputFile.wasInvoked()) {
-        writeInstanceList (instances, outputFile.value());
-      }
+			// Convert FeatureVector's to FeatureSequence's by simply randomizing the order
+			// of all the word occurrences, including repetitions due to values larger than 1.
+			Alphabet alpha = instances.getDataAlphabet();
+			Noop pipe2 = new Noop (alpha, instances.getTargetAlphabet());
+			InstanceList instances2 = new InstanceList (pipe2);
+			for (int ii = 0; ii < instances.size(); ii++) {
+				Instance instance = instances.get(ii);
+				FeatureVector fv = (FeatureVector) instance.getData();
+				ArrayList seq = new ArrayList();
+				for (int loc = 0; loc < fv.numLocations(); loc++)
+					for (int count = 0; count < fv.valueAtLocation(loc); count++)
+						seq.add (new Integer(fv.indexAtLocation(loc)));
+				Collections.shuffle(seq);
+				int[] indices = new int[seq.size()];
+				for (int i = 0; i < indices.length; i++)
+					indices[i] = ((Integer)seq.get(i)).intValue();
+				FeatureSequence fs = new FeatureSequence (alpha, indices);
+				instance.unLock();
+				instance.setData(null); // So it can be freed by the garbage collector
+				instances2.add(pipe2.instanceFrom(new Instance(fs, instance.getTarget(), instance.getName(), instance.getSource())),
+							   instances.getInstanceWeight(ii));
+			}
+			instances = instances2;
+			if (outputFile.wasInvoked()) {
+				writeInstanceList (instances, outputFile.value());
+			}
 		}
 		else if (trainingProportion.wasInvoked() || validationProportion.wasInvoked()) {
 			
 			// Split into three lists...
-            InstanceList[] instanceLists = instances.split (r, new double[] {t, 1-t-v, v});
+			InstanceList[] instanceLists = instances.split (r, new double[] {t, 1-t-v, v});
 
 			// And write them out
 			if (instanceLists[0].size() > 0)
@@ -331,31 +333,31 @@ public class Vectors2Vectors {
 			if (instanceLists[2].size() > 0)
 				writeInstanceList(instanceLists[2], validationFile.value());
 		}
-    else if (hideTargets.wasInvoked()) {
-      Iterator<Instance> iter = instances.iterator();
-      while (iter.hasNext()) {
-        Instance instance = iter.next();
-        instance.unLock();
-        instance.setProperty("target", instance.getTarget());
-        instance.setTarget(null);
-        instance.lock();
-      }
-      if (outputFile.wasInvoked()) {
-        writeInstanceList (instances, outputFile.value());
-      }
-    }
-    else if (revealTargets.wasInvoked()) {
-      Iterator<Instance> iter = instances.iterator();
-      while (iter.hasNext()) {
-        Instance instance = iter.next();
-        instance.unLock();
-        instance.setTarget(instance.getProperty("target"));
-        instance.lock();
-      }
-      if (outputFile.wasInvoked()) {
-        writeInstanceList (instances, outputFile.value());
-      }    
-    }
+		else if (hideTargets.wasInvoked()) {
+			Iterator<Instance> iter = instances.iterator();
+			while (iter.hasNext()) {
+				Instance instance = iter.next();
+				instance.unLock();
+				instance.setProperty("target", instance.getTarget());
+				instance.setTarget(null);
+				instance.lock();
+			}
+			if (outputFile.wasInvoked()) {
+				writeInstanceList (instances, outputFile.value());
+			}
+		}
+		else if (revealTargets.wasInvoked()) {
+			Iterator<Instance> iter = instances.iterator();
+			while (iter.hasNext()) {
+				Instance instance = iter.next();
+				instance.unLock();
+				instance.setTarget(instance.getProperty("target"));
+				instance.lock();
+			}
+			if (outputFile.wasInvoked()) {
+				writeInstanceList (instances, outputFile.value());
+			}	
+		}
 	}
 
 	private static void writeInstanceList(InstanceList instances, File file)
