@@ -22,6 +22,9 @@ if "%CMD%"=="import-dir" set CLASS=cc.mallet.classify.tui.Text2Vectors
 if "%CMD%"=="import-file" set CLASS=cc.mallet.classify.tui.Csv2Vectors
 if "%CMD%"=="import-svmlight" set CLASS=cc.mallet.classify.tui.SvmLight2Vectors
 if "%CMD%"=="train-classifier" set CLASS=cc.mallet.classify.tui.Vectors2Classify
+if "%CMD%"=="classify-dir" set CLASS=cc.mallet.classify.tui.Text2Classify
+if "%CMD%"=="classify-file" set CLASS=cc.mallet.classify.tui.Csv2Classify
+if "%CMD%"=="classify-svmlight" set CLASS=cc.mallet.classify.tui.SvmLight2Classify
 if "%CMD%"=="train-topics" set CLASS=cc.mallet.topics.tui.Vectors2Topics
 if "%CMD%"=="infer-topics" set CLASS=cc.mallet.topics.tui.InferTopics
 if "%CMD%"=="evaluate-topics" set CLASS=cc.mallet.topics.tui.EvaluateTopics
@@ -38,6 +41,9 @@ echo   import-dir        load the contents of a directory into mallet instances 
 echo   import-file       load a single file into mallet instances (one per line)
 echo   import-svmlight   load a single SVMLight format data file into mallet instances (one per line)
 echo   train-classifier  train a classifier from Mallet data files
+echo   classify-dir      classify data from a single file with a saved classifier
+echo   classify-file     classify the contents of a directory with a saved classifier
+echo   classify-svmlight classify data from a single file in SVMLight format
 echo   train-topics      train a topic model from Mallet data files
 echo   infer-topics      use a trained topic model to infer topics for new documents
 echo   evaluate-topics   estimate the probability of new documents given a trained model

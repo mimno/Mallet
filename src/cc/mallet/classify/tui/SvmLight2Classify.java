@@ -96,7 +96,7 @@ public class SvmLight2Classify {
 		// Build a new pipe
 		InstanceList instances = new InstanceList(classifier.getInstancePipe());
 		Reader fileReader;
-		if (inputFile.equals("-")) {
+		if (inputFile.value.toString().equals("-")) {
 			fileReader = new InputStreamReader(System.in);
 		} else {
 			fileReader = new InputStreamReader(new FileInputStream(inputFile.value),encoding.value);
