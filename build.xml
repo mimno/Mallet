@@ -9,7 +9,7 @@
   <property name="dist" location="dist"/>
   <property name="doc" location="doc/api"/>
   <property name="test" location="test"/>
-  <property name="java_version" value="1.5"/>
+  <property name="java_version" value="1.6"/>
 
   <path id="project.classpath">
     <pathelement path="${class}"/>
