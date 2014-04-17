@@ -438,18 +438,24 @@ public class TopicInferencer implements Serializable {
 			else {
 				builder.append("no-name");
 			}
-			builder.append("\t");
 
-			for (int topic = 0; topic < numTopics; topic++) {
-				sortedTopics[topic].set(topic, topicDistribution[topic]);
+			if (threshold > 0.0) {
+				for (int topic = 0; topic < numTopics; topic++) {
+					sortedTopics[topic].set(topic, topicDistribution[topic]);
+				}
+				Arrays.sort(sortedTopics);
+				
+				for (int i = 0; i < max; i++) {
+					if (sortedTopics[i].getWeight() < threshold) { break; }
+					
+					builder.append("\t" + sortedTopics[i].getID() +
+								   "\t" + sortedTopics[i].getWeight());
+				}
 			}
-			Arrays.sort(sortedTopics);
-
-			for (int i = 0; i < max; i++) {
-				if (sortedTopics[i].getWeight() < threshold) { break; }
-
-				builder.append(sortedTopics[i].getID() + "\t" +
-							   sortedTopics[i].getWeight() + "\t");
+			else {
+				for (int topic = 0; topic < numTopics; topic++) {
+					builder.append("\t" + topicDistribution[topic]);
+				}
 			}
 			out.println(builder);
 			doc++;

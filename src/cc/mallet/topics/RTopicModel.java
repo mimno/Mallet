@@ -4,25 +4,27 @@ import cc.mallet.types.*;
 import gnu.trove.TIntIntHashMap;
 import java.io.*;
 
-/** A wrapper for a topic model to be used from the R statistical package through rJava. */
+/** A wrapper for a topic model to be used from the R statistical package through rJava.
+	R does not distinguish between integers and floating point numbers, so many of these
+	methods simply translate doubles to ints.
+ */
 
-public class RTopicModel {
+public class RTopicModel extends ParallelTopicModel {
 	
 	public InstanceList instances = null;
-	public ParallelTopicModel model = null;
 
 	public RTopicModel(double numTopics, double alpha, double beta) {
-		model = new ParallelTopicModel((int) Math.floor(numTopics), alpha, beta);
+		super((int) Math.floor(numTopics), alpha, beta);
 	}
 
 	public void loadDocuments(String filename) {
 		instances = InstanceList.load(new File(filename));
-		model.addInstances(instances);
+		addInstances(instances);
 	}
 
 	public void loadDocuments(InstanceList instances) {
 		this.instances = instances;
-		model.addInstances(instances);		
+		addInstances(instances);		
 	}
 
 	/** This is a helper method that simplifies class casting from rJava. */
@@ -37,14 +39,14 @@ public class RTopicModel {
 	}
 
 	public void setAlphaOptimization(double frequency, double burnin) {
-		model.setBurninPeriod((int) Math.floor(burnin));
-		model.setOptimizeInterval((int) Math.floor(frequency));
+		setBurninPeriod((int) Math.floor(burnin));
+		setOptimizeInterval((int) Math.floor(frequency));
 	}
 
 	public void train(double numIterations) {
 		try {
-			model.setNumIterations((int) Math.floor(numIterations));
-			model.estimate();
+			setNumIterations((int) Math.floor(numIterations));
+			estimate();
 		} catch (Exception e) {
 
 		}
@@ -52,37 +54,37 @@ public class RTopicModel {
 
 	/** Run iterated conditional modes */
 	public void maximize(double numIterations) {
-		model.maximize((int) Math.floor(numIterations));
+		maximize((int) Math.floor(numIterations));
 	}
 
 	public double[] getAlpha() {
-		return model.alpha;
+		return alpha;
 	}
 
 	public String[] getVocabulary() {
-		String[] vocab = new String[ model.alphabet.size() ];
-		for (int type = 0; type < model.numTypes; type++) {
-			vocab[type] = (String) model.alphabet.lookupObject(type);
+		String[] vocab = new String[ alphabet.size() ];
+		for (int type = 0; type < numTypes; type++) {
+			vocab[type] = (String) alphabet.lookupObject(type);
 		}
 		return vocab;
 	}
 
 	public String[] getDocumentNames() {
-		String[] docNames = new String[ model.data.size() ];
+		String[] docNames = new String[ data.size() ];
 		for (int doc = 0; doc < docNames.length; doc++) {
-			docNames[doc] = (String) model.data.get(doc).instance.getName();
+			docNames[doc] = (String) data.get(doc).instance.getName();
 		}
 		return docNames;
 	}
 
 	public double[][] getSubCorpusTopicWords(boolean[] documentMask, boolean normalized, boolean smoothed) {		
-		double[][] result = new double[model.numTopics][model.numTypes];
-		int[] subCorpusTokensPerTopic = new int[model.numTopics];
+		double[][] result = new double[numTopics][numTypes];
+		int[] subCorpusTokensPerTopic = new int[numTopics];
 		
-		for (int doc = 0; doc < model.data.size(); doc++) {
+		for (int doc = 0; doc < data.size(); doc++) {
 			if (documentMask[doc]) {
-				int[] words = ((FeatureSequence) model.data.get(doc).instance.getData()).getFeatures();
-				int[] topics = model.data.get(doc).topicSequence.getFeatures();
+				int[] words = ((FeatureSequence) data.get(doc).instance.getData()).getFeatures();
+				int[] topics = data.get(doc).topicSequence.getFeatures();
 				for (int position = 0; position < topics.length; position++) {
 					result[ topics[position] ][ words[position] ]++;
 					subCorpusTokensPerTopic[ topics[position] ]++;
@@ -91,28 +93,28 @@ public class RTopicModel {
 		}
 
 		if (smoothed) {
-			for (int topic = 0; topic < model.numTopics; topic++) {
-				for (int type = 0; type < model.numTypes; type++) {
-					result[topic][type] += model.beta;
+			for (int topic = 0; topic < numTopics; topic++) {
+				for (int type = 0; type < numTypes; type++) {
+					result[topic][type] += beta;
 				}
 			}
 		}
 
 		if (normalized) {
-			double[] topicNormalizers = new double[model.numTopics];
+			double[] topicNormalizers = new double[numTopics];
 			if (smoothed) {
-				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / (subCorpusTokensPerTopic[topic] + model.numTypes * model.beta);
+				for (int topic = 0; topic < numTopics; topic++) {
+					topicNormalizers[topic] = 1.0 / (subCorpusTokensPerTopic[topic] + numTypes * beta);
 				}
 			}
 			else {
-				for (int topic = 0; topic < model.numTopics; topic++) {
+				for (int topic = 0; topic < numTopics; topic++) {
 					topicNormalizers[topic] = 1.0 / subCorpusTokensPerTopic[topic];
 				}
 			}
 
-			for (int topic = 0; topic < model.numTopics; topic++) {
-				for (int type = 0; type < model.numTypes; type++) {
+			for (int topic = 0; topic < numTopics; topic++) {
+				for (int type = 0; type < numTypes; type++) {
 					result[topic][type] *= topicNormalizers[topic];
 				}
 			}
@@ -122,17 +124,17 @@ public class RTopicModel {
 	}
 
 	public double[][] getTopicWords(boolean normalized, boolean smoothed) {
-		double[][] result = new double[model.numTopics][model.numTypes];
+		double[][] result = new double[numTopics][numTypes];
 
-		for (int type = 0; type < model.numTypes; type++) {
-			int[] topicCounts = model.typeTopicCounts[type];
+		for (int type = 0; type < numTypes; type++) {
+			int[] topicCounts = typeTopicCounts[type];
 
 			int index = 0;
 			while (index < topicCounts.length &&
 				   topicCounts[index] > 0) {
 
-				int topic = topicCounts[index] & model.topicMask;
-				int count = topicCounts[index] >> model.topicBits;
+				int topic = topicCounts[index] & topicMask;
+				int count = topicCounts[index] >> topicBits;
 
 				result[topic][type] += count;
 
@@ -141,28 +143,28 @@ public class RTopicModel {
 		}
 
 		if (smoothed) {
-			for (int topic = 0; topic < model.numTopics; topic++) {
-				for (int type = 0; type < model.numTypes; type++) {
-					result[topic][type] += model.beta;
+			for (int topic = 0; topic < numTopics; topic++) {
+				for (int type = 0; type < numTypes; type++) {
+					result[topic][type] += beta;
 				}
 			}
 		}
 
 		if (normalized) {
-			double[] topicNormalizers = new double[model.numTopics];
+			double[] topicNormalizers = new double[numTopics];
 			if (smoothed) {
-				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / (model.tokensPerTopic[topic] + model.numTypes * model.beta);
+				for (int topic = 0; topic < numTopics; topic++) {
+					topicNormalizers[topic] = 1.0 / (tokensPerTopic[topic] + numTypes * beta);
 				}
 			}
 			else {
-				for (int topic = 0; topic < model.numTopics; topic++) {
-					topicNormalizers[topic] = 1.0 / model.tokensPerTopic[topic];
+				for (int topic = 0; topic < numTopics; topic++) {
+					topicNormalizers[topic] = 1.0 / tokensPerTopic[topic];
 				}
 			}
 
-			for (int topic = 0; topic < model.numTopics; topic++) {
-				for (int type = 0; type < model.numTypes; type++) {
+			for (int topic = 0; topic < numTopics; topic++) {
+				for (int type = 0; type < numTypes; type++) {
 					result[topic][type] *= topicNormalizers[topic];
 				}
 			}
@@ -172,27 +174,27 @@ public class RTopicModel {
 	}
 
 	public double[][] getDocumentTopics(boolean normalized, boolean smoothed) {
-		double[][] result = new double[model.data.size()][model.numTopics];
+		double[][] result = new double[data.size()][numTopics];
 
-		for (int doc = 0; doc < model.data.size(); doc++) {
-			int[] topics = model.data.get(doc).topicSequence.getFeatures();
+		for (int doc = 0; doc < data.size(); doc++) {
+			int[] topics = data.get(doc).topicSequence.getFeatures();
 			for (int position = 0; position < topics.length; position++) {
 				result[doc][ topics[position] ]++;
 			}
 
 			if (smoothed) {
-				for (int topic = 0; topic < model.numTopics; topic++) {
-					result[doc][topic] += model.alpha[topic];
+				for (int topic = 0; topic < numTopics; topic++) {
+					result[doc][topic] += alpha[topic];
 				}
 			}
 
 			if (normalized) {
 				double sum = 0.0;
-				for (int topic = 0; topic < model.numTopics; topic++) {
+				for (int topic = 0; topic < numTopics; topic++) {
 					sum += result[doc][topic];
 				}
 				double normalizer = 1.0 / sum;
-				for (int topic = 0; topic < model.numTopics; topic++) {
+				for (int topic = 0; topic < numTopics; topic++) {
 					result[doc][topic] *= normalizer;
 				}				
 			}
@@ -205,7 +207,7 @@ public class RTopicModel {
 
 		if (instances == null) { throw new IllegalStateException("You must load instances before you can count features"); }
 
-		double[][] result = new double[ model.numTypes ][ 2 ];
+		double[][] result = new double[ numTypes ][ 2 ];
 
 		TIntIntHashMap docCounts = new TIntIntHashMap();
 		
@@ -232,7 +234,7 @@ public class RTopicModel {
 
 	public void writeState(String filename) {
 		try {
-			model.printState(new File(filename));
+			printState(new File(filename));
 		} catch (Exception e) {
 			System.err.println(e);
 		}

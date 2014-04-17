@@ -153,6 +153,16 @@ public class SimpleTokenizer extends Pipe {
 					// Character.MATH_SYMBOL
 					//System.out.println("type " + codePointType);
 				}
+
+				// Avoid buffer overflows
+				if (length + 1 == tokenBuffer.length) {
+					String token = new String(tokenBuffer, 0, length + 1);
+					if (! stoplist.contains(token)) {
+						tokens.add(token);
+					}
+					length = -1;
+				}
+
 					
 			}
 

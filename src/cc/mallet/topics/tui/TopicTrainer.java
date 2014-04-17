@@ -305,7 +305,12 @@ public class TopicTrainer {
 
 		if (docTopicsFile.value != null) {
 			PrintWriter out = new PrintWriter (new FileWriter ((new File(docTopicsFile.value))));
-			topicModel.printDocumentTopics(out, docTopicsThreshold.value, docTopicsMax.value);
+			if (docTopicsThreshold.value == 0.0) {
+				topicModel.printDenseDocumentTopics(out);
+			}
+			else {
+				topicModel.printDocumentTopics(out, docTopicsThreshold.value, docTopicsMax.value);
+			}
 			out.close();
 		}
 
