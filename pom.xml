@@ -1,5 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
   <version>2.0.8-SNAPSHOT</version>
@@ -19,8 +20,9 @@
     </license>
   </licenses>
   <scm>
-    <url>http://hg-iesl.cs.umass.edu/hg/mallet</url>
-    <connection>http://hg-iesl.cs.umass.edu/hg/mallet</connection>
+    <url>https://github.com/mimno/Mallet</url>
+    <connection>scm:git:git://github.com/mimno/Mallet.git</connection>
+    <developerConnection>scm:git:git@github.com:mimno/Mallet.git</developerConnection>
   </scm>
   <developers>
     <developer>
@@ -38,6 +40,7 @@
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
     <encoding>UTF-8</encoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
