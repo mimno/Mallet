@@ -143,10 +143,10 @@ public class TopicTrainer {
 	static CommandOption.Integer numIterations = new CommandOption.Integer
 		(TopicTrainer.class, "num-iterations", "INTEGER", true, 1000,
 		 "The number of iterations of Gibbs sampling.", null);
-
+	
 	static CommandOption.Integer numMaximizationIterations = new CommandOption.Integer
 		(TopicTrainer.class, "num-icm-iterations", "INTEGER", true, 0,
-		 "The number of iterations of iterated conditional modes (topic maximization).", null);
+		"The number of iterations of iterated conditional modes (topic maximization).", null);
 
 	static CommandOption.Boolean noInference = new CommandOption.Boolean
 		(TopicTrainer.class, "no-inference", "true|false", false, false,
@@ -196,14 +196,6 @@ public class TopicTrainer {
 		ParallelTopicModel topicModel = null;
 		
 		if (inputModelFilename.value != null) {
-			
-			if (inputFile.value != null) { 
-				logger.warning("The --input option is not compatible with --input-model.");
-			}
-			if (inputStateFilename.value != null) {
-				logger.warning("The --input-state option is not compatible with --input-model.");
-			}
-			
 			try {
 				topicModel = ParallelTopicModel.read(new File(inputModelFilename.value));
 			} catch (Exception e) {
@@ -213,6 +205,10 @@ public class TopicTrainer {
 			}
 		} 
 		else {
+			topicModel = new ParallelTopicModel (numTopics.value, alpha.value, beta.value);
+		}
+
+		if (inputFile.value != null) {
 			InstanceList training = null;
 			try {
 				if (inputFile.value.startsWith("db:")) {
@@ -222,7 +218,7 @@ public class TopicTrainer {
 					training = InstanceList.load (new File(inputFile.value));
 				}
 			} catch (Exception e) {
-				System.err.println("Unable to restore instance list " +
+				logger.warning("Unable to restore instance list " +
 								   inputFile.value + ": " + e);
 				System.exit(1);
 			}
@@ -238,19 +234,19 @@ public class TopicTrainer {
 				}
 			}
 
-			topicModel = new ParallelTopicModel (numTopics.value, alpha.value, beta.value);
-			if (randomSeed.value != 0) {
-				topicModel.setRandomSeed(randomSeed.value);
-			}
-
 			topicModel.addInstances(training);
 
-			if (inputStateFilename.value != null) {
-				logger.info("Initializing from saved state.");
-				topicModel.initializeFromState(new File(inputStateFilename.value));
-			}
 		}
 
+		if (randomSeed.value != 0) {
+			topicModel.setRandomSeed(randomSeed.value);
+		}
+
+		if (inputStateFilename.value != null) {
+			logger.info("Initializing from saved state.");
+			topicModel.initializeFromState(new File(inputStateFilename.value));
+		}
+				
 		topicModel.setTopicDisplay(showTopicsInterval.value, topWords.value);
 
 		topicModel.setNumIterations(numIterations.value);

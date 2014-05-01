@@ -220,34 +220,6 @@ public class ParallelTopicModel implements Serializable {
 		numTypes = alphabet.size();
 		
 		betaSum = beta * numTypes;
-		
-		typeTopicCounts = new int[numTypes][];
-
-		// Get the total number of occurrences of each word type
-		//int[] typeTotals = new int[numTypes];
-		typeTotals = new int[numTypes];
-
-		int doc = 0;
-		for (Instance instance : training) {
-			doc++;
-			FeatureSequence tokens = (FeatureSequence) instance.getData();
-			for (int position = 0; position < tokens.getLength(); position++) {
-				int type = tokens.getIndexAtPosition(position);
-				typeTotals[ type ]++;
-			}
-		}
-
-		maxTypeCount = 0;
-
-		// Allocate enough space so that we never have to worry about
-		//  overflows: either the number of topics or the number of times
-		//  the type occurs.
-		for (int type = 0; type < numTypes; type++) {
-			if (typeTotals[type] > maxTypeCount) { maxTypeCount = typeTotals[type]; }
-			typeTopicCounts[type] = new int[ Math.min(numTopics, typeTotals[type]) ];
-		}
-		
-		doc = 0;
 
 		Randoms random = null;
 		if (randomSeed == -1) {
@@ -258,8 +230,6 @@ public class ParallelTopicModel implements Serializable {
 		}
 
 		for (Instance instance : training) {
-			doc++;
-
 			FeatureSequence tokens = (FeatureSequence) instance.getData();
 			LabelSequence topicSequence =
 				new LabelSequence(topicAlphabet, new int[ tokens.size() ]);
@@ -272,8 +242,8 @@ public class ParallelTopicModel implements Serializable {
 				
 			}
 
-			TopicAssignment t = new TopicAssignment (instance, topicSequence);
-			data.add (t);
+			TopicAssignment t = new TopicAssignment(instance, topicSequence);
+			data.add(t);
 		}
 		
 		buildInitialTypeTopicCounts();
@@ -322,26 +292,34 @@ public class ParallelTopicModel implements Serializable {
 	}
 
 	public void buildInitialTypeTopicCounts () {
-
-		// Clear the topic totals
-		Arrays.fill(tokensPerTopic, 0);
 		
-		// Clear the type/topic counts, only 
-		//  looking at the entries before the first 0 entry.
+		typeTopicCounts = new int[numTypes][];
+		tokensPerTopic = new int[numTopics];
 
-		for (int type = 0; type < numTypes; type++) {
-			
-			int[] topicCounts = typeTopicCounts[type];
-			
-			int position = 0;
-			while (position < topicCounts.length && 
-				   topicCounts[position] > 0) {
-				topicCounts[position] = 0;
-				position++;
+		// Get the total number of occurrences of each word type
+		//int[] typeTotals = new int[numTypes];
+		typeTotals = new int[numTypes];
+		
+		// Create the type-topic counts data structure
+		for (TopicAssignment document : data) {
+
+			FeatureSequence tokens = (FeatureSequence) document.instance.getData();
+			for (int position = 0; position < tokens.getLength(); position++) {
+				int type = tokens.getIndexAtPosition(position);
+				typeTotals[ type ]++;
 			}
-
 		}
 
+		maxTypeCount = 0;
+
+		// Allocate enough space so that we never have to worry about
+		//  overflows: either the number of topics or the number of times
+		//  the type occurs.
+		for (int type = 0; type < numTypes; type++) {
+			if (typeTotals[type] > maxTypeCount) { maxTypeCount = typeTotals[type]; }
+			typeTopicCounts[type] = new int[ Math.min(numTopics, typeTotals[type]) ];
+		}
+		
 		for (TopicAssignment document : data) {
 
 			FeatureSequence tokens = (FeatureSequence) document.instance.getData();
