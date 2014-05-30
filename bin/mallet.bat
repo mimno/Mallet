@@ -21,6 +21,7 @@ set CLASS=
 if "%CMD%"=="import-dir" set CLASS=cc.mallet.classify.tui.Text2Vectors
 if "%CMD%"=="import-file" set CLASS=cc.mallet.classify.tui.Csv2Vectors
 if "%CMD%"=="import-svmlight" set CLASS=cc.mallet.classify.tui.SvmLight2Vectors
+if "%CMD%"=="info" set CLASS=cc.mallet.classify.tui.Vectors2Info
 if "%CMD%"=="train-classifier" set CLASS=cc.mallet.classify.tui.Vectors2Classify
 if "%CMD%"=="classify-dir" set CLASS=cc.mallet.classify.tui.Text2Classify
 if "%CMD%"=="classify-file" set CLASS=cc.mallet.classify.tui.Csv2Classify
@@ -40,6 +41,7 @@ echo Mallet 2.0 commands:
 echo   import-dir        load the contents of a directory into mallet instances (one per file)
 echo   import-file       load a single file into mallet instances (one per line)
 echo   import-svmlight   load a single SVMLight format data file into mallet instances (one per line)
+echo   info              get information about Mallet instances
 echo   train-classifier  train a classifier from Mallet data files
 echo   classify-dir      classify data from a single file with a saved classifier
 echo   classify-file     classify the contents of a directory with a saved classifier

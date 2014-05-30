@@ -102,7 +102,6 @@ public class Vectors2Info
 			for (int i = 0; i < alphabet.size(); i++) {
 				System.out.println(alphabet.lookupObject(i));
 			}
-			System.out.print ("\n");
 		}
 
 		if (printInfogain.value > 0) {
