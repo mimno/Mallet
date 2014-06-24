@@ -26,6 +26,7 @@ import cc.mallet.util.*;
 public class Text2Vectors {
 
 	private static Logger logger = MalletLogger.getLogger(Text2Vectors.class.getName());
+	public static String defaultTokenRegex = "\\p{L}[\\p{L}\\p{P}]+\\p{L}";
 
 	static CommandOption.SpacedStrings classDirs =	new CommandOption.SpacedStrings
 		(Text2Vectors.class, "input", "DIR...", true, null,
@@ -45,6 +46,12 @@ public class Text2Vectors {
 		(Text2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
 		 "If true, do not force all strings to lowercase.", null);
 	
+    static CommandOption.SpacedStrings replacementFiles = new CommandOption.SpacedStrings(Text2Vectors.class, "replacement-files", "FILE [FILE ...]", true, null,
+             "files containing string replacements, one per line:\n    'A B [tab] C' replaces A B with C,\n    'A B' replaces A B with A_B", null);
+
+    static CommandOption.SpacedStrings deletionFiles = new CommandOption.SpacedStrings(Text2Vectors.class, "deletion-files", "FILE [FILE ...]", true, null,
+             "files containing strings to delete after replacements but before tokenization (ie multiword stop terms)", null);
+
 	static CommandOption.Boolean removeStopWords = new CommandOption.Boolean
 		(Text2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
 		 "If true, remove a default list of common English \"stop words\" from the text.", null);
@@ -106,7 +113,7 @@ public class Text2Vectors {
 		 "Character encoding for input file", null);
 	
 	static CommandOption.String tokenRegex = new CommandOption.String
-		(Text2Vectors.class, "token-regex", "REGEX", true, CharSequenceLexer.LEX_ALPHA.toString(),
+		(Text2Vectors.class, "token-regex", "REGEX", true, defaultTokenRegex,
 		 "Regular expression used for tokenization.\n" +
 		 "   Example: \"[\\p{L}\\p{N}_]+|[\\p{P}]+\" (unicode letters, numbers and underscore OR all punctuation) ", null);
 	
@@ -193,7 +200,25 @@ public class Text2Vectors {
 				pipeList.add( new CharSequenceRemoveHTML() );
 			}
 
+			// String replacements
+			
+			if (! preserveCase.value()) {
+				pipeList.add(new CharSequenceLowercase());
+			}
+			
+            if (replacementFiles.value != null || deletionFiles.value != null) {
+				NGramPreprocessor preprocessor = new NGramPreprocessor();
 
+				if (replacementFiles.value != null) {
+					for (String filename: replacementFiles.value) { preprocessor.loadReplacements(filename); }
+				}
+				if (deletionFiles.value != null) {
+					for (String filename: deletionFiles.value) { preprocessor.loadDeletions(filename); }
+				}
+			
+				pipeList.add(preprocessor);
+            }
+			
 			//
 			// Tokenize the input: first compile the tokenization pattern
 			// 
@@ -223,10 +248,6 @@ public class Text2Vectors {
 			//  that operates on TokenSequence objects.
 			if (tokenPipe.wasInvoked()) {
 				pipeList.add( (Pipe) tokenPipe.value );
-			}
-
-			if (! preserveCase.value()) {
-				pipeList.add(new TokenSequenceLowercase());
 			}
                         
 			if (keepSequenceBigrams.value) {

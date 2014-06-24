@@ -171,7 +171,7 @@ public class TopicTrainer {
 		 "Only optimize the concentration parameter of the prior over document-topic distributions. This may reduce the number of very small, poorly estimated topics, but may disperse common words over several topics.", null);
 
 	static CommandOption.Double alpha = new CommandOption.Double
-		(TopicTrainer.class, "alpha", "DECIMAL", true, 50.0,
+		(TopicTrainer.class, "alpha", "DECIMAL", true, 5.0,
 		 "Alpha parameter: smoothing over topic distribution.",null);
 
 	static CommandOption.Double beta = new CommandOption.Double

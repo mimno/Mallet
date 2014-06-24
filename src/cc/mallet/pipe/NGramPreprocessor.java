@@ -20,7 +20,7 @@ public class NGramPreprocessor extends Pipe implements Serializable {
 		replacementSets = new ArrayList<ReplacementSet>();
 	}
 
-	public int loadReplacements(String filename) throws Exception {
+	public int loadReplacements(String filename) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(filename));
 		
 		ReplacementSet set = new ReplacementSet();
@@ -39,7 +39,7 @@ public class NGramPreprocessor extends Pipe implements Serializable {
 		return totalReplacements;
 	}
 	
-	public int loadDeletions(String filename) throws Exception {
+	public int loadDeletions(String filename) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(filename));
 			
 		ReplacementSet set = new ReplacementSet();
@@ -72,8 +72,8 @@ public class NGramPreprocessor extends Pipe implements Serializable {
 		input = input.replaceAll("&gt;", "<");
 		input = input.replaceAll("&lt;", ">");
 
-		// Remove all non letter/number characters except dash
-		input = input.replaceAll("[^\\p{L}\\p{N}\\-]", " ");
+		// Remove all non letter/number characters except dash and apostrophe
+		input = input.replaceAll("[^\\p{L}\\p{N}\\-\\']", " ");
 
 		// Reduce all blocks of whitespace to a single space
 		input = input.replaceAll("\\s+", " ");
