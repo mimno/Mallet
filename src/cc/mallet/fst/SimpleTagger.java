@@ -548,10 +548,14 @@ public class SimpleTagger {
 	                boolean retval = line.contains(cs1);
 	                if (retval==true)
 	                {
-	                	System.out.println("Test file is not in correct format. It should be one word per line e.g. \n\nI \nneed \na \nbear \n.");
-	                	System.exit(1);
+	                	System.out.println("Test file is not in correct format.");
+	                	testFile.close();
+	                	trainingFile.close();
+	                	return;
 	                }
 	            }
+				
+				System.out.println("File is in correct format. Proceed.");
 				testFile = new FileReader(new File(args[restArgs]));
 				
 				//	COREY'S FIX ENDS HERE
@@ -573,9 +577,12 @@ public class SimpleTagger {
                 if (retval==true)
                 {
                 	System.out.println("Test file is not in correct format. It should be one word per line e.g. \n\nI \nneed \na \nbear \n.");
-                	System.exit(1);
+                	testFile.close();
+                	return;
                 }
             }
+			
+			System.out.println("File is in correct format. Proceed.");
 			testFile = new FileReader(new File(args[restArgs]));
 		
 			//	COREY'S FIX ENDS HERE
