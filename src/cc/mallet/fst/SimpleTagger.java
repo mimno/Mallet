@@ -6,7 +6,8 @@
    information, see the file `LICENSE' included with this distribution. */
 
 package cc.mallet.fst;
-//poooooo
+
+// P00000000000000p
 
 import java.io.File;
 import java.io.FileInputStream;
