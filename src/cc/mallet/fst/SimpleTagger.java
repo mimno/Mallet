@@ -7,18 +7,18 @@
 
 package cc.mallet.fst;
 
-// P00000000000000p
-
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
-
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -31,10 +31,8 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
 import cc.mallet.types.Sequence;
-
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.iterator.LineGroupIterator;
-
 import cc.mallet.util.CommandOption;
 import cc.mallet.util.MalletLogger;
 
@@ -521,7 +519,7 @@ public class SimpleTagger {
 	 * @exception Exception if an error occurs
 	 */
 	public static void main (String[] args) throws Exception {
-
+		
 		Reader trainingFile = null, testFile = null;
 		InstanceList trainingData = null, testData = null;
 		int numEvaluations = 0;
@@ -537,10 +535,50 @@ public class SimpleTagger {
 			trainingFile = new FileReader(new File(args[restArgs]));
 			if (testOption.value != null && restArgs < args.length - 1) {
 				testFile = new FileReader(new File(args[restArgs+1]));
+			
+				//	COREY'S FIX STARTS HERE
+				
+				Scanner scanner = new Scanner(testFile);
+				
+				CharSequence cs1 = " ";
+				
+				while (scanner.hasNextLine()) {
+	                String line = scanner.nextLine();
+	               // System.out.println(line);
+	                boolean retval = line.contains(cs1);
+	                if (retval==true)
+	                {
+	                	System.out.println("Test file is not in correct format. It should be one word per line e.g. \n\nI \nneed \na \nbear \n.");
+	                	System.exit(1);
+	                }
+	            }
+				testFile = new FileReader(new File(args[restArgs]));
+				
+				//	COREY'S FIX ENDS HERE
 			}
 		}
 		else {
 			testFile = new FileReader(new File(args[restArgs]));
+			
+			//	COREY'S FIX STARTS HERE
+			
+			Scanner scanner = new Scanner(testFile);
+			
+			CharSequence cs1 = " ";
+			
+			while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+               // System.out.println(line);
+                boolean retval = line.contains(cs1);
+                if (retval==true)
+                {
+                	System.out.println("Test file is not in correct format. It should be one word per line e.g. \n\nI \nneed \na \nbear \n.");
+                	System.exit(1);
+                }
+            }
+			testFile = new FileReader(new File(args[restArgs]));
+		
+			//	COREY'S FIX ENDS HERE
 		}
 
 		Pipe p = null;
