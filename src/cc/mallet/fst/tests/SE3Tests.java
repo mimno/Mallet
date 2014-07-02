@@ -155,6 +155,36 @@ public class SE3Tests {
 			    assertEquals("O \nO \nY \nO\n", phrase);
 	}
 	
+//	TEST 6: Testing with a simple file in the CORRECT format on a very large trained CRF to make sure correct output is occurring 
+//	Should proceed to use large trained CRF in tagging
+	
+	@Test
+	public void CheckCorrectOutputFromCorrectFileFormat_LARGE() {	
+		
+				try {
+					SimpleTagger.main(new String[] { "--model-file", "crf", "test.txt" });
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				Scanner scanner = new Scanner(outContent.toString());
+				
+				//	Correct output of tagging should look like this:
+				
+				String phrase = "O \nO \nO \nO\n";
+				
+				while (scanner.hasNextLine()) {
+		        String line = scanner.nextLine();
+		        System.out.println(line);
+		        if(line.equals(phrase)){
+		        	break;
+		        }
+				}
+				scanner.close();
+			    assertEquals("O \nO \nO \nO\n", phrase);
+	}
+	
 	//	Tests merely to check JUNIT is working properly with the ByteArrayOutputStream
 	//	Should PASS
 	
