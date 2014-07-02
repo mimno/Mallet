@@ -68,6 +68,6 @@ public class ManhattenDistance implements Metric {
 			rightIndex++;
 		}
 
-		return diff;
+		return dist;
 	}
 }
