@@ -535,8 +535,6 @@ public class SimpleTagger {
 			trainingFile = new FileReader(new File(args[restArgs]));
 			if (testOption.value != null && restArgs < args.length - 1) {
 				testFile = new FileReader(new File(args[restArgs+1]));
-			
-				//	COREY'S FIX STARTS HERE
 				
 				Scanner scanner = new Scanner(testFile);
 				
@@ -558,13 +556,10 @@ public class SimpleTagger {
 				System.out.println("File is in correct format. Proceed.");
 				testFile = new FileReader(new File(args[restArgs]));
 				
-				//	COREY'S FIX ENDS HERE
 			}
 		}
 		else {
 			testFile = new FileReader(new File(args[restArgs]));
-			
-			//	COREY'S FIX STARTS HERE
 			
 			Scanner scanner = new Scanner(testFile);
 			
@@ -584,8 +579,6 @@ public class SimpleTagger {
 			
 			System.out.println("File is in correct format. Proceed.");
 			testFile = new FileReader(new File(args[restArgs]));
-		
-			//	COREY'S FIX ENDS HERE
 		}
 
 		Pipe p = null;
