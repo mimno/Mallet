@@ -142,7 +142,7 @@ public class SE3Tests {
 				
 				//	Correct output of tagging should look like this:
 				
-				String phrase = "O \nO \nY \nO\n";
+				String phrase = "O \nO \nY \nO \nO \n";
 				
 				while (scanner.hasNextLine()) {
 		        String line = scanner.nextLine();
@@ -152,7 +152,7 @@ public class SE3Tests {
 		        }
 				}
 				scanner.close();
-			    assertEquals("O \nO \nY \nO\n", phrase);
+			    assertEquals("O \nO \nY \nO \nO \n", phrase);
 	}
 	
 //	TEST 6: Testing with a simple file in the CORRECT format on a very large trained CRF to make sure correct output is occurring 
@@ -162,7 +162,7 @@ public class SE3Tests {
 	public void CheckCorrectOutputFromCorrectFileFormat_LARGE() {	
 		
 				try {
-					SimpleTagger.main(new String[] { "--model-file", "crf", "test.txt" });
+					SimpleTagger.main(new String[] { "--model-file", "largecrf", "test.txt" });
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -172,7 +172,7 @@ public class SE3Tests {
 				
 				//	Correct output of tagging should look like this:
 				
-				String phrase = "O \nO \nO \nO\n";
+				String phrase = "O \nO \nO \nO\nPER \n";
 				
 				while (scanner.hasNextLine()) {
 		        String line = scanner.nextLine();
@@ -182,7 +182,7 @@ public class SE3Tests {
 		        }
 				}
 				scanner.close();
-			    assertEquals("O \nO \nO \nO\n", phrase);
+			    assertEquals("O \nO \nO \nO\nPER \n", phrase);
 	}
 	
 	//	Tests merely to check JUNIT is working properly with the ByteArrayOutputStream
