@@ -15,6 +15,8 @@ import cc.mallet.fst.SimpleTagger;
 
 public class SE3Tests {
 
+	//	Set up taking input from the console
+	
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 	
 	@Before
@@ -27,7 +29,8 @@ public class SE3Tests {
 		System.setOut(null);
 	}
 	
-	// TEST 1: Testing with a simple file in the correct format (i.e. it is one word per line)
+	//	TEST 1: Testing with a simple file in the CORRECT format (i.e. it is one word per line)
+	//	Should proceed to use trained CRF in tagging
 	
 	@Test
 	public void CheckCorrectFileType() {	
@@ -54,13 +57,14 @@ public class SE3Tests {
 
 	}
 	
-	// TEST 2: Testing with a simple file in the incorrect format
+	// TEST 2: Testing with a simple file in the INCORRECT format
+	//	Should produce error message and exit
 	
 	@Test
 	public void CheckIncorrectFileType() {	
 		
 				try {
-					SimpleTagger.main(new String[] { "--model-file", "crf", "badtest2.txt" });
+					SimpleTagger.main(new String[] { "--model-file", "crf", "badtest.txt" });
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -73,8 +77,9 @@ public class SE3Tests {
 
 	}
 	
-	// TEST 3: Testing with a larger file in the CORRECT format (one month of emails from the Enron email dataset)
-	// from http://www.cs.cmu.edu/~./enron/
+	//	TEST 3: Testing with a larger file in the CORRECT format (one month of emails from the Enron email dataset)
+	//	from http://www.cs.cmu.edu/~./enron/
+	//	Should proceed to use trained CRF in tagging
 	
 	@Test
 	public void CheckCorrectFileType_STRESS() {	
@@ -100,8 +105,9 @@ public class SE3Tests {
 	    assertEquals("File is in correct format. Proceed.", phrase);
 	}
 	
-	// TEST 3: Testing with a larger file in the INCORRECT format (one month of emails from the Enron email dataset)
-	// from http://www.cs.cmu.edu/~./enron/
+	//	TEST 4: Testing with a larger file in the INCORRECT format (one month of emails from the Enron email dataset)
+	//	from http://www.cs.cmu.edu/~./enron/
+	//	Should produce error message and exit
 	
 	@Test
 	public void CheckIncorrectFileType_STRESS() {	
@@ -119,11 +125,47 @@ public class SE3Tests {
 			    assertTrue(retval);
 	}
 	
+	//	TEST 5: Testing with a simple file in the CORRECT format to make sure correct output is occurring 
+	//	Should proceed to use trained CRF in tagging
+	
+	@Test
+	public void CheckCorrectOutputFromCorrectFileFormat() {	
+		
+				try {
+					SimpleTagger.main(new String[] { "--model-file", "crf", "test.txt" });
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				Scanner scanner = new Scanner(outContent.toString());
+				
+				//	Correct output of tagging should look like this:
+				
+				String phrase = "O \nO \nY \nO\n";
+				
+				while (scanner.hasNextLine()) {
+		        String line = scanner.nextLine();
+		        System.out.println(line);
+		        if(line.equals(phrase)){
+		        	break;
+		        }
+				}
+				scanner.close();
+			    assertEquals("O \nO \nY \nO\n", phrase);
+	}
+	
+	//	Tests merely to check JUNIT is working properly with the ByteArrayOutputStream
+	//	Should PASS
+	
 	@Test
 	public void out1() {
 	    System.out.print("hello");
 	    assertEquals("hello", outContent.toString());
 	}
+	
+	//	Should FAIL
+	
 	@Test
 	public void out2() {
 	    System.out.print("hallo");
