@@ -203,8 +203,8 @@ public class MaxEnt extends Classifier implements Serializable
 		print(System.out);
 	}
 
-	public void print (PrintStream out)
-	{
+	@Override
+	public void print(PrintWriter out) {
 		final Alphabet dict = getAlphabet();
 		final LabelAlphabet labelDict = getLabelAlphabet();
 
@@ -221,6 +221,10 @@ public class MaxEnt extends Classifier implements Serializable
 				out.println (" "+name+" "+weight);
 			}
 		}
+	}
+
+	public void print (PrintStream out) {
+		print(new PrintWriter(out));
 	}
 
 	//printRank, added by Limin Yao
