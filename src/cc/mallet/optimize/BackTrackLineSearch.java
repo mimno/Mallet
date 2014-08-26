@@ -69,8 +69,7 @@ public class BackTrackLineSearch implements LineOptimizer.ByGradient
 
 	// returns fraction of step size (alam) if found a good step
 	// returns 0.0 if could not step in direction
-	public double optimize (double[] line, double initialStep)
-	{
+	public double optimize (double[] line, double initialStep) {
 		double[] g, x, oldParameters;
 		double slope, newSlope, temp, test, alamin, alam, alam2, tmplam;
 		double rhs1, rhs2, a, b, disc, oldAlam;
@@ -90,29 +89,29 @@ public class BackTrackLineSearch implements LineOptimizer.ByGradient
 		}
 		assert (!MatrixOps.isNaN(g));
 		double sum = MatrixOps.twoNorm(line);
-		if(sum > stpmax) {
-			logger.warning("attempted step too big. scaling: sum="+sum+
-					", stpmax="+stpmax);
-			MatrixOps.timesEquals(line, stpmax/sum);
+		if (sum > stpmax) {
+			logger.warning("attempted step too big. scaling: sum="+sum+", stpmax="+stpmax);
+			MatrixOps.timesEquals(line, stpmax / sum);
 		}
 
 		newSlope = slope = MatrixOps.dotProduct (g, line);
 		logger.fine("slope="+slope);
 
-		if (slope<0) 
+		if (slope < 0) {
 			throw new InvalidOptimizableException ("Slope = " + slope + " is negative");
-		if (slope == 0)
+		}
+		if (slope == 0) {
 			throw new InvalidOptimizableException ("Slope = " + slope + " is zero");
+		}
 
 		// find maximum lambda
 		// converge when (delta x) / x < REL_TOLX for all coordinates.
 		//  the largest step size that triggers this threshold is
 		//  precomputed and saved in alamin
 		test = 0.0;
-		for(int i=0; i<oldParameters.length; i++) {
-			temp = Math.abs(line[i]) /
-			Math.max(Math.abs(oldParameters[i]), 1.0);
-			if(temp > test) test = temp;
+		for (int i=0; i<oldParameters.length; i++) {
+			temp = Math.abs(line[i]) / Math.max(Math.abs(oldParameters[i]), 1.0);
+			if (temp > test) { test = temp; }
 		}
 
 		alamin = relTolx/test;
@@ -120,7 +119,7 @@ public class BackTrackLineSearch implements LineOptimizer.ByGradient
 		oldAlam = 0.0;
 		int iteration = 0;
 		// look for step size in direction given by "line"
-		for(iteration=0; iteration < maxIterations; iteration++) {
+		for (iteration=0; iteration < maxIterations; iteration++) {
 			// x = oldParameters + alam*line
 			// initially, alam = 1.0, i.e. take full Newton step
 			logger.fine("BackTrack loop iteration "+iteration+": alam="+
@@ -148,22 +147,21 @@ public class BackTrackLineSearch implements LineOptimizer.ByGradient
 			logger.fine("value="+f);
 
 			// sufficient function increase (Wolf condition)
-			if(f >= fold+ALF*alam*slope) { 
+			if (f >= fold+ALF*alam*slope) { 
 
 				logger.fine("EXITING BACKTRACK: value="+f);
 
-				if (f<fold) 
-					throw new IllegalStateException
-					("Function did not increase: f=" + f + 
-							" < " + fold + "=fold");				
+				if (f<fold) {
+					throw new IllegalStateException("Function did not increase: f=" + f + " < " + fold + "=fold");				
+				}
 				return alam;
 			}
 			// if value is infinite, i.e. we've
 			// jumped to unstable territory, then scale down jump
-			else if(Double.isInfinite(f) || Double.isInfinite(f2)) {
+			else if (Double.isInfinite(f) || Double.isInfinite(f2)) {
 				logger.warning ("Value is infinite after jump " + oldAlam + ". f="+f+", f2="+f2+". Scaling back step size...");
 				tmplam = .2 * alam;					
-				if(alam < alamin) { //convergence on delta x
+				if (alam < alamin) { //convergence on delta x
 					function.setParameters(oldParameters);
 					f = function.getValue();
 					logger.warning("EXITING BACKTRACK: Jump too small. Exiting and using xold. Value="+f);
@@ -171,27 +169,33 @@ public class BackTrackLineSearch implements LineOptimizer.ByGradient
 				}
 			}
 			else { // backtrack
-				if(alam == 1.0) // first time through
+				if (alam == 1.0) { // first time through
 					tmplam = -slope/(2.0*(f-fold-slope));
+				}
 				else {
 					rhs1 = f-fold-alam*slope;
 					rhs2 = f2-fold-alam2*slope;
 					assert((alam - alam2) != 0): "FAILURE: dividing by alam-alam2. alam="+alam;
 					a = (rhs1/(alam*alam)-rhs2/(alam2*alam2))/(alam-alam2);
 					b = (-alam2*rhs1/(alam*alam)+alam*rhs2/(alam2*alam2))/(alam-alam2);
-					if(a == 0.0) 
+					if (a == 0.0) {
 						tmplam = -slope/(2.0*b);
+					}
 					else {
 						disc = b*b-3.0*a*slope;
-						if(disc < 0.0) {
+						if (disc < 0.0) {
 							tmplam = .5 * alam;
 						}
-						else if (b <= 0.0)
+						else if (b <= 0.0) {
 							tmplam = (-b+Math.sqrt(disc))/(3.0*a);
-						else tmplam = -slope/(b+Math.sqrt(disc));
+						}
+						else { 
+							tmplam = -slope/(b+Math.sqrt(disc));
+						}
 					}
-					if (tmplam > .5*alam)
+					if (tmplam > .5*alam) {
 						tmplam = .5*alam;    // lambda <= .5 lambda_1
+					}
 				}
 			}
 			alam2 = alam;
@@ -199,14 +203,14 @@ public class BackTrackLineSearch implements LineOptimizer.ByGradient
 			logger.fine("tmplam:"+tmplam);
 			alam = Math.max(tmplam, .1*alam);  // lambda >= .1*Lambda_1						
 		}
-		if(iteration >= maxIterations) 
+		if (iteration >= maxIterations) {
 			throw new IllegalStateException ("Too many iterations.");
+		}
 		return 0.0;
 	}
 
 	// returns true iff we've converged based on absolute x difference 
-	private boolean smallAbsDiff (double[] x, double[] xold)
-	{
+	private boolean smallAbsDiff (double[] x, double[] xold) {
 		for (int i = 0; i < x.length; i++) {
 			if (Math.abs (x[i] - xold[i]) > absTolx) {
 				return false;

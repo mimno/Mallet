@@ -25,8 +25,8 @@ import cc.mallet.optimize.Optimizable;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.util.MalletLogger;
 
-public class LimitedMemoryBFGS implements Optimizer
-{
+public class LimitedMemoryBFGS implements Optimizer {
+	
 	private static Logger logger = MalletLogger.getLogger("edu.umass.cs.mallet.base.ml.maximize.LimitedMemoryBFGS");
 
 	boolean converged = false;
@@ -82,33 +82,35 @@ public class LimitedMemoryBFGS implements Optimizer
 		this.tolerance = newtol;
 	}
 
-	public void setEvaluator (OptimizerEvaluator.ByGradient eval) { this.eval = eval; }
+	public void setEvaluator (OptimizerEvaluator.ByGradient eval) {
+		this.eval = eval;
+	}
 	
 	public int getIteration () {
 		return iterations;
 	}
 
-	public boolean optimize ()
-	{
+	public boolean optimize () {
 		return optimize (Integer.MAX_VALUE);
 	}
 
-	public boolean optimize (int numIterations)
-	{
+	public boolean optimize (int numIterations) {
 
 		double initialValue = optimizable.getValue();
 		logger.fine("Entering L-BFGS.optimize(). Initial Value="+initialValue);		
 
-
-		if(g==null) { //first time through
+		if (g == null) { //first time through
+			
 			logger.fine("First time through L-BFGS");
 			iterations = 0;
 			s = new LinkedList();
 			y = new LinkedList();
 			rho = new LinkedList();
 			alpha = new double[m];	    
-			for(int i=0; i<m; i++)
+
+			for (int i=0; i<m; i++) {
 				alpha[i] = 0.0;
+			}
 
 			parameters = new double[optimizable.getNumParameters()];
 			oldParameters = new double[optimizable.getNumParameters()];
@@ -129,18 +131,20 @@ public class LimitedMemoryBFGS implements Optimizer
 				converged = true;
 				return true;
 			}
+			
 			logger.fine ("direction.2norm: " + MatrixOps.twoNorm (direction));
 			MatrixOps.timesEquals(direction, 1.0 / MatrixOps.twoNorm(direction));
+
 			// make initial jump
 			logger.fine ("before initial jump: \ndirection.2norm: " +
 					MatrixOps.twoNorm (direction) + " \ngradient.2norm: " +
 					MatrixOps.twoNorm (g) + "\nparameters.2norm: " +
 					MatrixOps.twoNorm(parameters));
 
-
 			//TestMaximizable.testValueAndGradientInDirection (maxable, direction);
 			step = lineMaximizer.optimize(direction, step);
-			if (step == 0.0) {// could not step in this direction.
+			if (step == 0.0) {
+				// could not step in this direction.
 				// give up and say converged.
 				g = null; // reset search
 				step = 1.0;
@@ -150,6 +154,7 @@ public class LimitedMemoryBFGS implements Optimizer
 			
 				//return false;
 			}
+			
 			optimizable.getParameters (parameters);
 			optimizable.getValueGradient(g);
 			logger.fine ("after initial jump: \ndirection.2norm: " +
@@ -157,30 +162,38 @@ public class LimitedMemoryBFGS implements Optimizer
 					+ MatrixOps.twoNorm (g));		
 		}
 
-		for(int iterationCount = 0; iterationCount < numIterations;
-		iterationCount++)	{
+		for (int iterationCount = 0; iterationCount < numIterations; iterationCount++)	{
 			double value = optimizable.getValue();
 			logger.fine("L-BFGS iteration="+iterationCount
 					+", value="+value+" g.twoNorm: "+MatrixOps.twoNorm(g)+
 					" oldg.twoNorm: "+MatrixOps.twoNorm(oldg));
+			
 			// get difference between previous 2 gradients and parameters
 			double sy = 0.0;
 			double yy = 0.0;
+			
 			for (int i=0; i < oldParameters.length; i++) {
 				// -inf - (-inf) = 0; inf - inf = 0
 				if (Double.isInfinite(parameters[i]) &&
 						Double.isInfinite(oldParameters[i]) &&
-						(parameters[i]*oldParameters[i] > 0))
+						(parameters[i] * oldParameters[i] > 0)) {
 					oldParameters[i] = 0.0;
-				else
+				}
+				else {
 					oldParameters[i] = parameters[i] - oldParameters[i];
+				}
+				
 				if (Double.isInfinite(g[i]) &&
 						Double.isInfinite(oldg[i]) &&
-						(g[i]*oldg[i] > 0))
+						(g[i] * oldg[i] > 0)) {
 					oldg[i] = 0.0;
-				else oldg[i] = g[i] - oldg[i];				
+				}
+				else {
+					oldg[i] = g[i] - oldg[i];
+				}
+				
 				sy += oldParameters[i] * oldg[i]; 	 // si * yi
-				yy += oldg[i]*oldg[i];
+				yy += oldg[i] * oldg[i];
 				direction[i] = g[i];
 			}
 
@@ -189,45 +202,62 @@ public class LimitedMemoryBFGS implements Optimizer
 			}
 
 			double gamma = sy / yy;	 // scaling factor
-			if ( gamma>0 )
+			
+			if ( gamma > 0 ) {
 				throw new InvalidOptimizableException ("gamma = "+gamma+" > 0" );
+			}
 
 			push (rho, 1.0/sy);
+			// These arrays are now the *differences* between parameters and gradient.
 			push (s, oldParameters);
 			push (y, oldg);
-			// calculate new direction
-			assert (s.size() == y.size()) :
-				"s.size: " + s.size() + " y.size: " + y.size();
-			for(int i = s.size() - 1; i >= 0; i--) {
-				alpha[i] =  ((Double)rho.get(i)).doubleValue() *
-				MatrixOps.dotProduct ( (double[])s.get(i), direction);
-				MatrixOps.plusEquals (direction, (double[])y.get(i), 
-						-1.0 * alpha[i]);
+			
+			assert (s.size() == y.size()) : "s.size: " + s.size() + " y.size: " + y.size();
+
+			//
+			// This next section is where we calculate the new direction
+			//
+				
+			// First work backwards, from the most recent difference vectors
+			for (int i = s.size() - 1; i >= 0; i--) {
+				alpha[i] = ((Double)rho.get(i)).doubleValue() * MatrixOps.dotProduct ( (double[])s.get(i), direction );
+				MatrixOps.plusEquals (direction, (double[])y.get(i), -1.0 * alpha[i]);
 			}
+			
+			// Scale the direction by the ratio of s'y and y'y
 			MatrixOps.timesEquals(direction, gamma);
-			for(int i = 0; i < y.size(); i++) {
-				double beta = (((Double)rho.get(i)).doubleValue()) *
-				MatrixOps.dotProduct((double[])y.get(i), direction);
-				MatrixOps.plusEquals(direction,(double[])s.get(i),
-						alpha[i] - beta);
+			
+			// Now work forwards, from the oldest to the newest difference vectors
+			for (int i = 0; i < y.size(); i++) {
+				double beta =
+					(((Double)rho.get(i)).doubleValue()) *
+					MatrixOps.dotProduct((double[])y.get(i), direction);
+				MatrixOps.plusEquals(direction, (double[])s.get(i), alpha[i] - beta);
 			}
 
+			// Move the current values to the "last iteration" buffers and negate the search direction
 			for (int i=0; i < oldg.length; i++) {
 				oldParameters[i] = parameters[i];
 				oldg[i] = g[i];
 				direction[i] *= -1.0;
 			}
+			
 			logger.fine ("before linesearch: direction.gradient.dotprod: "+
 					MatrixOps.dotProduct(direction,g)+"\ndirection.2norm: " +
 					MatrixOps.twoNorm (direction) + "\nparameters.2norm: " +
-					MatrixOps.twoNorm(parameters));					
+					MatrixOps.twoNorm(parameters));
+			
+			// Test whether the gradient is ok
 			//TestMaximizable.testValueAndGradientInDirection (maxable, direction);
+
+			// Do a line search in the current direction		
 			step = lineMaximizer.optimize(direction, step);
+			
 			if (step == 0.0) { // could not step in this direction. 
 				g = null; // reset search
 				step = 1.0;
 				// xxx Temporary test; passed OK
-//				TestMaximizable.testValueAndGradientInDirection (maxable, direction);
+ 			    // TestMaximizable.testValueAndGradientInDirection (maxable, direction);
 				throw new OptimizationException("Line search could not step in the current direction. " +
 						"(This is not necessarily cause for alarm. Sometimes this happens close to the maximum," +
 						" where the function may be very flat.)");
@@ -240,19 +270,18 @@ public class LimitedMemoryBFGS implements Optimizer
 			double newValue = optimizable.getValue();
 
 			// Test for terminations
-			if(2.0*Math.abs(newValue-value) <= tolerance*
-					(Math.abs(newValue)+Math.abs(value) + eps)){
+			if (2.0 * Math.abs(newValue-value) <= tolerance * (Math.abs(newValue) + Math.abs(value) + eps)) {
 				logger.info("Exiting L-BFGS on termination #1:\nvalue difference below tolerance (oldValue: " + value + " newValue: " + newValue);
 				converged = true;
 				return true;
 			}
 			double gg = MatrixOps.twoNorm(g);
-			if(gg < gradientTolerance) {
+			if (gg < gradientTolerance) {
 				logger.fine("Exiting L-BFGS on termination #2: \ngradient="+gg+" < "+gradientTolerance);
 				converged = true;
 				return true;
 			}	    
-			if(gg == 0.0) {
+			if (gg == 0.0) {
 				logger.fine("Exiting L-BFGS on termination #3: \ngradient==0.0");
 				converged = true;
 				return true;
@@ -267,7 +296,7 @@ public class LimitedMemoryBFGS implements Optimizer
 			}
 
 			//end of iteration. call evaluator
-			if (eval != null && !eval.evaluate (optimizable, iterationCount)) {
+			if (eval != null && ! eval.evaluate (optimizable, iterationCount)) {
 				logger.fine ("Exiting L-BFGS on termination #4: evaluator returned false.");
 				converged = true;
 				return false;
@@ -291,8 +320,8 @@ public class LimitedMemoryBFGS implements Optimizer
 	 */
 	private void push(LinkedList l, double[] toadd) {
 		assert(l.size() <= m);
-		if(l.size() == m) {
-			// remove oldest matrix and add newset to end of list.
+		if (l.size() == m) {
+			// remove oldest matrix and add newest to end of list.
 			// to make this more efficient, actually overwrite
 			// memory of oldest matrix
 
@@ -301,8 +330,9 @@ public class LimitedMemoryBFGS implements Optimizer
 			System.arraycopy(toadd, 0, last, 0, toadd.length);
 			Object ptr = last;
 			// this readjusts the pointers in the list
-			for(int i=0; i<l.size()-1; i++) 
-				l.set(i, (double[])l.get(i+1));			
+			for (int i=0; i<l.size()-1; i++) {
+				l.set(i, (double[])l.get(i+1));	
+			}
 			l.set(m-1, ptr);
 		}
 		else {
@@ -319,12 +349,13 @@ public class LimitedMemoryBFGS implements Optimizer
 	 */
 	private void push(LinkedList l, double toadd) {
 		assert(l.size() <= m);
-		if(l.size() == m) { //pop old double and add new
+		if (l.size() == m) { //pop old double and add new
 			l.removeFirst(); 
 			l.addLast(new Double(toadd));
 		}
-		else 
+		else {
 			l.addLast(new Double(toadd));
+		}
 	}
 
 
