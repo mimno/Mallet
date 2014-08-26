@@ -113,8 +113,8 @@ public class ParallelTopicModel implements Serializable {
 		return ret;
 	}
 
-	public ParallelTopicModel (LabelAlphabet topicAlphabet, double alphaSum, double beta)
-	{
+	public ParallelTopicModel (LabelAlphabet topicAlphabet, double alphaSum, double beta) {
+		
 		this.data = new ArrayList<TopicAssignment>();
 		this.topicAlphabet = topicAlphabet;
 		this.numTopics = topicAlphabet.size();
@@ -1697,6 +1697,64 @@ public class ParallelTopicModel implements Serializable {
 		}
 
 		return result;
+	}
+	
+	public ArrayList<TreeSet<IDSorter>> getTopicDocuments(double smoothing) {
+		ArrayList<TreeSet<IDSorter>> topicSortedDocuments = new ArrayList<TreeSet<IDSorter>>(numTopics);
+
+		// Initialize the tree sets
+		for (int topic = 0; topic < numTopics; topic++) {
+			topicSortedDocuments.add(new TreeSet<IDSorter>());
+		}
+
+		int[] topicCounts = new int[numTopics];
+
+		for (int doc = 0; doc < data.size(); doc++) {
+			int[] topics = data.get(doc).topicSequence.getFeatures();
+			for (int position = 0; position < topics.length; position++) {
+				topicCounts[ topics[position] ]++;
+			}
+
+			for (int topic = 0; topic < numTopics; topic++) {
+				topicSortedDocuments.get(topic).add(new IDSorter(doc, (topicCounts[topic] + smoothing) / (topics.length + numTopics * smoothing) ));
+				topicCounts[topic] = 0;
+			}
+		}
+
+		return topicSortedDocuments;
+	}
+	
+	public void printTopicDocuments (PrintWriter out) {
+		printTopicDocuments (out, 100);
+	}
+
+	/**
+	 *  @param out		  A print writer
+	 *  @param count      Print this number of top documents
+	 */
+	public void printTopicDocuments (PrintWriter out, int max)	{
+		out.println("#topic doc name proportion ...");
+		
+		ArrayList<TreeSet<IDSorter>> topicSortedDocuments = getTopicDocuments(10.0);
+
+		for (int topic = 0; topic < numTopics; topic++) {
+			TreeSet<IDSorter> sortedDocuments = topicSortedDocuments.get(topic);
+			
+			int i = 0;
+			for (IDSorter sorter: sortedDocuments) {
+				if (i == max) { break; }
+				
+				int doc = sorter.getID();
+				double proportion = sorter.getWeight();
+				String name = (String) data.get(doc).instance.getName();
+				if (name == null) {
+					name = "no-name";
+				}
+				out.format("%d %d %s %f\n", topic, doc, name, proportion);
+				
+				i++;
+			}
+		}
 	}
 	
 	public void printState (File f) throws IOException {

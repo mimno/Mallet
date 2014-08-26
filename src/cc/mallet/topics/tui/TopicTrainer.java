@@ -114,6 +114,16 @@ public class TopicTrainer {
 		 "The filename in which to write the top words and phrases for each topic and any Dirichlet parameters in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
+	static CommandOption.String topicDocsFile = new CommandOption.String
+		(TopicTrainer.class, "output-topic-docs", "FILENAME", true, null,
+		 "The filename in which to write the most prominent documents for each topic, at the end of the iterations.  " +
+		 "By default this is null, indicating that no file will be written.", null);
+
+	static CommandOption.Integer numTopDocs = new CommandOption.Integer
+		(TopicTrainer.class, "num-top-docs", "INTEGER", true, 100,
+		 "When writing topic documents with --output-topic-docs, " +
+		 "report this number of top documents.", null);
+
 	static CommandOption.String docTopicsFile = new CommandOption.String
 		(TopicTrainer.class, "output-doc-topics", "FILENAME", true, null,
 		 "The filename in which to write the topic proportions per document, at the end of the iterations.  " +
@@ -208,6 +218,10 @@ public class TopicTrainer {
 			topicModel = new ParallelTopicModel (numTopics.value, alpha.value, beta.value);
 		}
 
+		if (randomSeed.value != 0) {
+			topicModel.setRandomSeed(randomSeed.value);
+		}
+
 		if (inputFile.value != null) {
 			InstanceList training = null;
 			try {
@@ -236,10 +250,6 @@ public class TopicTrainer {
 
 			topicModel.addInstances(training);
 
-		}
-
-		if (randomSeed.value != 0) {
-			topicModel.setRandomSeed(randomSeed.value);
 		}
 
 		if (inputStateFilename.value != null) {
@@ -297,6 +307,12 @@ public class TopicTrainer {
 
 		if (stateFile.value != null && outputStateInterval.value == 0) {
 			topicModel.printState (new File(stateFile.value));
+		}
+
+		if (topicDocsFile.value != null) {
+			PrintWriter out = new PrintWriter (new FileWriter ((new File(topicDocsFile.value))));
+			topicModel.printTopicDocuments(out, numTopDocs.value);
+			out.close();
 		}
 
 		if (docTopicsFile.value != null) {
