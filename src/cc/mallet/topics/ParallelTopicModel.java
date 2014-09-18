@@ -141,7 +141,7 @@ public class ParallelTopicModel implements Serializable {
 		formatter = NumberFormat.getInstance();
 		formatter.setMaximumFractionDigits(5);
 
-		logger.info("Coded LDA: " + numTopics + " topics, " + topicBits + " topic bits, " + 
+		logger.info("Mallet LDA: " + numTopics + " topics, " + topicBits + " topic bits, " + 
 					Integer.toBinaryString(topicMask) + " topic mask");
 	}
 	
@@ -1092,13 +1092,6 @@ public class ParallelTopicModel implements Serializable {
 		}
 	}
 	
-	public void printTopWords (File file, int numWords, boolean useNewLines) throws IOException {
-		PrintStream out = new PrintStream (file);
-		printTopWords(out, numWords, useNewLines);
-		out.close();
-	}
-	
-
 	/**
 	 *  Return an array of sorted sets (one set per topic). Each set 
 	 *   contains IDSorter objects with integer keys into the alphabet.
@@ -1167,6 +1160,12 @@ public class ParallelTopicModel implements Serializable {
 		return result;
 	}
 
+	public void printTopWords (File file, int numWords, boolean useNewLines) throws IOException {
+		PrintStream out = new PrintStream (file);
+		printTopWords(out, numWords, useNewLines);
+		out.close();
+	}
+	
 	public void printTopWords (PrintStream out, int numWords, boolean usingNewLines) {
 		out.print(displayTopWords(numWords, usingNewLines));
 	}

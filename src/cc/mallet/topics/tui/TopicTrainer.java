@@ -24,169 +24,136 @@ public class TopicTrainer {
 
 	// Input options
 	
-	static CommandOption.String inputFile = new CommandOption.String
-		(TopicTrainer.class, "input", "FILENAME", true, null,
+	static CommandOption.String inputFile = new CommandOption.String(TopicTrainer.class, "input", "FILENAME", true, null,
 		 "The filename from which to read the list of training instances.  Use - for stdin.  " +
 		 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
 
-	static CommandOption.String inputModelFilename = new CommandOption.String
-		(TopicTrainer.class, "input-model", "FILENAME", true, null,
+	static CommandOption.String inputModelFilename = new CommandOption.String(TopicTrainer.class, "input-model", "FILENAME", true, null,
 		 "The filename from which to read the binary topic model. The --input option is ignored. " +
 		 "By default this is null, indicating that no file will be read.", null);
 
-	static CommandOption.String inputStateFilename = new CommandOption.String
-		(TopicTrainer.class, "input-state", "FILENAME", true, null,
+	static CommandOption.String inputStateFilename = new CommandOption.String(TopicTrainer.class, "input-state", "FILENAME", true, null,
 		 "The filename from which to read the gzipped Gibbs sampling state created by --output-state. " +
 		 "The original input file must be included, using --input. " + 
 		 "By default this is null, indicating that no file will be read.", null);
 
 	// Model output options
 
-	static CommandOption.String outputModelFilename = new CommandOption.String
-		(TopicTrainer.class, "output-model", "FILENAME", true, null,
+	static CommandOption.String outputModelFilename = new CommandOption.String(TopicTrainer.class, "output-model", "FILENAME", true, null,
 		 "The filename in which to write the binary topic model at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String stateFile = new CommandOption.String
-		(TopicTrainer.class, "output-state", "FILENAME", true, null,
+	static CommandOption.String stateFile = new CommandOption.String(TopicTrainer.class, "output-state", "FILENAME", true, null,
 		 "The filename in which to write the Gibbs sampling state after at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.Integer outputModelInterval = new CommandOption.Integer
-		(TopicTrainer.class, "output-model-interval", "INTEGER", true, 0,
+	static CommandOption.Integer outputModelInterval = new CommandOption.Integer(TopicTrainer.class, "output-model-interval", "INTEGER", true, 0,
 		 "The number of iterations between writing the model (and its Gibbs sampling state) to a binary file.  " +
 		 "You must also set the --output-model to use this option, whose argument will be the prefix of the filenames.", null);
 
-    static CommandOption.Integer outputStateInterval = new CommandOption.Integer
-        (TopicTrainer.class, "output-state-interval", "INTEGER", true, 0,
+    static CommandOption.Integer outputStateInterval = new CommandOption.Integer(TopicTrainer.class, "output-state-interval", "INTEGER", true, 0,
          "The number of iterations between writing the sampling state to a text file.  " +
          "You must also set the --output-state to use this option, whose argument will be the prefix of the filenames.", null);
 
 	// Tools
 
-    static CommandOption.String inferencerFilename = new CommandOption.String
-        (TopicTrainer.class, "inferencer-filename", "FILENAME", true, null,
+    static CommandOption.String inferencerFilename = new CommandOption.String(TopicTrainer.class, "inferencer-filename", "FILENAME", true, null,
          "A topic inferencer applies a previously trained topic model to new documents.  " +
          "By default this is null, indicating that no file will be written.", null);
 
-    static CommandOption.String evaluatorFilename = new CommandOption.String
-        (TopicTrainer.class, "evaluator-filename", "FILENAME", true, null,
+    static CommandOption.String evaluatorFilename = new CommandOption.String(TopicTrainer.class, "evaluator-filename", "FILENAME", true, null,
          "A held-out likelihood evaluator for new documents.  " +
          "By default this is null, indicating that no file will be written.", null);
 
 	// Reports
 
-	static CommandOption.String topicKeysFile = new CommandOption.String
-		(TopicTrainer.class, "output-topic-keys", "FILENAME", true, null,
+	static CommandOption.String topicKeysFile = new CommandOption.String(TopicTrainer.class, "output-topic-keys", "FILENAME", true, null,
          "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.Integer topWords = new CommandOption.Integer
-		(TopicTrainer.class, "num-top-words", "INTEGER", true, 20,
+	static CommandOption.Integer topWords = new CommandOption.Integer(TopicTrainer.class, "num-top-words", "INTEGER", true, 20,
 		 "The number of most probable words to print for each topic after model estimation.", null);
 
-	static CommandOption.Integer showTopicsInterval = new CommandOption.Integer
-		(TopicTrainer.class, "show-topics-interval", "INTEGER", true, 50,
+	static CommandOption.Integer showTopicsInterval = new CommandOption.Integer(TopicTrainer.class, "show-topics-interval", "INTEGER", true, 50,
 		 "The number of iterations between printing a brief summary of the topics so far.", null);
 
-	static CommandOption.String topicWordWeightsFile = new CommandOption.String
-		(TopicTrainer.class, "topic-word-weights-file", "FILENAME", true, null,
+	static CommandOption.String topicWordWeightsFile = new CommandOption.String(TopicTrainer.class, "topic-word-weights-file", "FILENAME", true, null,
          "The filename in which to write unnormalized weights for every topic and word type.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String wordTopicCountsFile = new CommandOption.String
-		(TopicTrainer.class, "word-topic-counts-file", "FILENAME", true, null,
+	static CommandOption.String wordTopicCountsFile = new CommandOption.String(TopicTrainer.class, "word-topic-counts-file", "FILENAME", true, null,
          "The filename in which to write a sparse representation of topic-word assignments.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String diagnosticsFile = new CommandOption.String
-		(TopicTrainer.class, "diagnostics-file", "FILENAME", true, null,
+	static CommandOption.String diagnosticsFile = new CommandOption.String(TopicTrainer.class, "diagnostics-file", "FILENAME", true, null,
          "The filename in which to write measures of topic quality, in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String topicReportXMLFile = new CommandOption.String
-		(TopicTrainer.class, "xml-topic-report", "FILENAME", true, null,
+	static CommandOption.String topicReportXMLFile = new CommandOption.String(TopicTrainer.class, "xml-topic-report", "FILENAME", true, null,
          "The filename in which to write the top words for each topic and any Dirichlet parameters in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String topicPhraseReportXMLFile = new CommandOption.String
-		(TopicTrainer.class, "xml-topic-phrase-report", "FILENAME", true, null,
+	static CommandOption.String topicPhraseReportXMLFile = new CommandOption.String(TopicTrainer.class, "xml-topic-phrase-report", "FILENAME", true, null,
 		 "The filename in which to write the top words and phrases for each topic and any Dirichlet parameters in XML format.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String topicDocsFile = new CommandOption.String
-		(TopicTrainer.class, "output-topic-docs", "FILENAME", true, null,
+	static CommandOption.String topicDocsFile = new CommandOption.String(TopicTrainer.class, "output-topic-docs", "FILENAME", true, null,
 		 "The filename in which to write the most prominent documents for each topic, at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.Integer numTopDocs = new CommandOption.Integer
-		(TopicTrainer.class, "num-top-docs", "INTEGER", true, 100,
+	static CommandOption.Integer numTopDocs = new CommandOption.Integer(TopicTrainer.class, "num-top-docs", "INTEGER", true, 100,
 		 "When writing topic documents with --output-topic-docs, " +
 		 "report this number of top documents.", null);
 
-	static CommandOption.String docTopicsFile = new CommandOption.String
-		(TopicTrainer.class, "output-doc-topics", "FILENAME", true, null,
+	static CommandOption.String docTopicsFile = new CommandOption.String(TopicTrainer.class, "output-doc-topics", "FILENAME", true, null,
 		 "The filename in which to write the topic proportions per document, at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.Double docTopicsThreshold = new CommandOption.Double
-		(TopicTrainer.class, "doc-topics-threshold", "DECIMAL", true, 0.0,
+	static CommandOption.Double docTopicsThreshold = new CommandOption.Double(TopicTrainer.class, "doc-topics-threshold", "DECIMAL", true, 0.0,
 		 "When writing topic proportions per document with --output-doc-topics, " +
 		 "do not print topics with proportions less than this threshold value.", null);
 
-	static CommandOption.Integer docTopicsMax = new CommandOption.Integer
-		(TopicTrainer.class, "doc-topics-max", "INTEGER", true, -1,
+	static CommandOption.Integer docTopicsMax = new CommandOption.Integer(TopicTrainer.class, "doc-topics-max", "INTEGER", true, -1,
 		 "When writing topic proportions per document with --output-doc-topics, " +
 		 "do not print more than INTEGER number of topics.  "+
 		 "A negative value indicates that all topics should be printed.", null);
 
 	// Model parameters
 
-	static CommandOption.Integer numTopics = new CommandOption.Integer
-		(TopicTrainer.class, "num-topics", "INTEGER", true, 10,
+	static CommandOption.Integer numTopics = new CommandOption.Integer(TopicTrainer.class, "num-topics", "INTEGER", true, 10,
 		 "The number of topics to fit.", null);
 
-	static CommandOption.Integer numThreads = new CommandOption.Integer
-		(TopicTrainer.class, "num-threads", "INTEGER", true, 1,
+	static CommandOption.Integer numThreads = new CommandOption.Integer(TopicTrainer.class, "num-threads", "INTEGER", true, 1,
 		 "The number of threads for parallel training.", null);
 
-	static CommandOption.Integer numIterations = new CommandOption.Integer
-		(TopicTrainer.class, "num-iterations", "INTEGER", true, 1000,
+	static CommandOption.Integer numIterations = new CommandOption.Integer(TopicTrainer.class, "num-iterations", "INTEGER", true, 1000,
 		 "The number of iterations of Gibbs sampling.", null);
 	
-	static CommandOption.Integer numMaximizationIterations = new CommandOption.Integer
-		(TopicTrainer.class, "num-icm-iterations", "INTEGER", true, 0,
+	static CommandOption.Integer numMaximizationIterations = new CommandOption.Integer(TopicTrainer.class, "num-icm-iterations", "INTEGER", true, 0,
 		"The number of iterations of iterated conditional modes (topic maximization).", null);
 
-	static CommandOption.Boolean noInference = new CommandOption.Boolean
-		(TopicTrainer.class, "no-inference", "true|false", false, false,
+	static CommandOption.Boolean noInference = new CommandOption.Boolean(TopicTrainer.class, "no-inference", "true|false", false, false,
 		 "Do not perform inference, just load a saved model and create a report. Equivalent to --num-iterations 0.", null);
 
-	static CommandOption.Integer randomSeed = new CommandOption.Integer
-		(TopicTrainer.class, "random-seed", "INTEGER", true, 0,
+	static CommandOption.Integer randomSeed = new CommandOption.Integer(TopicTrainer.class, "random-seed", "INTEGER", true, 0,
 		 "The random seed for the Gibbs sampler.  Default is 0, which will use the clock.", null);
 
 	// Hyperparameters and hyperparameter optimization
 
-    static CommandOption.Integer optimizeInterval = new CommandOption.Integer
-        (TopicTrainer.class, "optimize-interval", "INTEGER", true, 0,
+    static CommandOption.Integer optimizeInterval = new CommandOption.Integer(TopicTrainer.class, "optimize-interval", "INTEGER", true, 0,
          "The number of iterations between reestimating dirichlet hyperparameters.", null);
 
-    static CommandOption.Integer optimizeBurnIn = new CommandOption.Integer
-        (TopicTrainer.class, "optimize-burn-in", "INTEGER", true, 200,
+    static CommandOption.Integer optimizeBurnIn = new CommandOption.Integer(TopicTrainer.class, "optimize-burn-in", "INTEGER", true, 200,
          "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
 
-	static CommandOption.Boolean useSymmetricAlpha = new CommandOption.Boolean
-		(TopicTrainer.class, "use-symmetric-alpha", "true|false", false, false,
+	static CommandOption.Boolean useSymmetricAlpha = new CommandOption.Boolean(TopicTrainer.class, "use-symmetric-alpha", "true|false", false, false,
 		 "Only optimize the concentration parameter of the prior over document-topic distributions. This may reduce the number of very small, poorly estimated topics, but may disperse common words over several topics.", null);
 
-	static CommandOption.Double alpha = new CommandOption.Double
-		(TopicTrainer.class, "alpha", "DECIMAL", true, 5.0,
-		 "Alpha parameter: smoothing over topic distribution.",null);
+	static CommandOption.Double alpha = new CommandOption.Double(TopicTrainer.class, "alpha", "DECIMAL", true, 5.0,
+		 "SumAlpha parameter: sum over topics of smoothing over doc-topic distributions.",null);
 
-	static CommandOption.Double beta = new CommandOption.Double
-		(TopicTrainer.class, "beta", "DECIMAL", true, 0.01,
-		 "Beta parameter: smoothing over unigram distribution.",null);
+	static CommandOption.Double beta = new CommandOption.Double(TopicTrainer.class, "beta", "DECIMAL", true, 0.01,
+		 "Beta parameter: smoothing parameter for each topic-word.",null);
 
 	private static Logger logger = MalletLogger.getLogger(TopicTrainer.class.getName());
 

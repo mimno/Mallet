@@ -28,22 +28,18 @@ public class Text2Vectors {
 	private static Logger logger = MalletLogger.getLogger(Text2Vectors.class.getName());
 	public static String defaultTokenRegex = "\\p{L}[\\p{L}\\p{P}]+\\p{L}";
 
-	static CommandOption.SpacedStrings classDirs =	new CommandOption.SpacedStrings
-		(Text2Vectors.class, "input", "DIR...", true, null,
+	static CommandOption.SpacedStrings classDirs =	new CommandOption.SpacedStrings(Text2Vectors.class, "input", "DIR...", true, null,
 		 "The directories containing text files to be classified, one directory per class", null);
 	
-	static CommandOption.File outputFile = new CommandOption.File
-		(Text2Vectors.class, "output", "FILE", true, new File("text.vectors"),
+	static CommandOption.File outputFile = new CommandOption.File(Text2Vectors.class, "output", "FILE", true, new File("text.vectors"),
 		 "Write the instance list to this file; Using - indicates stdout.", null);
 	
-	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File
-		(Text2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
+	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File(Text2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
 		 "Use the pipe and alphabets from a previously created vectors file. " +
 		 "Allows the creation, for example, of a test set of vectors that are " +
 		 "compatible with a previously created set of training vectors", null);
 
-	static CommandOption.Boolean preserveCase = new CommandOption.Boolean
-		(Text2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean preserveCase = new CommandOption.Boolean(Text2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
 		 "If true, do not force all strings to lowercase.", null);
 	
     static CommandOption.SpacedStrings replacementFiles = new CommandOption.SpacedStrings(Text2Vectors.class, "replacement-files", "FILE [FILE ...]", true, null,
@@ -52,73 +48,60 @@ public class Text2Vectors {
     static CommandOption.SpacedStrings deletionFiles = new CommandOption.SpacedStrings(Text2Vectors.class, "deletion-files", "FILE [FILE ...]", true, null,
              "files containing strings to delete after replacements but before tokenization (ie multiword stop terms)", null);
 
-	static CommandOption.Boolean removeStopWords = new CommandOption.Boolean
-		(Text2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean removeStopWords = new CommandOption.Boolean(Text2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
 		 "If true, remove a default list of common English \"stop words\" from the text.", null);
 
-	static CommandOption.File stoplistFile = new CommandOption.File
-		(Text2Vectors.class, "stoplist-file", "FILE", true, null,
+	static CommandOption.File stoplistFile = new CommandOption.File(Text2Vectors.class, "stoplist-file", "FILE", true, null,
 		 "Instead of the default list, read stop words from a file, one per line. Implies --remove-stopwords", null);
 
-	static CommandOption.File extraStopwordsFile = new CommandOption.File
-		(Text2Vectors.class, "extra-stopwords", "FILE", true, null,
+	static CommandOption.File extraStopwordsFile = new CommandOption.File(Text2Vectors.class, "extra-stopwords", "FILE", true, null,
 		 "Read whitespace-separated words from this file, and add them to either\n" + 
 		 "   the default English stoplist or the list specified by --stoplist-file.", null);
 
-	static CommandOption.Boolean skipHeader = new CommandOption.Boolean
-		(Text2Vectors.class, "skip-header", "[TRUE|FALSE]", false, false,
+	static CommandOption.File stopPatternFile = new CommandOption.File(Text2Vectors.class, "stop-pattern-file", "FILE", true, null,
+		 "Read regular expressions from a file, one per line. Tokens matching these regexps will be removed.", null);
+
+	static CommandOption.Boolean skipHeader = new CommandOption.Boolean(Text2Vectors.class, "skip-header", "[TRUE|FALSE]", false, false,
 		 "If true, in each document, remove text occurring before a blank line."+
 		 "  This is useful for removing email or UseNet headers", null);
 	
-	static CommandOption.Boolean skipHtml = new CommandOption.Boolean
-		(Text2Vectors.class, "skip-html", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean skipHtml = new CommandOption.Boolean(Text2Vectors.class, "skip-html", "[TRUE|FALSE]", false, false,
 		 "If true, remove text occurring inside <...>, as in HTML or SGML.", null);
 	
-	static CommandOption.Boolean binaryFeatures = new CommandOption.Boolean
-		(Text2Vectors.class, "binary-features", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean binaryFeatures = new CommandOption.Boolean(Text2Vectors.class, "binary-features", "[TRUE|FALSE]", false, false,
 		 "If true, features will be binary.", null);
 	
-	static CommandOption.IntegerArray gramSizes = new CommandOption.IntegerArray
-		(Text2Vectors.class, "gram-sizes", "INTEGER,[INTEGER,...]", true, new int[] {1},
+	static CommandOption.IntegerArray gramSizes = new CommandOption.IntegerArray(Text2Vectors.class, "gram-sizes", "INTEGER,[INTEGER,...]", true, new int[] {1},
 		 "Include among the features all n-grams of sizes specified.  "+
 		 "For example, to get all unigrams and bigrams, use --gram-sizes 1,2.  "+
 		 "This option occurs after the removal of stop words, if removed.", null);
 	
-	static CommandOption.Boolean keepSequence = new CommandOption.Boolean
-		(Text2Vectors.class, "keep-sequence", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean keepSequence = new CommandOption.Boolean(Text2Vectors.class, "keep-sequence", "[TRUE|FALSE]", false, false,
 		 "If true, final data will be a FeatureSequence rather than a FeatureVector.", null);
 
-	static CommandOption.Boolean keepSequenceBigrams = new CommandOption.Boolean
-		(Text2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean keepSequenceBigrams = new CommandOption.Boolean(Text2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
 		 "If true, final data will be a FeatureSequenceWithBigrams rather than a FeatureVector.", null);
 	
-	static CommandOption.Boolean saveTextInSource = new CommandOption.Boolean
-		(Text2Vectors.class, "save-text-in-source", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean saveTextInSource = new CommandOption.Boolean(Text2Vectors.class, "save-text-in-source", "[TRUE|FALSE]", false, false,
 		 "If true, save original text of document in source.", null);
 	
-	static CommandOption.ObjectFromBean stringPipe = new CommandOption.ObjectFromBean
-		(Text2Vectors.class, "string-pipe", "Pipe constructor",	true, null,
+	static CommandOption.ObjectFromBean stringPipe = new CommandOption.ObjectFromBean(Text2Vectors.class, "string-pipe", "Pipe constructor",	true, null,
 		 "Java code for the constructor of a Pipe to be run as soon as input becomes a CharSequence", null);
 	
-	static CommandOption.ObjectFromBean tokenPipe = new CommandOption.ObjectFromBean
-		(Text2Vectors.class, "token-pipe", "Pipe constructor",	true, null,
+	static CommandOption.ObjectFromBean tokenPipe = new CommandOption.ObjectFromBean(Text2Vectors.class, "token-pipe", "Pipe constructor",	true, null,
 		 "Java code for the constructor of a Pipe to be run as soon as input becomes a TokenSequence", null);
 	
-	static CommandOption.ObjectFromBean featureVectorPipe = new CommandOption.ObjectFromBean
-		(Text2Vectors.class, "fv-pipe", "Pipe constructor",	true, null,
+	static CommandOption.ObjectFromBean featureVectorPipe = new CommandOption.ObjectFromBean(Text2Vectors.class, "fv-pipe", "Pipe constructor",	true, null,
 		 "Java code for the constructor of a Pipe to be run as soon as input becomes a FeatureVector", null);
 	
-	static CommandOption.String encoding = new CommandOption.String
-		(Text2Vectors.class, "encoding", "STRING", true, Charset.defaultCharset().displayName(),
+	static CommandOption.String encoding = new CommandOption.String(Text2Vectors.class, "encoding", "STRING", true, Charset.defaultCharset().displayName(),
 		 "Character encoding for input file", null);
 	
-	static CommandOption.String tokenRegex = new CommandOption.String
-		(Text2Vectors.class, "token-regex", "REGEX", true, defaultTokenRegex,
+	static CommandOption.String tokenRegex = new CommandOption.String(Text2Vectors.class, "token-regex", "REGEX", true, defaultTokenRegex,
 		 "Regular expression used for tokenization.\n" +
 		 "   Example: \"[\\p{L}\\p{N}_]+|[\\p{P}]+\" (unicode letters, numbers and underscore OR all punctuation) ", null);
 	
-	static CommandOption.Boolean printOutput = new CommandOption.Boolean
-		(Text2Vectors.class, "print-output", "[TRUE|FALSE]", false, false,
+	static CommandOption.Boolean printOutput = new CommandOption.Boolean(Text2Vectors.class, "print-output", "[TRUE|FALSE]", false, false,
 		 "If true, print a representation of the processed data\n" +
 		 "   to standard output. This option is intended for debugging.", null);
 	
@@ -291,6 +274,12 @@ public class Text2Vectors {
 
 			}
 			
+			if (stopPatternFile.wasInvoked()) {
+				TokenSequenceRemoveStopPatterns stopPatternFilter = 
+					new TokenSequenceRemoveStopPatterns(stopPatternFile.value);
+				pipeList.add(stopPatternFilter);
+			}
+
 			// gramSizes is an integer array, with default value [1].
 			//  Check if we have a non-default value.
 			if (! (gramSizes.value.length == 1 && gramSizes.value[0] == 1)) {

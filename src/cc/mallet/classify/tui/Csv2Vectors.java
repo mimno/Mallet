@@ -68,13 +68,16 @@ public class Csv2Vectors {
 	static CommandOption.Boolean keepSequenceBigrams = new CommandOption.Boolean(Csv2Vectors.class, "keep-sequence-bigrams", "[TRUE|FALSE]", false, false,
 		 "If true, final data will be a FeatureSequenceWithBigrams rather than a FeatureVector.", null);
 	
+	static CommandOption.Boolean targetAsFeatures = new CommandOption.Boolean(Csv2Vectors.class, "label-as-features", "[TRUE|FALSE]", false, false,
+		 "If true, parse the 'label' field as space-delimited features.\n     Use feature=[number] to specify values for non-binary features.", null);
+	
 	static CommandOption.Boolean removeStopWords = new CommandOption.Boolean(Csv2Vectors.class, "remove-stopwords", "[TRUE|FALSE]", false, false,
 		 "If true, remove a default list of common English \"stop words\" from the text.", null);
 
-    static CommandOption.SpacedStrings replacementFiles = new CommandOption.SpacedStrings(Csv2Vectors.class, "replacement-files", "FILE [FILE ...]", true, null,
+	static CommandOption.SpacedStrings replacementFiles = new CommandOption.SpacedStrings(Csv2Vectors.class, "replacement-files", "FILE [FILE ...]", true, null,
              "files containing string replacements, one per line:\n    'A B [tab] C' replaces A B with C,\n    'A B' replaces A B with A_B", null);
 
-    static CommandOption.SpacedStrings deletionFiles = new CommandOption.SpacedStrings(Csv2Vectors.class, "deletion-files", "FILE [FILE ...]", true, null,
+	static CommandOption.SpacedStrings deletionFiles = new CommandOption.SpacedStrings(Csv2Vectors.class, "deletion-files", "FILE [FILE ...]", true, null,
              "files containing strings to delete after replacements but before tokenization (ie multiword stop terms)", null);
 
 	static CommandOption.File stoplistFile = new CommandOption.File(Csv2Vectors.class, "stoplist-file", "FILE", true, null,
@@ -83,6 +86,9 @@ public class Csv2Vectors {
 	static CommandOption.File extraStopwordsFile = new CommandOption.File(Csv2Vectors.class, "extra-stopwords", "FILE", true, null,
 		 "Read whitespace-separated words from this file, and add them to either \n" +
 		 "   the default English stoplist or the list specified by --stoplist-file.", null);
+
+	static CommandOption.File stopPatternFile = new CommandOption.File(Csv2Vectors.class, "stop-pattern-file", "FILE", true, null,
+		 "Read regular expressions from a file, one per line. Tokens matching these regexps will be removed.", null);
 
 	static CommandOption.Boolean preserveCase = new CommandOption.Boolean(Csv2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
 		 "If true, do not force all strings to lowercase.", null);
@@ -134,9 +140,14 @@ public class Csv2Vectors {
 			// Convert the "target" object into a numeric index
 			//  into a LabelAlphabet.
 			if (labelOption.value > 0) {
-				// If the label field is not used, adding this
-				//  pipe will cause "Alphabets don't match" exceptions.
-				pipeList.add(new Target2Label());
+				if (targetAsFeatures.value) {
+					pipeList.add(new TargetStringToFeatures());
+				}
+				else {
+					// If the label field is not used, adding this
+					//  pipe will cause "Alphabets don't match" exceptions.
+					pipeList.add(new Target2Label());
+				}
 			}
 			
 			//
@@ -225,6 +236,12 @@ public class Csv2Vectors {
 				}
 				
 				pipeList.add(stopwordFilter);
+			}
+			
+			if (stopPatternFile.wasInvoked()) {
+				TokenSequenceRemoveStopPatterns stopPatternFilter = 
+					new TokenSequenceRemoveStopPatterns(stopPatternFile.value);
+				pipeList.add(stopPatternFilter);
 			}
                         
 			// 
