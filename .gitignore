@@ -1,3 +1,5 @@
 class
 dist/mallet-deps.jar
 dist/mallet.jar
+.idea
+mallet.iml

@@ -11,9 +11,10 @@
 
 package cc.mallet.pipe;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.io.*;
 import java.rmi.dgc.VMID;
@@ -298,8 +299,6 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 		public Iterator<Instance> getSourceIterator () { return source; }
 		public void remove() { throw new IllegalStateException ("Not supported."); }
 	}
-	
-
 
 	// Serialization
 
@@ -326,7 +325,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 		instanceId = (VMID) in.readObject();
 	}
 
-	private transient static HashMap deserializedEntries = new HashMap();
+	private transient static ConcurrentMap<VMID, Object> deserializedEntries = new ConcurrentHashMap<VMID, Object>();
 	
 	/**
 	 * This gets called after readObject; it lets the object decide whether
@@ -345,8 +344,11 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 			return previous;
 		}
 		if (instanceId != null){
-			deserializedEntries.put(instanceId, this);
-		}
+            Object prev = deserializedEntries.putIfAbsent(instanceId, this);
+            if (prev != null) {
+                return prev;
+            }
+        }
 		//System.out.println(" *** Pipe ReadResolve: new instance. instance id= " + instanceId);
 		return this;
 	}
