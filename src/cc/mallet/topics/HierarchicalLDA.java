@@ -692,7 +692,7 @@ public class HierarchicalLDA {
 	    
 			Alphabet alphabet = instances.getDataAlphabet();
 			StringBuffer out = new StringBuffer();
-			for (int i=0; i<10; i++) {
+			for (int i = 0; i < numWords; i++) {
 				out.append(alphabet.lookupObject(sortedTypes[i].getID()) + " ");
 			}
 			return out.toString();
