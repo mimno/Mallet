@@ -284,7 +284,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
 	{
 		assert (indices.length == 1);
 		if (indices == null)
-			return values[indices[0]];
+			return values[this.indices[0]];
 		else
 			return values[location(indices[0])];
 	}

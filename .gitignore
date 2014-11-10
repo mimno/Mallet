@@ -1,3 +1,9 @@
 class
 dist/mallet-deps.jar
 dist/mallet.jar
+/target/
+.classpath
+.project
+.settings/
+*.obj
+*.dot
