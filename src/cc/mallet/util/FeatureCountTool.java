@@ -115,6 +115,18 @@ public class FeatureCountTool {
 		}
 		
 	}
+	
+	public Alphabet getPrunedAlphabet(int minDocs, int maxDocs, int minCount, int maxCount) {
+		Alphabet inputAlphabet = instances.getDataAlphabet();
+		Alphabet outputAlphabet = new Alphabet();
+		for (int inputType = 0; inputType < numFeatures; inputType++) {
+			if (featureCounts[inputType] >= minCount && featureCounts[inputType] <= maxCount && documentFrequencies[inputType] >= minDocs && documentFrequencies[inputType] <= maxDocs) {
+				outputAlphabet.lookupIndex(inputAlphabet.lookupObject(inputType));
+			}
+		}
+		
+		return outputAlphabet;
+	}
 
 	public static void main (String[] args) throws Exception {
 		CommandOption.setSummary (FeatureCountTool.class,
