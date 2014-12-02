@@ -831,6 +831,22 @@ public InstanceList[] splitInOrder (double[] proportions) {
 		int version = in.readInt ();
 		instWeights = (HashMap<Instance,Double>) in.readObject();
 		pipe = (Pipe) in.readObject();
+		if (dataAlphabet == null) {
+			if (size()>0) { 
+				Instance instance = get(0); 
+				dataAlphabet = instance.getDataAlphabet (); 
+			}  else if (pipe.getDataAlphabet()!=null) {
+				dataAlphabet = pipe.getDataAlphabet ();
+			}
+		}
+		if (targetAlphabet == null) {
+			if (size()>0) { 
+				Instance instance = get(0); 
+				targetAlphabet = instance.getTargetAlphabet (); 
+			}  else if (pipe.getTargetAlphabet()!=null) {
+				targetAlphabet = pipe.getTargetAlphabet ();
+			}
+		}
 	}
 
 	// added - culotta@cs.umass.edu
