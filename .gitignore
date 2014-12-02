@@ -7,3 +7,5 @@ dist/mallet.jar
 .settings/
 *.obj
 *.dot
+.idea
+mallet.iml
