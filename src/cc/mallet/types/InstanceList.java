@@ -39,420 +39,420 @@ import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Randoms;
 
 /**
-	 A list of machine learning instances, typically used for training
-	 or testing of a machine learning algorithm.
-   <p>
-	 All of the instances in the list will have been passed through the
-	 same {@link cc.mallet.pipe.Pipe}, and thus must also share the same data and target Alphabets.
-   InstanceList keeps a reference to the pipe and the two alphabets.
-   <p>
-   The most common way of adding instances to an InstanceList is through
-   the <code>add(PipeInputIterator)</code> method. PipeInputIterators are a way of mapping general
-   data sources into instances suitable for processing through a pipe.
-     As each {@link cc.mallet.types.Instance} is pulled from the PipeInputIterator, the InstanceList
-     copies the instance and runs the copy through its pipe (with resultant
-     destructive modifications) before saving the modified instance on its list.
-     This is the  usual way in which instances are transformed by pipes.
-     <p>
-     InstanceList also contains methods for randomly generating lists of
-     feature vectors; splitting lists into non-overlapping subsets (useful
-     for test/train splits), and iterators for cross validation.
+ A list of machine learning instances, typically used for training
+ or testing of a machine learning algorithm.
+ <p>
+ All of the instances in the list will have been passed through the
+ same {@link cc.mallet.pipe.Pipe}, and thus must also share the same data and target Alphabets.
+ InstanceList keeps a reference to the pipe and the two alphabets.
+ <p>
+ The most common way of adding instances to an InstanceList is through
+ the <code>add(PipeInputIterator)</code> method. PipeInputIterators are a way of mapping general
+ data sources into instances suitable for processing through a pipe.
+ As each {@link cc.mallet.types.Instance} is pulled from the PipeInputIterator, the InstanceList
+ copies the instance and runs the copy through its pipe (with resultant
+ destructive modifications) before saving the modified instance on its list.
+ This is the  usual way in which instances are transformed by pipes.
+ <p>
+ InstanceList also contains methods for randomly generating lists of
+ feature vectors; splitting lists into non-overlapping subsets (useful
+ for test/train splits), and iterators for cross validation.
 
-   @see Instance
-   @see Pipe
+ @see Instance
+ @see Pipe
 
-   @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+ @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 public class InstanceList extends ArrayList<Instance> implements Serializable, Iterable<Instance>, AlphabetCarrying
 {
-	private static Logger logger = MalletLogger.getLogger(InstanceList.class.getName());
+    private static Logger logger = MalletLogger.getLogger(InstanceList.class.getName());
 
-	HashMap<Instance, Double> instWeights = null;
-  // This should never be set by a ClassifierTrainer, it should be used in conjunction with a Classifier's FeatureSelection
-	// Or perhaps it should be removed from here, and there should be a ClassifierTrainer.train(InstanceList, FeatureSelection) method.
-	FeatureSelection featureSelection = null;  
-	FeatureSelection[] perLabelFeatureSelection = null;
-	Pipe pipe;
-	Alphabet dataAlphabet, targetAlphabet;
-	Class dataClass = null;
-	Class targetClass = null;
+    HashMap<Instance, Double> instWeights = null;
+    // This should never be set by a ClassifierTrainer, it should be used in conjunction with a Classifier's FeatureSelection
+    // Or perhaps it should be removed from here, and there should be a ClassifierTrainer.train(InstanceList, FeatureSelection) method.
+    FeatureSelection featureSelection = null;
+    FeatureSelection[] perLabelFeatureSelection = null;
+    Pipe pipe;
+    Alphabet dataAlphabet, targetAlphabet;
+    Class dataClass = null;
+    Class targetClass = null;
 
-	/**
-	 * Construct an InstanceList having given capacity, with given default pipe.
-	 * Typically Instances added to this InstanceList will have gone through the 
-	 * pipe (for example using instanceList.addThruPipe); but this is not required.
-	 * This InstanaceList will obtain its dataAlphabet and targetAlphabet from the pipe.
-	 * It is required that all Instances in this InstanceList share these Alphabets. 
-	 * @param pipe The default pipe used to process instances added via the addThruPipe methods.
-	 * @param capacity The initial capacity of the list; will grow further as necessary.
-	 */
-	// XXX not very useful, should perhaps be removed
-	public InstanceList (Pipe pipe, int capacity)
-	{
-		super(capacity);
-		this.pipe = pipe;
-	}
+    /**
+     * Construct an InstanceList having given capacity, with given default pipe.
+     * Typically Instances added to this InstanceList will have gone through the
+     * pipe (for example using instanceList.addThruPipe); but this is not required.
+     * This InstanaceList will obtain its dataAlphabet and targetAlphabet from the pipe.
+     * It is required that all Instances in this InstanceList share these Alphabets.
+     * @param pipe The default pipe used to process instances added via the addThruPipe methods.
+     * @param capacity The initial capacity of the list; will grow further as necessary.
+     */
+    // XXX not very useful, should perhaps be removed
+    public InstanceList (Pipe pipe, int capacity)
+    {
+        super(capacity);
+        this.pipe = pipe;
+    }
 
-	/**
-	 * Construct an InstanceList with initial capacity of 10, with given default pipe.
-	 * Typically Instances added to this InstanceList will have gone through the 
-	 * pipe (for example using instanceList.addThruPipe); but this is not required.
-	 * This InstanaceList will obtain its dataAlphabet and targetAlphabet from the pipe.
-	 * It is required that all Instances in this InstanceList share these Alphabets. 
-	 * @param pipe The default pipe used to process instances added via the addThruPipe methods.
-	 */
-	public InstanceList (Pipe pipe)
-	{
-		this (pipe, 10);
-	}
+    /**
+     * Construct an InstanceList with initial capacity of 10, with given default pipe.
+     * Typically Instances added to this InstanceList will have gone through the
+     * pipe (for example using instanceList.addThruPipe); but this is not required.
+     * This InstanaceList will obtain its dataAlphabet and targetAlphabet from the pipe.
+     * It is required that all Instances in this InstanceList share these Alphabets.
+     * @param pipe The default pipe used to process instances added via the addThruPipe methods.
+     */
+    public InstanceList (Pipe pipe)
+    {
+        this (pipe, 10);
+    }
 
-	/** 
-	 * Construct an InstanceList with initial capacity of 10, with a Noop default pipe.
-	 * Used in those infrequent circumstances when Instances typically would not have further
-	 * processing,  and objects containing vocabularies are entered
-	 * directly into the <code>InstanceList</code>; for example, the creation of a
-	 * random <code>InstanceList</code> using <code>Dirichlet</code>s and
-	 * <code>Multinomial</code>s.</p>
-	 *
-	 * @param dataAlphabet The vocabulary for added instances' data fields
-	 * @param targetAlphabet The vocabulary for added instances' targets
-	 */
-	public InstanceList (Alphabet dataAlphabet, Alphabet targetAlphabet)
-	{
-		this (new Noop(dataAlphabet, targetAlphabet), 10);
-		this.dataAlphabet = dataAlphabet;
-		this.targetAlphabet = targetAlphabet;
-	}
+    /**
+     * Construct an InstanceList with initial capacity of 10, with a Noop default pipe.
+     * Used in those infrequent circumstances when Instances typically would not have further
+     * processing,  and objects containing vocabularies are entered
+     * directly into the <code>InstanceList</code>; for example, the creation of a
+     * random <code>InstanceList</code> using <code>Dirichlet</code>s and
+     * <code>Multinomial</code>s.</p>
+     *
+     * @param dataAlphabet The vocabulary for added instances' data fields
+     * @param targetAlphabet The vocabulary for added instances' targets
+     */
+    public InstanceList (Alphabet dataAlphabet, Alphabet targetAlphabet)
+    {
+        this (new Noop(dataAlphabet, targetAlphabet), 10);
+        this.dataAlphabet = dataAlphabet;
+        this.targetAlphabet = targetAlphabet;
+    }
 
-	private static class NotYetSetPipe extends Pipe	{
-		public Instance pipe (Instance carrier)	{
-			throw new UnsupportedOperationException (
-					"The InstanceList has yet to have its pipe set; "+
-			"this could happen by calling InstanceList.add(InstanceList)");
-		}
-		public Object readResolve () throws ObjectStreamException	{
-			return notYetSetPipe;
-		}
-		private static final long serialVersionUID = 1;
-	}
-	static final Pipe notYetSetPipe = new NotYetSetPipe();
+    private static class NotYetSetPipe extends Pipe	{
+        public Instance pipe (Instance carrier)	{
+            throw new UnsupportedOperationException (
+                    "The InstanceList has yet to have its pipe set; "+
+                            "this could happen by calling InstanceList.add(InstanceList)");
+        }
+        public Object readResolve () throws ObjectStreamException	{
+            return notYetSetPipe;
+        }
+        private static final long serialVersionUID = 1;
+    }
+    static final Pipe notYetSetPipe = new NotYetSetPipe();
 
-	/** Creates a list that will have its pipe set later when its first Instance is added. */
-	@Deprecated // Pipe is never set if you use this constructor 
-	public InstanceList ()
-	{
-		this (notYetSetPipe);
-	}
+    /** Creates a list that will have its pipe set later when its first Instance is added. */
+    @Deprecated // Pipe is never set if you use this constructor
+    public InstanceList ()
+    {
+        this (notYetSetPipe);
+    }
 
-	/**
-	 * Creates a list consisting of randomly-generated
-	 * <code>FeatureVector</code>s.
-	 */
-	// xxx Perhaps split these out into a utility class
-	public InstanceList (Randoms r,
-	                     // the generator of all random-ness used here
-	                     Dirichlet classCentroidDistribution,
-	                     // includes a Alphabet
-	                     double classCentroidAverageAlphaMean,
-	                     // Gaussian mean on the sum of alphas
-	                     double classCentroidAverageAlphaVariance,
-	                     // Gaussian variance on the sum of alphas
-	                     double featureVectorSizePoissonLambda,
-	                     double classInstanceCountPoissonLambda,
-	                     String[] classNames)
-	{
-		this (new SerialPipes (new Pipe[]	{
-				new TokenSequence2FeatureSequence (),
-				new FeatureSequence2FeatureVector (),
-				new Target2Label()}));
-		//classCentroidDistribution.print();
-		Iterator<Instance> iter = new RandomTokenSequenceIterator (
-				r, classCentroidDistribution,
-				classCentroidAverageAlphaMean, classCentroidAverageAlphaVariance,
-				featureVectorSizePoissonLambda, classInstanceCountPoissonLambda,
-				classNames);
-		this.addThruPipe (iter);
-	}
+    /**
+     * Creates a list consisting of randomly-generated
+     * <code>FeatureVector</code>s.
+     */
+    // xxx Perhaps split these out into a utility class
+    public InstanceList (Randoms r,
+                         // the generator of all random-ness used here
+                         Dirichlet classCentroidDistribution,
+                         // includes a Alphabet
+                         double classCentroidAverageAlphaMean,
+                         // Gaussian mean on the sum of alphas
+                         double classCentroidAverageAlphaVariance,
+                         // Gaussian variance on the sum of alphas
+                         double featureVectorSizePoissonLambda,
+                         double classInstanceCountPoissonLambda,
+                         String[] classNames)
+    {
+        this (new SerialPipes (new Pipe[]	{
+                new TokenSequence2FeatureSequence (),
+                new FeatureSequence2FeatureVector (),
+                new Target2Label()}));
+        //classCentroidDistribution.print();
+        Iterator<Instance> iter = new RandomTokenSequenceIterator (
+                r, classCentroidDistribution,
+                classCentroidAverageAlphaMean, classCentroidAverageAlphaVariance,
+                featureVectorSizePoissonLambda, classInstanceCountPoissonLambda,
+                classNames);
+        this.addThruPipe (iter);
+    }
 
-	private static Alphabet dictOfSize (int size)
-	{
-		Alphabet ret = new Alphabet ();
-		for (int i = 0; i < size; i++)
-			ret.lookupIndex ("feature"+i);
-		return ret;
-	}
+    private static Alphabet dictOfSize (int size)
+    {
+        Alphabet ret = new Alphabet ();
+        for (int i = 0; i < size; i++)
+            ret.lookupIndex ("feature"+i);
+        return ret;
+    }
 
-	private static String[] classNamesOfSize (int size)
-	{
-		String[] ret = new String[size];
-		for (int i = 0; i < size; i++)
-			ret[i] = "class"+i;
-		return ret;
-	}
+    private static String[] classNamesOfSize (int size)
+    {
+        String[] ret = new String[size];
+        for (int i = 0; i < size; i++)
+            ret[i] = "class"+i;
+        return ret;
+    }
 
-	public InstanceList (Randoms r, Alphabet vocab, String[] classNames, int meanInstancesPerLabel)
-	{
-		this (r, new Dirichlet(vocab, 2.0),
-				30, 0,
-				10, meanInstancesPerLabel, classNames);
-	}
-	
-
-	public InstanceList (Randoms r, int vocabSize, int numClasses)
-	{
-		this (r, new Dirichlet(dictOfSize(vocabSize), 2.0),
-				30, 0,
-				10, 20, classNamesOfSize(numClasses));
-	}
-
-	public InstanceList shallowClone ()
-	{
-		InstanceList ret = new InstanceList (pipe, this.size());
-		for (int i = 0; i < this.size(); i++)
-			ret.add (get(i));
-		if (instWeights == null)
-			ret.instWeights = null;
-		else
-			ret.instWeights = (HashMap<Instance,Double>) instWeights.clone();
-		// Should we really be so shallow as to not make new copies of these following instance variables? -akm 1/2008
-		ret.featureSelection = featureSelection;
-		ret.perLabelFeatureSelection = perLabelFeatureSelection;
-		ret.pipe = pipe;;
-		ret.dataAlphabet = dataAlphabet;
-		ret.targetAlphabet = targetAlphabet;
-		ret.dataClass = dataClass;
-		ret.targetClass = targetClass;
-		return ret;
-	}
-	
-	public Object clone ()
-	{
-		return shallowClone();
-	}
-	
-	
-	public InstanceList subList (int start, int end)
-	{
-		InstanceList other = this.cloneEmpty();
-		for (int i = start; i < end; i++) {
-			other.add (get (i));
-		}
-		return other;
-	}
-
-	public InstanceList subList (double proportion)
-	{
-		if (proportion > 1.0)
-			throw new IllegalArgumentException ("proportion must by <= 1.0");
-		InstanceList other = (InstanceList) clone();
-		other.shuffle(new java.util.Random());
-		proportion *= other.size();
-		for (int i = 0; i < proportion; i++)
-			other.add (get(i));
-		return other;
-	}
+    public InstanceList (Randoms r, Alphabet vocab, String[] classNames, int meanInstancesPerLabel)
+    {
+        this (r, new Dirichlet(vocab, 2.0),
+                30, 0,
+                10, meanInstancesPerLabel, classNames);
+    }
 
 
+    public InstanceList (Randoms r, int vocabSize, int numClasses)
+    {
+        this (r, new Dirichlet(dictOfSize(vocabSize), 2.0),
+                30, 0,
+                10, 20, classNamesOfSize(numClasses));
+    }
 
-	/** Adds to this list every instance generated by the iterator,
-	 * passing each one through this InstanceList's pipe. */
-	// TODO This method should be renamed addPiped(Iterator<Instance> ii)
-	public void addThruPipe (Iterator<Instance> ii)
-	{
-		//for debug
-		Iterator<Instance> pipedInstanceIterator = pipe.newIteratorFrom(ii);
-		while (pipedInstanceIterator.hasNext())
-		{	
-			add (pipedInstanceIterator.next());
-		    //System.out.println("Add instance " + pipedInstanceIterator.next().getName());
-		}
-	}
-	
-	// gsc: method to add one instance at a time 
-	/** Adds the input instance to this list, after passing it through the
-	 * InstanceList's pipe.
-	 * <p>
-	 * If several instances are to be added then accumulate them in a List\<Instance\>
-	 * and use <tt>addThruPipe(Iterator<Instance>)</tt> instead.
-	 */
-	public void addThruPipe(Instance inst)
-	{
-	  addThruPipe(new SingleInstanceIterator(inst));
-	}
+    public InstanceList shallowClone ()
+    {
+        InstanceList ret = new InstanceList (pipe, this.size());
+        for (int i = 0; i < this.size(); i++)
+            ret.add (get(i));
+        if (instWeights == null)
+            ret.instWeights = null;
+        else
+            ret.instWeights = (HashMap<Instance,Double>) instWeights.clone();
+        // Should we really be so shallow as to not make new copies of these following instance variables? -akm 1/2008
+        ret.featureSelection = featureSelection;
+        ret.perLabelFeatureSelection = perLabelFeatureSelection;
+        ret.pipe = pipe;;
+        ret.dataAlphabet = dataAlphabet;
+        ret.targetAlphabet = targetAlphabet;
+        ret.dataClass = dataClass;
+        ret.targetClass = targetClass;
+        return ret;
+    }
 
-	/** Constructs and appends an instance to this list, passing it through this
-	 * list's pipe and assigning it the specified weight.
-	 * @return <code>true</code>
-	 * @deprecated Use trainingset.addThruPipe (new Instance(data,target,name,source)) instead.
-	 */
-	@Deprecated 
-	public boolean add (Object data, Object target, Object name, Object source, double instanceWeight)
-	{
-		Instance inst = new Instance (data, target, name, source);
-		Iterator<Instance> ii = pipe.newIteratorFrom(new SingleInstanceIterator(inst));
-		if (ii.hasNext()) {
-			add (ii.next(), instanceWeight);
-			return true;
-		}
-    return false;
-	}
+    public Object clone ()
+    {
+        return shallowClone();
+    }
 
-	/** Constructs and appends an instance to this list, passing it through this
-	 * list's pipe.  Default weight is 1.0.
-	 * @return <code>true</code>
-	 * @deprecated Use trainingset.add (new Instance(data,target,name,source)) instead.
-	 */
-	@Deprecated
-	public boolean add (Object data, Object target, Object name, Object source)
-	{
-		return add (data, target, name, source, 1.0);
-	}
 
-	/** Appends the instance to this list without passing the instance through
-	 * the InstanceList's pipe.  
-	 * The alphabets of this Instance must match the alphabets of this InstanceList.
-	 * @return <code>true</code>
-	 */
-	public boolean add (Instance instance)
-	{
-		if (dataAlphabet == null)
-			dataAlphabet = instance.getDataAlphabet();
-		if (targetAlphabet == null)
-			targetAlphabet = instance.getTargetAlphabet();
-		if (!Alphabet.alphabetsMatch(this, instance)) {
-      // gsc
-      Alphabet data_alphabet = instance.getDataAlphabet();
-      Alphabet target_alphabet = instance.getTargetAlphabet();
-      StringBuilder sb = new StringBuilder();
-      sb.append("Alphabets don't match: ");
-      sb.append("Instance: [" + (data_alphabet == null ? null : data_alphabet.size()) + ", " +
-          (target_alphabet == null ? null : target_alphabet.size()) + "], ");
-      data_alphabet = this.getDataAlphabet();
-      target_alphabet = this.getTargetAlphabet();
-      sb.append("InstanceList: [" + (data_alphabet == null ? null : data_alphabet.size()) + ", " +
-          (target_alphabet == null ? null : target_alphabet.size()) + "]\n");
-      throw new IllegalArgumentException(sb.toString());
+    public InstanceList subList (int start, int end)
+    {
+        InstanceList other = this.cloneEmpty();
+        for (int i = start; i < end; i++) {
+            other.add (get (i));
+        }
+        return other;
+    }
+
+    public InstanceList subList (double proportion)
+    {
+        if (proportion > 1.0)
+            throw new IllegalArgumentException ("proportion must by <= 1.0");
+        InstanceList other = (InstanceList) clone();
+        other.shuffle(new java.util.Random());
+        proportion *= other.size();
+        for (int i = 0; i < proportion; i++)
+            other.add (get(i));
+        return other;
+    }
+
+
+
+    /** Adds to this list every instance generated by the iterator,
+     * passing each one through this InstanceList's pipe. */
+    // TODO This method should be renamed addPiped(Iterator<Instance> ii)
+    public void addThruPipe (Iterator<Instance> ii)
+    {
+        //for debug
+        Iterator<Instance> pipedInstanceIterator = pipe.newIteratorFrom(ii);
+        while (pipedInstanceIterator.hasNext())
+        {
+            add (pipedInstanceIterator.next());
+            //System.out.println("Add instance " + pipedInstanceIterator.next().getName());
+        }
+    }
+
+    // gsc: method to add one instance at a time
+    /** Adds the input instance to this list, after passing it through the
+     * InstanceList's pipe.
+     * <p>
+     * If several instances are to be added then accumulate them in a List\<Instance\>
+     * and use <tt>addThruPipe(Iterator<Instance>)</tt> instead.
+     */
+    public void addThruPipe(Instance inst)
+    {
+        addThruPipe(new SingleInstanceIterator(inst));
+    }
+
+    /** Constructs and appends an instance to this list, passing it through this
+     * list's pipe and assigning it the specified weight.
+     * @return <code>true</code>
+     * @deprecated Use trainingset.addThruPipe (new Instance(data,target,name,source)) instead.
+     */
+    @Deprecated
+    public boolean add (Object data, Object target, Object name, Object source, double instanceWeight)
+    {
+        Instance inst = new Instance (data, target, name, source);
+        Iterator<Instance> ii = pipe.newIteratorFrom(new SingleInstanceIterator(inst));
+        if (ii.hasNext()) {
+            add (ii.next(), instanceWeight);
+            return true;
+        }
+        return false;
+    }
+
+    /** Constructs and appends an instance to this list, passing it through this
+     * list's pipe.  Default weight is 1.0.
+     * @return <code>true</code>
+     * @deprecated Use trainingset.add (new Instance(data,target,name,source)) instead.
+     */
+    @Deprecated
+    public boolean add (Object data, Object target, Object name, Object source)
+    {
+        return add (data, target, name, source, 1.0);
+    }
+
+    /** Appends the instance to this list without passing the instance through
+     * the InstanceList's pipe.
+     * The alphabets of this Instance must match the alphabets of this InstanceList.
+     * @return <code>true</code>
+     */
+    public boolean add (Instance instance)
+    {
+        if (dataAlphabet == null)
+            dataAlphabet = instance.getDataAlphabet();
+        if (targetAlphabet == null)
+            targetAlphabet = instance.getTargetAlphabet();
+        if (!Alphabet.alphabetsMatch(this, instance)) {
+            // gsc
+            Alphabet data_alphabet = instance.getDataAlphabet();
+            Alphabet target_alphabet = instance.getTargetAlphabet();
+            StringBuilder sb = new StringBuilder();
+            sb.append("Alphabets don't match: ");
+            sb.append("Instance: [" + (data_alphabet == null ? null : data_alphabet.size()) + ", " +
+                    (target_alphabet == null ? null : target_alphabet.size()) + "], ");
+            data_alphabet = this.getDataAlphabet();
+            target_alphabet = this.getTargetAlphabet();
+            sb.append("InstanceList: [" + (data_alphabet == null ? null : data_alphabet.size()) + ", " +
+                    (target_alphabet == null ? null : target_alphabet.size()) + "]\n");
+            throw new IllegalArgumentException(sb.toString());
 //			throw new IllegalArgumentException ("Alphabets don't match: Instance: "+
 //					instance.getAlphabets()+" InstanceList: "+this.getAlphabets());
+        }
+        if (dataClass == null) {
+            dataClass = instance.data.getClass();
+            if (pipe != null && pipe.isTargetProcessing())
+                if (instance.target != null)
+                    targetClass = instance.target.getClass();
+        }
+        // Once it is added to an InstanceList, generally-speaking, the Instance shouldn't change.
+        // There are exceptions, and for these you can instance.unlock(), then instance.lock() again.
+        instance.lock();
+        return super.add (instance);
     }
-		if (dataClass == null) {
-			dataClass = instance.data.getClass();
-			if (pipe != null && pipe.isTargetProcessing())
-				if (instance.target != null)
-					targetClass = instance.target.getClass();
-		}
-		// Once it is added to an InstanceList, generally-speaking, the Instance shouldn't change.
-		// There are exceptions, and for these you can instance.unlock(), then instance.lock() again.
-		instance.lock(); 
-		return super.add (instance);
-	}
 
-	/** Appends the instance to this list without passing it through this
-	 * InstanceList's pipe, assigning it the specified weight.
-	 * @return <code>true</code>
-	 */
-	public boolean add (Instance instance, double instanceWeight)
-	{
-		// Call the add method above and make sure we
-		// correctly handle adding the first instance to this list
-		boolean ret = this.add(instance);
-		if (!ret)
-			// If for some reason a subclass of InstanceList refuses to add this Instance, be sure not to do the rest. 
-			return ret; 
-		if (instanceWeight != 1.0) { // Default weight is 1.0 for everything not in the HashMap.
-			if (instWeights == null) 
-				instWeights = new HashMap<Instance,Double>();
-			else if (instWeights.get(instance) != null)
-				throw new IllegalArgumentException ("You cannot add the same instance twice to an InstanceList when it has non-1.0 weight.  "+
-						"Trying adding instance.shallowCopy() instead.");
-			instWeights.put(instance, instanceWeight);
-		}
-		return ret;
-	}
-	
-	private void prepareToRemove (Instance instance) {
-		if (instWeights != null)
-			instWeights.remove(instance);
-	}
-  
-	public Instance set (int index, Instance instance) {
-		prepareToRemove(get(index));
-		return super.set (index, instance);
-  }
-	
-  public void add (int index, Instance element) {
-  	throw new IllegalStateException ("Not yet implemented.");
-  }
-  
-  public Instance remove (int index) {
-  	prepareToRemove (get(index));
-  	return super.remove(index);
-  }
-  
-  public boolean remove (Instance instance) {
-  	prepareToRemove (instance);
-  	return super.remove(instance);
-  }
-  
-  public boolean addAll (Collection<? extends Instance> instances) {
-  	for (Instance instance : instances)
-  		this.add (instance);
-  	return true;
-  }
-  
-  public boolean addAll(int index, Collection <? extends Instance> c) {
-  	throw new IllegalStateException ("addAll(int,Collection) not supported by InstanceList.n");
-  }
-  
-  public void clear() {
-  	super.clear();
-  	instWeights.clear();
-  	// But retain all other instance variables.
-  }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-	@Deprecated	// Remove this.  It seems like too specialized behavior to be implemented here.
-	// Intentionally add some noise into the data.
-	// return the real random ratio
-	// added by Fuchun Peng, Sept. 2003
-	public double noisify(double ratio)
-	{
+    /** Appends the instance to this list without passing it through this
+     * InstanceList's pipe, assigning it the specified weight.
+     * @return <code>true</code>
+     */
+    public boolean add (Instance instance, double instanceWeight)
+    {
+        // Call the add method above and make sure we
+        // correctly handle adding the first instance to this list
+        boolean ret = this.add(instance);
+        if (!ret)
+            // If for some reason a subclass of InstanceList refuses to add this Instance, be sure not to do the rest.
+            return ret;
+        if (instanceWeight != 1.0) { // Default weight is 1.0 for everything not in the HashMap.
+            if (instWeights == null)
+                instWeights = new HashMap<Instance,Double>();
+            else if (instWeights.get(instance) != null)
+                throw new IllegalArgumentException ("You cannot add the same instance twice to an InstanceList when it has non-1.0 weight.  "+
+                        "Trying adding instance.shallowCopy() instead.");
+            instWeights.put(instance, instanceWeight);
+        }
+        return ret;
+    }
+
+    private void prepareToRemove (Instance instance) {
+        if (instWeights != null)
+            instWeights.remove(instance);
+    }
+
+    public Instance set (int index, Instance instance) {
+        prepareToRemove(get(index));
+        return super.set (index, instance);
+    }
+
+    public void add (int index, Instance element) {
+        throw new IllegalStateException ("Not yet implemented.");
+    }
+
+    public Instance remove (int index) {
+        prepareToRemove (get(index));
+        return super.remove(index);
+    }
+
+    public boolean remove (Instance instance) {
+        prepareToRemove (instance);
+        return super.remove(instance);
+    }
+
+    public boolean addAll (Collection<? extends Instance> instances) {
+        for (Instance instance : instances)
+            this.add (instance);
+        return true;
+    }
+
+    public boolean addAll(int index, Collection <? extends Instance> c) {
+        throw new IllegalStateException ("addAll(int,Collection) not supported by InstanceList.n");
+    }
+
+    public void clear() {
+        super.clear();
+        instWeights.clear();
+        // But retain all other instance variables.
+    }
+
+
+
+
+
+
+
+
+
+    @Deprecated	// Remove this.  It seems like too specialized behavior to be implemented here.
+    // Intentionally add some noise into the data.
+    // return the real random ratio
+    // added by Fuchun Peng, Sept. 2003
+    public double noisify(double ratio)
+    {
 //		ArrayList new_instances = new ArrayList( instances.size() );
 
-		assert(ratio >= 0 && ratio <= 1);
-		int instance_size = this.size();
-		int noise_instance_num = (int)( ratio * instance_size);
-		java.util.Random r = new java.util.Random ();
+        assert(ratio >= 0 && ratio <= 1);
+        int instance_size = this.size();
+        int noise_instance_num = (int)( ratio * instance_size);
+        java.util.Random r = new java.util.Random ();
 //		System.out.println(noise_instance_num + "/" + instance_size);
-		// gsc: parameterizing...
-		List<Integer> randnumlist = new ArrayList<Integer>(noise_instance_num);
-		for(int i=0; i<noise_instance_num; i++){
-			int randIndex = r.nextInt(instance_size);	
-			//	System.out.println(i + ": " + randIndex );
-			Integer nn = new Integer(randIndex);	
-			if(randnumlist.indexOf(nn) != -1){
-				i--;
-			}
-			else{
-				randnumlist.add(nn);
-			}
-		}	
+        // gsc: parameterizing...
+        List<Integer> randnumlist = new ArrayList<Integer>(noise_instance_num);
+        for(int i=0; i<noise_instance_num; i++){
+            int randIndex = r.nextInt(instance_size);
+            //	System.out.println(i + ": " + randIndex );
+            Integer nn = new Integer(randIndex);
+            if(randnumlist.indexOf(nn) != -1){
+                i--;
+            }
+            else{
+                randnumlist.add(nn);
+            }
+        }
 
-		LabelAlphabet targets = (LabelAlphabet) pipe.getTargetAlphabet();
-		int realRandNum = 0;
+        LabelAlphabet targets = (LabelAlphabet) pipe.getTargetAlphabet();
+        int realRandNum = 0;
 //		for(int i=0; i<randnumlist.size(); i++){
 //			int index = ((Integer)randnumlist.get(i)).intValue();
-		for (Integer index : randnumlist) {
-			Instance inst = get( index );
-			int randIndex = r.nextInt( targets.size() );
+        for (Integer index : randnumlist) {
+            Instance inst = get( index );
+            int randIndex = r.nextInt( targets.size() );
 //			System.out.println(i + ": " +  index +": " + inst.getTarget().toString()
 //			+ " : " + targets.lookupLabel(randIndex) );
 
@@ -1052,7 +1052,6 @@ public InstanceList[] splitInOrder (double[] proportions) {
 			}
 		}
 	}
-
 
 
 }
