@@ -30,7 +30,7 @@ import cc.mallet.types.tests.TestSerializable;
 import cc.mallet.util.*;
 //import cc.mallet.util.Random;
 
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 
 /**
@@ -1261,7 +1261,7 @@ public void testJtConsistency() {
     DirectedModel mdl = new DirectedModel ();
     mdl.addFactor (new CPT (new TableFactor (vars[0], pA), vars[0]));
     mdl.addFactor (new CPT (new TableFactor (vars[1], pB), vars[1]));
-    mdl.addFactor (new CPT (new TableFactor (vars, pC.toNativeArray ()), vars[2]));
+    mdl.addFactor (new CPT (new TableFactor (vars, pC.toArray ()), vars[2]));
 
     return mdl;
   }

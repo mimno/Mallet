@@ -7,7 +7,7 @@
 
 package cc.mallet.grmm.types;
 
-import gnu.trove.TIntObjectHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

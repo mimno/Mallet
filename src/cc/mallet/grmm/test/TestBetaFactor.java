@@ -8,7 +8,7 @@ package cc.mallet.grmm.test;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -56,7 +56,7 @@ public class TestBetaFactor extends TestCase {
       lst.add (assn.getDouble (var));
     }
 
-    double[] vals = lst.toNativeArray ();
+    double[] vals = lst.toArray ();
     double mean = MatrixOps.mean (vals);
     assertEquals (0.7 / (0.5 + 0.7), mean, 0.01);
   }
@@ -73,7 +73,7 @@ public class TestBetaFactor extends TestCase {
       lst.add (assn.getDouble (var));
     }
 
-    double[] vals = lst.toNativeArray ();
+    double[] vals = lst.toArray ();
     double mean = MatrixOps.mean (vals);
     assertEquals (5.92, mean, 0.01);
   }

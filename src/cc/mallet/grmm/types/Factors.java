@@ -14,8 +14,8 @@ import cc.mallet.grmm.util.Flops;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 
-import gnu.trove.TIntArrayList;
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 /**
  * A static utility class containing utility methods for dealing with factors,
@@ -119,7 +119,7 @@ public class Factors {
     }
 
     int[] szs = computeSizes (ptl);
-    SparseMatrixn m = new SparseMatrixn (szs, idxList.toNativeArray (), valList.toNativeArray ());
+    SparseMatrixn m = new SparseMatrixn (szs, idxList.toArray (), valList.toArray ());
 
     TableFactor result = new TableFactor (computeVars (ptl));
     result.setValues (m);

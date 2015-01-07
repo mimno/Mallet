@@ -7,8 +7,8 @@
 
 package cc.mallet.util;
 
-import gnu.trove.TDoubleProcedure;
-import gnu.trove.TObjectProcedure;
+import gnu.trove.procedure.TDoubleProcedure;
+import gnu.trove.procedure.TObjectProcedure;
 
 import java.lang.reflect.Array;
 

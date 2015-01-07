@@ -7,9 +7,9 @@
 
 package cc.mallet.grmm.inference;
 
-import gnu.trove.THashSet;
-import gnu.trove.THashMap;
-import gnu.trove.TIntObjectHashMap;
+import gnu.trove.set.hash.THashSet;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;

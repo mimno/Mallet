@@ -28,7 +28,7 @@ import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.Vector;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.PropertyList;
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 public class HashedSparseVector extends SparseVector implements Serializable 
 {

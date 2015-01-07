@@ -9,7 +9,7 @@ package cc.mallet.grmm.test;
 
 import junit.framework.*;
 
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -49,7 +49,7 @@ public class TestUniformFactor extends TestCase {
       lst.add (assn.getDouble (var));
     }
 
-    double[] vals = lst.toNativeArray ();
+    double[] vals = lst.toArray ();
     double mean = MatrixOps.mean (vals);
     assertEquals (0.25, mean, 0.01);
   }

@@ -7,9 +7,9 @@
 
 package cc.mallet.classify.constraints.ge;
 
-import gnu.trove.TDoubleArrayList;
-import gnu.trove.TIntArrayList;
-import gnu.trove.TIntObjectHashMap;
+import gnu.trove.list.array.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 import java.util.BitSet;
 

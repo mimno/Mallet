@@ -15,7 +15,7 @@ import java.util.List;
 
 import cc.mallet.types.Alphabet;
 
-import gnu.trove.TObjectIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 
 /**

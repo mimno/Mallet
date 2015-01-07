@@ -16,7 +16,7 @@ import java.util.Map;
 import org._3pq.jgrapht.DirectedGraph;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
 import org._3pq.jgrapht.alg.ConnectivityInspector;
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 
 
 /**

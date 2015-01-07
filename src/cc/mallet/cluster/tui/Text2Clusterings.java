@@ -1,6 +1,6 @@
 package cc.mallet.cluster.tui;
 
-import gnu.trove.TIntArrayList;
+import gnu.trove.list.array.TIntArrayList;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,8 +71,9 @@ public class Text2Clusterings {
 												record.toString()));
 				}
 			}
+                        
 			clusterings[i] =
-					new Clustering(instances, subdirs.length, labels.toNativeArray());
+					new Clustering(instances, subdirs.length, labels.toArray());
 		}
 
 		logger.info("\nread " + fi + " objects in " + clusterings.length + " clusterings.");

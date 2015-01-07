@@ -11,7 +11,7 @@ import cc.mallet.types.MatrixOps;
 import cc.mallet.util.Randoms;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 /**
  * $Id: TestUniNormalFactor.java,v 1.1 2007/10/22 21:37:41 mccallum Exp $
@@ -58,7 +58,7 @@ public class TestUniNormalFactor extends TestCase {
       lst.add (assn.getDouble (var));
     }
 
-    double[] vals = lst.toNativeArray ();
+    double[] vals = lst.toArray ();
     double mean = MatrixOps.mean (vals);
     double std = MatrixOps.stddev (vals);
     assertEquals (-1.0, mean, 0.025);

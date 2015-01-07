@@ -7,9 +7,9 @@
 
 package cc.mallet.util;
 
-import gnu.trove.THashSet;
-import gnu.trove.TObjectDoubleHashMap;
-import gnu.trove.TObjectDoubleProcedure;
+import gnu.trove.set.hash.THashSet;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gnu.trove.procedure.TObjectDoubleProcedure;
 
 import java.util.*;
 

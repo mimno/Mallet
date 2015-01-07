@@ -1,8 +1,8 @@
 package cc.mallet.pipe;
 
 import cc.mallet.types.*;
-import gnu.trove.*;
 import java.io.*;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 /** 
  *  Pruning low-count features can be a good way to save memory and computation.

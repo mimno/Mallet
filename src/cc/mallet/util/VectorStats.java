@@ -18,7 +18,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import cc.mallet.types.*;
-import gnu.trove.TIntHashSet;
+
+import gnu.trove.set.hash.TIntHashSet;
 
 public class VectorStats {
 

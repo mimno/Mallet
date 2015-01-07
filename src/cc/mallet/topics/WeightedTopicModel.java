@@ -10,8 +10,7 @@ import java.text.NumberFormat;
 
 import cc.mallet.types.*;
 import cc.mallet.util.*;
-
-import gnu.trove.*;
+import gnu.trove.map.hash.TIntDoubleHashMap;
 
 public class WeightedTopicModel implements Serializable {
 

@@ -7,7 +7,7 @@
 
 package cc.mallet.grmm.types;
 
-import gnu.trove.THashSet;
+import gnu.trove.set.hash.THashSet;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -183,7 +183,7 @@ public class HashVarSet implements VarSet, Serializable {
 
 	public Object clone()
   {
-		return verts.clone();
+       return new THashSet(verts);
 	}
 
 	public boolean add(Object object)

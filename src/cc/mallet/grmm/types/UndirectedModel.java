@@ -8,7 +8,7 @@ package cc.mallet.grmm.types;
 
 import java.util.*;
 
-import gnu.trove.THashSet;
+import gnu.trove.set.hash.THashSet;
 import org._3pq.jgrapht.UndirectedGraph;
 import org._3pq.jgrapht.alg.ConnectivityInspector;
 

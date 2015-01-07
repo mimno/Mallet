@@ -7,8 +7,8 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
-import gnu.trove.TIntArrayList;
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.util.ArrayList;
 import java.util.BitSet;

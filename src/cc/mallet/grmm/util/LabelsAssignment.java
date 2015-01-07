@@ -20,8 +20,8 @@ import cc.mallet.types.LabelsSequence;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.AlphabetCarrying;
 
-import gnu.trove.THashMap;
-import gnu.trove.TIntArrayList;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.list.array.TIntArrayList;
 
 /**
  * A special kind of assignment for Variables that
@@ -69,7 +69,7 @@ public class LabelsAssignment extends Assignment implements AlphabetCarrying {
         vals.add (lbl.getIndex ());
       }
     }
-    return vals.toNativeArray ();
+    return vals.toArray ();
   }
 
   private void setupLabel2Var ()

@@ -1,7 +1,7 @@
 package cc.mallet.util;
 
 import cc.mallet.types.*;
-import gnu.trove.*;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.util.Formatter;
 import java.util.Locale;

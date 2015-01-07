@@ -143,7 +143,7 @@ public class FeatureTransducer extends Transducer
 		int index;
 		double initialWeight, finalWeight;
 		Transition[] transitions;
-		gnu.trove.TIntObjectHashMap input2transitions;
+		gnu.trove.map.hash.TIntObjectHashMap input2transitions;
 		Multinomial.Estimator transitionCounts;
 		FeatureTransducer transducer;
 
@@ -161,7 +161,7 @@ public class FeatureTransducer extends Transducer
 			this.initialWeight = initialWeight;
 			this.finalWeight = finalWeight;
 			this.transitions = new Transition[inputs.length];
-			this.input2transitions = new gnu.trove.TIntObjectHashMap ();
+			this.input2transitions = new gnu.trove.map.hash.TIntObjectHashMap ();
 			transitionCounts = null;
 			for (int i = 0; i < inputs.length; i++) {
 				// This constructor places the transtion into this.input2transitions

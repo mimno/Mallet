@@ -6,9 +6,9 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.util;
 
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.TObjectProcedure;
-import gnu.trove.TIntObjectIterator;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TObjectProcedure;
+import gnu.trove.iterator.TIntObjectIterator;
 
 import java.io.Serializable;
 import java.io.ObjectOutputStream;
@@ -61,9 +61,9 @@ public class MIntInt2ObjectMap implements Serializable {
   {
     final TIntObjectHashMap inner = (TIntObjectHashMap) backing.get (key1);
     if (inner == null) {
-      return new TIntObjectIterator (new TIntObjectHashMap ());
+      return  (new TIntObjectHashMap ()).iterator();
     } else {
-      return new TIntObjectIterator (inner);
+      return inner.iterator();
     }
   }
 
