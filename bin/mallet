@@ -7,7 +7,7 @@ malletdir=`dirname $malletdir`
 cp=$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
 #echo $cp
 
-MEMORY=1g
+MEMORY=8g
 
 JAVA_COMMAND="java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath $cp"
 

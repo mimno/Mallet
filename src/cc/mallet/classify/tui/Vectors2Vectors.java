@@ -7,6 +7,7 @@
 
 package cc.mallet.classify.tui;
 
+import java.lang.System;
 import java.util.logging.*;
 import java.util.Iterator;
 import java.util.Random;
@@ -72,7 +73,7 @@ public class Vectors2Vectors {
 
 	static CommandOption.Boolean vectorToSequence = new CommandOption.Boolean(Vectors2Vectors.class, "vector-to-sequence", "[TRUE|FALSE]", false, false,
 		 "Convert FeatureVector's to FeatureSequence's.", null);
-	
+
 	static CommandOption.Boolean hideTargets = new CommandOption.Boolean(Vectors2Vectors.class, "hide-targets", "[TRUE|FALSE]", false, false,
 		 "Hide targets.", null);
 	 
@@ -116,12 +117,12 @@ public class Vectors2Vectors {
 		if (pruneInfogain.wasInvoked() || pruneDocFreq.wasInvoked() || pruneCount.wasInvoked() || minIDF.wasInvoked() || maxIDF.wasInvoked()) {
 			
 			// Are we also splitting the instances?
-			//  Current code doesn't want to do this, so I'm 
+			//  Current code doesn't want to do this, so I'm
 			//  not changing it, but I don't know a reason. -DM
 			if (t != 1.0) {
 				throw new UnsupportedOperationException("Infogain/count processing of test or validation lists not yet supported.");
 			}
-			
+
 			if (pruneCount.wasInvoked() || pruneDocFreq.wasInvoked() || minIDF.wasInvoked() || maxIDF.wasInvoked()) {
 
 				FeatureCountTool counter = new FeatureCountTool(instances);
@@ -153,29 +154,25 @@ public class Vectors2Vectors {
 				Instance firstInstance = instances.get(0);
 				if (firstInstance.getData() instanceof FeatureSequence) {
 					// Version for feature sequences
-								
 					// It's necessary to create a new instance list in
 					//  order to make sure that the data alphabet is correct.
 					Noop newPipe = new Noop (newAlphabet, instances.getTargetAlphabet());
 					InstanceList newInstanceList = new InstanceList (newPipe);
-					
+
 					// Iterate over the instances in the old list, adding
 					//  up occurrences of features.
 					int numFeatures = oldAlphabet.size();
 					double[] counts = new double[numFeatures];
-					for (int ii = 0; ii < instances.size(); ii++) {
-						Instance instance = instances.get(ii);
+                    for (Instance instance : instances) {
 						FeatureSequence fs = (FeatureSequence) instance.getData();
-						
+
 						fs.addFeatureWeightsTo(counts);
 					}
-					
-					Instance instance, newInstance;
 
-					// Next, iterate over the same list again, adding 
+					// Next, iterate over the same list again, adding
 					//  each instance to the new list after pruning.
 					while (instances.size() > 0) {
-						instance = instances.get(0);
+						Instance instance = instances.get(0);
 						FeatureSequence fs = (FeatureSequence) instance.getData();
 
 						fs.prune(newAlphabet);
@@ -188,11 +185,9 @@ public class Vectors2Vectors {
 					
 					logger.info("features: " + oldAlphabet.size() + 
 								" -> " + newAlphabet.size());
-					
+
 					// Make the new list the official list.
 					instances = newInstanceList;
-
-
 				}
 				else if (firstInstance.getData() instanceof FeatureVector) {
 					// Version for FeatureVector
@@ -202,7 +197,7 @@ public class Vectors2Vectors {
 					InstanceList instances2 = new InstanceList (pipe2);
 					int numFeatures = oldAlphabet.size();
 					double[] counts = new double[numFeatures];
-										
+
 					BitSet bs = new BitSet(numFeatures);
 					
 					for (int feature = 0; feature < numFeatures; feature++) {
@@ -217,11 +212,11 @@ public class Vectors2Vectors {
 					FeatureSelection fs = new FeatureSelection (oldAlphabet, bs);
 					
 					for (int ii = 0; ii < instances.size(); ii++) {
-						
+
 						Instance instance = instances.get(ii);
 						FeatureVector fv = (FeatureVector) instance.getData();
 						FeatureVector fv2 = FeatureVector.newFeatureVector (fv, alpha2, fs);
-						
+
 						instances2.add(new Instance(fv2, instance.getTarget(), instance.getName(), instance.getSource()),
 									   instances.getInstanceWeight(ii));
 						instance.unLock();
@@ -234,9 +229,60 @@ public class Vectors2Vectors {
 															firstInstance.getClass().getName() +
 															" is not currently supported");
 				}
-				
+
 			}
-			
+
+            if (pruneDocFreq.wasInvoked()) {
+
+                // Check which type of data element the instances contain
+                Instance firstInstance = instances.get(0);
+                if (firstInstance.getData() instanceof FeatureSequence) {
+                    // Version for feature sequences
+
+                    Alphabet oldAlphabet = instances.getDataAlphabet();
+                    Alphabet newAlphabet = new Alphabet();
+
+                    // It's necessary to create a new instance list in
+                    //  order to make sure that the data alphabet is correct.
+                    Noop newPipe = new Noop (newAlphabet, instances.getTargetAlphabet());
+                    InstanceList newInstanceList = new InstanceList (newPipe);
+
+                    // Iterate over the instances in the old list, adding
+                    //  up occurrences of features.
+                    int numFeatures = oldAlphabet.size();
+                    double[] counts = new double[numFeatures];
+                    for (Instance instance : instances) {
+                        FeatureSequence fs = (FeatureSequence) instance.getData();
+
+                        fs.addUniqueFeatureWeightsTo(counts);
+                    }
+
+                    // Next, iterate over the same list again, adding
+                    //  each instance to the new list after pruning.
+                    for (Instance instance : instances) {
+                        FeatureSequence fs = (FeatureSequence) instance.getData();
+
+                        fs.prune(counts, newAlphabet, pruneDocFreq.value);
+
+                        newInstanceList.add(newPipe.instanceFrom(new Instance(fs, instance.getTarget(),
+                                instance.getName(),
+                                instance.getSource())));
+                    }
+
+                    logger.info("features: " + oldAlphabet.size() +
+                            " -> " + newAlphabet.size());
+
+                    // Make the new list the official list.
+                    instances = newInstanceList;
+                }
+                else {
+                    throw new UnsupportedOperationException("Pruning features from " +
+                            firstInstance.getClass().getName() +
+                            " is not currently supported");
+                }
+
+            }
+
 			if (pruneInfogain.value > 0) {
 				Alphabet alpha2 = new Alphabet ();
 				Noop pipe2 = new Noop (alpha2, instances.getTargetAlphabet());
@@ -254,7 +300,7 @@ public class Vectors2Vectors {
 				}
 				instances = instances2;
 			}
-			
+
 			if (vectorToSequence.value) {
 				// Convert FeatureVector's to FeatureSequence's by simply randomizing the order
 				// of all the word occurrences, including repetitions due to values larger than 1.
@@ -280,7 +326,7 @@ public class Vectors2Vectors {
 				}
 				instances = instances2;
 			}
-			
+
 			if (outputFile.wasInvoked()) {
 				writeInstanceList (instances, outputFile.value());
 			}
@@ -320,7 +366,7 @@ public class Vectors2Vectors {
 			}
 		}
 		else if (trainingProportion.wasInvoked() || validationProportion.wasInvoked()) {
-			
+
 			// Split into three lists...
 			InstanceList[] instanceLists = instances.split (r, new double[] {t, 1-t-v, v});
 
@@ -355,7 +401,7 @@ public class Vectors2Vectors {
 			}
 			if (outputFile.wasInvoked()) {
 				writeInstanceList (instances, outputFile.value());
-			}	
+			}
 		}
 	}
 

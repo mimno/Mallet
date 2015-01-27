@@ -41,7 +41,7 @@ import cc.mallet.util.PropertyList;
 	 Pipe, and the resulting data/target/name/source fields are used.
 	 This is generally done for training instances.  (2) An instance
 	 gets created with raw values in its slots, then different users
-	 of the instance call newPipedCopy() with their respective
+	 of the instance call C() with their respective
 	 different pipes.  This might be done for test instances at
 	 "performance" time.
 	 

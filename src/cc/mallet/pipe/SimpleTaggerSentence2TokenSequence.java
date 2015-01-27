@@ -77,8 +77,8 @@ public class SimpleTaggerSentence2TokenSequence extends Pipe {
     return tokens;
   }
 
-  /** returns the first String in the array or "" if the array has length 0. 
-   */ 
+  /** returns the first String in the array or "" if the array has length 0.
+   */
   protected String makeText(String[] in){
     if  (in.length>0) return in[0];
     else return "";
@@ -98,45 +98,44 @@ public class SimpleTaggerSentence2TokenSequence extends Pipe {
    */
   public Instance pipe (Instance carrier)
   {
-    Object inputData = carrier.getData();
-    //Alphabet features = getDataAlphabet();
-    LabelAlphabet labels;
-    LabelSequence target = null;
-    String [][] tokens;
-    TokenSequence ts = new TokenSequence ();
-    if (inputData instanceof String)
-      tokens = parseSentence ((String) inputData);
-    else if (inputData instanceof String[][])
-      tokens = (String[][]) inputData;
-    else
-      throw new IllegalArgumentException ("Not a String or String[][]; got " + inputData);
-    FeatureVector[] fvs = new FeatureVector[tokens.length];
-    if (isTargetProcessing ()) {
-      labels = (LabelAlphabet) getTargetAlphabet ();
-      target = new LabelSequence (labels, tokens.length);
-    }
-    for (int l = 0; l < tokens.length; l++) {
-      int nFeatures;
+      Object inputData = carrier.getData();
+      //Alphabet features = getDataAlphabet();
+      LabelAlphabet labels;
+      LabelSequence target = null;
+      String [][] tokens;
+      TokenSequence ts = new TokenSequence ();
+      if (inputData instanceof String)
+          tokens = parseSentence ((String) inputData);
+      else if (inputData instanceof String[][])
+          tokens = (String[][]) inputData;
+      else
+          throw new IllegalArgumentException ("Not a String or String[][]; got " + inputData);
       if (isTargetProcessing ()) {
-        if (tokens[l].length < 1)
-          throw new IllegalStateException ("Missing label at line " + l + " instance " + carrier.getName ());
-        nFeatures = tokens[l].length - 1;
-        target.add(tokens[l][nFeatures]);
-      } else nFeatures = tokens[l].length;
-      Token tok = new Token(makeText(tokens[l]));
-      if (setTokensAsFeatures){
-	for (int f = 0; f < nFeatures; f++)
-	  tok.setFeatureValue(tokens[l][f], 1.0);
-      } else {
-	for (int f = 1; f < nFeatures; f++)
-	  tok.setFeatureValue(tokens[l][f], 1.0);
+          labels = (LabelAlphabet) getTargetAlphabet ();
+          target = new LabelSequence (labels, tokens.length);
       }
-      ts.add (tok);
-    }
-    carrier.setData (ts);
-    if (isTargetProcessing ())
-      carrier.setTarget (target);
-    return carrier;
+      for (int l = 0; l < tokens.length; l++) {
+          int nFeatures;
+          if (isTargetProcessing ()) {
+              if (tokens[l].length < 1)
+                  throw new IllegalStateException ("Missing label at line " + l + " instance " + carrier.getName ());
+              nFeatures = tokens[l].length - 1;
+              target.add(tokens[l][nFeatures]);
+          } else nFeatures = tokens[l].length;
+          Token tok = new Token(makeText(tokens[l]));
+          if (setTokensAsFeatures){
+              for (int f = 0; f < nFeatures; f++)
+                  tok.setFeatureValue(tokens[l][f], 1.0);
+          } else {
+              for (int f = 1; f < nFeatures; f++)
+                  tok.setFeatureValue(tokens[l][f], 1.0);
+          }
+          ts.add (tok);
+      }
+      carrier.setData (ts);
+      if (isTargetProcessing ())
+          carrier.setTarget (target);
+      return carrier;
   }
 
   // Serialization garbage
