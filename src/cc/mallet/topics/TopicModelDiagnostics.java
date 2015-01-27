@@ -48,7 +48,7 @@ public class TopicModelDiagnostics {
 		this.model = model;
 
 		alphabet = model.getAlphabet();
-		topicSortedWords = model.getSortedWords();
+		topicSortedWords = model.getCountSortedWords();
 
 		topicTopWords = new String[numTopics][numTopWords];
 

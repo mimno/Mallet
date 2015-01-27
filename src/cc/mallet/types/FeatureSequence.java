@@ -11,8 +11,9 @@
 
 package cc.mallet.types;
 
-import java.util.Arrays;
 import java.io.*;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  *   An implementation of {@link Sequence} that ensures that every
@@ -62,15 +63,15 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 	{
 		this (dict, 2);
 	}
-	
+
 	public int[] getFeatures() { return features ;}
-	
+
 	public Alphabet getAlphabet ()	{	return dictionary; }
-	
+
 	public Alphabet[] getAlphabets() {
 		return new Alphabet[] {getAlphabet()};
 	}
-	
+
 	public boolean alphabetsMatch (AlphabetCarrying object)	{
 		return getAlphabet().equals (object.getAlphabet());
 	}
@@ -131,11 +132,11 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 		int fi = dictionary.lookupIndex (key);
 		if (fi >= 0)
 			add (fi);
-		
+
 		// gdruck@cs.umass.edu
 		// With the exception below, it is not possible to pipe data
-		// when growth of the alphabet is stopped.  We want to be 
-		// able to do this, for example to process new data using 
+		// when growth of the alphabet is stopped.  We want to be
+		// able to do this, for example to process new data using
 		// an old Pipe (for example from a fixed, cached classifier
 		// that we want to apply to new data.).
 		//else
@@ -155,6 +156,29 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 			weights[features[i]] += scale;
 	}
 
+    public void addUniqueFeatureWeightsTo (double[] weights) {
+        Set<Integer> uniqueFeatures = new HashSet<Integer>();
+        for (int i = 0; i < length; i++)
+        {
+            if (!uniqueFeatures.contains(features[i]))
+            {
+                uniqueFeatures.add(features[i]);
+                weights[features[i]]++;
+            }
+        }
+    }
+
+    public void addUniqueFeatureWeightsTo (double[] weights, double scale)
+    {
+        Set<Integer> uniqueFeatures = new HashSet<Integer>();
+        for (int i = 0; i < length; i++) {
+            if (!uniqueFeatures.contains(features[i])) {
+                uniqueFeatures.add(features[i]);
+                weights[features[i]] += scale;
+            }
+        }
+    }
+
 	public int[] toFeatureIndexSequence ()
 	{
 		int[] feats = new int[length];
@@ -168,11 +192,11 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 		java.util.Arrays.sort (feats);
 		return feats;
 	}
-	
-	
-	/** 
-	 *  Remove features from the sequence that occur fewer than 
-	 *  <code>cutoff</code> times in the corpus, as indicated by 
+
+
+	/**
+	 *  Remove features from the sequence that occur fewer than
+	 *  <code>cutoff</code> times in the corpus, as indicated by
 	 *  the provided counts. Also swap in the new, reduced alphabet.
 	 *  This method alters the instance in place; it is not appropriate
 	 *  if the original instance will be needed.
@@ -236,7 +260,7 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
         }
 
         // Second: allocate a new features array
-        
+
         int[] newFeatures = new int[newLength];
 
         // Third: fill the new array
@@ -259,13 +283,13 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
         dictionary = newAlphabet;
 
     }
-    
+
    	// Serialization
-		
+
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 0;
 	private static final int NULL_INTEGER = -1;
-	
+
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeObject (dictionary);
@@ -274,7 +298,7 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 			out.writeInt (features[i]);
 		out.writeInt (length);
 	}
-	
+
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int featuresLength;
 		int version = in.readInt ();
@@ -285,5 +309,5 @@ public class FeatureSequence implements Sequence, Serializable, AlphabetCarrying
 			features[i] = in.readInt ();
 		length = in.readInt ();
 	}
-	
+
 }

@@ -65,7 +65,7 @@ public class TopicModel {
 		double[] topicDistribution = model.getTopicProbabilities(0);
 
 		// Get an array of sorted sets of word ID/count pairs
-		ArrayList<TreeSet<IDSorter>> topicSortedWords = model.getSortedWords();
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = model.getCountSortedWords();
 		
 		// Show top 5 words in topics with proportions for the first document
 		for (int topic = 0; topic < numTopics; topic++) {
