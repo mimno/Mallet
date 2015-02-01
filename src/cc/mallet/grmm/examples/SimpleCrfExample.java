@@ -45,7 +45,7 @@ public class SimpleCrfExample {
                                          true));
 
     InstanceList testing = new InstanceList (pipe);
-    training.addThruPipe (new LineGroupIterator (new FileReader (testFile),
+    testing.addThruPipe (new LineGroupIterator (new FileReader (testFile),
                                          Pattern.compile ("\\s*"),
                                          true));
 
