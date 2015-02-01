@@ -37,7 +37,7 @@ import cc.mallet.util.MalletLogger;
  * Class for Arbitrary CRFs.  These are CRFs with completely
  *  arbitrary graphical structure.  The user passes in a list
  *  of instances of ACRF.CliqueFactory, which get to look at
- *  the sequence and decide what 
+ *  the sequence and decide what
  *
  * @author <a href="mailto:casutton@cs.umass.edu">Charles Sutton</a>
  * @version $Id: ACRF.java,v 1.1 2007/10/22 21:37:43 mccallum Exp $
@@ -157,7 +157,7 @@ public class ACRF implements Serializable {
   {
     this.gaussianPriorVariance = gaussianPriorVariance;
   }
-  
+
 
   public void setGraphProcessor (GraphPostProcessor graphProcessor)
   {
@@ -791,7 +791,7 @@ public class ACRF implements Serializable {
         addFactorInternal (clique, ptl);
         clique.tmpl.modifyPotential (this, clique, ptl);
         uvsMap.put (ptl, clique);
-        
+
         // sigh
         LogTableFactor unif = new LogTableFactor (clique);
         residTmp.add (Factors.distLinf (unif, ptl));
@@ -1823,17 +1823,25 @@ public class ACRF implements Serializable {
                                         FeatureVectorSequence fvs,
                                         LabelsAssignment lblseq)
     {
+      if (lblseq.maxTime() == 1) {
+        Variable v1 = lblseq.varOfIndex(0, factor);
+        FeatureVector fv = fvs.getFeatureVector(0);
+        ACRF.UnrolledVarSet clique = new ACRF.UnrolledVarSet(graph, this, new Variable[]{v1}, fv);
+        graph.addClique(clique);
+        return;
+      }
+
       for (int i = 0; i < lblseq.maxTime() - 1; i++) {
-        Variable v1 = lblseq.varOfIndex (i, factor);
-        Variable v2 = lblseq.varOfIndex (i + 1, factor);
-        FeatureVector fv = fvs.getFeatureVector (i);
+        Variable v1 = lblseq.varOfIndex(i, factor);
+        Variable v2 = lblseq.varOfIndex(i + 1, factor);
+        FeatureVector fv = fvs.getFeatureVector(i);
 
-        Variable[] vars = new Variable[] { v1, v2 };
-        assert v1 != null : "Couldn't get label factor "+factor+" time "+i;
-        assert v2 != null : "Couldn't get label factor "+factor+" time "+(i+1);
+        Variable[] vars = new Variable[]{v1, v2};
+        assert v1 != null : "Couldn't get label factor " + factor + " time " + i;
+        assert v2 != null : "Couldn't get label factor " + factor + " time " + (i + 1);
 
-        ACRF.UnrolledVarSet clique = new ACRF.UnrolledVarSet (graph, this, vars, fv);
-        graph.addClique (clique);
+        ACRF.UnrolledVarSet clique = new ACRF.UnrolledVarSet(graph, this, vars, fv);
+        graph.addClique(clique);
       }
     }
 
