@@ -33,6 +33,7 @@ public class LineIterator implements Iterator<Instance>
 		this.lineRegex = lineRegex;
 		this.targetGroup = targetGroup;
 		this.dataGroup = dataGroup;
+		this.uriGroup = uriGroup;
 		if (dataGroup < 0)
 			throw new IllegalStateException ("You must extract a data field.");
 		try {
