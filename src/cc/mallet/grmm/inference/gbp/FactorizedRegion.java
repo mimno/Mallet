@@ -7,16 +7,16 @@
 package cc.mallet.grmm.inference.gbp;
 
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.Set;
-
 import cc.mallet.grmm.types.Factor;
 import cc.mallet.grmm.types.FactorGraph;
 import cc.mallet.grmm.types.Variable;
+import gnu.trove.set.hash.THashSet;
 
-import gnu.trove.THashSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 
 /**
  * A more space-efficient Region class that doesn't maintain a global factor
@@ -43,7 +43,7 @@ public class FactorizedRegion extends Region {
 
   private static Collection varsForFactors (List factors)
   {
-    Set vars = new THashSet ();
+    Set vars = new THashSet();
     for (Iterator it = factors.iterator (); it.hasNext ();) {
       Factor ptl = (Factor) it.next ();
       vars.addAll (ptl.varSet ());

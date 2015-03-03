@@ -7,20 +7,12 @@
 package cc.mallet.grmm.util;
 
 
-import java.io.*;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.regex.Pattern;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import cc.mallet.grmm.types.Factor;
+import cc.mallet.grmm.types.FactorGraph;
+import cc.mallet.grmm.types.Variable;
 
-import cc.mallet.grmm.types.*;
-
-import gnu.trove.THashMap;
-import bsh.Interpreter;
-import bsh.EvalError;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * $Id: ModelReader.java,v 1.1 2007/10/22 21:37:58 mccallum Exp $

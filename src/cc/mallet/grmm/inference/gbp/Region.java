@@ -12,7 +12,7 @@ import java.util.*;
 import cc.mallet.grmm.types.Factor;
 import cc.mallet.grmm.types.Variable;
 
-import gnu.trove.THashSet;
+import gnu.trove.set.hash.THashSet;
 
 /**
  * Created: May 27, 2005

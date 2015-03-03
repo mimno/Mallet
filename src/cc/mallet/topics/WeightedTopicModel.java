@@ -1,17 +1,18 @@
 package cc.mallet.topics;
 
-import java.util.*;
-import java.util.logging.*;
-import java.util.zip.*;
-import java.util.regex.*;
+import cc.mallet.types.*;
+import cc.mallet.util.CommandOption;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Randoms;
+import gnu.trove.map.hash.TIntDoubleHashMap;
 
 import java.io.*;
 import java.text.NumberFormat;
-
-import cc.mallet.types.*;
-import cc.mallet.util.*;
-
-import gnu.trove.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 public class WeightedTopicModel implements Serializable {
 

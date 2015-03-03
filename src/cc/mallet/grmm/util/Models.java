@@ -14,7 +14,7 @@ import cc.mallet.grmm.inference.JunctionTree;
 import cc.mallet.grmm.inference.JunctionTreeInferencer;
 import cc.mallet.grmm.types.*;
 
-import gnu.trove.THashSet;
+import gnu.trove.set.hash.THashSet;
 
 /**
  * Static utilities that do useful things with factor graphs.

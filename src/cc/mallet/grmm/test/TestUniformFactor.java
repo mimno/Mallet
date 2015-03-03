@@ -7,18 +7,17 @@
 
 package cc.mallet.grmm.test;
 
-import junit.framework.*;
-
-import gnu.trove.TDoubleArrayList;
-
-import java.io.BufferedReader;
-import java.io.StringReader;
-import java.io.IOException;
-
 import cc.mallet.grmm.types.*;
 import cc.mallet.grmm.util.ModelReader;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.util.Randoms;
+import gnu.trove.list.array.TDoubleArrayList;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * $Id: TestUniformFactor.java,v 1.1 2007/10/22 21:37:41 mccallum Exp $
@@ -43,13 +42,13 @@ public class TestUniformFactor extends TestCase {
     Variable var = new Variable (Variable.CONTINUOUS);
     Randoms r = new Randoms (2343);
     Factor f = new UniformFactor (var, -1.0, 1.5);
-    TDoubleArrayList lst = new TDoubleArrayList ();
+    TDoubleArrayList lst = new TDoubleArrayList();
     for (int i = 0; i < 10000; i++) {
       Assignment assn = f.sample (r);
       lst.add (assn.getDouble (var));
     }
 
-    double[] vals = lst.toNativeArray ();
+    double[] vals = lst.toArray();
     double mean = MatrixOps.mean (vals);
     assertEquals (0.25, mean, 0.01);
   }

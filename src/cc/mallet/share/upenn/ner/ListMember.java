@@ -1,13 +1,17 @@
 package cc.mallet.share.upenn.ner;
 
 
-import java.io.*;
-import java.util.*;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.types.Instance;
+import cc.mallet.types.TokenSequence;
+import gnu.trove.set.hash.THashSet;
 
-import cc.mallet.pipe.*;
-import cc.mallet.types.*;
-
-import gnu.trove.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Checks membership in a lexicon in a text file.  Multi-token items are supported,

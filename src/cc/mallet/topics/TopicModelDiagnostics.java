@@ -1,13 +1,14 @@
 package cc.mallet.topics;
 
-import java.io.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.IDSorter;
+import cc.mallet.types.InstanceList;
+import gnu.trove.set.hash.TIntHashSet;
+
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
-import java.text.*;
-
-import cc.mallet.types.*;
-import cc.mallet.util.*;
-
-import gnu.trove.*;
 
 public class TopicModelDiagnostics {
 

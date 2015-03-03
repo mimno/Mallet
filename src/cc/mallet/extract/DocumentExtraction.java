@@ -6,13 +6,16 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.extract;
 
-import org.jdom.Element;
+import cc.mallet.types.Label;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.types.Sequence;
+import gnu.trove.map.hash.THashMap;
 import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
 import org.jdom.output.XMLOutputter;
-
-import cc.mallet.types.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -22,8 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import gnu.trove.THashMap;
 
 /**
  * Created: Oct 12, 2004

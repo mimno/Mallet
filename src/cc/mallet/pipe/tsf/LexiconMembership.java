@@ -17,21 +17,24 @@
 
 package cc.mallet.pipe.tsf;
 
-import java.io.*;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.types.Instance;
+import cc.mallet.types.Token;
+import cc.mallet.types.TokenSequence;
+import gnu.trove.set.hash.THashSet;
 
-import cc.mallet.pipe.*;
-import cc.mallet.types.*;
+import java.io.*;
 
 public class LexiconMembership extends Pipe implements Serializable
 {
 	String name;
-	gnu.trove.THashSet lexicon;
+	THashSet lexicon;
 	boolean ignoreCase;
 	
 	public LexiconMembership (String name, Reader lexiconReader, boolean ignoreCase)
 	{
 		this.name = name;
-		this.lexicon = new gnu.trove.THashSet ();
+		this.lexicon = new THashSet ();
 		this.ignoreCase = ignoreCase;
 		LineNumberReader reader = new LineNumberReader (lexiconReader);
 		String line;
@@ -104,7 +107,7 @@ public class LexiconMembership extends Pipe implements Serializable
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		this.name = (String) in.readObject();
-		this.lexicon = (gnu.trove.THashSet) in.readObject();
+		this.lexicon = (THashSet) in.readObject();
 		this.ignoreCase = in.readBoolean();
 	}
 

@@ -1,7 +1,7 @@
 package cc.mallet.topics;
 
 import cc.mallet.types.*;
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 import java.io.*;
 
 /** A wrapper for a topic model to be used from the R statistical package through rJava.

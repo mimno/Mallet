@@ -1,14 +1,16 @@
 package cc.mallet.types;
+import gnu.trove.map.hash.TIntIntHashMap;
+
 
 /** Efficient, compact, incremental counting of features in an alphabet. */
 public class FeatureCounter 
 {
 	Alphabet alphabet;
-	gnu.trove.TIntIntHashMap featureCounts;
+	TIntIntHashMap featureCounts;
 	
 	public FeatureCounter (Alphabet alphabet) {
 		this.alphabet = alphabet;
-		featureCounts = new gnu.trove.TIntIntHashMap();
+		featureCounts = new TIntIntHashMap();
 	}
 	
 	public int increment (Object entry) {

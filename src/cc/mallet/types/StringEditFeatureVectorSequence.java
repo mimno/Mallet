@@ -17,7 +17,7 @@ package cc.mallet.types;
 import java.io.*;
 import java.util.regex.*;
 import java.util.HashMap;
-import gnu.trove.TObjectIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import java.util.Set;
 import java.util.Iterator;
 

@@ -14,16 +14,16 @@
 
 package cc.mallet.fst;
 
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.Multinomial;
+import cc.mallet.types.Sequence;
+import cc.mallet.util.MalletLogger;
+import gnu.trove.map.hash.TIntObjectHashMap;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
-
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Multinomial;
-import cc.mallet.types.Sequence;
-
-import cc.mallet.util.MalletLogger;
 
 public class FeatureTransducer extends Transducer
 {
@@ -143,7 +143,7 @@ public class FeatureTransducer extends Transducer
 		int index;
 		double initialWeight, finalWeight;
 		Transition[] transitions;
-		gnu.trove.TIntObjectHashMap input2transitions;
+		TIntObjectHashMap input2transitions;
 		Multinomial.Estimator transitionCounts;
 		FeatureTransducer transducer;
 
@@ -161,7 +161,7 @@ public class FeatureTransducer extends Transducer
 			this.initialWeight = initialWeight;
 			this.finalWeight = finalWeight;
 			this.transitions = new Transition[inputs.length];
-			this.input2transitions = new gnu.trove.TIntObjectHashMap ();
+			this.input2transitions = new TIntObjectHashMap ();
 			transitionCounts = null;
 			for (int i = 0; i < inputs.length; i++) {
 				// This constructor places the transtion into this.input2transitions

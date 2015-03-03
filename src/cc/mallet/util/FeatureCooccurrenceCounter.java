@@ -1,12 +1,14 @@
 package cc.mallet.util;
 
 import cc.mallet.types.*;
-import gnu.trove.*;
+import gnu.trove.map.hash.TIntIntHashMap;
 
-import java.util.Arrays;
-import java.util.logging.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.NumberFormat;
-import java.io.*;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class FeatureCooccurrenceCounter {
 

@@ -13,7 +13,7 @@
  */
 
 package cc.mallet.types;
-
+import gnu.trove.map.hash.TObjectIntHashMap;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -50,7 +50,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class Alphabet implements Serializable
 {
-	gnu.trove.TObjectIntHashMap map;
+	TObjectIntHashMap map;
 	ArrayList entries;
 	volatile boolean growthStopped = false;
 	Class entryClass = null;
@@ -60,7 +60,7 @@ public class Alphabet implements Serializable
 
 	public Alphabet (int capacity, Class entryClass)
 	{
-		this.map = new gnu.trove.TObjectIntHashMap (capacity);
+		this.map = new TObjectIntHashMap (capacity);
 		this.entries = new ArrayList (capacity);
 		this.entryClass = entryClass;
 		// someone could try to deserialize us into this image (e.g., by RMI).  Handle this.
@@ -93,7 +93,7 @@ public class Alphabet implements Serializable
         lock.readLock().lock();
         try {
             Alphabet ret = new Alphabet();
-            ret.map = (gnu.trove.TObjectIntHashMap) map.clone();
+            ret.map = new TObjectIntHashMap(map);
             ret.entries = (ArrayList) entries.clone();
             ret.growthStopped = growthStopped;
             ret.entryClass = entryClass;
@@ -352,7 +352,7 @@ public class Alphabet implements Serializable
             int version = in.readInt();
             int size = in.readInt();
             entries = new ArrayList(size);
-            map = new gnu.trove.TObjectIntHashMap(size);
+            map = new TObjectIntHashMap(size);
             for (int i = 0; i < size; i++) {
                 Object o = in.readObject();
                 map.put(o, i);

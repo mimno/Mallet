@@ -7,10 +7,10 @@
 
 package cc.mallet.grmm.types;
 
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
-import gnu.trove.TObjectObjectProcedure;
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.set.hash.THashSet;
+import gnu.trove.procedure.TObjectObjectProcedure;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.io.*;
 import java.util.*;
