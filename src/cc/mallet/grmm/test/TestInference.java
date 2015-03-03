@@ -7,18 +7,6 @@
 
 package cc.mallet.grmm.test;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import java.util.*;
-import java.util.Random;
-import java.util.logging.Logger;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.BufferedReader;
-
 import cc.mallet.grmm.inference.*;
 import cc.mallet.grmm.types.*;
 import cc.mallet.grmm.util.GeneralUtils;
@@ -27,10 +15,22 @@ import cc.mallet.types.Dirichlet;
 import cc.mallet.types.Matrix;
 import cc.mallet.types.Matrixn;
 import cc.mallet.types.tests.TestSerializable;
-import cc.mallet.util.*;
-//import cc.mallet.util.Random;
+import cc.mallet.util.CollectionUtils;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Maths;
+import cc.mallet.util.Timing;
+import gnu.trove.list.array.TDoubleArrayList;
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-import gnu.trove.TDoubleArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
+import java.util.logging.Logger;
+//import cc.mallet.util.Random;
 
 
 /**
@@ -1251,7 +1251,7 @@ public void testJtConsistency() {
     double[] pA = dirichlet.randomVector (random);
     double[] pB = dirichlet.randomVector (random);
 
-    TDoubleArrayList pC = new TDoubleArrayList (NUM_OUTCOMES * NUM_OUTCOMES * NUM_OUTCOMES);
+    TDoubleArrayList pC = new TDoubleArrayList(NUM_OUTCOMES * NUM_OUTCOMES * NUM_OUTCOMES);
     for (int i = 0; i < (NUM_OUTCOMES * NUM_OUTCOMES); i++) {
       pC.add (dirichlet.randomVector (random));
     }
@@ -1261,7 +1261,7 @@ public void testJtConsistency() {
     DirectedModel mdl = new DirectedModel ();
     mdl.addFactor (new CPT (new TableFactor (vars[0], pA), vars[0]));
     mdl.addFactor (new CPT (new TableFactor (vars[1], pB), vars[1]));
-    mdl.addFactor (new CPT (new TableFactor (vars, pC.toNativeArray ()), vars[2]));
+    mdl.addFactor (new CPT (new TableFactor (vars, pC.toArray ()), vars[2]));
 
     return mdl;
   }

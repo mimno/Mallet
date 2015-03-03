@@ -7,7 +7,7 @@
 
 package cc.mallet.classify.constraints.pr;
 
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 import cc.mallet.types.FeatureVector;
 
 /**

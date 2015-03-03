@@ -6,8 +6,8 @@ import java.io.*;
 
 import cc.mallet.types.*;
 import cc.mallet.util.Randoms;
-
-import gnu.trove.*;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 public class HierarchicalLDA {
 

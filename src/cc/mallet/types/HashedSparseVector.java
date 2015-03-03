@@ -17,18 +17,15 @@
 
 package cc.mallet.types;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Arrays;
-import java.util.logging.*;
-import java.io.*;
-
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureSequence;
-import cc.mallet.types.Vector;
 import cc.mallet.util.MalletLogger;
-import cc.mallet.util.PropertyList;
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.logging.Logger;
+
 
 public class HashedSparseVector extends SparseVector implements Serializable 
 {

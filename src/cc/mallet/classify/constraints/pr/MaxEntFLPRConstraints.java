@@ -7,15 +7,14 @@
 
 package cc.mallet.classify.constraints.pr;
 
-import gnu.trove.TDoubleArrayList;
-import gnu.trove.TIntArrayList;
-import gnu.trove.TIntObjectHashMap;
-
-import java.util.BitSet;
-
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
+import gnu.trove.list.array.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntObjectHashMap;
+
+import java.util.BitSet;
 
 /**
  * Abstract expectation constraint for use with Posterior Regularization (PR).

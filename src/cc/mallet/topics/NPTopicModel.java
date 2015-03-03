@@ -17,8 +17,7 @@ import java.text.NumberFormat;
 import cc.mallet.topics.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
-
-import gnu.trove.*;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 /**
  * A non-parametric topic model that uses the "minimal path" assumption

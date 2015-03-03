@@ -7,25 +7,19 @@
 
 package cc.mallet.topics;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Iterator;
-import java.util.Formatter;
-import java.util.Locale;
-
-import java.util.concurrent.*;
-import java.util.logging.*;
-import java.util.zip.*;
+import cc.mallet.types.*;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Randoms;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.io.*;
 import java.text.NumberFormat;
-
-import cc.mallet.types.*;
-import cc.mallet.topics.TopicAssignment;
-import cc.mallet.util.Randoms;
-import cc.mallet.util.MalletLogger;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Simple parallel threaded implementation of LDA,
@@ -1228,12 +1222,12 @@ public class ParallelTopicModel implements Serializable {
 
 	public void topicPhraseXMLReport(PrintWriter out, int numWords) {
 		int numTopics = this.getNumTopics();
-		gnu.trove.TObjectIntHashMap<String>[] phrases = new gnu.trove.TObjectIntHashMap[numTopics];
+		TObjectIntHashMap<String>[] phrases = new TObjectIntHashMap[numTopics];
 		Alphabet alphabet = this.getAlphabet();
 		
 		// Get counts of phrases
 		for (int ti = 0; ti < numTopics; ti++)
-			phrases[ti] = new gnu.trove.TObjectIntHashMap<String>();
+			phrases[ti] = new TObjectIntHashMap<String>();
 		for (int di = 0; di < this.getData().size(); di++) {
 			TopicAssignment t = this.getData().get(di);
 			Instance instance = t.instance;
@@ -1316,7 +1310,7 @@ public class ParallelTopicModel implements Serializable {
 
 			// Print phrases
 			Object[] keys = phrases[ti].keys();
-			int[] values = phrases[ti].getValues();
+			int[] values = phrases[ti].values();
 			double counts[] = new double[keys.length];
 			for (int i = 0; i < counts.length; i++)	counts[i] = values[i];
 			double countssum = MatrixOps.sum (counts);	
@@ -1729,7 +1723,7 @@ public class ParallelTopicModel implements Serializable {
 
 	/**
 	 *  @param out		  A print writer
-	 *  @param count      Print this number of top documents
+	 *  @param max      Print this number of top documents
 	 */
 	public void printTopicDocuments (PrintWriter out, int max)	{
 		out.println("#topic doc name proportion ...");

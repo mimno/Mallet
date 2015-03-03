@@ -1,14 +1,13 @@
 package cc.mallet.util;
 
 import cc.mallet.types.*;
-import gnu.trove.*;
+import gnu.trove.map.hash.TIntIntHashMap;
 
+import java.io.File;
+import java.text.NumberFormat;
 import java.util.Formatter;
 import java.util.Locale;
-import java.util.logging.*;
-import java.io.*;
-
-import java.text.NumberFormat;
+import java.util.logging.Logger;
 
 public class FeatureCountTool {
 

@@ -6,13 +6,12 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.inference.gbp;
 
-import gnu.trove.THashSet;
-
-import java.util.*;
-
 import cc.mallet.grmm.types.Factor;
 import cc.mallet.grmm.types.VarSet;
 import cc.mallet.grmm.types.Variable;
+import gnu.trove.set.hash.THashSet;
+
+import java.util.*;
 
 
 /**

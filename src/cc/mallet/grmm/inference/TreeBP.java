@@ -6,13 +6,12 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.inference;
 
-import gnu.trove.THashSet;
-
-import java.util.Iterator;
-
 import cc.mallet.grmm.types.Factor;
 import cc.mallet.grmm.types.FactorGraph;
 import cc.mallet.grmm.types.Variable;
+import gnu.trove.set.hash.THashSet;
+
+import java.util.Iterator;
 
 /**
  * Implements the tree-based schedule of belief propagation for exact inference

@@ -7,7 +7,7 @@
 
 package cc.mallet.grmm.types;
 
-import gnu.trove.TObjectIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -176,7 +176,7 @@ public class Assignment extends AbstractFactor implements Serializable {
   public Assignment getRow (int ridx)
   {
     Assignment assn = new Assignment ();
-    assn.var2idx = (TObjectIntHashMap) this.var2idx.clone ();
+    assn.var2idx = new TObjectIntHashMap(this.var2idx);
     assn.vars = new UnmodifiableVarSet (vars);
     assn.addRow ((Object[]) values.get (ridx));
     return assn;
@@ -434,7 +434,7 @@ public class Assignment extends AbstractFactor implements Serializable {
   {
     Assignment ret = new Assignment ();
     ret.vars = new HashVarSet (vars);
-    ret.var2idx = (TObjectIntHashMap) var2idx.clone ();
+    ret.var2idx = new TObjectIntHashMap(var2idx);
     ret.values = new ArrayList (values.size ());
     for (int ri = 0; ri < values.size(); ri++) {
       Object[] vals = (Object[]) values.get (ri);

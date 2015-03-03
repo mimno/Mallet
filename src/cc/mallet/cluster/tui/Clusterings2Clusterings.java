@@ -1,6 +1,6 @@
 package cc.mallet.cluster.tui;
 
-import gnu.trove.TIntHashSet;
+import gnu.trove.set.hash.TIntHashSet;
 
 import java.io.File;
 import java.io.FileInputStream;

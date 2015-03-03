@@ -6,13 +6,13 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.types;
 
-import java.util.*;
-
-import gnu.trove.THashSet;
+import cc.mallet.grmm.util.Graphs;
+import gnu.trove.set.hash.THashSet;
 import org._3pq.jgrapht.UndirectedGraph;
 import org._3pq.jgrapht.alg.ConnectivityInspector;
 
-import cc.mallet.grmm.util.Graphs;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Class for pairwise undirected graphical models, also known as

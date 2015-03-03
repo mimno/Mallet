@@ -8,13 +8,13 @@ package cc.mallet.grmm.learning;
 
 
 import cc.mallet.grmm.types.*;
+import cc.mallet.grmm.util.CachingOptimizable;
 import cc.mallet.optimize.Optimizable;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.SparseVector;
 import cc.mallet.util.MalletLogger;
-import cc.mallet.grmm.util.CachingOptimizable;
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

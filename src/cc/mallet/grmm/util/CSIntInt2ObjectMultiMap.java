@@ -6,9 +6,9 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.util;
 
-import gnu.trove.THashMap;
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.TObjectProcedure;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TObjectProcedure;
 
 import java.util.Iterator;
 import java.util.List;

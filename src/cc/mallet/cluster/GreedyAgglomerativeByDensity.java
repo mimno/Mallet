@@ -1,14 +1,13 @@
 package cc.mallet.cluster;
 
-import java.util.logging.Logger;
-
 import cc.mallet.cluster.neighbor_evaluator.NeighborEvaluator;
 import cc.mallet.cluster.util.ClusterUtils;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.util.MalletProgressMessageLogger;
+import gnu.trove.list.array.TIntArrayList;
 
-import gnu.trove.TIntArrayList;
+import java.util.logging.Logger;
 
 /**
  * Greedily merges Instances until convergence. New merges are scored
@@ -135,8 +134,9 @@ public class GreedyAgglomerativeByDensity extends GreedyAgglomerative {
 	private void sampleNextInstanceToCluster (Clustering clustering) {
 		if (unclusteredInstances == null)
 			fillUnclusteredInstances(clustering.getNumInstances());
+                
 		instanceBeingClustered = (unclusteredInstances.size() == 0) ? -1 :
-														 unclusteredInstances.remove(0);		
+                    unclusteredInstances.removeAt(0);		
 	}
 
 	private void fillUnclusteredInstances (int size) {

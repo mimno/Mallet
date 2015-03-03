@@ -7,27 +7,25 @@
 
 package cc.mallet.grmm.inference;
 
-import gnu.trove.THashSet;
-import gnu.trove.THashMap;
-import gnu.trove.TIntObjectHashMap;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.*;
-import java.io.*;
-
-import org._3pq.jgrapht.UndirectedGraph;
-import org._3pq.jgrapht.Graph;
-import org._3pq.jgrapht.Edge;
-import org._3pq.jgrapht.traverse.BreadthFirstIterator;
-import org._3pq.jgrapht.graph.SimpleGraph;
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-
 import cc.mallet.grmm.types.*;
 import cc.mallet.util.MalletLogger;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.THashSet;
+import org._3pq.jgrapht.Edge;
+import org._3pq.jgrapht.Graph;
+import org._3pq.jgrapht.UndirectedGraph;
+import org._3pq.jgrapht.graph.SimpleGraph;
+import org._3pq.jgrapht.traverse.BreadthFirstIterator;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of Wainwright's TRP schedule for loopy BP

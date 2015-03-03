@@ -1,12 +1,12 @@
 package cc.mallet.share.upenn.ner;
 
 
-import java.util.*;
-
-import cc.mallet.pipe.*;
-import cc.mallet.types.*;
-import cc.mallet.util.*;
-import gnu.trove.*;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.types.Instance;
+import cc.mallet.types.Token;
+import cc.mallet.types.TokenSequence;
+import cc.mallet.util.PropertyList;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 
 /**
  * Adds all features of tokens in the window to the center token.
