@@ -35,15 +35,6 @@ public class PrintInputAndTarget extends Pipe implements Serializable
 	
 	public Instance pipe (Instance carrier)
 	{
-		 if (prefix != null)
-			 System.out.print (prefix);
-    String targetString = "<null>";
-    if (carrier.getTarget() != null)
-     targetString = carrier.getTarget().toString();
-		System.out.println ("name: " + carrier.getName() + 
-							"\ntarget: " + targetString + 
-							"\ninput: " + carrier.getData()  // Swapping order, since data often has a newline at the end -DM
-							);
 		return carrier;
 	}
 	
