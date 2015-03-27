@@ -62,7 +62,7 @@
                             </outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>src/mallet-resources</directory>
+                                  <directory>src/cc/mallet/util/resources</directory>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
