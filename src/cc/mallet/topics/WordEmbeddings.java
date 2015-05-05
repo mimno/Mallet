@@ -13,7 +13,7 @@ public class WordEmbeddings {
 																	 "The filename from which to read the list of training instances.  Use - for stdin.  " +
 																	 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
 	
-	static CommandOption.String outputFile = new CommandOption.String(WordEmbeddings.class, "output", "FILENAME", true, null,
+	static CommandOption.String outputFile = new CommandOption.String(WordEmbeddings.class, "output", "FILENAME", true, "weights.txt",
 																	  "The filename to write text-formatted word vectors.", null);
 	
 	static CommandOption.Integer numDimensions = new CommandOption.Integer(WordEmbeddings.class, "num-dimensions", "INTEGER", true, 50,
@@ -29,7 +29,7 @@ public class WordEmbeddings {
 	static CommandOption.Integer numSamples = new CommandOption.Integer(WordEmbeddings.class, "num-samples", "INTEGER", true, 5,
 																		"The number of negative samples to use in training.", null);
 
-	static CommandOption.String exampleWord = new CommandOption.String(WordEmbeddings.class, "num-samples", "STRING", true, null,
+	static CommandOption.String exampleWord = new CommandOption.String(WordEmbeddings.class, "example-word", "STRING", true, null,
 																	   "If defined, periodically show the closest vectors to this word.", null);
 
 
@@ -272,6 +272,11 @@ public class WordEmbeddings {
 	}
 
 	public static void main (String[] args) throws Exception {
+		// Process the command-line options
+		CommandOption.setSummary (WordEmbeddings.class,
+								  "Train continuous word embeddings using the skip-gram method with negative sampling.");
+		CommandOption.process (WordEmbeddings.class, args);
+
 		InstanceList instances = InstanceList.load(new File(inputFile.value));
 
 		WordEmbeddings matrix = new WordEmbeddings(instances.getDataAlphabet(), numDimensions.value, windowSizeOption.value);
