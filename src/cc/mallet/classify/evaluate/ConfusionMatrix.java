@@ -112,7 +112,11 @@ public class ConfusionMatrix
 				maxLabelNameLength = len;
 		}
 
-		sb.append ("Confusion Matrix, row=true, column=predicted  accuracy="+trial.getAccuracy()+"\n");
+		double[] distribution = new double[values.length];
+		for (int i = 0; i < distribution.length; i++)
+			distribution[i] = MatrixOps.sum(values[i]);
+		double baselineAccuracy = MatrixOps.max(distribution) / MatrixOps.sum(distribution);
+		sb.append ("Confusion Matrix, row=true, column=predicted  accuracy="+trial.getAccuracy()+" most-frequent-tag baseline="+baselineAccuracy+"\n");
 		for (int i = 0; i < maxLabelNameLength-5+4; i++) sb.append (' ');
 		sb.append ("label");
 		for (int c2 = 0; c2 < Math.min(10,numClasses); c2++)	sb.append ("   "+c2);
