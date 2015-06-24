@@ -1207,19 +1207,20 @@ public class ParallelTopicModel implements Serializable {
 	
 	public void topicXMLReport (PrintWriter out, int numWords) {
 		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
+		
 		out.println("<?xml version='1.0' ?>");
 		out.println("<topicModel>");
 		for (int topic = 0; topic < numTopics; topic++) {
 			out.println("  <topic id='" + topic + "' alpha='" + alpha[topic] +
 						"' totalTokens='" + tokensPerTopic[topic] + "'>");
-			int word = 1;
+			int rank = 1;
 			Iterator<IDSorter> iterator = topicSortedWords.get(topic).iterator();
-			while (iterator.hasNext() && word <= numWords) {
+			while (iterator.hasNext() && rank <= numWords) {
 				IDSorter info = iterator.next();
-				out.println("	<word rank='" + word + "'>" +
-						  alphabet.lookupObject(info.getID()) +
+				out.println("	<word rank='" + rank + "' count='" + info.getWeight() + "'>" +
+						  alphabet.lookupObject(info.getID()) + 
 						  "</word>");
-				word++;
+				rank++;
 			}
 			out.println("  </topic>");
 		}
