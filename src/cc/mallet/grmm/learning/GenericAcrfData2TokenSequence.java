@@ -8,6 +8,7 @@ package cc.mallet.grmm.learning;
 
 
 import java.util.ArrayList;
+import java.util.regex.*;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
@@ -116,6 +117,8 @@ public class GenericAcrfData2TokenSequence extends Pipe {
 
     Alphabet dict = getDataAlphabet ();
 
+    Pattern r = Pattern.compile("^(.*=)?([+-]?\\d*\\.?\\d+([eE][+-]?\\d+)?)(@[+-]?\\d+)?"); // Match numeric feature.  Supports named features, offset features, and features in scientific notation.
+
     for (int i = 0; i < lines.length; i++) {
       String line = lines[i];
       String[] toks = line.split ("\\s+");
@@ -148,7 +151,14 @@ public class GenericAcrfData2TokenSequence extends Pipe {
       StringSpan span = new StringSpan (buf, start, end);
 
       while (j < maxFeatureIdx) {
-        span.setFeatureValue (toks[j].intern (), 1.0);
+        // Set the feature's value.  If the feature is not numeric, set the value to 1
+        // http://t47962.ai-mallet-development.aitalk.info/continuous-observations-for-dcrf-t47962.html
+        Matcher m = r.matcher(toks[j]);
+        if (m.matches ()) {// if use .find, use $ in regex
+          span.setFeatureValue (toks[j].intern (), Double.parseDouble(m.group(2)));
+        } else {
+          span.setFeatureValue (toks[j].intern (), 1.0);
+        }
         j++;
       }
 
