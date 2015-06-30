@@ -77,6 +77,18 @@ public class HMM extends Transducer implements Serializable {
 		return outputAlphabet;
 	}
 
+	public Multinomial[] getTransitionMultinomial() {
+		return transitionMultinomial;
+	}
+
+	public Multinomial[] getEmissionMultinomial() {
+		return emissionMultinomial;
+	}
+
+	public Multinomial getInitialMultinomial() {
+		return initialMultinomial;
+	}
+
 	public void print() {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < numStates(); i++) {
