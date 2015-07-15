@@ -200,7 +200,9 @@ public class MaxEnt extends Classifier implements Serializable
 	}
 
 	public void print () {
-		print(System.out);
+		PrintWriter outWriter = new PrintWriter(System.out);
+		print(outWriter);
+		outWriter.close();
 	}
 
 	@Override
