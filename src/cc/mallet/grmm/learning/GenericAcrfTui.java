@@ -122,7 +122,7 @@ public class GenericAcrfTui {
     
     Pipe pipe = new SerialPipes (new Pipe[] {
         basePipe,
-        new TokenSequence2FeatureVectorSequence (true, true),
+        new TokenSequence2FeatureVectorSequence (false, true),
     });
 
     Iterator<Instance> trainSource = new LineGroupIterator (new FileReader (trainFile.value), Pattern.compile ("^\\s*$"), true);
