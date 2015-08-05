@@ -106,6 +106,10 @@ public class RTopicModel extends ParallelTopicModel {
 		return result;
 	}
 
+	public TopicModelDiagnostics getDiagnostics(double numWords) {
+		return new TopicModelDiagnostics(this, (int) Math.floor(numWords));
+	}
+
 	public void writeState(String filename) {
 		try {
 			printState(new File(filename));
