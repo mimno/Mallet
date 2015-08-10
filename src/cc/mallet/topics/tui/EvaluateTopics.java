@@ -55,8 +55,8 @@ public class EvaluateTopics {
          "The number of iterations before the first sample is saved.", null);
 
     static CommandOption.Integer randomSeed = new CommandOption.Integer
-        (EvaluateTopics.class, "random-seed", "INTEGER", true, 0,
-         "The random seed for the Gibbs sampler.  Default is 0, which will use the clock.", null);
+        (EvaluateTopics.class, "random-seed", "INTEGER", true, -1,
+         "The random seed for the Gibbs sampler.  Default is -1, which will use the clock.", null);
 
 	public static void main (String[] args) {
 
@@ -92,6 +92,8 @@ public class EvaluateTopics {
 				MarginalProbEstimator.read(new File(evaluatorFilename.value));
 			
 			evaluator.setPrintWords(showWords.value);
+			
+			evaluator.setRandomSeed(randomSeed.value);
 
 			InstanceList instances = InstanceList.load (new File(inputFile.value));
 
