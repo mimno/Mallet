@@ -9,8 +9,6 @@ cp=$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
 
 MEMORY=1g
 
-JAVA_COMMAND="java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath $cp"
-
 CMD=$1
 shift
 
@@ -59,4 +57,4 @@ case $CMD in
 	*) echo "Unrecognized command: $CMD"; help; exit 1;;
 esac
 
-$JAVA_COMMAND $CLASS $*
+java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath "$cp" $CLASS "$@"

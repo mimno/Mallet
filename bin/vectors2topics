@@ -18,4 +18,4 @@ if test $1 != $arg ; then
   shift 
 fi
 
-java -Xmx$mem -server -classpath $cp cc.mallet.topics.tui.Vectors2Topics "$@"
+java -Xmx$mem -server -classpath "$cp" cc.mallet.topics.tui.Vectors2Topics "$@"
