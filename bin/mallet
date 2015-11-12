@@ -59,4 +59,4 @@ case $CMD in
 	*) echo "Unrecognized command: $CMD"; help; exit 1;;
 esac
 
-$JAVA_COMMAND $CLASS $*
+$JAVA_COMMAND $CLASS "$@"
