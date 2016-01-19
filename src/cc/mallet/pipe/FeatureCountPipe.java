@@ -61,7 +61,7 @@ public class FeatureCountPipe extends Pipe {
 
 		for (int feature = 0; feature < currentAlphabet.size(); feature++) {
 			if (counter.get(feature) >= minimumCount) {
-				prunedAlphabet.lookupObject(currentAlphabet.lookupIndex(feature));
+				prunedAlphabet.lookupIndex(currentAlphabet.lookupObject(feature));
 			}
 		}
 
