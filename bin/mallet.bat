@@ -26,10 +26,9 @@ if "%CMD%"=="train-classifier" set CLASS=cc.mallet.classify.tui.Vectors2Classify
 if "%CMD%"=="classify-dir" set CLASS=cc.mallet.classify.tui.Text2Classify
 if "%CMD%"=="classify-file" set CLASS=cc.mallet.classify.tui.Csv2Classify
 if "%CMD%"=="classify-svmlight" set CLASS=cc.mallet.classify.tui.SvmLight2Classify
-if "%CMD%"=="train-topics" set CLASS=cc.mallet.topics.tui.Vectors2Topics
+if "%CMD%"=="train-topics" set CLASS=cc.mallet.topics.tui.TopicTrainer
 if "%CMD%"=="infer-topics" set CLASS=cc.mallet.topics.tui.InferTopics
 if "%CMD%"=="evaluate-topics" set CLASS=cc.mallet.topics.tui.EvaluateTopics
-if "%CMD%"=="hlda" set CLASS=cc.mallet.topics.tui.HierarchicalLDATUI
 if "%CMD%"=="prune" set CLASS=cc.mallet.classify.tui.Vectors2Vectors
 if "%CMD%"=="split" set CLASS=cc.mallet.classify.tui.Vectors2Vectors
 if "%CMD%"=="bulk-load" set CLASS=cc.mallet.util.BulkLoader
@@ -49,9 +48,9 @@ echo   classify-svmlight classify data from a single file in SVMLight format
 echo   train-topics      train a topic model from Mallet data files
 echo   infer-topics      use a trained topic model to infer topics for new documents
 echo   evaluate-topics   estimate the probability of new documents given a trained model
-echo   hlda              train a topic model using Hierarchical LDA
 echo   prune             remove features based on frequency or information gain
 echo   split             divide data into testing, training, and validation portions
+echo   bulk-load         for big input files, efficiently prune vocabulary and import docs
 echo Include --help with any option for more information
 
 

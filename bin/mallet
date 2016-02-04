@@ -9,8 +9,6 @@ cp=$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
 
 MEMORY=1g
 
-JAVA_COMMAND="java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath $cp"
-
 CMD=$1
 shift
 
@@ -30,9 +28,9 @@ Mallet 2.0 commands:
   train-topics       train a topic model from Mallet data files
   infer-topics       use a trained topic model to infer topics for new documents
   evaluate-topics    estimate the probability of new documents under a trained model
-  hlda               train a topic model using Hierarchical LDA
   prune              remove features based on frequency or information gain
   split              divide data into testing, training, and validation portions
+  bulk-load          for big input files, efficiently prune vocabulary and import docs
 
 Include --help with any option for more information
 EOF
@@ -52,7 +50,6 @@ case $CMD in
 	train-topics) CLASS=cc.mallet.topics.tui.TopicTrainer;;
 	infer-topics) CLASS=cc.mallet.topics.tui.InferTopics;;
 	evaluate-topics) CLASS=cc.mallet.topics.tui.EvaluateTopics;;
-	hlda) CLASS=cc.mallet.topics.tui.HierarchicalLDATUI;;
 	prune) CLASS=cc.mallet.classify.tui.Vectors2Vectors;;
 	split) CLASS=cc.mallet.classify.tui.Vectors2Vectors;;
 	bulk-load) CLASS=cc.mallet.util.BulkLoader;;
@@ -60,4 +57,4 @@ case $CMD in
 	*) echo "Unrecognized command: $CMD"; help; exit 1;;
 esac
 
-$JAVA_COMMAND $CLASS $*
+java -Xmx$MEMORY -ea -Djava.awt.headless=true -Dfile.encoding=UTF-8 -server -classpath "$cp" $CLASS "$@"

@@ -47,10 +47,10 @@ public class Vectors2Vectors {
 		 "Write the validation set instance list to this file; Using - indicates stdout.", null);
 
 	static CommandOption.Double trainingProportion = new CommandOption.Double(Vectors2Vectors.class, "training-portion", "DECIMAL", true, 1.0,
-		 "The fraction of the instances that should be used for training.", null);
+		 "The fraction (0.0 - 1.0) of the instances that should be used for training.", null);
 
 	static CommandOption.Double validationProportion = new CommandOption.Double(Vectors2Vectors.class, "validation-portion", "DECIMAL", true, 0.0,
-		 "The fraction of the instances that should be used for validation.", null);
+		 "The fraction (0.0 - 1.0) of the instances that should be used for validation.", null);
 
 	static CommandOption.Integer randomSeed = new CommandOption.Integer(Vectors2Vectors.class, "random-seed", "INTEGER", true, 0,
 		 "The random seed for randomly selecting a proportion of the instance list for training", null);

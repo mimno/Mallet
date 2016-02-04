@@ -117,7 +117,26 @@ public class ParallelTopicModel implements Serializable {
 		
 		this.data = new ArrayList<TopicAssignment>();
 		this.topicAlphabet = topicAlphabet;
-		this.numTopics = topicAlphabet.size();
+		this.alphaSum = alphaSum;
+		this.beta = beta;
+
+		setNumTopics(topicAlphabet.size());
+
+		formatter = NumberFormat.getInstance();
+		formatter.setMaximumFractionDigits(5);
+
+		logger.info("Mallet LDA: " + numTopics + " topics, " + topicBits + " topic bits, " + 
+					Integer.toBinaryString(topicMask) + " topic mask");
+	}
+	
+	public Alphabet getAlphabet() { return alphabet; }
+	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
+	public int getNumTopics() { return numTopics; }
+	
+	/** Set or reset the number of topics. This method will not change any token-topic assignments,
+		so it should only be used before initializing or restoring a previously saved state. */
+	public void setNumTopics(int numTopics) {
+		this.numTopics = numTopics;
 
 		if (Integer.bitCount(numTopics) == 1) {
 			// exact power of 2
@@ -129,25 +148,13 @@ public class ParallelTopicModel implements Serializable {
 			topicMask = Integer.highestOneBit(numTopics) * 2 - 1;
 			topicBits = Integer.bitCount(topicMask);
 		}
-
-
-		this.alphaSum = alphaSum;
+		
 		this.alpha = new double[numTopics];
 		Arrays.fill(alpha, alphaSum / numTopics);
-		this.beta = beta;
 		
 		tokensPerTopic = new int[numTopics];
-		
-		formatter = NumberFormat.getInstance();
-		formatter.setMaximumFractionDigits(5);
-
-		logger.info("Mallet LDA: " + numTopics + " topics, " + topicBits + " topic bits, " + 
-					Integer.toBinaryString(topicMask) + " topic mask");
 	}
-	
-	public Alphabet getAlphabet() { return alphabet; }
-	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
-	public int getNumTopics() { return numTopics; }
+
 	public ArrayList<TopicAssignment> getData() { return data; }
 	
 	public int[][] getTypeTopicCounts() { return typeTopicCounts; }
@@ -259,6 +266,23 @@ public class ParallelTopicModel implements Serializable {
 
 		// Skip some lines starting with "#" that describe the format and specify hyperparameters
 		while (line.startsWith("#")) {
+			if (line.startsWith("#alpha : ")) {
+				line = line.replace("#alpha : ", "");
+				fields = line.split(" ");
+				
+				setNumTopics(fields.length);
+				this.alphaSum = 0.0;
+				for (int topic = 0; topic < fields.length; topic++) {
+					this.alpha[topic] = Double.parseDouble(fields[topic]);
+					this.alphaSum += this.alpha[topic];
+				}
+			}
+			else if (line.startsWith("#beta : ")) {
+				line = line.replace("#beta : ", "");
+				this.beta = Double.parseDouble(line);
+				this.betaSum = beta * numTypes;
+			}
+			
 			line = reader.readLine();
 		}
 		
@@ -1207,19 +1231,20 @@ public class ParallelTopicModel implements Serializable {
 	
 	public void topicXMLReport (PrintWriter out, int numWords) {
 		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
+		
 		out.println("<?xml version='1.0' ?>");
 		out.println("<topicModel>");
 		for (int topic = 0; topic < numTopics; topic++) {
 			out.println("  <topic id='" + topic + "' alpha='" + alpha[topic] +
 						"' totalTokens='" + tokensPerTopic[topic] + "'>");
-			int word = 1;
+			int rank = 1;
 			Iterator<IDSorter> iterator = topicSortedWords.get(topic).iterator();
-			while (iterator.hasNext() && word <= numWords) {
+			while (iterator.hasNext() && rank <= numWords) {
 				IDSorter info = iterator.next();
-				out.println("	<word rank='" + word + "'>" +
-						  alphabet.lookupObject(info.getID()) +
+				out.println("	<word rank='" + rank + "' count='" + info.getWeight() + "'>" +
+						  alphabet.lookupObject(info.getID()) + 
 						  "</word>");
-				word++;
+				rank++;
 			}
 			out.println("  </topic>");
 		}

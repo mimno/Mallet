@@ -90,6 +90,7 @@ public class TopicModelDiagnostics {
 		diagnostics.add(getRank1Percent());
 		diagnostics.add(getDocumentPercentRatio(FIFTY_PERCENT_INDEX, TWO_PERCENT_INDEX));
 		diagnostics.add(getDocumentPercent(5));
+		diagnostics.add(getExclusivity());
 	}
 
 	public void collectDocumentStatistics () {
@@ -528,6 +529,63 @@ public class TopicModelDiagnostics {
 		return scores;
 	}
 
+	/** Low-quality topics may have words that are also prominent in other topics. */
+	public TopicScores getExclusivity() {
+
+		int[] tokensPerTopic = model.tokensPerTopic;
+
+		TopicScores scores = new TopicScores("exclusivity", numTopics, numTopWords);
+		scores.wordScoresDefined = true;
+
+		double sumDefaultProbs = 0.0;
+		for (int topic = 0; topic < numTopics; topic++) {
+			sumDefaultProbs += model.beta / (model.betaSum + tokensPerTopic[topic]);
+		}
+		
+		for (int topic = 0; topic < numTopics; topic++) {
+
+			double topicScore = 0.0;
+			int position = 0;
+			TreeSet<IDSorter> sortedWords = topicSortedWords.get(topic);
+
+			for (IDSorter info: sortedWords) {
+				int type = info.getID();
+				double count = info.getWeight();
+				
+				double sumTypeProbs = sumDefaultProbs;
+				int[] topicCounts = model.typeTopicCounts[type];
+
+				int index = 0;
+				while (index < topicCounts.length &&
+					   topicCounts[index] > 0) {
+
+					int otherTopic = topicCounts[index] & model.topicMask;
+					int otherCount = topicCounts[index] >> model.topicBits;
+
+					// We've already accounted for the smoothing parameter,
+					//  now we need to add the actual count for the non-zero
+					//  topics.
+					sumTypeProbs += ((double) otherCount) / (model.betaSum + tokensPerTopic[otherTopic]);
+
+					index++;
+				}
+				
+
+				double score = ((model.beta + count) / (model.betaSum + tokensPerTopic[topic])) / sumTypeProbs;
+				scores.setTopicWordScore(topic, position, score);
+				topicScore += score;
+
+				position++;
+				if (position == numTopWords) {
+					break;
+				}
+			}
+
+			scores.setTopicScore(topic, topicScore / numTopWords);
+		}
+
+		return scores;
+	}
 	
 
 	public String toString() {
@@ -604,7 +662,7 @@ public class TopicModelDiagnostics {
 						formatter.format(" %s='%.4f'", scores.name, scores.topicWordScores[topic][position]);
 					}
 				}
-				formatter.format(">%s</word>\n", topicTopWords[topic][position]);
+				formatter.format(">%s</word>\n", topicTopWords[topic][position].replaceAll("&", "&amp;").replaceAll("<", "&gt;"));
 			}
 
 			out.append("</topic>\n");

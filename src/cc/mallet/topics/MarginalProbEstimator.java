@@ -47,6 +47,8 @@ public class MarginalProbEstimator implements Serializable {
 
 	protected Randoms random;
 	
+	protected boolean printWordProbabilities = false;
+	
 	public MarginalProbEstimator (int numTopics,
 								  double[] alpha, double alphaSum,
 								  double beta,
@@ -93,13 +95,29 @@ public class MarginalProbEstimator implements Serializable {
 						   Integer.toBinaryString(topicMask) + " topic mask");
 
 	}
+	
+	public void setRandomSeed(int seed) {
+		if (seed == -1) {
+			this.random = new Randoms();
+		}
+		else {
+			this.random = new Randoms(seed);
+		}
+	}
+	
+	public void setRandom(Randoms r) {
+		this.random = r;
+	}
 
 	public int[] getTokensPerTopic() { return tokensPerTopic; }
 	public int[][] getTypeTopicCounts() { return typeTopicCounts; }
+	
+	public void setPrintWords(boolean shouldPrint) {
+		this.printWordProbabilities = shouldPrint;
+	}
 
 	public double evaluateLeftToRight (InstanceList testing, int numParticles, boolean usingResampling,
 									   PrintStream docProbabilityStream) {
-		random = new Randoms();
 
 		double logNumParticles = Math.log(numParticles);
 		double totalLogLikelihood = 0;
@@ -121,8 +139,14 @@ public class MarginalProbEstimator implements Serializable {
 					sum += particleProbabilities[particle][position];
 				}
 
-				if (sum > 0.0) { 
-					docLogLikelihood += Math.log(sum) - logNumParticles;
+				if (sum > 0.0) {
+					double logProb = Math.log(sum) - logNumParticles;
+					docLogLikelihood += logProb;
+					
+	                if (printWordProbabilities) {
+						Object word = instance.getDataAlphabet().lookupObject(tokenSequence.getIndexAtPosition(position));
+                    	System.out.printf("%s\t%f\n", word, logProb);
+	                }
 				}
 			}
 

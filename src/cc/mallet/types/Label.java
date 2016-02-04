@@ -163,8 +163,7 @@ public class Label implements Labeling, Serializable, AlphabetCarrying
 
 	public LabelVector toLabelVector ()
 	{
-		return new LabelVector ((LabelAlphabet)dictionary,
-														new int[] {index}, new double[] {weightOfLabel});
+		return new LabelVector ((LabelAlphabet)dictionary, new int[] {index}, new double[] {weightOfLabel});
 	}
 
 	public boolean equals (Object l) {

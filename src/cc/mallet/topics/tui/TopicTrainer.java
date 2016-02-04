@@ -150,10 +150,10 @@ public class TopicTrainer {
 		 "Only optimize the concentration parameter of the prior over document-topic distributions. This may reduce the number of very small, poorly estimated topics, but may disperse common words over several topics.", null);
 
 	static CommandOption.Double alpha = new CommandOption.Double(TopicTrainer.class, "alpha", "DECIMAL", true, 5.0,
-		 "SumAlpha parameter: sum over topics of smoothing over doc-topic distributions.",null);
+		 "SumAlpha parameter: sum over topics of smoothing over doc-topic distributions. alpha_k = [this value] / [num topics]",null);
 
 	static CommandOption.Double beta = new CommandOption.Double(TopicTrainer.class, "beta", "DECIMAL", true, 0.01,
-		 "Beta parameter: smoothing parameter for each topic-word.",null);
+		 "Beta parameter: smoothing parameter for each topic-word. beta_w = [this value]",null);
 
 	private static Logger logger = MalletLogger.getLogger(TopicTrainer.class.getName());
 

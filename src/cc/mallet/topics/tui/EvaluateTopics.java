@@ -34,6 +34,10 @@ public class EvaluateTopics {
         (EvaluateTopics.class, "num-particles", "INTEGER", true, 10,
          "The number of particles to use in left-to-right evaluation.", null);
 
+	static CommandOption.Boolean showWords = new CommandOption.Boolean
+        (EvaluateTopics.class, "show-words", "TRUE|FALSE", false, false,
+         "If true, print the log likelihood of each individual token to standard out.", null);
+
 	static CommandOption.Boolean usingResampling = new CommandOption.Boolean
         (EvaluateTopics.class, "use-resampling", "TRUE|FALSE", false, false,
          "Whether to resample topics in left-to-right evaluation. Resampling is more accurate, but leads to quadratic scaling in the lenght of documents.", null);
@@ -51,8 +55,8 @@ public class EvaluateTopics {
          "The number of iterations before the first sample is saved.", null);
 
     static CommandOption.Integer randomSeed = new CommandOption.Integer
-        (EvaluateTopics.class, "random-seed", "INTEGER", true, 0,
-         "The random seed for the Gibbs sampler.  Default is 0, which will use the clock.", null);
+        (EvaluateTopics.class, "random-seed", "INTEGER", true, -1,
+         "The random seed for the Gibbs sampler.  Default is -1, which will use the clock.", null);
 
 	public static void main (String[] args) {
 
@@ -86,6 +90,10 @@ public class EvaluateTopics {
 			
 			MarginalProbEstimator evaluator = 
 				MarginalProbEstimator.read(new File(evaluatorFilename.value));
+			
+			evaluator.setPrintWords(showWords.value);
+			
+			evaluator.setRandomSeed(randomSeed.value);
 
 			InstanceList instances = InstanceList.load (new File(inputFile.value));
 

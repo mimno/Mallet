@@ -284,6 +284,7 @@ public class WorkerRunnable implements Runnable {
 			isFinished = true;
 
 		} catch (Exception e) {
+			isFinished = true;
 			e.printStackTrace();
 		}
 	}
