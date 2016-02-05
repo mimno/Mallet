@@ -1,4 +1,0 @@
-By default all X2Y transformations refer to the "data" field of the Pipe.Carrier.
-If they transform the "target" field, the class name should begin with "Target".
-
-All Iterators must end in "Iterator".
