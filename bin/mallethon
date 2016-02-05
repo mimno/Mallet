@@ -1,0 +1,63 @@
+#!/bin/bash
+
+#MALLET_HOME=
+#JAVA_HOME=
+
+if ! [[ -d $JAVA_HOME ]] ;
+then
+    echo "You need to set the JAVA_HOME environement variable to"
+    echo "a directory in order for this to work. This script will"
+    echo "execute \$JAVA_HOME/bin/java. You can also edit this "
+    echo "script to set it here"
+    exit
+fi
+
+if [[ -z $MALLET_HOME ]]; then
+        MALLET_HOME=`dirname $0`/..
+        echo set MALLET_HOME to $MALLET_HOME >&2
+fi
+
+if ! [[ -d $MALLET_HOME ]] ;
+then
+    echo "You need to set the MALLET_HOME environement variable to the directory"
+    echo "where mallet was unpacked in order for this to work. Alternatively"
+    echo "edit this script to set it here."
+    exit
+fi
+
+PYCACHE=`echo ~/.mallet/mallethon/`
+
+if ! [[ -e $PYCACHE ]] ;
+then
+    if ! mkdir -p $PYCACHE ;
+    then 
+	echo "Failed to create a chache directory for mallethon:"
+	echo "please edit this script to set:"
+        echo "PYCACHE=$PYCACHE"
+	echo "to something else"
+	exit
+    fi
+fi
+
+if ! [[ -d $PYCACHE ]] ; 
+then
+    echo "The default location of $PYCACHE exists but is not a directory"
+    echo "please edit this script to set:"
+    echo "PYCACHE=$PYCACHE"
+    echo "to something else"
+    exit
+fi
+
+
+PYPATH="$MALLET_HOME/lib/jython/Lib/:$MALLET_HOME/lib/jython/:$MALLET_HOME/class/"
+
+if [ ! -z $CLASSPATH ] ; then 
+    CP="$MALLET_HOME/lib/jython.jar:$MALLET_HOME/lib/mallet-deps.jar:$PYPATH:$CLASSPATH";
+else 
+    CP="$MALLET_HOME/lib/jython.jar:$MALLET_HOME/lib/mallet-deps.jar:$PYPATH";
+fi 
+
+echo "Using classpath: $CP" >&2
+
+echo $JAVA_HOME/bin/java -Xmx1800m -Dpython.cachedir=$PYCACHE -Dpython.path=$PYPATH -classpath $CP "org.python.util.jython" "$@" >&2
+$JAVA_HOME/bin/java -Xmx1800m -Dpython.cachedir=$PYCACHE -Dpython.path=$PYPATH -classpath $CP "org.python.util.jython" "$@"

@@ -1,0 +1,4 @@
+first	big	height=3.2 width=1.7 length=12.0 blue heavy
+second	small	height=1.2 width=1.2 length=3 yellow light
+third	big	height=5.1 width=5.1 length=3 red light
+fourth	small	height=0.9 width=3.0 length=1.1 yellow heavy

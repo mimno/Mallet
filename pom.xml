@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>cc.mallet</groupId>
+  <artifactId>mallet</artifactId>
+  <version>2.0.9-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>MAchine Learning for LanguagE Toolkit (MALLET)</name>
+  <description>
+    MALLET is a Java-based package for statistical natural language processing,
+    document classification, clustering, topic modeling, information extraction,
+    and other machine learning applications to text.
+  </description>
+  <url>http://mallet.cs.umass.edu/</url>
+  <licenses>
+    <license>
+      <name>Common Public License Version 1.0</name>
+      <url>http://www.eclipse.org/legal/cpl-v10.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://github.com/mimno/Mallet</url>
+    <connection>scm:git:git://github.com/mimno/Mallet.git</connection>
+    <developerConnection>scm:git:git@github.com:mimno/Mallet.git</developerConnection>
+  </scm>
+  <developers>
+    <developer>
+      <id>david.mimno</id>
+      <name>David Mimno</name>
+      <email>mimno@cs.umass.edu</email>
+    </developer>
+    <developer>
+      <id>gregory.druck</id>
+      <name>Gregory Druck</name>
+      <email>gdruck@cs.umass.edu</email>
+    </developer>
+  </developers>
+  <properties>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <encoding>UTF-8</encoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>src</testSourceDirectory>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.beanshell</groupId>
+      <artifactId>bsh</artifactId>
+      <version>2.0b4</version>
+    </dependency>
+    <dependency>
+      <groupId>jgrapht</groupId>
+      <artifactId>jgrapht</artifactId>
+      <version>0.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.jwordnet</groupId>
+      <artifactId>jwnl</artifactId>
+      <version>1.4_rc3</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.trove4j</groupId>
+      <artifactId>trove4j</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.matrix-toolkits-java</groupId>
+      <artifactId>mtj</artifactId>
+      <version>0.9.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jdom</groupId>
+      <artifactId>jdom</artifactId>
+      <version>1.1</version>
+    </dependency>
+  </dependencies>
+  <distributionManagement>
+    <repository>
+      <id>dev-iesl.cs.umass.edu</id>
+      <name>dev-iesl.cs.umass.edu</name>
+      <url>https://dev-iesl.cs.umass.edu/nexus/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>dev-iesl.cs.umass.edu</id>
+      <name>dev-iesl.cs.umass.edu</name>
+      <url>https://dev-iesl.cs.umass.edu/nexus/content/repositories/snapshots</url>
+      <uniqueVersion>true</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
+</project>
