@@ -18,5 +18,5 @@ if test $1 != $arg ; then
   shift 
 fi
 
-java -Xmx$mem -server -classpath "$cp" cc.mallet.classify.tui.Text2Classify "$@"
+java -Xmx$mem -server -classpath $cp cc.mallet.classify.tui.Text2Classify "$@"
 

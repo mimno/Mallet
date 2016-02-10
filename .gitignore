@@ -9,3 +9,5 @@ dist/mallet.jar
 *.dot
 .idea
 mallet.iml
+
+nbactions.xml
