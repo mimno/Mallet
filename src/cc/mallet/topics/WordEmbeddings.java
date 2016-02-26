@@ -224,7 +224,7 @@ public class WordEmbeddings {
 
 	public void write(PrintWriter out) {
 		for (int word = 0; word < numWords; word++) {
-			Formatter buffer = new Formatter();
+			Formatter buffer = new Formatter(Locale.US);
 			buffer.format("%s", vocabulary.lookupObject(word));
 			for (int col = 0; col < numColumns; col++) {
 				buffer.format(" %.6f", weights[word * stride + col]);
