@@ -55,7 +55,17 @@ public class WordEmbeddings {
 
 	int windowSize = 5;
 
-	String queryWord = "the";
+	public String getQueryWord()
+	{
+		return queryWord;
+	}
+
+	public void setQueryWord(String queryWord)
+	{
+		this.queryWord = queryWord;
+	}
+
+	private String queryWord = "the";
 
 	Randoms random = new Randoms();
 
@@ -170,7 +180,7 @@ public class WordEmbeddings {
 				}
 			}
 
-			if (queryWord != null) {
+			if (queryWord != null && vocabulary.contains(queryWord)) {
 				findClosest(copy(queryWord));
 			}
 		}
