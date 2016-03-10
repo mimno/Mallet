@@ -65,7 +65,7 @@ public class WordEmbeddings {
 		this.queryWord = queryWord;
 	}
 
-	private String queryWord = "the";
+	String queryWord = "the";
 
 	Randoms random = new Randoms();
 
