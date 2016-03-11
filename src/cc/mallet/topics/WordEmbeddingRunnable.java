@@ -54,8 +54,6 @@ public class WordEmbeddingRunnable implements Runnable {
 
 		double[] gradient = new double[numColumns];
 
-		int queryID = model.vocabulary.lookupIndex(model.queryWord);
-
 		int outputOffset = model.numColumns;
 
 		docID = threadID * (numDocuments / numThreads);
