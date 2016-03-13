@@ -55,6 +55,21 @@ public class WordEmbeddings {
 
 	int windowSize = 5;
 
+	public int getMinDocumentLength()
+	{
+		return minDocumentLength;
+	}
+
+	public void setMinDocumentLength(int minDocumentLength)
+	{
+		if (minDocumentLength <= 0) {
+			throw new IllegalArgumentException("Minimum document length must be at least 1.");
+		}
+		this.minDocumentLength = minDocumentLength;
+	}
+
+	private int minDocumentLength = 10;
+
 	public String getQueryWord()
 	{
 		return queryWord;
