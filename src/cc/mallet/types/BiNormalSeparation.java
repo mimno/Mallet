@@ -8,7 +8,7 @@
 
 package cc.mallet.types;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
+import cc.mallet.util.StatFunctions;
 
 /**
  * Bi-Normal Separation is a feature weighting algorithm introduced in:
@@ -35,7 +35,6 @@ public class BiNormalSeparation extends RankedFeatureVector {
    * Calculates feature weights for features in the given instance list.
    */
   private static double[] calculateWeights(InstanceList instanceList) {
-    NormalDistribution dist = new NormalDistribution();
     int numFeatures = instanceList.getAlphabet().size();
     double[] weights = new double[numFeatures];
     double[] truePositives = new double[numFeatures];
@@ -71,8 +70,7 @@ public class BiNormalSeparation extends RankedFeatureVector {
         fpr = Math.max(Math.min(BNS_MAX_RATE, falsePositives[i] / numNeg), BNS_MIN_RATE);
       }
       weights[i] =
-          Math.abs(dist.inverseCumulativeProbability(tpr)
-              - dist.inverseCumulativeProbability(fpr));
+          Math.abs(StatFunctions.qnorm(tpr, false) - StatFunctions.qnorm(fpr, false));
     }
     return weights;
   }
