@@ -8,4 +8,5 @@ dist/mallet.jar
 *.obj
 *.dot
 .idea
+*.class
 mallet.iml
