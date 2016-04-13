@@ -23,7 +23,7 @@ import cc.mallet.util.MalletLogger;
  */
 public class PerClassAccuracyEvaluator extends TransducerEvaluator {
 
-  private static Logger logger = MalletLogger.getLogger(TokenAccuracyEvaluator.class.getName());
+  private static Logger logger = MalletLogger.getLogger(PerClassAccuracyEvaluator.class.getName());
 
   public PerClassAccuracyEvaluator (InstanceList[] instanceLists, String[] descriptions) {
 		super (instanceLists, descriptions);

@@ -26,7 +26,7 @@ import cc.mallet.util.MalletLogger;
  */
 public class CRFTrainerByValueGradients extends TransducerTrainer implements TransducerTrainer.ByOptimization {
 
-	private static Logger logger = MalletLogger.getLogger(CRFTrainerByLabelLikelihood.class.getName());
+	private static Logger logger = MalletLogger.getLogger(CRFTrainerByValueGradients.class.getName());
 
 	CRF crf;
   // gsc: keep objects instead of classnames, this will give more flexibility to the 

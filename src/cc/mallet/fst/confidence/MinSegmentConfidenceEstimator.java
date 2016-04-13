@@ -29,7 +29,7 @@ public class MinSegmentConfidenceEstimator extends TransducerSequenceConfidenceE
 	TransducerConfidenceEstimator segmentEstimator;
 	
 	private static Logger logger = MalletLogger.getLogger(
-		SegmentProductConfidenceEstimator.class.getName());
+		MinSegmentConfidenceEstimator.class.getName());
 
 
 	public MinSegmentConfidenceEstimator (Transducer model,

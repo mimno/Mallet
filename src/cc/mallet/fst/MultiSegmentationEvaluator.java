@@ -38,7 +38,7 @@ import cc.mallet.util.MalletLogger;
  */
 public class MultiSegmentationEvaluator extends TransducerEvaluator
 {
-	private static Logger logger = MalletLogger.getLogger(SegmentationEvaluator.class.getName());
+	private static Logger logger = MalletLogger.getLogger(MultiSegmentationEvaluator.class.getName());
 
 	// equals() is called on these objects to determine if this token is the start or continuation of a segment.
 	// A tag not equal to any of these is an "other".
