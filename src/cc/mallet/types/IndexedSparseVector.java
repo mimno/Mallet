@@ -31,7 +31,7 @@ import cc.mallet.util.PropertyList;
 
 public class IndexedSparseVector extends SparseVector implements Serializable 
 {
-	private static Logger logger = MalletLogger.getLogger(SparseVector.class.getName());
+	private static Logger logger = MalletLogger.getLogger(IndexedSparseVector.class.getName());
 
 	
 	transient private int[] index2location;

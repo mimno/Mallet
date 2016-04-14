@@ -32,7 +32,7 @@ import gnu.trove.TIntIntHashMap;
 
 public class HashedSparseVector extends SparseVector implements Serializable 
 {
-	private static Logger logger = MalletLogger.getLogger(SparseVector.class.getName());
+	private static Logger logger = MalletLogger.getLogger(HashedSparseVector.class.getName());
 
 	
 	TIntIntHashMap index2location;

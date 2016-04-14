@@ -25,7 +25,7 @@ import cc.mallet.util.MalletLogger;
  */
 public class NaiveBayesEMTrainer extends ClassifierTrainer<NaiveBayes> {
 
-	private static Logger logger = MalletLogger.getLogger(MCMaxEntTrainer.class.getName());
+	private static Logger logger = MalletLogger.getLogger(NaiveBayesEMTrainer.class.getName());
 
   Multinomial.Estimator featureEstimator = new Multinomial.LaplaceEstimator();
   Multinomial.Estimator priorEstimator = new Multinomial.LaplaceEstimator();
