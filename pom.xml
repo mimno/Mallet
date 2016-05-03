@@ -3,7 +3,7 @@
 
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.0.9-SNAPSHOT</version>
+  <version>2.0.8</version>
   <packaging>jar</packaging>
   <name>MAchine Learning for LanguagE Toolkit (MALLET)</name>
   <description>
@@ -28,7 +28,7 @@
     <developer>
       <id>david.mimno</id>
       <name>David Mimno</name>
-      <email>mimno@cs.umass.edu</email>
+      <email>mimno@cornell.edu</email>
     </developer>
     <developer>
       <id>gregory.druck</id>
@@ -84,16 +84,13 @@
     </dependency>
   </dependencies>
   <distributionManagement>
-    <repository>
-      <id>dev-iesl.cs.umass.edu</id>
-      <name>dev-iesl.cs.umass.edu</name>
-      <url>https://dev-iesl.cs.umass.edu/nexus/content/repositories/releases</url>
-    </repository>
     <snapshotRepository>
-      <id>dev-iesl.cs.umass.edu</id>
-      <name>dev-iesl.cs.umass.edu</name>
-      <url>https://dev-iesl.cs.umass.edu/nexus/content/repositories/snapshots</url>
-      <uniqueVersion>true</uniqueVersion>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
   </distributionManagement>
 </project>
