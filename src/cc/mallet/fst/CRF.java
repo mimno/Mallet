@@ -613,7 +613,7 @@ public class CRF extends Transducer implements Serializable
 		parameters.finalWeights = MatrixOps.append(parameters.finalWeights, finalWeight);
 		State s = newState (name, states.size(), initialWeight, finalWeight,
 				destinationNames, labelNames, weightNames, this);
-		s.print ();
+		//s.print ();
 		states.add (s);
 		if (initialWeight > IMPOSSIBLE_WEIGHT)
 			initialStates.add (s);
@@ -664,7 +664,7 @@ public class CRF extends Transducer implements Serializable
 		String[] labels = new String[outputAlphabet.size()];
 		// This is assuming the the entries in the outputAlphabet are Strings!
 		for (int i = 0; i < outputAlphabet.size(); i++) {
-			logger.info ("CRF: outputAlphabet.lookup class = "+
+			logger.fine ("CRF: outputAlphabet.lookup class = "+
 					outputAlphabet.lookupObject(i).getClass().getName());
 			labels[i] = (String) outputAlphabet.lookupObject(i);
 		}
@@ -846,7 +846,7 @@ public class CRF extends Transducer implements Serializable
 		String[] labels = new String[outputAlphabet.size()];
 		// This is assuming the the entries in the outputAlphabet are Strings!
 		for (int i = 0; i < outputAlphabet.size(); i++) {
-			logger.info ("CRF: outputAlphabet.lookup class = "+
+			logger.fine ("CRF: outputAlphabet.lookup class = "+
 					outputAlphabet.lookupObject(i).getClass().getName());
 			labels[i] = (String) outputAlphabet.lookupObject(i);
 		}
@@ -898,7 +898,7 @@ public class CRF extends Transducer implements Serializable
 		String[] labels = new String[outputAlphabet.size()];
 		// This is assuming the the entries in the outputAlphabet are Strings!
 		for (int i = 0; i < outputAlphabet.size(); i++) {
-			logger.info ("CRF: outputAlphabet.lookup class = "+
+			logger.fine ("CRF: outputAlphabet.lookup class = "+
 					outputAlphabet.lookupObject(i).getClass().getName());
 			labels[i] = (String) outputAlphabet.lookupObject(i);
 		}
@@ -921,7 +921,7 @@ public class CRF extends Transducer implements Serializable
 		String[] destinationNames  = new String[outputAlphabet.size()];
 		// This is assuming the the entries in the outputAlphabet are Strings!
 		for (int i = 0; i < outputAlphabet.size(); i++) {
-			logger.info ("CRF: outputAlphabet.lookup class = "+
+			logger.fine ("CRF: outputAlphabet.lookup class = "+
 					outputAlphabet.lookupObject(i).getClass().getName());
 			labels[i] = (String) outputAlphabet.lookupObject(i);
 			destinationNames[i] = name;
@@ -1049,7 +1049,7 @@ public class CRF extends Transducer implements Serializable
 			int numLabels = outputAlphabet.size();
 			while (historyIndexes[0] < numLabels)
 			{
-				logger.info("Preparing " + concatLabels(history));
+				logger.fine("Preparing " + concatLabels(history));
 				if (allowedHistory(history, forbidden, allowed))
 				{
 					String stateName = concatLabels(history);
@@ -1100,7 +1100,7 @@ public class CRF extends Transducer implements Serializable
 						StringBuffer b = new StringBuffer();
 						for (int j = 0; j < orders.length; j++)
 							b.append(" ").append(weightNames[i][j]);
-						logger.info(stateName + "->" + destNames[i] +
+						logger.fine(stateName + "->" + destNames[i] +
 								"(" + labelNames[i] + ")" + b.toString());
 					}
 					addState (stateName, 0.0, 0.0, destNames, labelNames, weightNames);
@@ -1286,7 +1286,7 @@ public class CRF extends Transducer implements Serializable
 			// ...and also do it for the paths selected by the current model (so we will get some negative weights)
 			if (useSomeUnsupportedTrick && this.getParametersAbsNorm() > 0) {
 				if (i == 0)
-					logger.info ("CRF: Incremental training detected.  Adding weights for some unsupported features...");
+					logger.fine ("CRF: Incremental training detected.  Adding weights for some unsupported features...");
 				// (do this once some training is done)
 				sumLatticeFactory.newSumLattice (this, input, null, new Transducer.Incrementor() {
 					public void incrementTransition (Transducer.TransitionIterator ti, double count) {
@@ -1316,7 +1316,7 @@ public class CRF extends Transducer implements Serializable
 		SparseVector[] newWeights = new SparseVector[parameters.weights.length];
 		for (int i = 0; i < parameters.weights.length; i++) {
 			int numLocations = weightsPresent[i].cardinality ();
-			logger.info ("CRF weights["+parameters.weightAlphabet.lookupObject(i)+"] num features = "+numLocations);
+			logger.fine ("CRF weights["+parameters.weightAlphabet.lookupObject(i)+"] num features = "+numLocations);
 			int[] indices = new int[numLocations];
 			for (int j = 0; j < numLocations; j++) {
 				indices[j] = weightsPresent[i].nextSetBit (j == 0 ? 0 : indices[j-1]+1);
@@ -1726,13 +1726,13 @@ public class CRF extends Transducer implements Serializable
 		public void setFinalWeight (double c) { crf.parameters.finalWeights[index] = c; }
 
 
-		public void print ()
-		{
-			System.out.println ("State #"+index+" \""+name+"\"");
-			System.out.println ("initialWeight="+crf.parameters.initialWeights[index]+", finalWeight="+crf.parameters.finalWeights[index]);
-			System.out.println ("#destinations="+destinations.length);
-			for (int i = 0; i < destinations.length; i++)
-				System.out.println ("-> "+destinationNames[i]);
+		public void print () {
+			System.out.println ("State #" + index + " \"" + name + "\"");
+			System.out.println ("initialWeight=" + crf.parameters.initialWeights[index] + ", finalWeight=" + crf.parameters.finalWeights[index]);
+			System.out.println ("#destinations=" + destinations.length);
+			for (int i = 0; i < destinations.length; i++) {
+				System.out.println ("-> " + destinationNames[i]);
+			}
 		}
 
 		public int numDestinations () { return destinations.length;}
