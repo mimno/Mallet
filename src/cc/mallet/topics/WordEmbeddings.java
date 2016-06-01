@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.concurrent.*;
 
 public class WordEmbeddings {
-	
+
 	static CommandOption.String inputFile = new CommandOption.String(WordEmbeddings.class, "input", "FILENAME", true, null,
 																	 "The filename from which to read the list of training instances.  Use - for stdin.  " +
 																	 "The instances must be FeatureSequence or FeatureSequenceWithBigrams, not FeatureVector", null);
@@ -96,7 +96,14 @@ public class WordEmbeddings {
 		this.numColumns = numColumns;
 		
 		this.stride = 2 * numColumns;
-		
+
+		/* Check for maximum array size; subtracting 12 for the approximate array header size */
+		if (numWords * stride > Integer.MAX_VALUE - 12) {
+			throw new IllegalStateException(String.format(
+					"Maximum matrix size (number of words * number of columns/dimensions * 2 exceeded: %d * %d * 2 = %d",
+					numWords, numColumns, numWords * stride));
+		}
+
 		weights = new double[numWords * stride];
 		squaredGradientSums = new double[numWords * stride];
 
