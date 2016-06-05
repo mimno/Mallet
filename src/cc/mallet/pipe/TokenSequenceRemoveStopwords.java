@@ -12,7 +12,6 @@
 package cc.mallet.pipe;
 
 
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.io.*;
 
@@ -20,6 +19,8 @@ import cc.mallet.types.FeatureSequenceWithBigrams;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
+import gnu.trove.THashSet;
+
 /**
  * Remove tokens from the token sequence in the data field whose text is in the stopword list.
  @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
@@ -28,13 +29,13 @@ import cc.mallet.types.TokenSequence;
 public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 {
 	// xxx Use a gnu.trove collection instead
-	HashSet<String> stoplist = null;
+	THashSet<String> stoplist = null;
 	boolean caseSensitive = true;
 	boolean markDeletions = false;
 
-	private HashSet<String> newDefaultStopList ()
+	private THashSet<String> newDefaultStopList ()
 	{
-		HashSet<String> sl = new HashSet<String>();
+		THashSet<String> sl = new THashSet<>();
 		for (int i = 0; i < stopwords.length; i++)
 			sl.add (stopwords[i]);
 		return sl;
@@ -67,7 +68,7 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 	 */
 	public TokenSequenceRemoveStopwords(File stoplistFile, String encoding, boolean includeDefault,
 										boolean caseSensitive, boolean markDeletions) {
-		if (! includeDefault) { stoplist = new HashSet<String>(); }
+		if (! includeDefault) { stoplist = new THashSet<>(); }
 		else { stoplist = newDefaultStopList(); }
 
 		addStopWords (fileToStringArray(stoplistFile, encoding));
@@ -145,7 +146,7 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		}
 		return (String[]) wordarray.toArray(new String[]{});
 	}
-	
+
 	public Instance pipe (Instance carrier)
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
@@ -167,30 +168,30 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		return carrier;
 	}
 
-	// Serialization 
-	
+	// Serialization
+
 	private static final long serialVersionUID = 1;
 	private static final int CURRENT_SERIAL_VERSION = 2;
-	
+
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeBoolean(caseSensitive);
 		out.writeBoolean(markDeletions);
 		out.writeObject(stoplist); // New as of CURRENT_SERIAL_VERSION 2
 	}
-	
+
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		caseSensitive = in.readBoolean();
 		if (version > 0)
 			markDeletions = in.readBoolean();
 		if (version > 1) {
-			stoplist = (HashSet<String>) in.readObject();
+			stoplist = (THashSet<String>) in.readObject();
 		}
 
 	}
 
-	
+
 	static final String[] stopwords =
 	{
 		"a",
@@ -727,7 +728,7 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		//"concludes",
 		//"based",
 		//"approach"
-	};	
+	};
 		//stopwords for french, added by Limin Yao
 	static final String[] stopwordsFrench = {
 		"fut",
