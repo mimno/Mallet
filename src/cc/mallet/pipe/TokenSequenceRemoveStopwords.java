@@ -67,13 +67,31 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 	 */
 	public TokenSequenceRemoveStopwords(File stoplistFile, String encoding, boolean includeDefault,
 										boolean caseSensitive, boolean markDeletions) {
+		this(fileToInputStream(stoplistFile), encoding, includeDefault, caseSensitive, markDeletions);
+	}
+
+	private static InputStream fileToInputStream(File file)
+	{
+		try {
+			return new FileInputStream(file);
+		} catch (IOException e){
+			throw new IllegalArgumentException("Trouble reading file "+file);
+		}
+	}
+
+	public TokenSequenceRemoveStopwords(InputStream stoplistStream, String encoding, boolean includeDefault,
+										boolean caseSensitive, boolean markDeletions) {
 		if (! includeDefault) { stoplist = new HashSet<String>(); }
 		else { stoplist = newDefaultStopList(); }
 
-		addStopWords (fileToStringArray(stoplistFile, encoding));
+		try {
+			addStopWords (streamToStringArray(stoplistStream, encoding));
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Can't read stopWord stream");
+		}
 
 		this.caseSensitive = caseSensitive;
-        this.markDeletions = markDeletions;
+		this.markDeletions = markDeletions;
 	}
 
 	public TokenSequenceRemoveStopwords setCaseSensitive (boolean flag)
@@ -118,34 +136,35 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		return this;
 	}
 
-
 	private String[] fileToStringArray (File f, String encoding)
 	{
-		ArrayList<String> wordarray = new ArrayList<String>();
-
 		try {
-
-			BufferedReader input = null;
-			if (encoding == null) {
-				input = new BufferedReader (new FileReader (f));
-			}
-			else {
-				input = new BufferedReader( new InputStreamReader( new FileInputStream(f), encoding ));
-			}
-			String line;
-
-			while (( line = input.readLine()) != null) {
-				String[] words = line.split ("\\s+");
-				for (int i = 0; i < words.length; i++)
-					wordarray.add (words[i]);
-			}
-
+			return streamToStringArray(new FileInputStream(f), encoding);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Trouble reading file "+f);
 		}
-		return (String[]) wordarray.toArray(new String[]{});
 	}
-	
+
+	private String[] streamToStringArray(InputStream stream, String encoding) throws IOException
+	{
+		ArrayList<String> wordarray = new ArrayList<String>();
+		BufferedReader input;
+		if ( encoding == null ){
+			input = new BufferedReader( new InputStreamReader( stream ));
+		} else {
+			input = new BufferedReader( new InputStreamReader( stream, encoding ));
+		}
+		String line;
+
+		while (( line = input.readLine()) != null) {
+			String[] words = line.split ("\\s+");
+			for (int i = 0; i < words.length; i++)
+				wordarray.add (words[i]);
+		}
+		return wordarray.toArray(new String[]{});
+	}
+
+
 	public Instance pipe (Instance carrier)
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
