@@ -87,7 +87,10 @@
  
   <!-- Create a jar file -->
   <target name="jar" depends="compile">
-      <jar destfile="${dist}/mallet.jar" basedir="${class}"/>
+    <jar destfile="${dist}/mallet.jar" basedir="${class}">
+      <fileset dir="${class}/cc/mallet/" />
+      <fileset dir="${src}" includes="**/*.java"/>
+    </jar>
   </target>
 
   <target name="test" depends="compile">
