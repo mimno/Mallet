@@ -559,6 +559,28 @@ public class HierarchicalLDA implements Serializable {
 		return averageLogLikelihood;
     }
 
+	public void write (File serializedModelFile) {
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream (new FileOutputStream(serializedModelFile));
+			oos.writeObject(this);
+			oos.close();
+		} catch (IOException e) {
+			System.err.println("Problem serializing HierarchicalLDA to file " +
+					serializedModelFile + ": " + e);
+		}
+	}
+
+	public static HierarchicalLDA read (File f) throws Exception {
+
+		HierarchicalLDA topicModel;
+
+		ObjectInputStream ois = new ObjectInputStream (new FileInputStream(f));
+		topicModel = (HierarchicalLDA) ois.readObject();
+		ois.close();
+
+		return topicModel;
+	}
+
 	/** 
 	 *  This method is primarily for testing purposes. The {@link cc.mallet.topics.tui.HierarchicalLDATUI}
 	 *   class has a more flexible interface for command-line use.
