@@ -9,7 +9,7 @@ import cc.mallet.util.Randoms;
 
 import gnu.trove.*;
 
-public class HierarchicalLDA {
+public class HierarchicalLDA implements Serializable {
 
     InstanceList instances;
     InstanceList testing;
@@ -576,7 +576,7 @@ public class HierarchicalLDA {
 		}
     }
 
-    class NCRPNode {
+    class NCRPNode implements Serializable {
 		int customers;
 		ArrayList<NCRPNode> children;
 		NCRPNode parent;
