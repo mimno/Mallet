@@ -26,6 +26,12 @@ public class WordEmbeddings {
 	static CommandOption.Integer numThreads = new CommandOption.Integer(WordEmbeddings.class, "num-threads", "INTEGER", true, 1,
 																		"The number of threads for parallel training.", null);
 
+	static CommandOption.Integer numIterationsOption = new CommandOption.Integer(WordEmbeddings.class, "num-iters", "INTEGER", true, 3,
+																		"The number of passes through the training data.", null);
+
+	static CommandOption.Double samplingFactorOption = new CommandOption.Double(WordEmbeddings.class, "frequency-factor", "NUMBER", true, 0.0001,
+																		"Down-sample words that account for more than ~2.5x this proportion or the corpus.", null);
+
 	static CommandOption.Integer numSamples = new CommandOption.Integer(WordEmbeddings.class, "num-samples", "INTEGER", true, 5,
 																		"The number of negative samples to use in training.", null);
 
@@ -38,14 +44,17 @@ public class WordEmbeddings {
 	int numWords;
 	int numColumns;
 	double[] weights;
-	double[] squaredGradientSums;
+	double[] negativeWeights;
 	int stride;
+	
+	int numIterations;
 
 	int[] wordCounts;
+	double[] retentionProbability;
 	double[] samplingDistribution;
 	int[] samplingTable;
 	int samplingTableSize = 100000000;
-	double samplingSum = 0.0f;
+	double samplingSum = 0.0;
 	int totalWords = 0;
 
 	double maxExpValue = 6.0;
@@ -55,13 +64,11 @@ public class WordEmbeddings {
 
 	int windowSize = 5;
 
-	public int getMinDocumentLength()
-	{
+	public int getMinDocumentLength() {
 		return minDocumentLength;
 	}
 
-	public void setMinDocumentLength(int minDocumentLength)
-	{
+	public void setMinDocumentLength(int minDocumentLength) {
 		if (minDocumentLength <= 0) {
 			throw new IllegalArgumentException("Minimum document length must be at least 1.");
 		}
@@ -70,13 +77,13 @@ public class WordEmbeddings {
 
 	private int minDocumentLength = 10;
 
-	public String getQueryWord()
-	{
+	public void setNumIterations(int i) { numIterations = i; }
+
+	public String getQueryWord() {
 		return queryWord;
 	}
 
-	public void setQueryWord(String queryWord)
-	{
+	public void setQueryWord(String queryWord) {
 		this.queryWord = queryWord;
 	}
 
@@ -95,19 +102,21 @@ public class WordEmbeddings {
 
 		this.numColumns = numColumns;
 		
-		this.stride = 2 * numColumns;
+		this.stride = numColumns;
 		
 		weights = new double[numWords * stride];
-		squaredGradientSums = new double[numWords * stride];
+		negativeWeights = new double[numWords * stride];
 
 		for (int word = 0; word < numWords; word++) {
-			for (int col = 0; col < 2 * numColumns; col++) {
+			for (int col = 0; col < numColumns; col++) {
 				weights[word * stride + col] = (random.nextDouble() - 0.5f) / numColumns;
+				negativeWeights[word * stride + col] = 0.0;
 			}
 		}
 
 		wordCounts = new int[numWords];
 		samplingDistribution = new double[numWords];
+		retentionProbability = new double[numWords];
 		samplingTable = new int[samplingTableSize];
 
 		this.windowSize = windowSize;
@@ -118,9 +127,10 @@ public class WordEmbeddings {
 			double value = ((double) i / sigmoidCacheSize) * (maxExpValue - minExpValue) + minExpValue;
 			sigmoidCache[i] = 1.0 / (1.0 + Math.exp(-value));
 		}
+		
 	}
 
-	public void countWords(InstanceList instances) {
+	public void countWords(InstanceList instances, double samplingFactor) {
 		for (Instance instance: instances) {
 			
 			FeatureSequence tokens = (FeatureSequence) instance.getData();
@@ -133,24 +143,34 @@ public class WordEmbeddings {
 			
 			totalWords += length;
 		}
+		
+		for (int word = 0; word < numWords; word++) {
+			// Word2Vec style sampling weight
+			double frequencyScore = (double) wordCounts[word] / (samplingFactor * totalWords);
+			retentionProbability[word] = Math.min((Math.sqrt(frequencyScore) + 1) / frequencyScore, 1.0);
+		}
 
-		double normalizer = 1.0f / totalWords;
-
-		samplingDistribution[0] = Math.pow(normalizer * wordCounts[0], 0.75);
+		IDSorter[] sortedWords = new IDSorter[numWords];
+		for (int word = 0; word < numWords; word++) {
+			sortedWords[word] = new IDSorter(word, wordCounts[word]);
+		}
+		Arrays.sort(sortedWords);
+		
+		samplingDistribution[0] = Math.pow(wordCounts[ sortedWords[0].getID() ], 0.75);
 		for (int word = 1; word < numWords; word++) {
-			samplingDistribution[word] = samplingDistribution[word-1] + Math.pow(normalizer * wordCounts[word], 0.75);
+			samplingDistribution[word] = samplingDistribution[word-1] + Math.pow(wordCounts[ sortedWords[word].getID() ], 0.75);
 		}
 		samplingSum = samplingDistribution[numWords-1];
 
-		int word = 0;
+		int order = 0;
 		for (int i = 0; i < samplingTableSize; i++) {
-			while (samplingSum * i / samplingTableSize > samplingDistribution[word]) {
-				word++;
+			samplingTable[i] = sortedWords[order].getID();
+			while (samplingSum * i / samplingTableSize > samplingDistribution[order]) {
+				order++;
 			}
-			samplingTable[i] = word;
 		}
 
-		System.out.println("done counting");
+		System.out.println("done counting: " + totalWords);
 	}
 
 	public void train(InstanceList instances, int numThreads, int numSamples) {
@@ -180,15 +200,16 @@ public class WordEmbeddings {
 			// Are all the threads done?
 			for (int thread = 0; thread < numThreads; thread++) {
 				wordsSoFar += runnables[thread].wordsSoFar;
-				System.out.format("%.3f ", runnables[thread].getMeanError());
+				//System.out.format("%.3f ", runnables[thread].getMeanError());
 			}
 
 			long runningMillis = System.currentTimeMillis() - startTime;
-			System.out.format("%d\t%d\t%fk w/s %f loss %f avg\n", wordsSoFar, runningMillis, (double) wordsSoFar / runningMillis, 
-							  difference / 10000, averageAbsWeight());
+			System.out.format("%d\t%d\t%fk w/s %f avg\n", wordsSoFar, runningMillis, (double) wordsSoFar / runningMillis, 
+							  averageAbsWeight());
+			//variances();
 			difference = 0.0;
 
-			if (wordsSoFar > 5 * totalWords) {
+			if (wordsSoFar > numIterations * totalWords) {
 				finished = true;
 				for (int thread = 0; thread < numThreads; thread++) {
 					runnables[thread].shouldRun = false;
@@ -245,6 +266,33 @@ public class WordEmbeddings {
 			}
 		}
 		return sum / (numWords * numColumns);
+	}
+
+	public double[] variances() {
+		double[] means = new double[numColumns];
+		for (int word = 0; word < numWords; word++) {
+			for (int col = 0; col < numColumns; col++) {
+				means[col] += weights[word * stride + col];
+			}
+		}
+		for (int col = 0; col < numColumns; col++) {
+			means[col] /= numWords;
+		}
+		
+		double[] squaredSums = new double[numColumns];
+		double diff;
+		for (int word = 0; word < numWords; word++) {
+			for (int col = 0; col < numColumns; col++) {
+				diff = weights[word * stride + col] - means[col];
+				squaredSums[col] += diff * diff;
+			}
+		}
+		for (int col = 0; col < numColumns; col++) {
+			squaredSums[col] /= (numWords - 1);
+			System.out.format("%f\t", squaredSums[col]);
+		}
+		System.out.println();
+		return squaredSums;
 	}
 
 	public void write(PrintWriter out) {
@@ -306,7 +354,8 @@ public class WordEmbeddings {
 
 		WordEmbeddings matrix = new WordEmbeddings(instances.getDataAlphabet(), numDimensions.value, windowSizeOption.value);
 		matrix.queryWord = exampleWord.value;
-		matrix.countWords(instances);
+		matrix.setNumIterations(numIterationsOption.value);
+		matrix.countWords(instances, samplingFactorOption.value);
 		matrix.train(instances, numThreads.value, numSamples.value);
 		
 		PrintWriter out = new PrintWriter(outputFile.value);
