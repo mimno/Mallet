@@ -63,6 +63,8 @@ public class WordEmbeddings {
 	int sigmoidCacheSize = 1000;
 
 	int windowSize = 5;
+	
+	IDSorter[] sortedWords = null;
 
 	public int getMinDocumentLength() {
 		return minDocumentLength;
@@ -129,6 +131,13 @@ public class WordEmbeddings {
 		}
 		
 	}
+	
+	public void initializeSortables() {
+		sortedWords = new IDSorter[numWords];
+		for (int word = 0; word < numWords; word++) {
+			sortedWords[word] = new IDSorter(word, 0.0);
+		}
+	}
 
 	public void countWords(InstanceList instances, double samplingFactor) {
 		for (Instance instance: instances) {
@@ -150,9 +159,11 @@ public class WordEmbeddings {
 			retentionProbability[word] = Math.min((Math.sqrt(frequencyScore) + 1) / frequencyScore, 1.0);
 		}
 
-		IDSorter[] sortedWords = new IDSorter[numWords];
+		if (sortedWords == null) {
+			initializeSortables();
+		}
 		for (int word = 0; word < numWords; word++) {
-			sortedWords[word] = new IDSorter(word, wordCounts[word]);
+			sortedWords[word].set(word, wordCounts[word]);
 		}
 		Arrays.sort(sortedWords);
 		
@@ -224,15 +235,15 @@ public class WordEmbeddings {
 	}
 
 	public void findClosest(double[] targetVector) {
-		IDSorter[] sortedWords = new IDSorter[numWords];
+		if (sortedWords == null) {
+			initializeSortables();
+		}
 
 		double targetSquaredSum = 0.0;
 		for (int col = 0; col < numColumns; col++) {
 			targetSquaredSum += targetVector[col] * targetVector[col];
 		}
 		double targetNormalizer = 1.0 / Math.sqrt(targetSquaredSum);
-
-		System.out.println(targetSquaredSum);
 
 		for (int word = 0; word < numWords; word++) {
 			
@@ -245,10 +256,11 @@ public class WordEmbeddings {
 			double wordNormalizer = 1.0 / Math.sqrt(wordSquaredSum);
 
 			for (int col = 0; col < numColumns; col++) {
-				innerProduct += targetNormalizer * targetVector[col] * wordNormalizer * weights[word * stride + col];
+				innerProduct += targetVector[col] * weights[word * stride + col];
 			}
+			innerProduct *= targetNormalizer * wordNormalizer;
 
-			sortedWords[word] = new IDSorter(word, innerProduct);
+			sortedWords[word].set(word, innerProduct);
 		}
 
 		Arrays.sort(sortedWords);
