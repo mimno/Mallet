@@ -6,7 +6,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.learning.templates;
 
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

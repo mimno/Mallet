@@ -6,7 +6,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.util;
 
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 
 import java.util.*;
 

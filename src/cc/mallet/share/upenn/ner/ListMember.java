@@ -6,8 +6,7 @@ import java.util.*;
 
 import cc.mallet.pipe.*;
 import cc.mallet.types.*;
-
-import gnu.trove.*;
+import gnu.trove.set.hash.THashSet;
 
 /**
  * Checks membership in a lexicon in a text file.  Multi-token items are supported,

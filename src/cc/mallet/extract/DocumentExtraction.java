@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 
 /**
  * Created: Oct 12, 2004

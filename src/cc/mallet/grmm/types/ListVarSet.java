@@ -6,8 +6,8 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.types;
 
-import gnu.trove.THashSet;
-import gnu.trove.TIntArrayList;
+import gnu.trove.set.hash.THashSet;
+import gnu.trove.list.array.TIntArrayList;
 
 import java.util.AbstractSet;
 import java.util.BitSet;
@@ -200,7 +200,7 @@ public class ListVarSet extends AbstractSet implements VarSet, Serializable {
     out.defaultWriteObject ();
     out.writeInt (CURRENT_SERIAL_VERSION);
     out.writeObject (universe);
-    out.writeObject (included.toNativeArray ());
+    out.writeObject (included.toArray ());
   }
 
 

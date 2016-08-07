@@ -6,7 +6,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.inference.gbp;
 
-import gnu.trove.THashSet;
+import gnu.trove.set.hash.THashSet;
 
 import java.util.*;
 

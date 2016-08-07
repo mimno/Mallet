@@ -7,7 +7,7 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
-import gnu.trove.TIntObjectHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 import cc.mallet.types.MatrixOps;

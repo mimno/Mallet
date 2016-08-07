@@ -6,7 +6,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.grmm.inference;
 
-import gnu.trove.TIntObjectIterator;
+import gnu.trove.iterator.TIntObjectIterator;
 
 import java.io.PrintWriter;
 import java.io.OutputStreamWriter;

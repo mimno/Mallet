@@ -17,8 +17,8 @@ import cc.mallet.types.MatrixOps;
 import cc.mallet.types.Matrixn;
 import cc.mallet.types.SparseMatrixn;
 
-import gnu.trove.TIntArrayList;
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 /**
  * Created: Aug 30, 2004
@@ -90,7 +90,7 @@ public class TestSparseMatrixn extends TestCase {
       }
     }
 
-    SparseMatrixn a = new SparseMatrixn (sizes, idxs.toNativeArray (), vals.toNativeArray ());
+    SparseMatrixn a = new SparseMatrixn (sizes, idxs.toArray (), vals.toArray ());
     return a;
   }
 

@@ -17,9 +17,9 @@ import java.util.Arrays;
 
 import cc.mallet.grmm.types.*;
 
-import gnu.trove.TIntObjectHashMap;
-import gnu.trove.THashSet;
-import gnu.trove.TIntObjectIterator;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.THashSet;
+import gnu.trove.iterator.TIntObjectIterator;
 
 
 /**

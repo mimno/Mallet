@@ -9,7 +9,7 @@ package cc.mallet.fst.semi_supervised.constraints;
 
 import java.util.ArrayList;
 
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 

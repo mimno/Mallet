@@ -7,7 +7,8 @@
 
 package cc.mallet.topics;
 
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import java.util.Arrays;
 import java.util.List;
@@ -91,7 +92,7 @@ public class LDAHyper implements Serializable {
 	// garbage collection overhead.
 	protected int[] oneDocTopicCounts; // indexed by <document index, topic index>
 
-	protected gnu.trove.TIntIntHashMap[] typeTopicCounts; // indexed by <feature index, topic index>
+	protected TIntIntHashMap[] typeTopicCounts; // indexed by <feature index, topic index>
 	protected int[] tokensPerTopic; // indexed by <topic index>
 
 	// for dirichlet estimation
@@ -457,7 +458,7 @@ public class LDAHyper implements Serializable {
 
 			// Build a distribution over topics for this token
 			topicIndices = currentTypeTopicCounts.keys();
-			topicCounts = currentTypeTopicCounts.getValues();
+			topicCounts = currentTypeTopicCounts.values();
 			topicDistribution = new double[topicIndices.length]; 
 			// TODO Yipes, memory allocation in the inner loop!  But note that .keys and .getValues is doing this too.
 			topicDistributionSum = 0;
@@ -571,7 +572,7 @@ public class LDAHyper implements Serializable {
 			topicTermMass = 0.0;
 
 			topicTermIndices = currentTypeTopicCounts.keys();
-			topicTermValues = currentTypeTopicCounts.getValues();
+			topicTermValues = currentTypeTopicCounts.values();
 
 			for (i=0; i < topicTermIndices.length; i++) {
 				int topic = topicTermIndices[i];
@@ -618,7 +619,7 @@ public class LDAHyper implements Serializable {
 					sample /= beta;
 
 					topicTermIndices = localTopicCounts.keys();
-					topicTermValues = localTopicCounts.getValues();
+					topicTermValues = localTopicCounts.values();
 
 					for (i=0; i < topicTermIndices.length; i++) {
 						newTopic = topicTermIndices[i];
@@ -799,12 +800,12 @@ public class LDAHyper implements Serializable {
 	
 	public void topicXMLReportPhrases (PrintStream out, int numWords) {
 		int numTopics = this.getNumTopics();
-		gnu.trove.TObjectIntHashMap<String>[] phrases = new gnu.trove.TObjectIntHashMap[numTopics];
+		TObjectIntHashMap<String>[] phrases = new TObjectIntHashMap[numTopics];
 		Alphabet alphabet = this.getAlphabet();
 		
 		// Get counts of phrases
 		for (int ti = 0; ti < numTopics; ti++)
-			phrases[ti] = new gnu.trove.TObjectIntHashMap<String>();
+			phrases[ti] = new TObjectIntHashMap<String>();
 		for (int di = 0; di < this.getData().size(); di++) {
 			LDAHyper.Topication t = this.getData().get(di);
 			Instance instance = t.instance;
@@ -872,7 +873,7 @@ public class LDAHyper implements Serializable {
 
 			// Print phrases
 			Object[] keys = phrases[ti].keys();
-			int[] values = phrases[ti].getValues();
+			int[] values = phrases[ti].values();
 			double counts[] = new double[keys.length];
 			for (int i = 0; i < counts.length; i++)	counts[i] = values[i];
 			double countssum = MatrixOps.sum (counts);	

@@ -11,7 +11,7 @@ import cc.mallet.grmm.types.*;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.util.Randoms;
 import junit.framework.*;
-import gnu.trove.TDoubleArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 import no.uib.cipr.matrix.Vector;
 import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrix;
@@ -54,7 +54,7 @@ public class TestNormalFactor extends TestCase {
 
   void checkMeanStd (TDoubleArrayList ell, double mu, double sigma)
   {
-    double[] vals = ell.toNativeArray ();
+    double[] vals = ell.toArray ();
     double mean1 = MatrixOps.mean (vals);
     double std1 = MatrixOps.stddev (vals);
     assertEquals (mu, mean1, 0.025);

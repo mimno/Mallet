@@ -14,11 +14,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.zip.*;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.io.*;
 import java.text.NumberFormat;
 
-import gnu.trove.*;
 
 /**
  * Latent Dirichlet Allocation.

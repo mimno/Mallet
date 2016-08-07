@@ -26,7 +26,7 @@ import java.util.*;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
 
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 public class DMROptimizable implements Optimizable.ByGradientValue {
 

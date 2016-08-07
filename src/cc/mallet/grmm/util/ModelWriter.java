@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import cc.mallet.grmm.types.*;
 
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 import bsh.Interpreter;
 import bsh.EvalError;
 

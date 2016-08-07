@@ -8,7 +8,7 @@ import cc.mallet.classify.MaxEnt;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.Noop;
 
-import gnu.trove.TIntIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.io.IOException;
 import java.io.PrintStream;

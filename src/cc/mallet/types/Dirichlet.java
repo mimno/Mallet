@@ -7,9 +7,9 @@
 
 package cc.mallet.types;
 
-import gnu.trove.TIntHashSet;
-import gnu.trove.TIntIntHashMap;
-import gnu.trove.TIntIterator;
+import gnu.trove.set.hash.TIntHashSet;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.iterator.TIntIterator;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

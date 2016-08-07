@@ -6,7 +6,7 @@ import java.util.*;
 import cc.mallet.pipe.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
-import gnu.trove.*;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 
 /**
  * Adds all features of tokens in the window to the center token.

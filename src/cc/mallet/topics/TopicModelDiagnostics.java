@@ -6,8 +6,7 @@ import java.text.*;
 
 import cc.mallet.types.*;
 import cc.mallet.util.*;
-
-import gnu.trove.*;
+import gnu.trove.set.hash.TIntHashSet;
 
 public class TopicModelDiagnostics {
 
