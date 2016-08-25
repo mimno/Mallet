@@ -543,7 +543,7 @@ public class TRP extends AbstractBeliefPropagation {
       dumpForIter (iter, tree);
     }
     iterUsed = iter;
-    logger.info ("TRP used " + iter + " iterations.");
+    logger.fine ("TRP used " + iter + " iterations.");
 
     doneWithGraph (m);
   }
