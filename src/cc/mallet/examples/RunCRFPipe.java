@@ -12,9 +12,9 @@ import cc.mallet.pipe.tsf.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 
-public class TestCRFPipe {
+public class RunCRFPipe {
 	
-	public TestCRFPipe(String trainingFilename) throws IOException {
+	public RunCRFPipe(String trainingFilename) throws IOException {
 		
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
@@ -51,7 +51,7 @@ public class TestCRFPipe {
 	}
 
 	public static void main (String[] args) throws Exception {
-		TestCRFPipe trainer = new TestCRFPipe(args[0]);
+		RunCRFPipe trainer = new RunCRFPipe(args[0]);
 
 	}
 
