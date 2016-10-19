@@ -1770,7 +1770,7 @@ public class ParallelTopicModel implements Serializable {
 				
 				int doc = sorter.getID();
 				double proportion = sorter.getWeight();
-				String name = (String) data.get(doc).instance.getName();
+				String name = data.get(doc).instance.getName().toString();
 				if (name == null) {
 					name = "no-name";
 				}
