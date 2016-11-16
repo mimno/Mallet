@@ -1,6 +1,6 @@
 package cc.mallet.cluster.tui;
 
-import gnu.trove.TIntArrayList;
+import com.carrotsearch.hppc.IntArrayList;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,7 +52,7 @@ public class Text2Clusterings {
 			File[] subdirs = getSubDirs(directory);
 			Alphabet clusterAlph = new Alphabet();
 			InstanceList instances = new InstanceList(new Noop());
-			TIntArrayList labels = new TIntArrayList();
+			IntArrayList labels = new IntArrayList();
 			for (int j = 0; j < subdirs.length; j++) {
 				ArrayList<File> records = new FileIterator(subdirs[j]).getFileArray();
 				int label = clusterAlph.lookupIndex(subdirs[j].toString());
@@ -72,7 +72,7 @@ public class Text2Clusterings {
 				}
 			}
 			clusterings[i] =
-					new Clustering(instances, subdirs.length, labels.toNativeArray());
+					new Clustering(instances, subdirs.length, labels.toArray());
 		}
 
 		logger.info("\nread " + fi + " objects in " + clusterings.length + " clusterings.");

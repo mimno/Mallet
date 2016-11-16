@@ -7,7 +7,9 @@ import java.io.*;
 import cc.mallet.types.*;
 import cc.mallet.util.Randoms;
 
-import gnu.trove.*;
+import com.carrotsearch.hppc.ObjectDoubleHashMap;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntIntCursor;
 
 public class HierarchicalLDA {
 
@@ -163,8 +165,8 @@ public class HierarchicalLDA {
 
 		documentLeaves[doc].dropPath();
 
-		TObjectDoubleHashMap<NCRPNode> nodeWeights = 
-			new TObjectDoubleHashMap<NCRPNode>();
+		ObjectDoubleHashMap<NCRPNode> nodeWeights = 
+			new ObjectDoubleHashMap<NCRPNode>();
 	
 		// Calculate p(c_m | c_{-m})
 		calculateNCRP(nodeWeights, rootNode, 0.0);
@@ -175,12 +177,12 @@ public class HierarchicalLDA {
 		//  be unavailable, but it should still exist since we haven't
 		//  reset documentLeaves[doc] yet...
 	
-		TIntIntHashMap[] typeCounts = new TIntIntHashMap[numLevels];
+		IntIntHashMap[] typeCounts = new IntIntHashMap[numLevels];
 
 		int[] docLevels;
 
 		for (level = 0; level < numLevels; level++) {
-			typeCounts[level] = new TIntIntHashMap();
+			typeCounts[level] = new IntIntHashMap();
 		}
 
 		docLevels = levels[doc];
@@ -197,7 +199,7 @@ public class HierarchicalLDA {
 				typeCounts[level].put(type, 1);
 			}
 			else {
-				typeCounts[level].increment(type);
+				typeCounts[level].addTo(type, 1);
 			}
 
 			path[level].typeCounts[type]--;
@@ -210,11 +212,10 @@ public class HierarchicalLDA {
 		// Calculate the weight for a new path at a given level.
 		double[] newTopicWeights = new double[numLevels];
 		for (level = 1; level < numLevels; level++) {  // Skip the root...
-			int[] types = typeCounts[level].keys();
 			int totalTokens = 0;
 
-			for (int t: types) {
-				for (int i=0; i<typeCounts[level].get(t); i++) {
+			for (IntIntCursor keyVal : typeCounts[level]) {
+				for (int i=0; i< keyVal.value; i++) {
 					newTopicWeights[level] += 
 						Math.log((eta + i) / (etaSum + totalTokens));
 					totalTokens++;
@@ -226,7 +227,7 @@ public class HierarchicalLDA {
 	
 		calculateWordLikelihood(nodeWeights, rootNode, 0.0, typeCounts, newTopicWeights, 0, iteration);
 
-		NCRPNode[] nodes = nodeWeights.keys(new NCRPNode[] {});
+		NCRPNode[] nodes = (NCRPNode[]) nodeWeights.keys().toArray();
 		double[] weights = new double[nodes.length];
 		double sum = 0.0;
 		double max = Double.NEGATIVE_INFINITY;
@@ -269,18 +270,17 @@ public class HierarchicalLDA {
 		documentLeaves[doc] = node;
 
 		for (level = numLevels - 1; level >= 0; level--) {
-			int[] types = typeCounts[level].keys();
 
-			for (int t: types) {
-				node.typeCounts[t] += typeCounts[level].get(t);
-				node.totalTokens += typeCounts[level].get(t);
+			for (IntIntCursor keyVal: typeCounts[level]) {
+				node.typeCounts[keyVal.key] += keyVal.value;
+				node.totalTokens += keyVal.value;
 			}
 
 			node = node.parent;
 		}
     }
 
-    public void calculateNCRP(TObjectDoubleHashMap<NCRPNode> nodeWeights, 
+    public void calculateNCRP(ObjectDoubleHashMap<NCRPNode> nodeWeights, 
 							  NCRPNode node, double weight) {
 		for (NCRPNode child: node.children) {
 			calculateNCRP(nodeWeights, child,
@@ -290,23 +290,22 @@ public class HierarchicalLDA {
 		nodeWeights.put(node, weight + Math.log(gamma / (node.customers + gamma)));
     }
 
-    public void calculateWordLikelihood(TObjectDoubleHashMap<NCRPNode> nodeWeights,
+    public void calculateWordLikelihood(ObjectDoubleHashMap<NCRPNode> nodeWeights,
 										NCRPNode node, double weight, 
-										TIntIntHashMap[] typeCounts, double[] newTopicWeights,
+										IntIntHashMap[] typeCounts, double[] newTopicWeights,
 										int level, int iteration) {
 	
 		// First calculate the likelihood of the words at this level, given
 		//  this topic.
 		double nodeWeight = 0.0;
-		int[] types = typeCounts[level].keys();
 		int totalTokens = 0;
 	
 		//if (iteration > 1) { System.out.println(level + " " + nodeWeight); }
 
-		for (int type: types) {
-			for (int i=0; i<typeCounts[level].get(type); i++) {
+		for (IntIntCursor keyVal: typeCounts[level]) {
+			for (int i=0; i<keyVal.value; i++) {
 				nodeWeight +=
-					Math.log((eta + node.typeCounts[type] + i) /
+					Math.log((eta + node.typeCounts[keyVal.key] + i) /
 							 (etaSum + node.totalTokens + totalTokens));
 				totalTokens++;
 
@@ -339,14 +338,14 @@ public class HierarchicalLDA {
 			level++;
 		}
 
-		nodeWeights.adjustValue(node, nodeWeight);
+		nodeWeights.addTo(node, nodeWeight);
 
     }
 
     /** Propagate a topic weight to a node and all its children.
 		weight is assumed to be a log.
 	*/
-    public void propagateTopicWeight(TObjectDoubleHashMap<NCRPNode> nodeWeights,
+    public void propagateTopicWeight(ObjectDoubleHashMap<NCRPNode> nodeWeights,
 									 NCRPNode node, double weight) {
 		if (! nodeWeights.containsKey(node)) {
 			// calculating the NCRP prior proceeds from the
@@ -364,7 +363,7 @@ public class HierarchicalLDA {
 			propagateTopicWeight(nodeWeights, child, weight);
 		}
 
-		nodeWeights.adjustValue(node, weight);
+		nodeWeights.addTo(node, weight);
     }
 
     public void sampleTopics(int doc) {

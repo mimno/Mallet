@@ -7,8 +7,9 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
-import gnu.trove.TIntArrayList;
-import gnu.trove.TIntIntHashMap;
+import com.carrotsearch.hppc.IntArrayList;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntIntCursor;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -34,22 +35,22 @@ import cc.mallet.types.InstanceList;
 public abstract class TwoLabelGEConstraints implements GEConstraint {
 
   protected ArrayList<TwoLabelGEConstraint> constraintsList;
-  protected TIntIntHashMap constraintsMap;
+  protected IntIntHashMap constraintsMap;
   protected StateLabelMap map;
-  protected TIntArrayList cache;
+  protected IntArrayList cache;
 
   public TwoLabelGEConstraints() {
     this.constraintsList = new ArrayList<TwoLabelGEConstraint>();
-    this.constraintsMap = new TIntIntHashMap();
+    this.constraintsMap = new IntIntHashMap();
     this.map = null;
-    this.cache = new TIntArrayList();
+    this.cache = new IntArrayList();
   }
   
-  protected TwoLabelGEConstraints(ArrayList<TwoLabelGEConstraint> constraintsList, TIntIntHashMap constraintsMap, StateLabelMap map) {
+  protected TwoLabelGEConstraints(ArrayList<TwoLabelGEConstraint> constraintsList, IntIntHashMap constraintsMap, StateLabelMap map) {
     this.constraintsList = constraintsList;
     this.constraintsMap = constraintsMap;
     this.map = map;
-    this.cache = new TIntArrayList();
+    this.cache = new IntArrayList();
   }
   
   /**
@@ -68,7 +69,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
   }
   
   public void preProcess(FeatureVector fv) {
-    cache.resetQuick();
+    cache.clear();
     int fi;
     for (int loc = 0; loc < fv.numLocations(); loc++) {
       fi = fv.indexAtLocation(loc);
@@ -85,10 +86,10 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
     for (Instance instance : data) {
       FeatureVectorSequence fvs = (FeatureVectorSequence)instance.getData();
       for (int ip = 1; ip < fvs.size(); ip++) {
-        for (int fi : constraintsMap.keys()) {
+        for (IntIntCursor keyVal : constraintsMap) {
           // binary constraint features
-          if (fvs.get(ip).location(fi) >= 0) {
-            constraintsList.get(constraintsMap.get(fi)).count += 1;
+          if (fvs.get(ip).location(keyVal.key) >= 0) {
+            constraintsList.get(keyVal.value).count += 1;
             bitSet.set(ii);
           }
         }
@@ -114,7 +115,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
     
     int li2 = map.getLabelIndex(si2);
     for (int i = 0; i < cache.size(); i++) {
-      value += constraintsList.get(cache.getQuick(i)).getValue(li1,li2);
+      value += constraintsList.get(cache.get(i)).getValue(li1,li2);
     }
     return value;
   }
@@ -129,14 +130,14 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
   
   public void computeExpectations(ArrayList<SumLattice> lattices) {
     double[][][] xis;
-    TIntArrayList cache = new TIntArrayList();
+    IntArrayList cache = new IntArrayList();
     for (int i = 0; i < lattices.size(); i++) {
       if (lattices.get(i) == null) { continue; }
       FeatureVectorSequence fvs = (FeatureVectorSequence)lattices.get(i).getInput();
       SumLattice lattice = lattices.get(i);
       xis = lattice.getXis();
       for (int ip = 1; ip < fvs.size(); ++ip) {
-        cache.resetQuick();
+        cache.clear();
         FeatureVector fv = fvs.getFeatureVector(ip);
         int fi;
         for (int loc = 0; loc < fv.numLocations(); loc++) {
@@ -154,7 +155,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
               if (liCurr != StateLabelMap.START_LABEL) {
                 double prob = Math.exp(xis[ip][prev][curr]);
                 for (int j = 0; j < cache.size(); j++) {
-                  constraintsList.get(cache.getQuick(j)).expectation[liPrev][liCurr] += prob;
+                  constraintsList.get(cache.get(j)).expectation[liPrev][liCurr] += prob;
                 }
               }
             }

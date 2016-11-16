@@ -6,7 +6,7 @@ import java.util.*;
 import cc.mallet.pipe.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
-import gnu.trove.*;
+import com.carrotsearch.hppc.ObjectDoubleHashMap;
 
 /**
  * Adds all features of tokens in the window to the center token.
@@ -22,10 +22,10 @@ public class FeatureWindow extends Pipe implements java.io.Serializable {
 
     public Instance pipe (Instance carrier) {
         TokenSequence seq = (TokenSequence)carrier.getData();
-        TObjectDoubleHashMap[] original = new TObjectDoubleHashMap[seq.size()];
+        ObjectDoubleHashMap[] original = new ObjectDoubleHashMap[seq.size()];
         for (int i=0; i<seq.size(); i++) {
             Token t = seq.get(i);
-            original[i] = new TObjectDoubleHashMap();
+            original[i] = new ObjectDoubleHashMap();
             PropertyList.Iterator pl = t.getFeatures().iterator();
             while (pl.hasNext()) {
                 pl.nextProperty();
@@ -40,10 +40,10 @@ public class FeatureWindow extends Pipe implements java.io.Serializable {
                 if (index<0 || index==i || index>=original.length) continue;
                 
                 Token t = seq.get(i);
-                Object[] features = original[index].keys();
-                for (int k=0; k<features.length; k++)
-                    t.setFeatureValue((String)features[k]+append, 
-                                      original[index].get(features[k]));
+
+                for (Object feature : original[index].keys())
+                    t.setFeatureValue((String)feature+append,
+                                      original[index].get(feature));
             }
         }
         return carrier;

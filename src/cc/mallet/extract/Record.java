@@ -6,7 +6,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.extract;
 
-import gnu.trove.THashMap;
+import com.carrotsearch.hppc.ObjectObjectHashMap;
 
 import java.util.Iterator;
 
@@ -20,12 +20,12 @@ import cc.mallet.types.Label;
  */
 public class Record {
 
-  private THashMap fieldMap;
+  private ObjectObjectHashMap fieldMap;
   private String name;
 
   public Record (String name, LabeledSpans spans) {
     this.name = name;
-    fieldMap = new THashMap ();
+    fieldMap = new ObjectObjectHashMap ();
     for (int i = 0; i < spans.size(); i++) {
       LabeledSpan span = spans.getLabeledSpan (i);
       if (!span.isBackground()) {

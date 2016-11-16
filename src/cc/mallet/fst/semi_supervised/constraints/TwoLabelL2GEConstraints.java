@@ -9,7 +9,8 @@ package cc.mallet.fst.semi_supervised.constraints;
 
 import java.util.ArrayList;
 
-import gnu.trove.TIntIntHashMap;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntIntCursor;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 
@@ -32,7 +33,7 @@ public class TwoLabelL2GEConstraints extends TwoLabelGEConstraints {
     super();
   }
   
-  private TwoLabelL2GEConstraints(ArrayList<TwoLabelGEConstraint> constraintsList, TIntIntHashMap constraintsMap, StateLabelMap map) {
+  private TwoLabelL2GEConstraints(ArrayList<TwoLabelGEConstraint> constraintsList, IntIntHashMap constraintsMap, StateLabelMap map) {
     super(constraintsList,constraintsMap,map);
   }
   
@@ -49,8 +50,8 @@ public class TwoLabelL2GEConstraints extends TwoLabelGEConstraints {
   @Override
   public double getValue() {
     double value = 0.0;
-    for (int fi : constraintsMap.keys()) {
-      TwoLabelGEConstraint constraint = constraintsList.get(constraintsMap.get(fi));
+    for (IntIntCursor keyVal : constraintsMap) {
+      TwoLabelGEConstraint constraint = constraintsList.get(keyVal.value);
       if (constraint.count > 0.0) {
         double constraintValue = 0.0;
         for (int prevLi = 0; prevLi < map.getNumLabels(); prevLi++) {

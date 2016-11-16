@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.zip.*;
 import java.io.*;
 
-import gnu.trove.*;
-
 /**
  *  This class loads data into the format for the MALLET 
  *   Dirichlet-multinomial regression (DMR). DMR topic models

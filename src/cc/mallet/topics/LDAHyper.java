@@ -7,7 +7,10 @@
 
 package cc.mallet.topics;
 
-import gnu.trove.TIntIntHashMap;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.ObjectIntHashMap;
+import com.carrotsearch.hppc.cursors.IntIntCursor;
+import com.carrotsearch.hppc.cursors.IntCursor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -91,7 +94,7 @@ public class LDAHyper implements Serializable {
 	// garbage collection overhead.
 	protected int[] oneDocTopicCounts; // indexed by <document index, topic index>
 
-	protected gnu.trove.TIntIntHashMap[] typeTopicCounts; // indexed by <feature index, topic index>
+	protected IntIntHashMap[] typeTopicCounts; // indexed by <feature index, topic index>
 	protected int[] tokensPerTopic; // indexed by <topic index>
 
 	// for dirichlet estimation
@@ -212,19 +215,19 @@ public class LDAHyper implements Serializable {
 		if (this.alphabet == null) {
 			this.alphabet = alphabet;
 			this.numTypes = alphabet.size();
-			this.typeTopicCounts = new TIntIntHashMap[numTypes];
+			this.typeTopicCounts = new IntIntHashMap[numTypes];
 			for (int fi = 0; fi < numTypes; fi++) 
-				typeTopicCounts[fi] = new TIntIntHashMap();
+				typeTopicCounts[fi] = new IntIntHashMap();
 			this.betaSum = beta * numTypes;
 		} else if (alphabet != this.alphabet) {
 			throw new IllegalArgumentException ("Cannot change Alphabet.");
 		} else if (alphabet.size() != this.numTypes) {
 			this.numTypes = alphabet.size();
-			TIntIntHashMap[] newTypeTopicCounts = new TIntIntHashMap[numTypes];
+			IntIntHashMap[] newTypeTopicCounts = new IntIntHashMap[numTypes];
 			for (int i = 0; i < typeTopicCounts.length; i++)
 				newTypeTopicCounts[i] = typeTopicCounts[i];
 			for (int i = typeTopicCounts.length; i < numTypes; i++)
-				newTypeTopicCounts[i] = new TIntIntHashMap();
+				newTypeTopicCounts[i] = new IntIntHashMap();
 			// TODO AKM July 18:  Why wasn't the next line there previously?
 			// this.typeTopicCounts = newTypeTopicCounts;
 			this.betaSum = beta * numTypes;
@@ -232,11 +235,11 @@ public class LDAHyper implements Serializable {
 	}
 	
 	private void initializeTypeTopicCounts () {
-		TIntIntHashMap[] newTypeTopicCounts = new TIntIntHashMap[numTypes];
+		IntIntHashMap[] newTypeTopicCounts = new IntIntHashMap[numTypes];
 		for (int i = 0; i < typeTopicCounts.length; i++)
 			newTypeTopicCounts[i] = typeTopicCounts[i];
 		for (int i = typeTopicCounts.length; i < numTypes; i++)
-			newTypeTopicCounts[i] = new TIntIntHashMap();
+			newTypeTopicCounts[i] = new IntIntHashMap();
 		this.typeTopicCounts = newTypeTopicCounts;
 	}
 	
@@ -270,7 +273,7 @@ public class LDAHyper implements Serializable {
 			LabelSequence topicSequence = t.topicSequence;
 			for (int pi = 0; pi < topicSequence.getLength(); pi++) {
 				int topic = topicSequence.getIndexAtPosition(pi);
-				typeTopicCounts[tokenSequence.getIndexAtPosition(pi)].adjustOrPutValue(topic, 1, 1);
+				typeTopicCounts[tokenSequence.getIndexAtPosition(pi)].putOrAdd(topic, 1, 1);
 				tokensPerTopic[topic]++;
 			}
 		}
@@ -420,7 +423,7 @@ public class LDAHyper implements Serializable {
 	
 		int[] oneDocTopics = topicSequence.getFeatures();
 
-		TIntIntHashMap currentTypeTopicCounts;
+		IntIntHashMap currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
 		double[] topicDistribution;
 		double topicDistributionSum;
@@ -449,21 +452,21 @@ public class LDAHyper implements Serializable {
 			if (readjustTopicsAndStats) {
 				// Remove this token from all counts
 				oneDocTopicCounts[oldTopic]--;
-				adjustedValue = currentTypeTopicCounts.adjustOrPutValue(oldTopic, -1, -1);
+				adjustedValue = currentTypeTopicCounts.putOrAdd(oldTopic, -1, -1);
 				if (adjustedValue == 0) currentTypeTopicCounts.remove(oldTopic);
 				else if (adjustedValue == -1) throw new IllegalStateException ("Token count in topic went negative.");
 				tokensPerTopic[oldTopic]--;
 			}
 
 			// Build a distribution over topics for this token
-			topicIndices = currentTypeTopicCounts.keys();
-			topicCounts = currentTypeTopicCounts.getValues();
-			topicDistribution = new double[topicIndices.length]; 
+			topicIndices = currentTypeTopicCounts.keys().toArray();
+			topicDistribution = new double[topicIndices.length];
 			// TODO Yipes, memory allocation in the inner loop!  But note that .keys and .getValues is doing this too.
 			topicDistributionSum = 0;
-			for (int i = 0; i < topicCounts.length; i++) {
-				int topic = topicIndices[i];
-				weight = ((topicCounts[i] + beta) /	(tokensPerTopic[topic] + betaSum))	* ((oneDocTopicCounts[topic] + alpha[topic]));
+			for (IntIntCursor keyVal : currentTypeTopicCounts)	{
+				int topic = keyVal.key;
+				int count = keyVal.value;
+				weight = ((count + beta) /	(tokensPerTopic[topic] + betaSum))	* ((oneDocTopicCounts[topic] + alpha[topic]));
 				topicDistributionSum += weight;
 				topicDistribution[topic] = weight;
 			}
@@ -475,7 +478,7 @@ public class LDAHyper implements Serializable {
 				// Put that new topic into the counts
 				oneDocTopics[token] = newTopic;
 				oneDocTopicCounts[newTopic]++;
-				typeTopicCounts[type].adjustOrPutValue(newTopic, 1, 1);
+				typeTopicCounts[type].putOrAdd(newTopic, 1, 1);
 				tokensPerTopic[newTopic]++;
 			}
 		}
@@ -496,27 +499,27 @@ public class LDAHyper implements Serializable {
 
 		int[] oneDocTopics = topicSequence.getFeatures();
 
-		TIntIntHashMap currentTypeTopicCounts;
+		IntIntHashMap currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
 		double topicWeightsSum;
 		int docLength = tokenSequence.getLength();
 
 		//		populate topic counts
-		TIntIntHashMap localTopicCounts = new TIntIntHashMap();
+		IntIntHashMap localTopicCounts = new IntIntHashMap();
 		for (int position = 0; position < docLength; position++) {
-			localTopicCounts.adjustOrPutValue(oneDocTopics[position], 1, 1);
+			localTopicCounts.putOrAdd(oneDocTopics[position], 1, 1);
 		}
 
 		//		Initialize the topic count/beta sampling bucket
 		double topicBetaMass = 0.0;
-		for (int topic: localTopicCounts.keys()) {
-			int n = localTopicCounts.get(topic);
+		for (IntIntCursor topic: localTopicCounts) {
+			int n = topic.value;
 
 			//			initialize the normalization constant for the (B * n_{t|d}) term
-			topicBetaMass += beta * n /	(tokensPerTopic[topic] + betaSum);	
+			topicBetaMass += beta * n /	(tokensPerTopic[topic.key] + betaSum);
 
 			//			update the coefficients for the non-zero topics
-			cachedCoefficients[topic] =	(alpha[topic] + n) / (tokensPerTopic[topic] + betaSum);
+			cachedCoefficients[topic.key] =	(alpha[topic.key] + n) / (tokensPerTopic[topic.key] + betaSum);
 		}
 
 		double topicTermMass = 0.0;
@@ -542,7 +545,7 @@ public class LDAHyper implements Serializable {
 				currentTypeTopicCounts.remove(oldTopic);
 			}
 			else {
-				currentTypeTopicCounts.adjustValue(oldTopic, -1);
+				currentTypeTopicCounts.addTo(oldTopic, -1);
 			}
 
 			smoothingOnlyMass -= alpha[oldTopic] * beta / 
@@ -554,7 +557,7 @@ public class LDAHyper implements Serializable {
 				localTopicCounts.remove(oldTopic);
 			}
 			else {
-				localTopicCounts.adjustValue(oldTopic, -1);
+				localTopicCounts.addTo(oldTopic, -1);
 			}
 
 			tokensPerTopic[oldTopic]--;
@@ -570,13 +573,12 @@ public class LDAHyper implements Serializable {
 
 			topicTermMass = 0.0;
 
-			topicTermIndices = currentTypeTopicCounts.keys();
-			topicTermValues = currentTypeTopicCounts.getValues();
+			topicTermIndices = currentTypeTopicCounts.keys().toArray();
 
-			for (i=0; i < topicTermIndices.length; i++) {
-				int topic = topicTermIndices[i];
+			for (IntIntCursor keyVal : currentTypeTopicCounts) {
+				int topic = keyVal.key;
 				score =
-					cachedCoefficients[topic] * topicTermValues[i];
+					cachedCoefficients[topic] * keyVal.value;
 				//				((alpha[topic] + localTopicCounts.get(topic)) * 
 				//				topicTermValues[i]) /
 				//				(tokensPerTopic[topic] + betaSum);
@@ -586,7 +588,7 @@ public class LDAHyper implements Serializable {
 				//				at least in the first few iterations.
 				
 				topicTermMass += score;
-				topicTermScores[i] = score;
+				topicTermScores[keyVal.index] = score;
 				//				topicTermIndices[i] = topic;
 			}
 			//			indicate that this is the last topic
@@ -617,13 +619,10 @@ public class LDAHyper implements Serializable {
 
 					sample /= beta;
 
-					topicTermIndices = localTopicCounts.keys();
-					topicTermValues = localTopicCounts.getValues();
+					for (IntIntCursor keyVal : localTopicCounts) {
+						newTopic = keyVal.key;
 
-					for (i=0; i < topicTermIndices.length; i++) {
-						newTopic = topicTermIndices[i];
-
-						sample -= topicTermValues[i] /
+						sample -= keyVal.value /
 							(tokensPerTopic[newTopic] + betaSum);
 
 						if (sample <= 0.0) {
@@ -663,14 +662,14 @@ public class LDAHyper implements Serializable {
 
 			//			Put that new topic into the counts
 			oneDocTopics[position] = newTopic;
-			currentTypeTopicCounts.adjustOrPutValue(newTopic, 1, 1);
+			currentTypeTopicCounts.putOrAdd(newTopic, 1, 1);
 
 			smoothingOnlyMass -= alpha[newTopic] * beta / 
 				(tokensPerTopic[newTopic] + betaSum);
 			topicBetaMass -= beta * localTopicCounts.get(newTopic) /
 				(tokensPerTopic[newTopic] + betaSum);
 
-			localTopicCounts.adjustOrPutValue(newTopic, 1, 1);
+			localTopicCounts.putOrAdd(newTopic, 1, 1);
 			tokensPerTopic[newTopic]++;
 
 			//			update the coefficients for the non-zero topics
@@ -689,17 +688,17 @@ public class LDAHyper implements Serializable {
 
 		//		Clean up our mess: reset the coefficients to values with only
 		//		smoothing. The next doc will update its own non-zero topics...
-		for (int topic: localTopicCounts.keys()) {
-			cachedCoefficients[topic] =
-				alpha[topic] / (tokensPerTopic[topic] + betaSum);
+		for (IntCursor topic: localTopicCounts.keys()) {
+			cachedCoefficients[topic.value] =
+				alpha[topic.value] / (tokensPerTopic[topic.value] + betaSum);
 		}
 
 		if (shouldSaveState) {
 			//			Update the document-topic count histogram,
 			//			for dirichlet estimation
 			docLengthCounts[ docLength ]++;
-			for (int topic: localTopicCounts.keys()) {
-				topicDocCounts[topic][ localTopicCounts.get(topic) ]++;
+			for (IntIntCursor topic: localTopicCounts) {
+				topicDocCounts[topic.key][ localTopicCounts.get(topic.value) ]++;
 			}
 		}
 	}
@@ -799,12 +798,12 @@ public class LDAHyper implements Serializable {
 	
 	public void topicXMLReportPhrases (PrintStream out, int numWords) {
 		int numTopics = this.getNumTopics();
-		gnu.trove.TObjectIntHashMap<String>[] phrases = new gnu.trove.TObjectIntHashMap[numTopics];
+		ObjectIntHashMap<String>[] phrases = new ObjectIntHashMap[numTopics];
 		Alphabet alphabet = this.getAlphabet();
 		
 		// Get counts of phrases
 		for (int ti = 0; ti < numTopics; ti++)
-			phrases[ti] = new gnu.trove.TObjectIntHashMap<String>();
+			phrases[ti] = new ObjectIntHashMap<String>();
 		for (int di = 0; di < this.getData().size(); di++) {
 			LDAHyper.Topication t = this.getData().get(di);
 			Instance instance = t.instance;
@@ -832,7 +831,7 @@ public class LDAHyper implements Serializable {
 					//System.out.println ("phrase:"+sbs);
 					if (phrases[prevtopic].get(sbs) == 0)
 						phrases[prevtopic].put(sbs,0);
-					phrases[prevtopic].increment(sbs);
+					phrases[prevtopic].addTo(sbs, 1);
 					prevtopic = prevfeature = -1;
 					sb = null;
 				} else {
@@ -871,8 +870,8 @@ public class LDAHyper implements Serializable {
 			}
 
 			// Print phrases
-			Object[] keys = phrases[ti].keys();
-			int[] values = phrases[ti].getValues();
+			Object[] keys = phrases[ti].keys().toArray();
+			int[] values = phrases[ti].values().toArray();
 			double counts[] = new double[keys.length];
 			for (int i = 0; i < counts.length; i++)	counts[i] = values[i];
 			double countssum = MatrixOps.sum (counts);	
@@ -1159,9 +1158,9 @@ public class LDAHyper implements Serializable {
 		int numDocs = data.size();
 		this.numTypes = alphabet.size();
 
-		typeTopicCounts = new TIntIntHashMap[numTypes];
+		typeTopicCounts = new IntIntHashMap[numTypes];
 		for (int fi = 0; fi < numTypes; fi++)
-			typeTopicCounts[fi] = (TIntIntHashMap) in.readObject();
+			typeTopicCounts[fi] = (IntIntHashMap) in.readObject();
 		tokensPerTopic = new int[numTopics];
 		for (int ti = 0; ti < numTopics; ti++)
 			tokensPerTopic[ti] = in.readInt();
@@ -1381,10 +1380,10 @@ public class LDAHyper implements Serializable {
 		int nonZeroTypeTopics = 0;
 
 		for (int type=0; type < numTypes; type++) {
-			int[] usedTopics = typeTopicCounts[type].keys();
 
-			for (int topic : usedTopics) {
-				int count = typeTopicCounts[type].get(topic);
+			for (IntIntCursor keyVal : typeTopicCounts[type]) {
+				int topic = keyVal.key;
+				int count = keyVal.value;
 				if (count > 0) {
 					nonZeroTypeTopics++;
 					logLikelihood +=

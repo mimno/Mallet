@@ -7,9 +7,9 @@
 
 package cc.mallet.types;
 
-import gnu.trove.TIntHashSet;
-import gnu.trove.TIntIntHashMap;
-import gnu.trove.TIntIterator;
+import com.carrotsearch.hppc.IntHashSet;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntCursor;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -1181,8 +1181,8 @@ Bernoulli numbers. */
 	 *	to the probability that they were drawn from different multinomials
 	 *	both drawn from this Dirichlet?
 	 */
-	public static double dirichletMultinomialLikelihoodRatio(TIntIntHashMap countsX,
-			TIntIntHashMap countsY,
+	public static double dirichletMultinomialLikelihoodRatio(IntIntHashMap countsX,
+			IntIntHashMap countsY,
 			double alpha, double alphaSum) {
 //		The likelihood for one DCM is 
 //		Gamma( alpha_sum )	 prod Gamma( alpha + N_i )
@@ -1207,13 +1207,12 @@ Bernoulli numbers. */
 
 		int key, x, y;
 
-		TIntHashSet distinctKeys = new TIntHashSet();
+		IntHashSet distinctKeys = new IntHashSet();
 		distinctKeys.addAll(countsX.keys());
 		distinctKeys.addAll(countsY.keys());
 
-		TIntIterator iterator = distinctKeys.iterator();
-		while (iterator.hasNext()) {
-			key = iterator.next();
+		for (IntCursor cursor : distinctKeys) {
+			key = cursor.value;
 
 			x = 0;
 			if (countsX.containsKey(key)) {
