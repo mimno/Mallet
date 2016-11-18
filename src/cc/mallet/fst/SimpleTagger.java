@@ -200,7 +200,7 @@ public class SimpleTagger {
 		 "Whether to train", null);
 
 	private static final CommandOption.String testOption = new CommandOption.String
-		(SimpleTagger.class, "test", "lab or seg=start-1.continue-1,...,start-n.continue-n",
+		(SimpleTagger.class, "test", "lab or perclass or seg=start-1.continue-1,...,start-n.continue-n",
 		 true, null,
 		 "Test measuring labeling or segmentation (start-i, continue-i) accuracy", null);
 
@@ -479,7 +479,7 @@ public class SimpleTagger {
 	 *<dd>Whether to train. Default is <code>false</code>.</dd>
 	 *<dt><code>--iterations</code> <em>positive-integer</em></dt>
 	 *<dd>Number of training iterations. Default is 500.</dd>
-	 *<dt><code>--test</code> <code>lab</code> or <code>seg=</code><em>start-1</em><code>.</code><em>continue-1</em><code>,</code>...<code>,</code><em>start-n</em><code>.</code><em>continue-n</em></dt>
+	 *<dt><code>--test</code> <code>lab</code> or <code>perclass</code> or <code>seg=</code><em>start-1</em><code>.</code><em>continue-1</em><code>,</code>...<code>,</code><em>start-n</em><code>.</code><em>continue-n</em></dt>
 	 *<dd>Test measuring labeling or segmentation (<em>start-i</em>, <em>continue-i</em>) accuracy. Default is no testing.</dd>
 	 *<dt><code>--training-proportion</code> <em>number-between-0-and-1</em></dt>
 	 *<dd>Fraction of data to use for training in a random split. Default is 0.5.</dd>
@@ -605,8 +605,9 @@ public class SimpleTagger {
 		if (testOption.value != null) {
 			if (testOption.value.startsWith("lab")) {
 					eval = new TokenAccuracyEvaluator(new InstanceList[] {trainingData, testData}, new String[] {"Training", "Testing"});
-			}
-			else if (testOption.value.startsWith("seg=")) {
+			}else if(testOption.value.startsWith("perclass")){
+					eval = new PerClassAccuracyEvaluator(new InstanceList[] {trainingData, testData}, new String[] {"Training", "Testing"});
+			}else if (testOption.value.startsWith("seg=")) {
 				String[] pairs = testOption.value.substring(4).split(",");
 				if (pairs.length < 1) {
 					commandOptions.printUsage(true);
