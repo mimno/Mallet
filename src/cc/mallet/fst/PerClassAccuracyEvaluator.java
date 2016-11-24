@@ -15,6 +15,8 @@ import java.text.DecimalFormat;
 import cc.mallet.types.*;
 import cc.mallet.util.MalletLogger;
 
+import java.util.ArrayList;
+
 /**
  * Determines the precision, recall and F1 on a per-class basis.
  * 
@@ -64,18 +66,47 @@ public class PerClassAccuracyEvaluator extends TransducerEvaluator {
     }
 
     DecimalFormat f = new DecimalFormat ("0.####");
+    
+    double[] allp = new double [numLabels];
+    double[] allr = new double [numLabels];
     double[] allf = new double [numLabels];
+    
+    ArrayList<Double> usedp = new ArrayList<Double>();
+    ArrayList<Double> usedr = new ArrayList<Double>();
+    ArrayList<Double> usedf = new ArrayList<Double>();
+
     for (int i = 0; i < numLabels; i++) {
       Object label = dict.lookupObject(i);
       double precision = ((double) numCorrectTokens[i]) / numPredTokens[i];
       double recall = ((double) numCorrectTokens[i]) / numTrueTokens[i];
       double f1 = (2 * precision * recall) / (precision + recall);
-      if (!Double.isNaN (f1)) allf [i] = f1;
+      
+      if (!Double.isNaN (precision)) {
+      	allp [i] = precision;
+      	usedp.add(precision);
+      }
+      if (!Double.isNaN (recall)){
+      	allr [i] = recall;
+      	usedr.add(recall);
+      } 
+      if (!Double.isNaN (f1)){
+      	allf [i] = f1;
+      	usedf.add(f1);
+      } 
+
       logger.info(description +" label " + label + " P " + f.format (precision)
                   + " R " + f.format(recall) + " F1 "+ f.format (f1));
     }
 
-    logger.info ("Macro-average F1 "+f.format (MatrixOps.mean (allf)));
+    logger.info ("Macro-average (including non-used labels)" +  
+    	" P "+f.format (MatrixOps.mean (allp))  + 
+    	" R "+ f.format (MatrixOps.mean (allr)) +
+    	" F " + f.format (MatrixOps.mean (allf)));
+
+    logger.info ("Macro-average (excluding non-used labels)" + 
+    	" P "+f.format (MatrixOps.mean (usedp))  + 
+    	" R "+ f.format (MatrixOps.mean (usedr)) +
+    	" F " + f.format (MatrixOps.mean (usedf)));
 
   }
 
