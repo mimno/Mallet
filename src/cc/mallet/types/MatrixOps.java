@@ -10,6 +10,7 @@ package cc.mallet.types;
 import java.util.Random;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.List;
 
 /** 
  *  A class of static utility functions for manipulating arrays of
@@ -310,6 +311,14 @@ public final class MatrixOps
             sum = sum +  v.valueAtLocation(vli);
         }
         return sum;
+    }
+
+    public static Double mean(List<Double> m){
+      double sum = 0;
+      for(Double i : m){
+        sum += i;
+      }
+      return new Double(sum/m.size());
     }
 
     public static double mean (double[] m) {
