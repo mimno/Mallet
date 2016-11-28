@@ -22,16 +22,18 @@ import java.io.*;
 import cc.mallet.pipe.*;
 import cc.mallet.types.*;
 
+import com.carrotsearch.hppc.ObjectHashSet;
+
 public class LexiconMembership extends Pipe implements Serializable
 {
 	String name;
-	gnu.trove.THashSet lexicon;
+	ObjectHashSet lexicon;
 	boolean ignoreCase;
 	
 	public LexiconMembership (String name, Reader lexiconReader, boolean ignoreCase)
 	{
 		this.name = name;
-		this.lexicon = new gnu.trove.THashSet ();
+		this.lexicon = new ObjectHashSet ();
 		this.ignoreCase = ignoreCase;
 		LineNumberReader reader = new LineNumberReader (lexiconReader);
 		String line;
@@ -104,7 +106,7 @@ public class LexiconMembership extends Pipe implements Serializable
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
 		this.name = (String) in.readObject();
-		this.lexicon = (gnu.trove.THashSet) in.readObject();
+		this.lexicon = (ObjectHashSet) in.readObject();
 		this.ignoreCase = in.readBoolean();
 	}
 

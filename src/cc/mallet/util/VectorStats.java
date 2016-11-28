@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import cc.mallet.types.*;
-import gnu.trove.TIntHashSet;
+import com.carrotsearch.hppc.IntHashSet;
 
 public class VectorStats {
 
@@ -42,7 +42,7 @@ public class VectorStats {
 		int maxDenseIndex = -1;
 
 		// First, we find the union of all the indices used in the instances
-		TIntHashSet hIndices = new TIntHashSet(instances.getDataAlphabet().size());
+		IntHashSet hIndices = new IntHashSet(instances.getDataAlphabet().size());
 
 		while (instanceItr.hasNext()) {
 			instance = (Instance) instanceItr.next();

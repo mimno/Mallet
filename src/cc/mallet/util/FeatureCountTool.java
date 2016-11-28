@@ -1,7 +1,9 @@
 package cc.mallet.util;
 
 import cc.mallet.types.*;
-import gnu.trove.*;
+
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntCursor;
 
 import java.util.Formatter;
 import java.util.Locale;
@@ -41,7 +43,7 @@ public class FeatureCountTool {
 
 	public void count() {
 
-		TIntIntHashMap docCounts = new TIntIntHashMap();
+		IntIntHashMap docCounts = new IntIntHashMap();
 		
 		int index = 0;
 
@@ -56,17 +58,16 @@ public class FeatureCountTool {
 				FeatureSequence features = (FeatureSequence) instance.getData();
 				
 				for (int i=0; i<features.getLength(); i++) {
-					docCounts.adjustOrPutValue(features.getIndexAtPosition(i), 1, 1);
+					docCounts.putOrAdd(features.getIndexAtPosition(i), 1, 1);
 				}
-				
-				int[] keys = docCounts.keys();
-				for (int i = 0; i < keys.length; i++) {
-					int feature = keys[i];
+
+				for (IntCursor cursor: docCounts.values()) {
+					int feature = cursor.value;
 					featureCounts[feature] += docCounts.get(feature);
 					documentFrequencies[feature]++;
 				}
 				
-				docCounts = new TIntIntHashMap();
+				docCounts = new IntIntHashMap();
 				
 				index++;
 				if (index % 1000 == 0) { System.err.println(index); }

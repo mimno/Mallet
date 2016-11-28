@@ -7,7 +7,7 @@ import java.text.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 
-import gnu.trove.*;
+import com.carrotsearch.hppc.IntHashSet;
 
 public class TopicModelDiagnostics {
 
@@ -101,7 +101,7 @@ public class TopicModelDiagnostics {
 
 		// This is an array of hash sets containing the words-of-interest for each topic,
 		//  used for checking if the word at some position is one of those words.
-		TIntHashSet[] topicTopWordIndices = new TIntHashSet[numTopics];
+		IntHashSet[] topicTopWordIndices = new IntHashSet[numTopics];
 		
 		// The same as the topic top words, but with int indices instead of strings,
 		//  used for iterating over positions.
@@ -109,7 +109,7 @@ public class TopicModelDiagnostics {
 
 		// This is an array of hash sets that will hold the words-of-interest present in a document,
 		//  which will be cleared after every document.
-		TIntHashSet[] docTopicWordIndices = new TIntHashSet[numTopics];
+		IntHashSet[] docTopicWordIndices = new IntHashSet[numTopics];
 		
 		int numDocs = model.getData().size();
 
@@ -117,7 +117,7 @@ public class TopicModelDiagnostics {
 		int[] topicCounts = new int[numTopics];
 
 		for (int topic = 0; topic < numTopics; topic++) {
-			TIntHashSet wordIndices = new TIntHashSet();
+			IntHashSet wordIndices = new IntHashSet();
 
 			for (int i = 0; i < numTopWords; i++) {
 				if (topicTopWords[topic][i] != null) {
@@ -128,7 +128,7 @@ public class TopicModelDiagnostics {
 			}
 			
 			topicTopWordIndices[topic] = wordIndices;
-			docTopicWordIndices[topic] = new TIntHashSet();
+			docTopicWordIndices[topic] = new IntHashSet();
 		}
 
 		int doc = 0;
@@ -176,7 +176,7 @@ public class TopicModelDiagnostics {
 							numDocumentsAtProportions[topic][i]++;
 						}
 
-						TIntHashSet supportedWords = docTopicWordIndices[topic];
+						IntHashSet supportedWords = docTopicWordIndices[topic];
 						int[] indices = topicWordIndicesInOrder[topic];
 
 						for (int i = 0; i < numTopWords; i++) {

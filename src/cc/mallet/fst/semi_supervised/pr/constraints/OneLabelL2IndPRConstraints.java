@@ -7,8 +7,10 @@
 
 package cc.mallet.fst.semi_supervised.pr.constraints;
 
-import gnu.trove.TIntArrayList;
-import gnu.trove.TIntObjectHashMap;
+import com.carrotsearch.hppc.IntArrayList;
+import com.carrotsearch.hppc.IntObjectHashMap;
+import com.carrotsearch.hppc.cursors.IntObjectCursor;
+import com.carrotsearch.hppc.cursors.ObjectCursor;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -36,35 +38,35 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   protected boolean normalized;
   protected int numDimensions;
   // maps between input feature indices and constraints
-  protected TIntObjectHashMap<OneLabelL2IndPRConstraint> constraints;
+  protected IntObjectHashMap<OneLabelL2IndPRConstraint> constraints;
   protected StateLabelMap map;
 
   
   // cache of set of constrained features that fire at last FeatureVector
   // provided in preprocess call
-  protected TIntArrayList cache;
+  protected IntArrayList cache;
 
   public OneLabelL2IndPRConstraints(boolean normalized) {
     this.normalized = normalized;
     this.numDimensions = 0;
-    this.constraints = new TIntObjectHashMap<OneLabelL2IndPRConstraint>();
+    this.constraints = new IntObjectHashMap<OneLabelL2IndPRConstraint>();
     // this will be set by the PRTrainer
     this.map = null;
-    this.cache = new TIntArrayList();
+    this.cache = new IntArrayList();
   }
   
-  protected OneLabelL2IndPRConstraints(TIntObjectHashMap<OneLabelL2IndPRConstraint> constraints,
+  protected OneLabelL2IndPRConstraints(IntObjectHashMap<OneLabelL2IndPRConstraint> constraints,
       StateLabelMap map, boolean normalized) {
     this.normalized = normalized;
     this.numDimensions = 0;
     // copy constraints
-    this.constraints = new TIntObjectHashMap<OneLabelL2IndPRConstraint>();
-    for (int key : constraints.keys()) {
-      this.constraints.put(key, constraints.get(key).copy());
-      numDimensions += constraints.get(key).getNumConstrainedLabels();
+    this.constraints = new IntObjectHashMap<OneLabelL2IndPRConstraint>();
+    for (IntObjectCursor<OneLabelL2IndPRConstraint> keyVal : constraints) {
+      this.constraints.put(keyVal.key, keyVal.value.copy());
+      numDimensions += keyVal.value.getNumConstrainedLabels();
     }
     this.map = map;
-    this.cache = new TIntArrayList();
+    this.cache = new IntArrayList();
   }
   
   public PRConstraint copy() {
@@ -88,7 +90,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   }
   
   public void preProcess(FeatureVector fv) {
-    cache.resetQuick();
+    cache.clear();
     int fi;
     // cache constrained input features
     for (int loc = 0; loc < fv.numLocations(); loc++) {
@@ -128,7 +130,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     double dot = 0;
     int li2 = map.getLabelIndex(destIndex);
     for (int i = 0; i < cache.size(); i++) {
-      int fi = cache.getQuick(i);
+      int fi = cache.get(i);
       OneLabelL2IndPRConstraint constraint = constraints.get(fi);
       dot += constraint.getScore(li2, parameters);
     }
@@ -139,34 +141,34 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
       int srcIndex, int destIndex, double prob) {
     int li2 = map.getLabelIndex(destIndex);
     for (int i = 0; i < cache.size(); i++) {
-      constraints.get(cache.getQuick(i)).incrementExpectation(li2, prob);
+      constraints.get(cache.get(i)).incrementExpectation(li2, prob);
     }
   }
   
   public void getExpectations(double[] expectations) {
     assert(expectations.length == numDimensions()) : expectations.length + " " + numDimensions();
-    for (int fi : constraints.keys()) {
-      constraints.get(fi).getExpectations(expectations);
+    for (ObjectCursor<OneLabelL2IndPRConstraint> cursor : constraints.values()) {
+      cursor.value.getExpectations(expectations);
     }
   }
   
   public void addExpectations(double[] expectations) {
     assert(expectations.length == numDimensions());
-    for (int fi : constraints.keys()) {
-      constraints.get(fi).addExpectations(expectations);
+    for (ObjectCursor<OneLabelL2IndPRConstraint> cursor : constraints.values()) {
+      cursor.value.addExpectations(expectations);
     }
   }
 
   public void zeroExpectations() {
-    for (int fi : constraints.keys()) {
-      constraints.get(fi).zeroExpectation();
+    for (ObjectCursor<OneLabelL2IndPRConstraint> cursor : constraints.values()) {
+      cursor.value.zeroExpectation();
     }
   }
 
   public double getAuxiliaryValueContribution(double[] parameters) {
     double value = 0;
-    for (int fi : constraints.keys()) {
-      OneLabelL2IndPRConstraint constraint = constraints.get(fi);
+    for (ObjectCursor<OneLabelL2IndPRConstraint> fi : constraints.values()) {
+      OneLabelL2IndPRConstraint constraint = fi.value;
       value += constraint.getProjectionValueContrib(parameters);
     }
     return value;
@@ -174,16 +176,16 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
 
   public double getCompleteValueContribution(double[] parameters) {
     double value = 0;
-    for (int fi : constraints.keys()) {
-      OneLabelL2IndPRConstraint constraint = constraints.get(fi);
+    for (ObjectCursor<OneLabelL2IndPRConstraint> fi : constraints.values()) {
+      OneLabelL2IndPRConstraint constraint = fi.value;
       value += constraint.getCompleteValueContrib();
     }
     return value;
   }
 
   public void getGradient(double[] parameters, double[] gradient) {
-    for (int fi : constraints.keys()) {
-      OneLabelL2IndPRConstraint constraint = constraints.get(fi);
+    for (ObjectCursor<OneLabelL2IndPRConstraint> fi : constraints.values()) {
+      OneLabelL2IndPRConstraint constraint = fi.value;
       constraint.getGradient(parameters, gradient);
     }
   }

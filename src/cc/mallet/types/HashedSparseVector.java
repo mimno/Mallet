@@ -28,14 +28,14 @@ import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.Vector;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.PropertyList;
-import gnu.trove.TIntIntHashMap;
+import com.carrotsearch.hppc.IntIntHashMap;
 
 public class HashedSparseVector extends SparseVector implements Serializable 
 {
 	private static Logger logger = MalletLogger.getLogger(HashedSparseVector.class.getName());
 
 	
-	TIntIntHashMap index2location;
+	IntIntHashMap index2location;
 	int maxIndex;
 	
 	public HashedSparseVector (int[] indices, double[] values, 
@@ -101,7 +101,7 @@ public class HashedSparseVector extends SparseVector implements Serializable
 		assert (index2location == null);
 		assert (indices.length > 0);
 		this.maxIndex = indices[indices.length - 1];
-		this.index2location = new TIntIntHashMap (numLocations ());
+		this.index2location = new IntIntHashMap (numLocations ());
 		//index2location.setDefaultValue (-1);
 		for (int i = 0; i < indices.length; i++)
 			index2location.put (indices[i], i);
@@ -111,7 +111,7 @@ public class HashedSparseVector extends SparseVector implements Serializable
 		if (index2location == null)
 			setIndex2Location ();
 		int location = index2location.get(index);
-		if (index2location.contains (index))
+		if (index2location.containsKey (index))
 			values[location] = value;
 		else
 			throw new IllegalArgumentException ("Trying to set value that isn't present in HashedSparseVector");
@@ -127,7 +127,7 @@ public class HashedSparseVector extends SparseVector implements Serializable
 		if (index2location == null)
 			setIndex2Location ();
 		int location = index2location.get(index);
-		if (index2location.contains (index))
+		if (index2location.containsKey (index))
 			values[location] += value;
 		else
 			throw new IllegalArgumentException ("Trying to set value that isn't present in HashedSparseVector");
@@ -158,7 +158,7 @@ public class HashedSparseVector extends SparseVector implements Serializable
 		int index = v.indexAtLocation(i);
 		if (index > maxIndex)
 		    break;
-		if (index2location.contains(index))
+		if (index2location.containsKey(index))
 		    ret += v.valueAtLocation (i);
 	    }
 	} else {
@@ -213,7 +213,7 @@ public class HashedSparseVector extends SparseVector implements Serializable
 	    if (index > maxIndex)
 				break;
 	    int location = index2location.get(index);
-	    if (index2location.contains (index))
+	    if (index2location.containsKey (index))
 				values[location] += v.valueAtLocation (i);
 		}
 	}
@@ -247,7 +247,7 @@ public class HashedSparseVector extends SparseVector implements Serializable
     if (version == 0) {
       // gobble up index2location
       Object obj = in.readObject ();
-      if (obj != null && !(obj instanceof TIntIntHashMap)) {
+      if (obj != null && !(obj instanceof IntIntHashMap)) {
         throw new IOException ("Unexpected object in de-serialization: "+obj);
       }
     }
