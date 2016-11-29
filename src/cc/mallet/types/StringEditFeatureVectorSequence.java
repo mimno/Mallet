@@ -17,7 +17,7 @@ package cc.mallet.types;
 import java.io.*;
 import java.util.regex.*;
 import java.util.HashMap;
-import gnu.trove.TObjectIntHashMap;
+import com.carrotsearch.hppc.ObjectIntHashMap;
 import java.util.Set;
 import java.util.Iterator;
 
@@ -28,8 +28,8 @@ public class StringEditFeatureVectorSequence extends FeatureVectorSequence imple
   private int string1Length, string2Length;
   private String string1, string2;
   private String[] string1Blocks, string2Blocks;
-  private TObjectIntHashMap string1Present, string2Present;
-  private TObjectIntHashMap lexicon;
+  private ObjectIntHashMap string1Present, string2Present;
+  private ObjectIntHashMap lexicon;
   private int[] block1Indices, block2Indices;
   private char delim = ':';
   private static final char defaultDelimiter = ':';
@@ -54,7 +54,7 @@ public class StringEditFeatureVectorSequence extends FeatureVectorSequence imple
     super (featureVectors);
     this.delim = delimiter;
     
-    this.lexicon = new TObjectIntHashMap();
+    this.lexicon = new ObjectIntHashMap();
     if (lexic != null) {
       Set keys = lexic.keySet();
       java.util.Iterator iter = keys.iterator();
@@ -68,8 +68,8 @@ public class StringEditFeatureVectorSequence extends FeatureVectorSequence imple
     this.string2Length = s2.length() + 2;
     string1Blocks = string1.split("" + delim);
     string2Blocks = string2.split("" + delim);
-    string1Present = new TObjectIntHashMap();
-    string2Present = new TObjectIntHashMap();
+    string1Present = new ObjectIntHashMap();
+    string2Present = new ObjectIntHashMap();
     block1Indices = new int[string1Length];
     if (string1Blocks.length > 0) {
       int whichBlock = 0;
@@ -307,9 +307,9 @@ public class StringEditFeatureVectorSequence extends FeatureVectorSequence imple
       }
     }
 
-    TObjectIntHashMap string1Present = (TObjectIntHashMap) in.readObject();
-    TObjectIntHashMap string2Present = (TObjectIntHashMap) in.readObject();
-    TObjectIntHashMap lexicon = (TObjectIntHashMap) in.readObject();
+    ObjectIntHashMap string1Present = (ObjectIntHashMap) in.readObject();
+    ObjectIntHashMap string2Present = (ObjectIntHashMap) in.readObject();
+    ObjectIntHashMap lexicon = (ObjectIntHashMap) in.readObject();
 
     size = in.readInt();
     if (size == NULL_INTEGER) {

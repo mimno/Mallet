@@ -1,7 +1,8 @@
 package cc.mallet.pipe;
 
 import cc.mallet.types.*;
-import gnu.trove.*;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntCursor;
 import java.io.*;
 
 /** 
@@ -36,14 +37,14 @@ public class FeatureDocFreqPipe extends Pipe {
 
 	public Instance pipe(Instance instance) {
 		
-		TIntIntHashMap localCounter = new TIntIntHashMap();
+		IntIntHashMap localCounter = new IntIntHashMap();
 	
 		if (instance.getData() instanceof FeatureSequence) {
 				
 			FeatureSequence features = (FeatureSequence) instance.getData();
 
 			for (int position = 0; position < features.size(); position++) {
-				localCounter.adjustOrPutValue(features.getIndexAtPosition(position), 1, 1);
+				localCounter.putOrAdd(features.getIndexAtPosition(position), 1, 1);
 			}
 
 		}
@@ -52,7 +53,7 @@ public class FeatureDocFreqPipe extends Pipe {
 											   instance.getData().getClass());
 		}
 
-		for (int feature: localCounter.keys()) {
+		for (IntCursor feature: localCounter.keys()) {
 			counter.increment(feature);
 		}
 

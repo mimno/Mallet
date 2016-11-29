@@ -7,9 +7,6 @@
 
 package cc.mallet.util;
 
-import gnu.trove.TDoubleProcedure;
-import gnu.trove.TObjectProcedure;
-
 import java.lang.reflect.Array;
 
 /**
@@ -43,54 +40,6 @@ final public class ArrayUtils {
     return -1;
   }
 
-	/**
-	 *  Returns true if the procedure proc returns true for any
-	 *   element of the array v.
-	 */
-	public static boolean any (TDoubleProcedure proc, double[] v)
-	{
-		for (int i = 0; i < v.length; i++) {
-			if (proc.execute (v[i])) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-	/**
-	 *  Returns true if the procedure proc returns true for any
-	 *   element of the array v.
-	 */
-	public static boolean any (TObjectProcedure proc, Object[][] v)
-	{
-		for (int i = 0; i < v.length; i++) {
-			for (int j = 0; j < v[i].length; j++) {
-				if (proc.execute (v[i][j])) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public static void forEach (TObjectProcedure proc, Object[] v) 
-	{
-		for (int i = 0; i < v.length; i++) {
-			proc.execute (v[i]);
-		}
-	}
-
-	public static void forEach (TObjectProcedure proc, Object[][] v) 
-	{
-		for (int i = 0; i < v.length; i++) {
-			for (int j = 0; j < v[i].length; j++) {
-				proc.execute (v[i][j]);
-			}
-		}
-	}
-
-
 	public static void print (double[] v)
 	{
 		System.out.print ("[");
@@ -98,7 +47,7 @@ final public class ArrayUtils {
 			System.out.print (" " + v[i]);
 		System.out.println (" ]");
 	}
-	
+
 	public static void print (int[] v)
 	{
 		System.out.print ("[");

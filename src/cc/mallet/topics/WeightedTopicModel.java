@@ -11,7 +11,8 @@ import java.text.NumberFormat;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 
-import gnu.trove.*;
+import com.carrotsearch.hppc.IntDoubleHashMap;
+import com.carrotsearch.hppc.cursors.IntDoubleCursor;
 
 public class WeightedTopicModel implements Serializable {
 
@@ -96,7 +97,7 @@ public class WeightedTopicModel implements Serializable {
 	protected int[] tokensPerTopic; // indexed by <topic index>
 
 	// Weights on type-type interactions
-	protected TIntDoubleHashMap[] typeTypeWeights;
+	protected IntDoubleHashMap[] typeTypeWeights;
 
 	protected double[][] logTypeTopicWeights;
 	protected double[][] typeTopicWeights;
@@ -181,12 +182,12 @@ public class WeightedTopicModel implements Serializable {
 
 	public void readTypeTypeWeights (File weightsFile) throws Exception {
 		
-		typeTypeWeights = new TIntDoubleHashMap[numTypes];
+		typeTypeWeights = new IntDoubleHashMap[numTypes];
 
 		logger.info("num types: " + numTypes);
 
 		for (int type = 0; type < numTypes; type++) {
-			typeTypeWeights[type] = new TIntDoubleHashMap();
+			typeTypeWeights[type] = new IntDoubleHashMap();
 			typeTypeWeights[type].put(type, 1.0);
 		}
 
@@ -288,8 +289,7 @@ public class WeightedTopicModel implements Serializable {
 			type = tokenSequence.getIndexAtPosition(position);
 			oldTopic = oneDocTopics[position];
 
-			TIntDoubleHashMap typeFactors = typeTypeWeights[type];
-			int[] connectedTypes = typeFactors.keys();
+			IntDoubleHashMap typeFactors = typeTypeWeights[type];
 
 			// Grab the relevant row from our two-dimensional array
 			currentTypeTopicCounts = typeTopicCounts[type];
@@ -306,8 +306,9 @@ public class WeightedTopicModel implements Serializable {
 				int typeCount, otherTypeCount;
 				typeCount = currentTypeTopicCounts[oldTopic]; // already incremented
 				
-				for (int otherType: connectedTypes) {
-					double factor = typeFactors.get(otherType);
+				for (IntDoubleCursor keyVal: typeFactors) {
+					int otherType = keyVal.key;
+					double factor = keyVal.value;
 
 					typeTopicWeights[otherType][oldTopic] -= factor;
 					totalTopicWeights[oldTopic] -= factor;
@@ -370,8 +371,9 @@ public class WeightedTopicModel implements Serializable {
 			int typeCount, otherTypeCount;
 			typeCount = currentTypeTopicCounts[newTopic]; // already incremented
 
-			for (int otherType: connectedTypes) {
-				double factor = typeFactors.get(otherType);
+			for (IntDoubleCursor keyVal: typeFactors) {
+				int otherType = keyVal.key;
+				double factor = keyVal.value;
 				
 				typeTopicWeights[otherType][newTopic] += factor;
 				totalTopicWeights[newTopic] += factor;

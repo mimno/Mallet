@@ -17,8 +17,8 @@ import cc.mallet.types.MatrixOps;
 import cc.mallet.types.Matrixn;
 import cc.mallet.types.SparseMatrixn;
 
-import gnu.trove.TIntArrayList;
-import gnu.trove.TDoubleArrayList;
+import com.carrotsearch.hppc.IntArrayList;
+import com.carrotsearch.hppc.DoubleArrayList;
 
 /**
  * Created: Aug 30, 2004
@@ -80,8 +80,8 @@ public class TestSparseMatrixn extends TestCase {
   private SparseMatrixn make3dMatrix ()
   {
     int[] sizes = new int[]{2, 3, 4};
-    TIntArrayList idxs = new TIntArrayList ();
-    TDoubleArrayList vals = new TDoubleArrayList ();
+    IntArrayList idxs = new IntArrayList ();
+    DoubleArrayList vals = new DoubleArrayList ();
 
     for (int i = 0; i < 24; i++) {
       if (i % 3 != 0) {
@@ -90,7 +90,7 @@ public class TestSparseMatrixn extends TestCase {
       }
     }
 
-    SparseMatrixn a = new SparseMatrixn (sizes, idxs.toNativeArray (), vals.toNativeArray ());
+    SparseMatrixn a = new SparseMatrixn (sizes, idxs.toArray (), vals.toArray ());
     return a;
   }
 

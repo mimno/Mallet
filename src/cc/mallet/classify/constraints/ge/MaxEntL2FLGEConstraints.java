@@ -7,6 +7,8 @@
 
 package cc.mallet.classify.constraints.ge;
 
+import com.carrotsearch.hppc.cursors.ObjectCursor;
+
 /**
  * Expectation constraint for use with GE.
  * Penalizes L_2^2 difference from target expectation. 
@@ -28,8 +30,8 @@ public class MaxEntL2FLGEConstraints extends MaxEntFLGEConstraints {
   
   public double getValue() {
     double value = 0.0;
-    for (int fi : constraints.keys()) {
-      MaxEntFLGEConstraint constraint = constraints.get(fi);
+    for (ObjectCursor<MaxEntFLGEConstraint> fi : constraints.values()) {
+      MaxEntFLGEConstraint constraint = fi.value;
       if ( constraint.count > 0.0) {
         // value due to current constraint
         double featureValue = 0.0;

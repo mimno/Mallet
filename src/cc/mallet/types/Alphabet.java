@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.carrotsearch.hppc.ObjectIntHashMap;
+
 /**
  *  A mapping between integers and objects where the mapping in each
  * direction is efficient.  Integers are assigned consecutively, starting
@@ -50,7 +52,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class Alphabet implements Serializable
 {
-	gnu.trove.TObjectIntHashMap map;
+	ObjectIntHashMap map;
 	ArrayList entries;
 	volatile boolean growthStopped = false;
 	Class entryClass = null;
@@ -60,7 +62,7 @@ public class Alphabet implements Serializable
 
 	public Alphabet (int capacity, Class entryClass)
 	{
-		this.map = new gnu.trove.TObjectIntHashMap (capacity);
+		this.map = new ObjectIntHashMap (capacity);
 		this.entries = new ArrayList (capacity);
 		this.entryClass = entryClass;
 		// someone could try to deserialize us into this image (e.g., by RMI).  Handle this.
@@ -93,7 +95,7 @@ public class Alphabet implements Serializable
         lock.readLock().lock();
         try {
             Alphabet ret = new Alphabet();
-            ret.map = (gnu.trove.TObjectIntHashMap) map.clone();
+            ret.map = (ObjectIntHashMap) map.clone();
             ret.entries = (ArrayList) entries.clone();
             ret.growthStopped = growthStopped;
             ret.entryClass = entryClass;
@@ -238,7 +240,7 @@ public class Alphabet implements Serializable
 	{
         lock.readLock().lock();
         try {
-            return map.contains(entry);
+            return map.containsKey(entry);
         } finally {
             lock.readLock().unlock();
         }
@@ -352,7 +354,7 @@ public class Alphabet implements Serializable
             int version = in.readInt();
             int size = in.readInt();
             entries = new ArrayList(size);
-            map = new gnu.trove.TObjectIntHashMap(size);
+            map = new ObjectIntHashMap(size);
             for (int i = 0; i < size; i++) {
                 Object o = in.readObject();
                 map.put(o, i);

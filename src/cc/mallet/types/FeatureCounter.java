@@ -1,34 +1,36 @@
 package cc.mallet.types;
 
+import com.carrotsearch.hppc.IntIntHashMap;
+
 /** Efficient, compact, incremental counting of features in an alphabet. */
 public class FeatureCounter 
 {
 	Alphabet alphabet;
-	gnu.trove.TIntIntHashMap featureCounts;
+	IntIntHashMap featureCounts;
 	
 	public FeatureCounter (Alphabet alphabet) {
 		this.alphabet = alphabet;
-		featureCounts = new gnu.trove.TIntIntHashMap();
+		featureCounts = new IntIntHashMap();
 	}
 	
 	public int increment (Object entry) {
-		return featureCounts.adjustOrPutValue(alphabet.lookupIndex(entry), 1, 1);
+		return featureCounts.putOrAdd(alphabet.lookupIndex(entry), 1, 1);
 	}
 
 	public int increment (Object entry, int incr) {
-		return featureCounts.adjustOrPutValue(alphabet.lookupIndex(entry), incr, incr);
+		return featureCounts.putOrAdd(alphabet.lookupIndex(entry), incr, incr);
 	}
 
 	public int increment (int featureIndex) {
 		if (featureIndex < 0 || featureIndex > alphabet.size())
 			throw new IllegalArgumentException ("featureIndex "+featureIndex+" out of range");
-		return featureCounts.adjustOrPutValue(featureIndex, 1, 1);
+		return featureCounts.putOrAdd(featureIndex, 1, 1);
 	}
 
 	public int increment (int featureIndex, int incr) {
 		if (featureIndex < 0 || featureIndex > alphabet.size())
 			throw new IllegalArgumentException ("featureIndex "+featureIndex+" out of range");
-		return featureCounts.adjustOrPutValue(featureIndex, incr, incr);
+		return featureCounts.putOrAdd(featureIndex, incr, incr);
 	}
 	
 	
@@ -59,7 +61,7 @@ public class FeatureCounter
 
 	
 	public FeatureVector toFeatureVector () {
-		int[] indices = featureCounts.keys();
+		int[] indices = featureCounts.keys().toArray();
 		double[] values = new double[indices.length];
 		for (int i = 0; i < indices.length; i++)
 			values[i] = featureCounts.get(indices[i]);
@@ -67,7 +69,7 @@ public class FeatureCounter
 	}
 	
 	public RankedFeatureVector toRankedFeatureVector () {
-		int[] indices = featureCounts.keys();
+		int[] indices = featureCounts.keys().toArray();
 		double[] values = new double[indices.length];
 		for (int i = 0; i < indices.length; i++)
 			values[i] = featureCounts.get(indices[i]);

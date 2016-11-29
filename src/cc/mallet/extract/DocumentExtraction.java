@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Formatter;
 
-import gnu.trove.THashMap;
+import com.carrotsearch.hppc.ObjectObjectHashMap;
 
 /**
  * Created: Oct 12, 2004
@@ -165,7 +165,7 @@ public class DocumentExtraction implements Serializable {
 			} );
 
 		ArrayList roots = new ArrayList (orderedByStart);
-		THashMap children = new THashMap ();
+		ObjectObjectHashMap children = new ObjectObjectHashMap ();
 		for (int i = 0; i < orderedByStart.size(); i++) {
 			LabeledSpan child = (LabeledSpan) orderedByStart.get (i);
 			for (int j = i-1; j >= 0; j--) {
@@ -190,7 +190,7 @@ public class DocumentExtraction implements Serializable {
 	}
 
 
-	private Element generateElement (String parentName, Span span, List childSpans, THashMap tree) {
+	private Element generateElement (String parentName, Span span, List childSpans, ObjectObjectHashMap tree) {
 		Element parentElt = new Element (parentName);
 		if (childSpans == null || childSpans.isEmpty ()) {
 			parentElt.setContent (new Text (span.getText ()));

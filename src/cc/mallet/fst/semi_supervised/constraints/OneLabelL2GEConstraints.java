@@ -7,7 +7,8 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
-import gnu.trove.TIntObjectHashMap;
+import com.carrotsearch.hppc.IntObjectHashMap;
+import com.carrotsearch.hppc.cursors.ObjectCursor;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 
@@ -29,7 +30,7 @@ public class OneLabelL2GEConstraints extends OneLabelGEConstraints {
     super();
   }
   
-  private OneLabelL2GEConstraints(TIntObjectHashMap<OneLabelGEConstraint> constraints, StateLabelMap map) {
+  private OneLabelL2GEConstraints(IntObjectHashMap<OneLabelGEConstraint> constraints, StateLabelMap map) {
     super(constraints,map);
   }
   
@@ -45,8 +46,8 @@ public class OneLabelL2GEConstraints extends OneLabelGEConstraints {
   @Override
   public double getValue() {
     double value = 0.0;
-    for (int fi : constraints.keys()) {
-      OneLabelGEConstraint constraint = constraints.get(fi);
+    for (ObjectCursor<OneLabelGEConstraint> fi: constraints.values()) {
+      OneLabelGEConstraint constraint = fi.value;
       if ( constraint.count > 0.0) {
         // value due to current constraint
         double featureValue = 0.0;

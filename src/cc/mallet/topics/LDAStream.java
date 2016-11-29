@@ -23,7 +23,8 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
 import cc.mallet.util.Randoms;
-import gnu.trove.TIntIntHashMap;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntIntCursor;
 
 /**
  * @author Limin Yao, David Mimno
@@ -95,7 +96,7 @@ public class LDAStream extends LDAHyper {
 				for (int i = 0; i < topics.length; i++) {
 					int type = fs.getIndexAtPosition(i);
 					topics[i] = r.nextInt(numTopics);
-					typeTopicCounts[type].adjustOrPutValue(topics[i], 1, 1);
+					typeTopicCounts[type].putOrAdd(topics[i], 1, 1);
 				    tokensPerTopic[topics[i]]++;
 				}
 			}
@@ -143,7 +144,7 @@ public class LDAStream extends LDAHyper {
 		// TODO Auto-generated method stub
 		int[] oneDocTopics = topicSequence.getFeatures();
 
-		TIntIntHashMap currentTypeTopicCounts;
+		IntIntHashMap currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
 		double tw;
 		double[] topicWeights = new double[numTopics];
@@ -174,7 +175,7 @@ public class LDAStream extends LDAHyper {
 				currentTypeTopicCounts.remove(oldTopic);
 			}
 			else {
-				currentTypeTopicCounts.adjustValue(oldTopic, -1);
+				currentTypeTopicCounts.addTo(oldTopic, -1);
 			}
 			tokensPerTopic[oldTopic]--;
 
@@ -193,7 +194,7 @@ public class LDAStream extends LDAHyper {
 
 			// Put that new topic into the counts
 			oneDocTopics[si] = newTopic;
-			currentTypeTopicCounts.adjustOrPutValue(newTopic, 1, 1);
+			currentTypeTopicCounts.putOrAdd(newTopic, 1, 1);
 			localTopicCounts[newTopic] ++;
 			tokensPerTopic[newTopic]++;
 		}
@@ -256,7 +257,7 @@ public class LDAStream extends LDAHyper {
 				int type = tokenSequence.getIndexAtPosition(pi);
 				if(topic != -1) // type seen in training
 				{
-					typeTopicCounts[type].adjustOrPutValue(topic, 1, 1);
+					typeTopicCounts[type].putOrAdd(topic, 1, 1);
 				    tokensPerTopic[topic]++;
 				}
 			}
@@ -295,7 +296,7 @@ public class LDAStream extends LDAHyper {
 		// TODO Auto-generated method stub
 		int[] oneDocTopics = topicSequence.getFeatures();
 
-		TIntIntHashMap currentTypeTopicCounts;
+		IntIntHashMap currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
 		double tw;
 		double[] topicWeights = new double[numTopics];
@@ -330,7 +331,7 @@ public class LDAStream extends LDAHyper {
 				currentTypeTopicCounts.remove(oldTopic);
 			}
 			else {
-				currentTypeTopicCounts.adjustValue(oldTopic, -1);
+				currentTypeTopicCounts.addTo(oldTopic, -1);
 			}
 			tokensPerTopic[oldTopic]--;
 
@@ -349,7 +350,7 @@ public class LDAStream extends LDAHyper {
 
 			// Put that new topic into the counts
 			oneDocTopics[si] = newTopic;
-			currentTypeTopicCounts.adjustOrPutValue(newTopic, 1, 1);
+			currentTypeTopicCounts.putOrAdd(newTopic, 1, 1);
 			localTopicCounts[newTopic] ++;
 			tokensPerTopic[newTopic]++;
 		}
@@ -373,11 +374,11 @@ public class LDAStream extends LDAHyper {
 				for (int i = 0; i < topics.length; i++) {
 					int type = fs.getIndexAtPosition(i);
 					topics[i] = r.nextInt(numTopics);
-					typeTopicCounts[type].adjustOrPutValue(topics[i], 1, 1);
+					typeTopicCounts[type].putOrAdd(topics[i], 1, 1);
 					tokensPerTopic[topics[i]]++;
 				/*	if(typeTopicCounts[type].size() != 0) {
 						topics[i] = r.nextInt(numTopics);
-						typeTopicCounts[type].adjustOrPutValue(topics[i], 1, 1);
+						typeTopicCounts[type].putOrAdd(topics[i], 1, 1);
 						tokensPerTopic[topics[i]]++;
 					} else {
 						topics[i] = -1;  // for unseen words
@@ -459,7 +460,7 @@ public class LDAStream extends LDAHyper {
 				int type = tokenSequence.getIndexAtPosition(pi);
 				if(topic != -1) // type seen in training
 				{
-					typeTopicCounts[type].adjustOrPutValue(topic, 1, 1);
+					typeTopicCounts[type].putOrAdd(topic, 1, 1);
 				    tokensPerTopic[topic]++;
 				}
 			}
@@ -501,7 +502,7 @@ public class LDAStream extends LDAHyper {
 		// TODO Auto-generated method stub
 		int[] oneDocTopics = topicSequence.getFeatures();
 
-		TIntIntHashMap currentTypeTopicCounts;
+		IntIntHashMap currentTypeTopicCounts;
 		int type, oldTopic, newTopic;
 		double tw;
 		double[] topicWeights = new double[numTopics];
@@ -523,7 +524,7 @@ public class LDAStream extends LDAHyper {
 				currentTypeTopicCounts.remove(oldTopic);
 			}
 			else {
-				currentTypeTopicCounts.adjustValue(oldTopic, -1);
+				currentTypeTopicCounts.addTo(oldTopic, -1);
 			}
 			tokensPerTopic[oldTopic]--;
 
@@ -542,7 +543,7 @@ public class LDAStream extends LDAHyper {
 
 			// Put that new topic into the counts
 			oneDocTopics[si] = newTopic;
-			currentTypeTopicCounts.adjustOrPutValue(newTopic, 1, 1);
+			currentTypeTopicCounts.putOrAdd(newTopic, 1, 1);
 			tokensPerTopic[newTopic]++;
 		}
 	}
@@ -582,9 +583,10 @@ public class LDAStream extends LDAHyper {
 		}
 
 		for (int fi = 0; fi < numTypes; fi++) {
-			int[] topics = typeTopicCounts[fi].keys();
-			for (int i = 0; i < topics.length; i++) {
-				wordCountsPerTopic[topics[i]].increment(fi, typeTopicCounts[fi].get(topics[i]));
+			for (IntIntCursor keyVal : typeTopicCounts[fi]) {
+				int topic = keyVal.key;
+				int topicCount = keyVal.value;
+				wordCountsPerTopic[topic].increment(fi, topicCount);
 			}
 		}
 		
