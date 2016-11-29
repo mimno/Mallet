@@ -1,8 +1,7 @@
 JARS = \
 bsh.jar \
 hppc-0.7.1.jar \
-junit-4.12.jar \
-trove-2.0.2.jar
+junit-4.12.jar
 
 # note: jython.jar not included above, because only needed by bin/mallethon
 
