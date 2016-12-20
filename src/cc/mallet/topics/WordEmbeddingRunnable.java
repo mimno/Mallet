@@ -14,14 +14,15 @@ public class WordEmbeddingRunnable implements Runnable {
 
 	int numThreads;
 	int threadID;
+	int iteration = 0;
 	
-	int stride;
-	
-	public int docID;
+	int stride, docID;
 
 	public Random random;
 
 	int numColumns;
+	
+	int orderingStrategy = WordEmbeddings.LINEAR_ORDERING;
 
 	public long wordsSoFar = 0;
 	private int minDocumentLength;
@@ -38,6 +39,14 @@ public class WordEmbeddingRunnable implements Runnable {
 
 		numColumns = model.numColumns;
 		minDocumentLength = model.getMinDocumentLength();
+	}
+	
+	public void setRandomSeed(int seed) {
+		random = new Random(seed);
+	}
+	
+	public void setOrdering(int strategy) {
+		this.orderingStrategy = strategy;
 	}
 
 	public double getMeanError() {
@@ -66,7 +75,34 @@ public class WordEmbeddingRunnable implements Runnable {
 		double gradientSum = 0.0;
 		double[] gradient = new double[numColumns];
 
-		docID = threadID * (numDocuments / numThreads);
+		int minDoc = threadID * (numDocuments / numThreads);
+		int maxDoc = (threadID + 1) * (numDocuments / numThreads);
+		int numDocs = maxDoc - minDoc;
+		int[] agenda = new int[numDocs];
+
+		if (orderingStrategy == WordEmbeddings.SHUFFLED_ORDERING) {
+			for (int i = 0; i < numDocs; i++) {
+				agenda[i] = i;
+			}
+			for (int i = 0; i < numDocs; i++) {
+				int swapIndex = i + random.nextInt(numDocs - i);
+				int temp = agenda[swapIndex];
+				agenda[swapIndex] = agenda[i];
+				agenda[i] = temp;
+			}
+		}
+		else if (orderingStrategy == WordEmbeddings.RANDOM_ORDERING) {
+			for (int i = 0; i < numDocs; i++) {
+				agenda[i] = minDoc + random.nextInt(numDocs);
+			}
+		}
+		else { // Default: linear ordering
+			for (int i = 0; i < numDocs; i++) {
+				agenda[i] = minDoc + i;
+			}
+		}
+
+		docID = 0;
 		int maxDocID = (threadID + 1) * (numDocuments / numThreads);
 		if (maxDocID > numDocuments) {
 			maxDocID = numDocuments;
@@ -77,12 +113,19 @@ public class WordEmbeddingRunnable implements Runnable {
 		int[] tokenBuffer = new int[100000];
 				
 		while (shouldRun) {
-			Instance instance = instances.get( docID );
+			System.out.println(agenda[docID]);
+			
+			Instance instance = instances.get( agenda[docID] );
 			docID++;
 
-			if (docID == maxDocID) { 
+			if (docID == numDocs) { 
 				// start over at the beginning
-				docID = threadID * (numDocuments / numThreads);
+				docID = 0;
+				iteration++;
+				if (iteration >= model.numIterations) {
+					shouldRun = false;
+					return;
+				}
 			}
 
 			if (wordsSoFar - previousWordsSoFar > 10000) {

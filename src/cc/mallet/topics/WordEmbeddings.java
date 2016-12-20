@@ -38,6 +38,13 @@ public class WordEmbeddings {
 	static CommandOption.String exampleWord = new CommandOption.String(WordEmbeddings.class, "example-word", "STRING", true, null,
 																	   "If defined, periodically show the closest vectors to this word.", null);
 
+	static CommandOption.String orderingOption = new CommandOption.String(WordEmbeddings.class, "ordering", "STRING", true, "linear",
+																	   "\"linear\" reads documents in order, \"shuffled\" reads in random order, \"random\" selects documents at random and may repeat/drop documents", null);
+
+	public static final int LINEAR_ORDERING = 0;
+	public static final int SHUFFLED_ORDERING = 1;
+	public static final int RANDOM_ORDERING = 2;
+	
 
 	Alphabet vocabulary;
         
@@ -65,6 +72,8 @@ public class WordEmbeddings {
 	int windowSize = 5;
 	
 	IDSorter[] sortedWords = null;
+	
+	int orderingStrategy = LINEAR_ORDERING;
 
 	public int getMinDocumentLength() {
 		return minDocumentLength;
@@ -191,6 +200,7 @@ public class WordEmbeddings {
 		WordEmbeddingRunnable[] runnables = new WordEmbeddingRunnable[numThreads];
 		for (int thread = 0; thread < numThreads; thread++) {
 			runnables[thread] = new WordEmbeddingRunnable(this, instances, numSamples, numThreads, thread);
+			runnables[thread].setOrdering(orderingStrategy);
 			executor.submit(runnables[thread]);
 		}
 
@@ -209,7 +219,9 @@ public class WordEmbeddings {
 			int wordsSoFar = 0;
                                         
 			// Are all the threads done?
+			boolean anyRunning = false;
 			for (int thread = 0; thread < numThreads; thread++) {
+				if (runnables[thread].shouldRun) { anyRunning = true; }
 				wordsSoFar += runnables[thread].wordsSoFar;
 				//System.out.format("%.3f ", runnables[thread].getMeanError());
 			}
@@ -220,7 +232,7 @@ public class WordEmbeddings {
 			//variances();
 			difference = 0.0;
 
-			if (wordsSoFar > numIterations * totalWords) {
+			if (! anyRunning || wordsSoFar > numIterations * totalWords) {
 				finished = true;
 				for (int thread = 0; thread < numThreads; thread++) {
 					runnables[thread].shouldRun = false;
@@ -368,6 +380,15 @@ public class WordEmbeddings {
 		matrix.queryWord = exampleWord.value;
 		matrix.setNumIterations(numIterationsOption.value);
 		matrix.countWords(instances, samplingFactorOption.value);
+		if (orderingOption.value != null) {
+			if (orderingOption.value.startsWith("s")) { matrix.orderingStrategy = SHUFFLED_ORDERING; }
+			else if (orderingOption.value.startsWith("l")) { matrix.orderingStrategy = LINEAR_ORDERING; }
+			else if (orderingOption.value.startsWith("r")) { matrix.orderingStrategy = RANDOM_ORDERING; }
+			else {
+				System.err.println("Unrecognized ordering: " + orderingOption.value + ", using linear.");
+			}
+		}
+		
 		matrix.train(instances, numThreads.value, numSamples.value);
 		
 		PrintWriter out = new PrintWriter(outputFile.value);
