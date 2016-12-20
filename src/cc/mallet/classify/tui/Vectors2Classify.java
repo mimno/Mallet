@@ -55,8 +55,7 @@ public abstract class Vectors2Classify
 		static final int recall=5;
 	}
 
-	static CommandOption.SpacedStrings report = new CommandOption.SpacedStrings
-			(Vectors2Classify.class, "report", "[train|test|validation]:[accuracy|f1:label|precision:label|recall:label|confusion|raw]",
+	static CommandOption.SpacedStrings report = new CommandOption.SpacedStrings(Vectors2Classify.class, "report", "[train|test|validation]:[accuracy|f1:label|precision:label|recall:label|confusion|raw]",
 					true, new String[] {"train:accuracy",  "test:accuracy", "test:confusion",  "test:precision",  "test:recall", "test:f1"},
 					"", null) 
 	{
@@ -115,8 +114,7 @@ public abstract class Vectors2Classify
 	};
 
 
-	static CommandOption.String trainerConstructor = new CommandOption.String
-			(Vectors2Classify.class, "trainer", "ClassifierTrainer constructor",  true, "new NaiveBayesTrainer()",
+	static CommandOption.String trainerConstructor = new CommandOption.String(Vectors2Classify.class, "trainer", "ClassifierTrainer constructor",  true, "new NaiveBayesTrainer()",
 					"Java code for the constructor used to create a ClassifierTrainer.  "+
 							"If no '(' appears, then \"new \" will be prepended and \"Trainer()\" will be appended."+
 							"You may use this option mutiple times to compare multiple classifiers.", null) {
@@ -124,58 +122,47 @@ public abstract class Vectors2Classify
 			classifierTrainerStrings.add (this.value);
 		}};
 
-		static CommandOption.String outputFile = new CommandOption.String
-				(Vectors2Classify.class, "output-classifier", "FILENAME", true, "classifier.mallet",
+		static CommandOption.String outputFile = new CommandOption.String(Vectors2Classify.class, "output-classifier", "FILENAME", true, "classifier.mallet",
 						"The filename in which to write the classifier after it has been trained.", null);
 
 		/*	static CommandOption.String pipeFile = new CommandOption.String
 		(Vectors2Classify.class, "output-pipe", "FILENAME", true, "classifier_pipe.mallet",
 		"The filename in which to write the classifier's instancePipe after it has been trained.", null);*/
 
-		static CommandOption.String inputFile = new CommandOption.String
-				(Vectors2Classify.class, "input", "FILENAME", true, "text.vectors",
+		static CommandOption.String inputFile = new CommandOption.String(Vectors2Classify.class, "input", "FILENAME", true, "text.vectors",
 						"The filename from which to read the list of training instances.  Use - for stdin.", null);
 
-		static CommandOption.String trainingFile = new CommandOption.String
-				(Vectors2Classify.class, "training-file", "FILENAME", true, "text.vectors",
+		static CommandOption.String trainingFile = new CommandOption.String(Vectors2Classify.class, "training-file", "FILENAME", true, "text.vectors",
 						"Read the training set instance list from this file. " +
 								"If this is specified, the input file parameter is ignored", null);
 
-		static CommandOption.String testFile = new CommandOption.String
-				(Vectors2Classify.class, "testing-file", "FILENAME", true, "text.vectors",
+		static CommandOption.String testFile = new CommandOption.String(Vectors2Classify.class, "testing-file", "FILENAME", true, "text.vectors",
 						"Read the test set instance list to this file. " +
 								"If this option is specified, the training-file parameter must be specified and " +
 								" the input-file parameter is ignored", null);
 
-		static CommandOption.String validationFile = new CommandOption.String
-				(Vectors2Classify.class, "validation-file", "FILENAME", true, "text.vectors",
+		static CommandOption.String validationFile = new CommandOption.String(Vectors2Classify.class, "validation-file", "FILENAME", true, "text.vectors",
 						"Read the validation set instance list to this file." +
 								"If this option is specified, the training-file parameter must be specified and " +
 								"the input-file parameter is ignored", null);
 
-		static CommandOption.Double trainingProportionOption = new CommandOption.Double
-				(Vectors2Classify.class, "training-portion", "DECIMAL", true, 1.0,
+		static CommandOption.Double trainingProportionOption = new CommandOption.Double(Vectors2Classify.class, "training-portion", "DECIMAL", true, 1.0,
 						"The fraction of the instances that should be used for training.", null);
 
-		static CommandOption.Double validationProportionOption = new CommandOption.Double
-				(Vectors2Classify.class, "validation-portion", "DECIMAL", true, 0.0,
+		static CommandOption.Double validationProportionOption = new CommandOption.Double(Vectors2Classify.class, "validation-portion", "DECIMAL", true, 0.0,
 						"The fraction of the instances that should be used for validation.", null);
 
-		static CommandOption.Double unlabeledProportionOption = new CommandOption.Double
-				(Vectors2Classify.class, "unlabeled-portion", "DECIMAL", true, 0.0,
+		static CommandOption.Double unlabeledProportionOption = new CommandOption.Double(Vectors2Classify.class, "unlabeled-portion", "DECIMAL", true, 0.0,
 						"The fraction of the training instances that should have their labels hidden.  "
 								+"Note that these are taken out of the training-portion, not allocated separately.", null);
 
-		static CommandOption.Integer randomSeedOption = new CommandOption.Integer
-				(Vectors2Classify.class, "random-seed", "INTEGER", true, 0,
+		static CommandOption.Integer randomSeedOption = new CommandOption.Integer(Vectors2Classify.class, "random-seed", "INTEGER", true, 0,
 						"The random seed for randomly selecting a proportion of the instance list for training", null);
 
-		static CommandOption.Integer numTrialsOption = new CommandOption.Integer
-				(Vectors2Classify.class, "num-trials", "INTEGER", true, 1,
+		static CommandOption.Integer numTrialsOption = new CommandOption.Integer(Vectors2Classify.class, "num-trials", "INTEGER", true, 1,
 						"The number of random train/test splits to perform", null);
 
-		static CommandOption.Object classifierEvaluatorOption = new CommandOption.Object
-				(Vectors2Classify.class, "classifier-evaluator", "CONSTRUCTOR", true, null,
+		static CommandOption.Object classifierEvaluatorOption = new CommandOption.Object(Vectors2Classify.class, "classifier-evaluator", "CONSTRUCTOR", true, null,
 						"Java code for constructing a ClassifierEvaluating object", null);
 
 		//	static CommandOption.Boolean printTrainAccuracyOption = new CommandOption.Boolean
@@ -188,21 +175,18 @@ public abstract class Vectors2Classify
 		//	 "After training, run the resulting classifier on the instances not included in training, "
 		//	 +"and print the accuracy", null);
 
-		static CommandOption.Integer verbosityOption = new CommandOption.Integer
-				(Vectors2Classify.class, "verbosity", "INTEGER", true, -1,
+		static CommandOption.Integer verbosityOption = new CommandOption.Integer(Vectors2Classify.class, "verbosity", "INTEGER", true, -1,
 						"The level of messages to print: 0 is silent, 8 is most verbose. " +
 								"Levels 0-8 correspond to the java.logger predefined levels "+
 								"off, severe, warning, info, config, fine, finer, finest, all. " +
 								"The default value is taken from the mallet logging.properties file," +
 								" which currently defaults to INFO level (3)", null);
 
-		static CommandOption.Boolean noOverwriteProgressMessagesOption = new CommandOption.Boolean
-				(Vectors2Classify.class, "noOverwriteProgressMessages", "true|false", false, false,
+		static CommandOption.Boolean noOverwriteProgressMessagesOption = new CommandOption.Boolean(Vectors2Classify.class, "noOverwriteProgressMessages", "true|false", false, false,
 						"Suppress writing-in-place on terminal for progess messages - repetitive messages "
 								+"of which only the latest is generally of interest", null);
 
-		static CommandOption.Integer crossValidation = new CommandOption.Integer
-				(Vectors2Classify.class, "cross-validation", "INT", true, 0,
+		static CommandOption.Integer crossValidation = new CommandOption.Integer(Vectors2Classify.class, "cross-validation", "INT", true, 0,
 						"The number of folds for cross-validation (DEFAULT=0).", null);
 
 		public static void main (String[] args) throws bsh.EvalError, java.io.IOException
