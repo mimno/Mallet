@@ -61,7 +61,7 @@ public class FeatureCountTool {
 					docCounts.putOrAdd(features.getIndexAtPosition(i), 1, 1);
 				}
 
-				for (IntCursor cursor: docCounts.values()) {
+				for (IntCursor cursor: docCounts.keys()) {
 					int feature = cursor.value;
 					featureCounts[feature] += docCounts.get(feature);
 					documentFrequencies[feature]++;
