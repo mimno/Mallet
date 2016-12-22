@@ -113,8 +113,6 @@ public class WordEmbeddingRunnable implements Runnable {
 		int[] tokenBuffer = new int[100000];
 				
 		while (shouldRun) {
-			System.out.println(agenda[docID]);
-			
 			Instance instance = instances.get( agenda[docID] );
 			docID++;
 
