@@ -227,7 +227,8 @@ public class HierarchicalLDA {
 	
 		calculateWordLikelihood(nodeWeights, rootNode, 0.0, typeCounts, newTopicWeights, 0, iteration);
 
-		NCRPNode[] nodes = (NCRPNode[]) nodeWeights.keys().toArray();
+		Object[] objectArray = nodeWeights.keys().toArray();
+		NCRPNode[] nodes = Arrays.copyOf(objectArray, objectArray.length, NCRPNode[].class);
 		double[] weights = new double[nodes.length];
 		double sum = 0.0;
 		double max = Double.NEGATIVE_INFINITY;
