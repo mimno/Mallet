@@ -428,7 +428,7 @@ public class HierarchicalLDA {
 	/**
 	 *  Write a text file describing the current sampling state. 
 	 */
-    public void printState(PrintWriter out) throws IOException {
+    protected void printState(PrintWriter out) throws IOException {
 		int doc = 0;
 
 		Alphabet alphabet = instances.getDataAlphabet();
@@ -459,6 +459,7 @@ public class HierarchicalLDA {
 
 			doc++;
 		}
+		out.close();
 	}	    
 
     public void printNodes() {
