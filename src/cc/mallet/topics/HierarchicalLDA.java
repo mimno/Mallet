@@ -428,7 +428,7 @@ public class HierarchicalLDA implements Serializable {
 	/**
 	 *  Write a text file describing the current sampling state. 
 	 */
-    protected void printState(PrintWriter out) throws IOException {
+    public void printState(PrintWriter out) throws IOException {
 		int doc = 0;
 
 		Alphabet alphabet = instances.getDataAlphabet();
