@@ -80,10 +80,10 @@ public class PropertyList implements Serializable
 				if (obj == null) return 0;
 				// xxx Remove these?  Use might ask for numericIterator expecting to get these (and not!)
 				if (obj instanceof Double) return ((Double)obj).doubleValue();
-				if (obj instanceof Integer) return ((Double)obj).intValue();
-				if (obj instanceof Float) return ((Double)obj).floatValue();
-				if (obj instanceof Short) return ((Double)obj).shortValue();
-				if (obj instanceof Long) return ((Double)obj).longValue();
+				if (obj instanceof Integer) return ((Integer)obj).intValue();
+				if (obj instanceof Float) return ((Float)obj).floatValue();
+				if (obj instanceof Short) return ((Short)obj).shortValue();
+				if (obj instanceof Long) return ((Long)obj).longValue();
 				// xxx? throw new IllegalStateException ("Property is not numeric.");
 				return 0;
 			} else
