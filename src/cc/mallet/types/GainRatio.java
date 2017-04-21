@@ -242,7 +242,7 @@ public class GainRatio extends RankedFeatureVector
 				
 				
 			}
-			assert(bestSplitPoint != Double.NaN);
+			assert(!Double.isNaN(bestSplitPoint));
 			gainRatios[fi] = featureMaxGainRatio;
 			splitPoints[fi] = bestSplitPoint;
 
