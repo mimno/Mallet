@@ -53,7 +53,7 @@ public class LineGroupIterator implements Iterator<Instance>
 		StringBuffer sb = new StringBuffer ();
 		String line;
 		if (!skipBoundary && nextBoundary != null)
-			sb.append(nextBoundary + '\n');
+			sb.append(nextBoundary + System.getProperty("line.separator"));
 		while (true) {
 			try {
 				line = reader.readLine();
@@ -69,12 +69,12 @@ public class LineGroupIterator implements Iterator<Instance>
 					this.nextNextBoundary = line;
 					break;
 				} else { // The first line of the file.
-					if (!skipBoundary) sb.append(line + '\n');
+					if (!skipBoundary) sb.append(line + System.getProperty("line.separator"));
 					this.nextNextBoundary = line;
 				}
 			} else {
 				sb.append(line);
-				sb.append('\n');
+				sb.append(System.getProperty("line.separator"));
 			}
 		}
 		if (sb.length() == 0)
