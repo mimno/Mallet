@@ -36,22 +36,22 @@ public class DMROptimizable implements Optimizable.ByGradientValue {
 	InstanceList trainingList;
 
 	int numGetValueCalls = 0;
-    int numGetValueGradientCalls = 0;
-    int numIterations = Integer.MAX_VALUE;
+	int numGetValueGradientCalls = 0;
+	int numIterations = Integer.MAX_VALUE;
 
 	NumberFormat formatter = null;
 
 	static final double DEFAULT_GAUSSIAN_PRIOR_VARIANCE = 1;
 	static final double DEFAULT_LARGE_GAUSSIAN_PRIOR_VARIANCE = 100;
-    static final double DEFAULT_GAUSSIAN_PRIOR_MEAN = 0.0;
-        
-    double gaussianPriorMean = DEFAULT_GAUSSIAN_PRIOR_MEAN;
-    double gaussianPriorVariance = DEFAULT_GAUSSIAN_PRIOR_VARIANCE;
+	static final double DEFAULT_GAUSSIAN_PRIOR_MEAN = 0.0;
+
+	double gaussianPriorMean = DEFAULT_GAUSSIAN_PRIOR_MEAN;
+	double gaussianPriorVariance = DEFAULT_GAUSSIAN_PRIOR_VARIANCE;
 
 	// Allowing the default feature (the base level) to 
 	//  fluctuate more freely than the feature parameters leads
 	//  to much better results.
-    double defaultFeatureGaussianPriorVariance = DEFAULT_LARGE_GAUSSIAN_PRIOR_VARIANCE;
+	double defaultFeatureGaussianPriorVariance = DEFAULT_LARGE_GAUSSIAN_PRIOR_VARIANCE;
 
 	double[] parameters;
 	double[] cachedGradient;
@@ -75,7 +75,7 @@ public class DMROptimizable implements Optimizable.ByGradientValue {
 
 		// Add one feature for the "default feature".
 		this.numFeatures = alphabet.size() + 1; // add a spot for the intercept term
-            
+
 		//System.out.println("num features: " + numFeatures + " numLabels: " + numLabels);
 
 		this.defaultFeatureIndex = numFeatures - 1;
@@ -147,28 +147,28 @@ public class DMROptimizable implements Optimizable.ByGradientValue {
 	}
 
 	public MaxEnt getClassifier () { return classifier; }
-                
+
 	public double getParameter (int index) {
 		return parameters[index];
 	}
-                
+
 	public void setParameter (int index, double v) {
 		cachedValueStale = true;
 		cachedGradientStale = true;
 		parameters[index] = v;
 	}
-                
+
 	public int getNumParameters() {
 		return parameters.length;
 	}
-                
+
 	public void getParameters (double[] buff) {
 		if (buff == null || buff.length != parameters.length) {
 			buff = new double [parameters.length];
 		}
 		System.arraycopy (parameters, 0, buff, 0, parameters.length);
 	}
-        
+
 	public void setParameters (double [] buff) {
 		assert (buff != null);
 		cachedValueStale = true;
@@ -198,7 +198,7 @@ public class DMROptimizable implements Optimizable.ByGradientValue {
 			if (multinomialValues == null) { continue; }
 
 			//System.out.println("L Now "+inputAlphabet.size()+" regular features.");
-                
+
 			// Get the predicted probability of each class
 			//   under the current model parameters
 			this.classifier.getUnnormalizedClassificationScores(instance, scores);
