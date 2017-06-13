@@ -2085,30 +2085,4 @@ public class ParallelTopicModel implements Serializable {
 
 		return topicModel;
 	}
-	
-	public static void main (String[] args) {
-		
-		try {
-			
-			InstanceList training = InstanceList.load (new File(args[0]));
-			
-			int numTopics = args.length > 1 ? Integer.parseInt(args[1]) : 200;
-			
-			ParallelTopicModel lda = new ParallelTopicModel (numTopics, 50.0, 0.01);
-			lda.printLogLikelihood = true;
-			lda.setTopicDisplay(50, 7);
-			lda.addInstances(training);
-			
-			lda.setNumThreads(Integer.parseInt(args[2]));
-			lda.estimate();
-			logger.info("printing state");
-			lda.printState(new File("state.gz"));
-			logger.info("finished printing");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
 }
