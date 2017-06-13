@@ -25,103 +25,82 @@ import cc.mallet.util.Randoms;
 
 public class PolylingualTopicModel implements Serializable {
 
-	static CommandOption.SpacedStrings languageInputFiles = new CommandOption.SpacedStrings
-		(PolylingualTopicModel.class, "language-inputs", "FILENAME [FILENAME ...]", true, null,
+	static CommandOption.SpacedStrings languageInputFiles = new CommandOption.SpacedStrings(PolylingualTopicModel.class, "language-inputs", "FILENAME [FILENAME ...]", true, null,
 		  "Filenames for polylingual topic model. Each language should have its own file, " +
 		  "with the same number of instances in each file. If a document is missing in " + 
 		 "one language, there should be an empty instance.", null);
 
-	static CommandOption.String outputModelFilename = new CommandOption.String
-		(PolylingualTopicModel.class, "output-model", "FILENAME", true, null,
+	static CommandOption.String outputModelFilename = new CommandOption.String(PolylingualTopicModel.class, "output-model", "FILENAME", true, null,
 		  "The filename in which to write the binary topic model at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String inputModelFilename = new CommandOption.String
-		(PolylingualTopicModel.class, "input-model", "FILENAME", true, null,
+	static CommandOption.String inputModelFilename = new CommandOption.String(PolylingualTopicModel.class, "input-model", "FILENAME", true, null,
 		  "The filename from which to read the binary topic model to which the --input will be appended, " +
 		  "allowing incremental training.  " +
 		 "By default this is null, indicating that no file will be read.", null);
 
-	static CommandOption.String inferencerFilename = new CommandOption.String
-		(PolylingualTopicModel.class, "inferencer-filename", "FILENAME", true, null,
+	static CommandOption.String inferencerFilename = new CommandOption.String(PolylingualTopicModel.class, "inferencer-filename", "FILENAME", true, null,
 		  "A topic inferencer applies a previously trained topic model to new documents.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String evaluatorFilename = new CommandOption.String
-		(PolylingualTopicModel.class, "evaluator-filename", "FILENAME", true, null,
+	static CommandOption.String evaluatorFilename = new CommandOption.String(PolylingualTopicModel.class, "evaluator-filename", "FILENAME", true, null,
 		  "A held-out likelihood evaluator for new documents.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String stateFile = new CommandOption.String
-		(PolylingualTopicModel.class, "output-state", "FILENAME", true, null,
+	static CommandOption.String stateFile = new CommandOption.String(PolylingualTopicModel.class, "output-state", "FILENAME", true, null,
 		  "The filename in which to write the Gibbs sampling state after at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String topicKeysFile = new CommandOption.String
-		(PolylingualTopicModel.class, "output-topic-keys", "FILENAME", true, null,
+	static CommandOption.String topicKeysFile = new CommandOption.String(PolylingualTopicModel.class, "output-topic-keys", "FILENAME", true, null,
 		  "The filename in which to write the top words for each topic and any Dirichlet parameters.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.String docTopicsFile = new CommandOption.String
-		(PolylingualTopicModel.class, "output-doc-topics", "FILENAME", true, null,
+	static CommandOption.String docTopicsFile = new CommandOption.String(PolylingualTopicModel.class, "output-doc-topics", "FILENAME", true, null,
 		  "The filename in which to write the topic proportions per document, at the end of the iterations.  " +
 		 "By default this is null, indicating that no file will be written.", null);
 
-	static CommandOption.Double docTopicsThreshold = new CommandOption.Double
-		(PolylingualTopicModel.class, "doc-topics-threshold", "DECIMAL", true, 0.0,
+	static CommandOption.Double docTopicsThreshold = new CommandOption.Double(PolylingualTopicModel.class, "doc-topics-threshold", "DECIMAL", true, 0.0,
 		  "When writing topic proportions per document with --output-doc-topics, " +
 		 "do not print topics with proportions less than this threshold value.", null);
 
-	static CommandOption.Integer docTopicsMax = new CommandOption.Integer
-		(PolylingualTopicModel.class, "doc-topics-max", "INTEGER", true, -1,
+	static CommandOption.Integer docTopicsMax = new CommandOption.Integer(PolylingualTopicModel.class, "doc-topics-max", "INTEGER", true, -1,
 		  "When writing topic proportions per document with --output-doc-topics, " +
 		  "do not print more than INTEGER number of topics.  "+
 		 "A negative value indicates that all topics should be printed.", null);
 
-	static CommandOption.Integer outputModelIntervalOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "output-model-interval", "INTEGER", true, 0,
+	static CommandOption.Integer outputModelIntervalOption = new CommandOption.Integer(PolylingualTopicModel.class, "output-model-interval", "INTEGER", true, 0,
 		  "The number of iterations between writing the model (and its Gibbs sampling state) to a binary file.  " +
 		 "You must also set the --output-model to use this option, whose argument will be the prefix of the filenames.", null);
 
-	static CommandOption.Integer outputStateIntervalOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "output-state-interval", "INTEGER", true, 0,
+	static CommandOption.Integer outputStateIntervalOption = new CommandOption.Integer(PolylingualTopicModel.class, "output-state-interval", "INTEGER", true, 0,
 		  "The number of iterations between writing the sampling state to a text file.  " +
 		 "You must also set the --output-state to use this option, whose argument will be the prefix of the filenames.", null);
 
-	static CommandOption.Integer numTopicsOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "num-topics", "INTEGER", true, 10,
+	static CommandOption.Integer numTopicsOption = new CommandOption.Integer(PolylingualTopicModel.class, "num-topics", "INTEGER", true, 10,
 		 "The number of topics to fit.", null);
 
-	static CommandOption.Integer numIterationsOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "num-iterations", "INTEGER", true, 1000,
+	static CommandOption.Integer numIterationsOption = new CommandOption.Integer(PolylingualTopicModel.class, "num-iterations", "INTEGER", true, 1000,
 		 "The number of iterations of Gibbs sampling.", null);
 
-	static CommandOption.Integer randomSeedOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "random-seed", "INTEGER", true, 0,
+	static CommandOption.Integer randomSeedOption = new CommandOption.Integer(PolylingualTopicModel.class, "random-seed", "INTEGER", true, 0,
 		 "The random seed for the Gibbs sampler.  Default is 0, which will use the clock.", null);
 
-	static CommandOption.Integer topWordsOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "num-top-words", "INTEGER", true, 20,
+	static CommandOption.Integer topWordsOption = new CommandOption.Integer(PolylingualTopicModel.class, "num-top-words", "INTEGER", true, 20,
 		 "The number of most probable words to print for each topic after model estimation.", null);
 
-	static CommandOption.Integer showTopicsIntervalOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "show-topics-interval", "INTEGER", true, 50,
+	static CommandOption.Integer showTopicsIntervalOption = new CommandOption.Integer(PolylingualTopicModel.class, "show-topics-interval", "INTEGER", true, 50,
 		 "The number of iterations between printing a brief summary of the topics so far.", null);
 
-	static CommandOption.Integer optimizeIntervalOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "optimize-interval", "INTEGER", true, 0,
+	static CommandOption.Integer optimizeIntervalOption = new CommandOption.Integer(PolylingualTopicModel.class, "optimize-interval", "INTEGER", true, 0,
 		 "The number of iterations between reestimating dirichlet hyperparameters.", null);
 
-	static CommandOption.Integer optimizeBurnInOption = new CommandOption.Integer
-		(PolylingualTopicModel.class, "optimize-burn-in", "INTEGER", true, 200,
+	static CommandOption.Integer optimizeBurnInOption = new CommandOption.Integer(PolylingualTopicModel.class, "optimize-burn-in", "INTEGER", true, 200,
 		 "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
 
-	static CommandOption.Double alphaOption = new CommandOption.Double
-		(PolylingualTopicModel.class, "alpha", "DECIMAL", true, 50.0,
+	static CommandOption.Double alphaOption = new CommandOption.Double(PolylingualTopicModel.class, "alpha", "DECIMAL", true, 50.0,
 		 "Alpha parameter: smoothing over topic distribution.",null);
 
-	static CommandOption.Double betaOption = new CommandOption.Double
-		(PolylingualTopicModel.class, "beta", "DECIMAL", true, 0.01,
+	static CommandOption.Double betaOption = new CommandOption.Double(PolylingualTopicModel.class, "beta", "DECIMAL", true, 0.01,
 		 "Beta parameter: smoothing over unigram distribution.",null);
 	
 	public class TopicAssignment implements Serializable {
