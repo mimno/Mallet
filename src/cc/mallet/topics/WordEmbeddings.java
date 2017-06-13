@@ -16,6 +16,9 @@ public class WordEmbeddings {
 	static CommandOption.String outputFile = new CommandOption.String(WordEmbeddings.class, "output", "FILENAME", true, "weights.txt",
 																	  "The filename to write text-formatted word vectors.", null);
 	
+	static CommandOption.String outputContextFile = new CommandOption.String(WordEmbeddings.class, "output-context", "FILENAME", true, "NONE",
+																	  "The filename to write text-formatted context vectors.", null);
+	
 	static CommandOption.Integer numDimensions = new CommandOption.Integer(WordEmbeddings.class, "num-dimensions", "INTEGER", true, 50,
 																	   "The number of dimensions to fit.", null);
 
@@ -330,6 +333,17 @@ public class WordEmbeddings {
 		}
 	}
 
+	public void writeContext(PrintWriter out) {
+		for (int word = 0; word < numWords; word++) {
+			Formatter buffer = new Formatter(Locale.US);
+			buffer.format("%s", vocabulary.lookupObject(word));
+			for (int col = 0; col < numColumns; col++) {
+				buffer.format(" %.6f", negativeWeights[word * stride + col]);
+			}
+			out.println(buffer);
+		}
+	}
+
 	public double[] copy(String word) {
 		return copy(vocabulary.lookupIndex(word));
 	}
@@ -394,6 +408,12 @@ public class WordEmbeddings {
 		PrintWriter out = new PrintWriter(outputFile.value);
 		matrix.write(out);
 		out.close();
+		
+		if (outputContextFile.value != null) {
+			out = new PrintWriter(outputContextFile.value);
+			matrix.writeContext(out);
+			out.close();
+		}
 	}
 
 }
