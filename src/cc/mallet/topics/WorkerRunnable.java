@@ -61,6 +61,8 @@ public class WorkerRunnable implements Runnable {
 	
 	protected Randoms random;
 	
+	public WorkerRunnable() {}
+	
 	public WorkerRunnable (int numTopics,
 						   double[] alpha, double alphaSum,
 						   double beta, Randoms random,
