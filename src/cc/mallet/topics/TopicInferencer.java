@@ -24,12 +24,12 @@ public class TopicInferencer implements Serializable {
 	protected int[][] typeTopicCounts;
 	protected int[] tokensPerTopic;
 	
-	Alphabet alphabet;
+	protected Alphabet alphabet;
 	
 	protected Randoms random = null;
 	
-	double smoothingOnlyMass = 0.0;
-	double[] cachedCoefficients;
+	protected double smoothingOnlyMass = 0.0;
+	protected double[] cachedCoefficients;
 	
 	public TopicInferencer (int[][] typeTopicCounts, int[] tokensPerTopic, Alphabet alphabet,
 							double[] alpha, double beta, double betaSum) {
@@ -66,6 +66,8 @@ public class TopicInferencer implements Serializable {
 
 		random = new Randoms();
 	}
+	
+	public TopicInferencer() {}
 
 	public void setRandomSeed(int seed) {
 		random = new Randoms(seed);
@@ -115,8 +117,7 @@ public class TopicInferencer implements Serializable {
 			}
 		}
 
-		// Build an array that densely lists the topics that														  
-		//  have non-zero counts.																					 
+		// Build an array that densely lists the topics that have non-zero counts.
 		int denseIndex = 0;
 		for (int topic = 0; topic < numTopics; topic++) {
 			if (localTopicCounts[topic] != 0) {
@@ -125,23 +126,22 @@ public class TopicInferencer implements Serializable {
 			}
 		}
 
-		// Record the total number of non-zero topics																 
+		// Record the total number of non-zero topics
 		int nonZeroTopics = denseIndex;
 
-		//	  Initialize the topic count/beta sampling bucket													   
+		//	  Initialize the topic count/beta sampling bucket
 		double topicBetaMass = 0.0;
 
-		// Initialize cached coefficients and the topic/beta														  
-		//  normalizing constant.																					 
+		// Initialize cached coefficients and the topic/beta normalizing constant.
 
 		for (denseIndex = 0; denseIndex < nonZeroTopics; denseIndex++) {
 			int topic = localTopicIndex[denseIndex];
 			int n = localTopicCounts[topic];
 
-			//  initialize the normalization constant for the (B * n_{t|d}) term									  
+			//  initialize the normalization constant for the (B * n_{t|d}) term
 			topicBetaMass += beta * n / (tokensPerTopic[topic] + betaSum);
 
-			//  update the coefficients for the non-zero topics													   
+			//  update the coefficients for the non-zero topics
 			cachedCoefficients[topic] = (alpha[topic] + n) / (tokensPerTopic[topic] + betaSum);
 		}
 
