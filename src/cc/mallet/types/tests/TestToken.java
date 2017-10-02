@@ -14,16 +14,14 @@
 
 package cc.mallet.types.tests;
 
-import junit.framework.*;
-
-
 import java.net.URI;
-import java.net.URL;
 import java.io.File;
-
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Token;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class TestToken extends TestCase
 {
@@ -70,7 +68,7 @@ public class TestToken extends TestCase
 
 	public static Test suite ()
 	{
-		return new TestSuite (TestToken.class);
+		return new TestSuite(TestToken.class);
 	}
 
 	protected void setUp ()

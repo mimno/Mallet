@@ -12,11 +12,7 @@ import junit.framework.TestSuite;
 
 import java.util.Arrays;
 import java.io.IOException;
-
-import cc.mallet.types.MatrixOps;
-import cc.mallet.types.Matrixn;
 import cc.mallet.types.SparseMatrixn;
-
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.DoubleArrayList;
 

@@ -9,6 +9,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import cc.mallet.types.Alphabet;
 import junit.framework.TestSuite;
+import java.io.IOException;
 
 /**
  * Created: Nov 24, 2004
