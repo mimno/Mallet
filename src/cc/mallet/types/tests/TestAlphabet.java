@@ -5,12 +5,10 @@
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.types.tests;
-
-import junit.framework.*;
-
-import java.io.IOException;
-
+import junit.framework.Test;
+import junit.framework.TestCase;
 import cc.mallet.types.Alphabet;
+import junit.framework.TestSuite;
 
 /**
  * Created: Nov 24, 2004
