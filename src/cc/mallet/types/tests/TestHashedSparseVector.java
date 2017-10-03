@@ -17,11 +17,8 @@ package cc.mallet.types.tests;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import java.io.File;
 import java.io.IOException;
-
-import cc.mallet.types.DenseVector;
 import cc.mallet.types.HashedSparseVector;
 import cc.mallet.types.SparseVector;
 import cc.mallet.util.FileUtils;

@@ -16,7 +16,10 @@ package cc.mallet.types.tests;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 
 public class TestFeatureSequence extends TestCase
 {

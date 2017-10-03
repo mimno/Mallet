@@ -5,15 +5,14 @@
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.types.tests;
-
-import junit.framework.*;
-
 import java.io.IOException;
-
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Labels;
 import cc.mallet.types.LabelsSequence;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Created: Sep 21, 2004
@@ -48,7 +47,7 @@ public class TestLabelsSequence extends TestCase {
   
   public static Test suite ()
   {
-    return new TestSuite (TestLabelsSequence.class);
+    return new TestSuite(TestLabelsSequence.class);
   }
 
   public static void main (String[] args) throws Throwable

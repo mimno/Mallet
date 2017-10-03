@@ -17,7 +17,10 @@ package cc.mallet.types.tests;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.Multinomial;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 
 public class TestMultinomial extends TestCase
 {
@@ -67,7 +70,7 @@ public class TestMultinomial extends TestCase
 
 	public static Test suite ()
 	{
-		return new TestSuite (TestMultinomial.class);
+		return new TestSuite(TestMultinomial.class);
 	}
 
 	protected void setUp ()
