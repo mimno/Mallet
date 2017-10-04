@@ -13,7 +13,6 @@
  */
 
 package cc.mallet.types.tests;
-
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
 import junit.framework.Test;

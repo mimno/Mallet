@@ -16,8 +16,8 @@ package cc.mallet.types.tests;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelVector;
 import junit.framework.TestCase;
-import junit.framework.Test;
 import junit.framework.TestSuite;
+import junit.framework.Test;
 
 public class TestLabelVector extends TestCase
 {

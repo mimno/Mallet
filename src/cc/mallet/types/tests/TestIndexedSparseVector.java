@@ -13,10 +13,9 @@
 */
 
 package cc.mallet.types.tests;
-
 import junit.framework.TestCase;
-import junit.framework.Test;
 import junit.framework.TestSuite;
+import junit.framework.Test;
 import java.io.IOException;
 import java.util.Arrays;
 import cc.mallet.types.IndexedSparseVector;
