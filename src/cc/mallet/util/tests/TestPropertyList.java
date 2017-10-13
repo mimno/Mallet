@@ -15,7 +15,9 @@
 package cc.mallet.util.tests;
 
 import cc.mallet.util.PropertyList;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class TestPropertyList extends TestCase
 {
@@ -40,7 +42,7 @@ public class TestPropertyList extends TestCase
 
 	public static Test suite ()
 	{
-		return new TestSuite (TestPropertyList.class);
+		return new TestSuite(TestPropertyList.class);
 	}
 
 	protected void setUp ()

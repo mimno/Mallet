@@ -7,7 +7,9 @@
 package cc.mallet.util.tests;
 
 import cc.mallet.util.Strings;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Created: Jan 19, 2005
@@ -24,7 +26,7 @@ public class TestStrings extends TestCase {
 
   public static Test suite ()
   {
-    return new TestSuite (TestStrings.class);
+    return new TestSuite(TestStrings.class);
   }
 
   public static void testCount ()
