@@ -35,7 +35,6 @@ public class TestAlphabet extends TestCase {
     assertEquals (3, dict.lookupIndex ("TEST4", true));
   }
 
-  // tests a bug where
   public void testReadResolve () throws IOException, ClassNotFoundException
   {
     Alphabet dict = new Alphabet ();
