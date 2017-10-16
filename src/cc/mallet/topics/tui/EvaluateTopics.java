@@ -40,7 +40,7 @@ public class EvaluateTopics {
 
 	static CommandOption.Boolean usingResampling = new CommandOption.Boolean
         (EvaluateTopics.class, "use-resampling", "TRUE|FALSE", false, false,
-         "Whether to resample topics in left-to-right evaluation. Resampling is more accurate, but leads to quadratic scaling in the lenght of documents.", null);
+         "Whether to resample topics in left-to-right evaluation. Resampling is more accurate, but leads to quadratic scaling in the length of documents.", null);
 
 	static CommandOption.Integer numIterations = new CommandOption.Integer
         (EvaluateTopics.class, "num-iterations", "INTEGER", true, 100,
