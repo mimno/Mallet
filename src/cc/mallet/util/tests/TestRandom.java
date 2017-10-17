@@ -8,7 +8,6 @@ package cc.mallet.util.tests;
 
 import cc.mallet.types.MatrixOps;
 import cc.mallet.util.Randoms;
-import cc.mallet.util.Strings;
 import junit.framework.TestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;

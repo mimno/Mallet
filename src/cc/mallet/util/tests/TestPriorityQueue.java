@@ -1,7 +1,11 @@
 package cc.mallet.util.tests;
 
-import cc.mallet.util.search.*;
-import junit.framework.*;
+import cc.mallet.util.search.MinHeap;
+import cc.mallet.util.search.PriorityQueue;
+import cc.mallet.util.search.QueueElement;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Created by IntelliJ IDEA.
