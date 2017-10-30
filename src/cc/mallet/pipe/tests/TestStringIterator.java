@@ -9,8 +9,7 @@
 package cc.mallet.pipe.tests;
 
 import cc.mallet.pipe.StringIterator;
-
-import junit.framework.*;
+import junit.framework.TestCase;
 
 public class TestStringIterator extends TestCase {
 

@@ -14,14 +14,17 @@
 
 package cc.mallet.pipe.tests;
 
-import junit.framework.*;
-import java.util.ArrayList;
-import java.util.regex.*;
 
-import cc.mallet.pipe.*;
-import cc.mallet.pipe.iterator.*;
-import cc.mallet.pipe.tsf.*;
-import cc.mallet.types.*;
+import cc.mallet.pipe.Input2CharSequence;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.SGML2TokenSequence;
+import cc.mallet.pipe.SerialPipes;
+import cc.mallet.pipe.iterator.ArrayIterator;
+import cc.mallet.types.Instance;
+import cc.mallet.types.TokenSequence;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class TestSGML2TokenSequence extends TestCase
 {
@@ -53,15 +56,15 @@ public class TestSGML2TokenSequence extends TestCase
 	public static class Array2ArrayIterator extends Pipe
 	{
 		public Instance pipe (Instance carrier) {
-			carrier.setData(new ArrayIterator ((Object[])carrier.getData()));
+			carrier.setData(new ArrayIterator((Object[])carrier.getData()));
 			return carrier;
 		}
 	}
 	
 	public void testOne ()
 	{
-		Pipe p = new SerialPipes (new Pipe[] {
-			new Input2CharSequence (),
+		Pipe p = new SerialPipes(new Pipe[] {
+			new Input2CharSequence(),
 			new SGML2TokenSequence()
 		});
 		for (int i=0; i < dataWithTags.length; i++) {
@@ -81,7 +84,7 @@ public class TestSGML2TokenSequence extends TestCase
 	
 	public static Test suite ()
 	{
-		return new TestSuite (TestSGML2TokenSequence.class);
+		return new TestSuite(TestSGML2TokenSequence.class);
 	}
 
 	protected void setUp ()
