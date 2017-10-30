@@ -8,10 +8,8 @@
 
 package cc.mallet.pipe.tests;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.CharSequenceLowercase;
 import cc.mallet.pipe.Pipe;
@@ -22,8 +20,8 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 import cc.mallet.util.CharSequenceLexer;
+import junit.framework.TestCase;
 
-import junit.framework.*;
 
 public class TestTokenSequence2PorterStems extends TestCase {
 

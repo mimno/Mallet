@@ -6,17 +6,15 @@
    information, see the file `LICENSE' included with this distribution. */
 
 package cc.mallet.pipe.tests;
-
-import java.io.*;
-
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
-import cc.mallet.pipe.iterator.*;
+import cc.mallet.pipe.iterator.ParenGroupIterator;
 import cc.mallet.types.InstanceList;
-
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import java.io.Reader;
+import java.io.StringReader;
 
 
 /**
@@ -38,7 +36,7 @@ public class TestIterators extends TestCase {
 	public void testParenGroupIterator ()
 	{
 		String input = "(a (b c) ((d))  ) f\n\n (3\n 4) (  6) ";
-		Reader reader = new StringReader (input);
+		Reader reader = new StringReader(input);
 		ParenGroupIterator it = new ParenGroupIterator (reader);
 		Pipe pipe = new Noop();
 		pipe.setTargetProcessing (false);

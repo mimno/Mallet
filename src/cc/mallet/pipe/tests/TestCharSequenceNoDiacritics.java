@@ -8,7 +8,6 @@
 
 package cc.mallet.pipe.tests;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cc.mallet.pipe.CharSequenceLowercase;
@@ -17,8 +16,8 @@ import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
+import junit.framework.TestCase;
 
-import junit.framework.*;
 
 public class TestCharSequenceNoDiacritics extends TestCase {
 
