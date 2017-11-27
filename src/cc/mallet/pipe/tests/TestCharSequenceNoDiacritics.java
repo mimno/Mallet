@@ -9,7 +9,7 @@
 package cc.mallet.pipe.tests;
 
 import java.util.List;
-
+import java.util.ArrayList;
 import cc.mallet.pipe.CharSequenceLowercase;
 import cc.mallet.pipe.CharSequenceNoDiacritics;
 import cc.mallet.pipe.Pipe;
@@ -68,7 +68,7 @@ public class TestCharSequenceNoDiacritics extends TestCase {
 
   private SerialPipes createPipes() {
 
-    List<Pipe> pipes = new ArrayList<>();
+    List<Pipe> pipes = new ArrayList<Pipe>(); 
 
     // Convert string to lowercase
     pipes.add(new CharSequenceLowercase());
