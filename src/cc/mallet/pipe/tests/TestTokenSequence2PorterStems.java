@@ -10,6 +10,7 @@ package cc.mallet.pipe.tests;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.CharSequenceLowercase;
 import cc.mallet.pipe.Pipe;
