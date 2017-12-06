@@ -1,0 +1,1 @@
+ I'm curious about why we treat fitting GLMS as though they were some special optimization problem. Are they? It seems to me that they're just maximum likelihood, and that we write down the likelihood and then ... we maximize it! So why do we use Fisher scoring instead of any of the myriad of optimization schemes that has been developed in the applied math literature? 

@@ -1,0 +1,1 @@
+ Such a small magnitude makes this process negliable among other factors; indeed this result literally means that you don't need to care about this process until you build extreamly accurate theory of the full solar system dynamics. To the extent that is probably unreachable due to deterministic chaos. 

@@ -1,0 +1,1 @@
+ The assumption of normality assumes your data is normally distributed (the bell curve, or gaussian distribution). You can check this by plotting the data or checking the measures for kurtosis (how sharp the peak is) and skewdness (?) (if more than half the data is on one side of the peak). 

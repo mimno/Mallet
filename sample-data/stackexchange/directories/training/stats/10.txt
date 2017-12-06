@@ -1,0 +1,1 @@
+ Many studies in the social sciences use Likert scales. When is it appropriate to use Likert data as ordinal and when is it appropriate to use it as interval data? 

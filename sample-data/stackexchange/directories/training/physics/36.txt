@@ -1,0 +1,1 @@
+ $$\mathrm{Average\ Speed = \frac{Total\ Distance}{Total\ time}}$$ So basically, $t_1 = 120/40 = 3\ hrs$ $t_2 = 120/60 = 2\ hrs$ Total time $= 5\ hrs$ Total distance = $240$ miles Average speed$ = 240/5 = 48\ mph$ 

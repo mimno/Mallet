@@ -1,0 +1,1 @@
+ This is Bessel's Correction . The US version is showing the formula for the sample standard deviation , where the UK version above is the standard deviation of the sample . 

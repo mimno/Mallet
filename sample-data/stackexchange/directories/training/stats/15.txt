@@ -1,0 +1,1 @@
+ John Cook gives some interesting recommendations. Basically, get percentiles/quantiles (not means or obscure scale parameters!) from the experts, and fit them with the appropriate distribution. 

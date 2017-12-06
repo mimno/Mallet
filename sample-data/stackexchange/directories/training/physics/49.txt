@@ -1,0 +1,1 @@
+ What should be a properties of a body so a contact with it can be detected by a capacitive touchscreen or a touchpad? 

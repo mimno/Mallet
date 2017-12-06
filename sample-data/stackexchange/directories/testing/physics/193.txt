@@ -1,0 +1,1 @@
+ What are the best textbooks to read for the mathematical background you need for modern physics, such as, string theory? Some subjects off the top of my head that probably need covering: Differential geometry, Manifolds, etc. Lie groups, Lie algebras and their representation theory. Algebraic topology. 

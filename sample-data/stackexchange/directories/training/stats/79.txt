@@ -1,0 +1,1 @@
+ I am not sure this is purely a US vs. British issue. Here is a brief page I wrote explaining the difference between using n vs. n-1 when computing a Standard Deviation . 

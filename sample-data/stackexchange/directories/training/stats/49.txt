@@ -1,0 +1,1 @@
+ You don't need to install any packages because this is possible with base-R functions. Have a look at the arima function . This is a basic function of Box-Jenkins analysis , so you should consider reading one of the R time series text-books for an overview; my favorite is Shumway and Stoffer. " Time Series Analysis and Its Applications: With R Examples ". 

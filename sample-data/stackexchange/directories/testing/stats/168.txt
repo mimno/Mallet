@@ -1,0 +1,1 @@
+ For univariate kernel density estimators (KDE), I use Silverman's rule for calculating $h$: \begin{equation} 0.9 \min(sd, IQR/1.34)\times n^{-0.2} \end{equation} What are the standard rules for multivariate KDE (assuming a Normal kernel). 

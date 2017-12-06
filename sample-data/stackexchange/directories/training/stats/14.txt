@@ -1,0 +1,1 @@
+ I second that Jay. Why is R valuable? Here's a short list of reasons. . Also check out ggplot2 - a very nice graphics package for R. Some nice tutorials here . 

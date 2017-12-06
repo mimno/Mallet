@@ -1,0 +1,1 @@
+ What are the main differences between performing principal component analysis (PCA) on the correlation matrix and on the covariance matrix? Do they give the same results? 

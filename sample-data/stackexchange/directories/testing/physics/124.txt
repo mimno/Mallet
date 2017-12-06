@@ -1,0 +1,1 @@
+ Rest mass of elementary particles is not quantized: in the standard model, the masses are free parameters of the theory; they must be measured and introduced in the model experimentally. However, the mass of, say the Hydrogen atom is given by the mass of its constituent (proton and electron whose mass are given) minus the binding energy which is quantized. 

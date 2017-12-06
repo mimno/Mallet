@@ -1,0 +1,1 @@
+ Quick-R can be a good place to start. A little bit data mining oriented R and Data Mining resources: Examples and Case Studies and R Reference Card for Data Mining . 

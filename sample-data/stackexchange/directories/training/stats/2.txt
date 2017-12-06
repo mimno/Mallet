@@ -1,0 +1,1 @@
+ In many different statistical methods there is an "assumption of normality". What is "normality" and how do I know if there is normality? 

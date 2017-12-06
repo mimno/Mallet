@@ -1,0 +1,1 @@
+ R is designed around ideas such as "reproducible research" and "trustworthy software", as John Chambers says in his excellent book "Software for Data Analysis: Programming with R" . One of the best ways to learn R is to look at the wealth of source code that available on CRAN (with 2461 packages and counting). Simple , load a , and start browsing the code. 

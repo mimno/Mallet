@@ -1,0 +1,1 @@
+ I would explain it to a layman as: Data visualization is taking data, and making a picture out of it. This allows you to easily see and understand relationships within the data much more easily than just looking at the numbers. 

@@ -1,0 +1,1 @@
+ If you just lean without holding the steering wheel, that will automatically turn in order to conserve the total angular momentum. If you hold it tight however, this is not possible and you will crash. 

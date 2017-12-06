@@ -1,0 +1,1 @@
+ I am looking at fitting distributions to data (with a particular focus on the tail) and am leaning towards Anderson-Darling tests rather than Kolmogorov-Smirnov. What do you think are the relative merits of these or other tests for fit (e.g. Cramer-von Mises)? 

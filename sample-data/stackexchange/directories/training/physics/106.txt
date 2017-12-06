@@ -1,0 +1,1 @@
+ In this simplified picture, gravity of the Sun is a centripetal force for Earth's orbital motion; centrifugal force that equalizes it comes from the angular momentum of Earth. If Earth didn't have an angular momentum (was, say, created near the sun without relative velocity, at least in the angular direction), it would just fall on the Sun. 

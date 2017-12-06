@@ -1,0 +1,1 @@
+ In imaging microscopy the 2D-Fourier Transform is a useful tool to analyse the images and improve the S/N ratio. I had your same opinion at the beginning but then my boss, who actually is a FTT entusiast, was able to convince me to the actual usefulness (comic) of the technique! 

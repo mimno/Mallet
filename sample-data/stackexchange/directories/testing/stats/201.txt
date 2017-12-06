@@ -1,0 +1,1 @@
+ Start R and type . This will show all datasets in the search path. Many additional datasets are available in add-on packages. For example, there are some interesting real-world social science datasets in the package. 

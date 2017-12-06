@@ -1,0 +1,1 @@
+ Maybe raster scanning the beam in the polarimeters. Or using the same techniques used to measure a single polarization beam but with a camera as a detector. 

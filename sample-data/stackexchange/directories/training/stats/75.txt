@@ -1,0 +1,1 @@
+ I'm using R and the manuals on the R site are really informative. However, I'd like to see some more examples and implementations with R which can help me develop my knowledge faster. Any suggestions? 

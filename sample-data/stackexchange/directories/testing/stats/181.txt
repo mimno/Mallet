@@ -1,0 +1,1 @@
+ Is there a standard and accepted method for selecting the number of layers, and the number of nodes in each layer, in a FF NN? I'm interested in automated ways of building neural networks. 

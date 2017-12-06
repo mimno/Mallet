@@ -1,0 +1,1 @@
+ In such a discussion, I always recall the famous Ken Thompson quote When in doubt, use brute force. In this case, machine learning is a salvation when the assumptions are hard to catch; or at least it is much better than guessing them wrong. 

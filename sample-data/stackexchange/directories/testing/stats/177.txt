@@ -1,0 +1,1 @@
+ Rather than exclude outliers, you can use a robust method of regression. In R, for example, the function from the MASS package can be used instead of the function. The method of estimation can be tuned to be more or less robust to outliers. 

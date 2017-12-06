@@ -1,0 +1,1 @@
+ I am wondering if someone could provide me with a formula that would tell me at what velocity a projectile can be launched from something using an electromagnetic field. The idea is much like a rail gun or Gauss rifle, but not exactly. Just looking to find a formula to determine the speed of the projectile. Thank you, Michael Vanderpool 

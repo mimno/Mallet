@@ -1,0 +1,1 @@
+ I use plyr and ggplot2 the most on a daily basis. I also rely heavily on time series packages; most especially, the zoo package. 

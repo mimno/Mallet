@@ -1,0 +1,1 @@
+ Laplace's determinism is fine if you do no longer consider x(t) as the function you want to deterministically describe but accept the fact that only the wave function $\psi(x,t)$ is deterministic - and even that only when you neglect QFT effects. 

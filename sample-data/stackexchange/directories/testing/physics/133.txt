@@ -1,0 +1,1 @@
+ I agree with David and his disagreement. My experience and personal opinion is that GNUPlot is simpler and quicker for the real time analysis and then u already have the graph in gnuplot.. why would u bother to change it ;) 

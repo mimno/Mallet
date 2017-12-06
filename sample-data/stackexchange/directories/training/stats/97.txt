@@ -1,0 +1,1 @@
+ I have some ordinal data gained from survey questions. In my case they are Likert style responses (Strongly Disagree-Disagree-Neutral-Agree-Strongly Agree). In my data they are coded as 1-5. I don't think means would mean much here, so what basic summary statistics are considered usefull? 

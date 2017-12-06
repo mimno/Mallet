@@ -1,0 +1,1 @@
+ I don't know how to use SAS/R/Orange, but it sounds like the kind of test you need is a chi-square test . 

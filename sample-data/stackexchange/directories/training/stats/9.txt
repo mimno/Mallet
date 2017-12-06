@@ -1,0 +1,1 @@
+ Incanter is a Clojure-based, R-like platform (environment + libraries) for statistical computing and graphics. 

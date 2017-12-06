@@ -1,0 +1,1 @@
+ After you learn the basics, I find the following sites very useful: R-bloggers . Subscribing to the Stack overflow R tag . 

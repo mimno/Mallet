@@ -1,0 +1,1 @@
+ For a given isotope, one can obtain the binding energy using the semi-empirical mass formula. For example, has a binding energy of 1782.8 MeV. From this information, how can the likelihood of the isotopes stability be found? 

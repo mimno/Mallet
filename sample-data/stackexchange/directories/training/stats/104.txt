@@ -1,0 +1,1 @@
+ A frequency table is a good place to start. You can do the count, and relative frequency for each level. Also, the total count, and number of missing values may be of use. You can also use a contingency table to compare two variables at once. Can display using a mosaic plot too. 

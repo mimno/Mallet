@@ -1,0 +1,1 @@
+ How can I find the PDF (probability density function) of a distribution given the CDF (cumulative distribution function)? 

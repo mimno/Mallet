@@ -1,0 +1,1 @@
+ I have written a document that is freely available at my website and on CRAN. See the linked page: icebreakeR The datasets that are used in the document are also linked from that page. Feedback is welcome and appreciated! Andrew 

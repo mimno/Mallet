@@ -1,0 +1,1 @@
+ I need to analyze the 100k MovieLens dataset for clustering with two algorithms of my choice, between the likes of k-means, agnes, diana, dbscan, and several others. What tools (like Rattle, or Weka) would be best suited to help me make some simple clustering analysis over this dataset? 

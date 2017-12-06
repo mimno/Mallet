@@ -1,0 +1,1 @@
+ Econometricians often talk about a time series being integrated with order k, I(k) . k being the minimum number of differences required to obtain a stationary time series. What methods or statistical tests can be used to determine, given a level of confidence, the order of integration of a time series? 

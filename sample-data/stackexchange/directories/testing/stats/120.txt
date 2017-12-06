@@ -1,0 +1,1 @@
+ One way you can think of this is that standard deviation is similar to a "distance from the mean". Compare this to distances in euclidean space - this gives you the true distance, where what you suggested (which, btw, is the absolute deviation ) is more like a manhattan distance calculation. 

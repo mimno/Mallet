@@ -1,0 +1,1 @@
+ Determinism as more to worry about stochastic and chaotic processes than with the Heisenberg's uncertainty principle. As a simple proof, you can easily consider a purely classical system and observe that you don't have determinism as Laplace had hopped. 

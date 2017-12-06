@@ -1,0 +1,1 @@
+ Since N is the number of points in the data set, one could argue that by calculating the mean one has reduced the degree of freedom in the data set by one (since one introduced a dependency into the data set), so one should use N-1 when estimating the standard deviation from a data set for which one had to estimate the mean before. 

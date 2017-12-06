@@ -1,0 +1,1 @@
+ Neural network may be to slow for a large number of documents (also this is now pretty much obsolete). And you may also check Random Forest among classifiers; it is quite fast, scales nice and does not need complex tuning. 

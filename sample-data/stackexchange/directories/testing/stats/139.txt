@@ -1,0 +1,1 @@
+ If I had to choose one thing, make sure that you read "The R Inferno" . There are many good resources on the R homepage , but in particular, read "An Introduction to R" and "The R Language Definition" . 

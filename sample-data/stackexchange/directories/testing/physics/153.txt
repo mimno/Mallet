@@ -1,0 +1,1 @@
+ I would suggest learning about some of the formulas relating them - that way you're not just memorizing things but actually have some grasp of what goes into them. In particular, I only really know about stress and strain, and it's because I think of them as being the analogue in linear elasticity theory of "force" and "displacement" in Hooke's law. 

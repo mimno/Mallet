@@ -1,0 +1,1 @@
+ If your mean value for the Poisson is 1500, then you're very close to a normal distribution; you might try using that as an approximation and then modelling the mean and variance separately. 

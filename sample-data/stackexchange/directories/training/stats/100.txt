@@ -1,0 +1,1 @@
+ I'd like to see the answer with qualitative view on the problem, not just definition. Examples and analogous from other areas of applied math also would be good. I understand, my question is silly, but I can't find good and intuitive introduction textbook on signal processing — if someone would suggest one, I will be happy. Thanks. 

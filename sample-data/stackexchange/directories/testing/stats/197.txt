@@ -1,0 +1,1 @@
+ How about R with ggplot2 ? Other tools that I really like: Processing Prefuse Protovis 

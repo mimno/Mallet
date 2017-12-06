@@ -1,0 +1,1 @@
+ If you jumped just before impact, your speed towards the bottom of the elevator shaft would go down a little bit. But consider that the elevator falls tens of meters, while you jump about one meter. Your jumping ability is quite small and probably won't make a noticeable difference 

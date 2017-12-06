@@ -1,0 +1,1 @@
+ For doing a variety of MCMC tasks in Python, there's PyMC , which I've gotten quite a bit of use out of. I haven't run across anything that I can do in BUGS that I can't do in PyMC, and the way you specify models and bring in data seems to be a lot more intuitive to me. 

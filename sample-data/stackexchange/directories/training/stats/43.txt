@@ -1,0 +1,1 @@
+ R is great, but I wouldn't really call it "windows based" :) That's like saying the cmd prompt is windows based. I guess it is technically in a window... RapidMiner is far easier to use [1]. It's a free, open-source, multi-platform, GUI. Here's a video on time series forecasting: Also, don't forget to read: [1] No, I don't work for them. 

@@ -1,0 +1,1 @@
+ A while ago a user on R-help mailing list asked about the soundness of using PCA scores in a regression. The user is trying to use some PC scores to explain variation in another PC (see full discussion here ). The answer was that no, this is not sound because PCs are orthogonal to each other. Can someone explain in a bit more detail why this is so? 

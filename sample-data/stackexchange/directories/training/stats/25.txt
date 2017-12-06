@@ -1,0 +1,1 @@
+ What modern tools (Windows-based) do you suggest for modeling financial time series? 

@@ -1,0 +1,1 @@
+ What you describe in your question is the "Copenhagen interpretation" of quantum mechanics. There are more nuanced views of this nowadays that don't treat "measurements" quite so asymmetrically, see e.g. sources that talk about decoherence. I recommend watching the classic lecture "Quantum Mechanics in your face" by Sidney Coleman for a nice take on this sort of thing. 

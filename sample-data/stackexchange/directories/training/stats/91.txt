@@ -1,0 +1,1 @@
+ As user28 said in comments above, the pdf is the first derivative of the cdf for a continuous random variable, and the difference for a discrete random variable. In the continuous case, wherever the cdf has a discontinuity the pdf has an atom. Dirac delta "functions" can be used to represent these atoms. 

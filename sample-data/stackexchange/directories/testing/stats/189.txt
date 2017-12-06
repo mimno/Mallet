@@ -1,0 +1,1 @@
+ Let $F(x)$ denote the cdf; then you can always approximate the pdf of a continuous random variable by calculating $$ \frac{F(x_2) - F(x_1)}{x_2 - x_1},$$ where $x_1$ and $x_2$ are on either side of the point where you want to know the pdf and the distance $|x_2 - x_1|$ is small. 

@@ -1,0 +1,1 @@
+ I recommend R (see the time series view on CRAN ). Some useful references: Econometrics in R , by Grant Farnsworth Multivariate time series modelling in R 

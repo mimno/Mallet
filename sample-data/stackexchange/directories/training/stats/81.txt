@@ -1,0 +1,1 @@
+ I use the xtable package. The xtable package turns tables produced by R (in particular, the tables displaying the anova results) into LaTeX tables, to be included in an article. 

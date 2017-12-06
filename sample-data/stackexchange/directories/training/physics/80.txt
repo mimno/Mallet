@@ -1,0 +1,1 @@
+ Neutrons have spin 1/2 and therefore obey the pauli exclusion principle, meaning two neutrons cannot occupy the same space at the same time. When two neutrons' wavefunctions overlap, they feel a strong repulsive force. See . 

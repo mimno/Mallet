@@ -1,0 +1,1 @@
+ According to the wikipedia article , capacitative sensors detect things with conductive or dielectric properties; so to me, that means these sensors detect a contrast in the electrical properties between your finger, say, and the air around it. I just tested this out on my touchpad with a metal ruler and if I pushed down, I got a little bit of response. 

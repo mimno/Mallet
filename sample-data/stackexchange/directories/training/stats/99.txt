@@ -1,0 +1,1 @@
+ multicore is quite nice for tool for making faster scripts faster. cacheSweave saves a lot of time when using . 

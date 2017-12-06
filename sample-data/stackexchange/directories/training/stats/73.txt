@@ -1,0 +1,1 @@
+ Duplicate thread: I just installed the latest version of R. What packages should I obtain? What are the R packages you couldn't imagine your daily work with data? Please list both general and specific tools. UPDATE: As for 24.10.10 seems to be the winer with 7 votes. Other packages mentioned more than one are: - 4 , - 4 - 3 - 2 - 2 - 2 - 2 - 2 Thanks all for your answers! 

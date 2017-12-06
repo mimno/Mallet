@@ -1,0 +1,1 @@
+ The lattice package in R. Lattice is a powerful and elegant high-level data visualization system, with an emphasis on multivariate data,that is sufﬁcient for typical graphics needs, and is also ﬂexible enough to handle most nonstandard requirements. Quick-R has a quick introduction . 

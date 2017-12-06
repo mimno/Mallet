@@ -1,0 +1,1 @@
+ In statistical mechanics , the Monte Carlo method is used to sample the state space of a statistical system in order to compute physical quantities of interest by averaging. 

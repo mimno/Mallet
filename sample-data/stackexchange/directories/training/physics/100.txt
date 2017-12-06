@@ -1,0 +1,1 @@
+ How is it possible to calculate the energy liberated by a given fission process? For example, in the fission of a $^{235}$U induced by capturing a neutron? 

@@ -1,0 +1,1 @@
+ Acceleration will be the same in any two frames that are moving with constant speed with respect to each other (and may also be rotated and translated). However, if you consider two frames that have relative rotation or acceleration, the acceleration of an object will be different in the two frames. 

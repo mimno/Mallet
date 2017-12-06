@@ -1,0 +1,1 @@
+ for overdispersed poisson, use the negative binomial, which allows you to parameterize the variance as a function of the mean precisely. rnbinom(), etc. in R. 

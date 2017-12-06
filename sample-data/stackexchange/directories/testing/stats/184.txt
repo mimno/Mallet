@@ -1,0 +1,1 @@
+ Try using the function for time series decomposition. It provides a very flexible method for extracting a seasonal component from a time series. 

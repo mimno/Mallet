@@ -1,0 +1,1 @@
+ A force is a normal vector and a vector is characterized by its magnitude ( its norm, "lenght" in graphical representation ) and direction. 

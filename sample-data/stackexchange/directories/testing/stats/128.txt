@@ -1,0 +1,1 @@
+ In Plain English, how does one interpret a Bland-Altman plot? What are the advantages of using a Bland-Altman plot over other methods of comparing two different measurement methods? 

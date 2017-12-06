@@ -1,0 +1,1 @@
+ Yes, in the appropriate limit. Roughly, the study of geodesic motion in the Schwarzschild solution (which is radially symmetric) reduces to Newtonian gravity at sufficiently large distances and slow speeds. To see how this works exactly, one must look more specifically at the equations. 

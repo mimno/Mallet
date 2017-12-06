@@ -1,0 +1,1 @@
+ Amazon has free Public Data sets for use with EC2. Here's a list: 

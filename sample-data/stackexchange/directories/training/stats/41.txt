@@ -1,0 +1,1 @@
+ A quote from Wikipedia . It shows how much variation there is from the "average" (mean, or expected/budgeted value). A low standard deviation indicates that the data points tend to be very close to the mean, whereas high standard deviation indicates that the data is spread out over a large range of values. 

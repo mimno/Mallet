@@ -1,0 +1,1 @@
+ Hamilton's principle states that a dynamic system always follows a path such that its action integral is stationary (that is, maximum or minimum). Why should the action integral be stationary? On what basis did Hamilton state this principle? 

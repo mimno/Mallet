@@ -1,0 +1,1 @@
+ I think your reasoning is correct, but the values involved are very small. In one year r will increase by 1mm, so in 1 billion years it will have increased by 1000 km or by about0.01% 

@@ -1,0 +1,1 @@
+ Deuteron ( 2 H) is composed of a neutron (spin-1/2) and a proton (spin-1/2), with a total spin of 1, which is a boson. Therefore, it is possible for two deuterons to occupy the same quantum state. However, the protons and neutrons inside are fermions, so they proton/neutron shouldn't be able the share states due to the exclusion principle. Why it does not happen? 

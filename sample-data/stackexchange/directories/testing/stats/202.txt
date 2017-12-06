@@ -1,0 +1,1 @@
+ If you like learning through videos, I collated a list of R training videos . I also prepared a general post on learning R with suggestions on books, online manuals, blogs, videos, user interfaces, and more. 

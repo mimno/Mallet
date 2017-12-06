@@ -1,0 +1,1 @@
+ It's an algorithm for training feedforward multilayer neural networks (multilayer perceptrons). There are several nice java applets around the web that illustrate what's happening, like this one: . Also, Bishop's book on NNs is the standard desk reference for anything to do with NNs. 

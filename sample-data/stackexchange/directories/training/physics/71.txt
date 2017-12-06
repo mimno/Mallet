@@ -1,0 +1,1 @@
+ In laser resonators, higher order modes (i.e. TEM01, etc) accumulate phase faster than the fundamental TEM00 mode. This extra phase is called Gouy phase . What is an intuitive explanation of this effect? Gouy predicted and then experimentally verified the existence of this effect long before the existence of lasers. How did he do it, and what motivated him to think about it? 

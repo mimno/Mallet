@@ -1,0 +1,1 @@
+ is an aggregated blog from lots of blogs that talk about statistics using R, and the #rstats hashtag on twitter is also helpful. I write quite a bit about statistics and R in genetics research . 

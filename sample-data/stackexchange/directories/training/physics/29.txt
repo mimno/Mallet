@@ -1,0 +1,1 @@
+ I recently encountered a puzzle where a person drove 120 miles at 40mph, then drove back the same 120 miles at 60mph. The average of the speeds is (40mph+60mph)/2 = 50mph, so the total trip time should be 240mi/50mph = 4.8 hours. But the trip actually took 5 hours. Why is that, and what is the correct way to calculate average speed? 

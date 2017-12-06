@@ -1,0 +1,1 @@
+ Label switching (i.e., the posterior distribution is invariant to switching component labels) is a problematic issue when using MCMC to estimate mixture models. Is there a standard (as in widely accepted) methodology to deal with the issue? If there is no standard approach then what are the pros and cons of the leading approaches to solve the label switching problem? 

@@ -1,0 +1,1 @@
+ Principal components are orthogonal by definition, so any pair of PCs will have zero correlation. However, PCA can be used in regression if there are a large number of explanatory variables. These can be reduced to a small number of principal components and used as predictors in a regression. 

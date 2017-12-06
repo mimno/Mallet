@@ -1,0 +1,1 @@
+ I really like the FRED , from the St. Louis Fed (economics data). You can chart the series or more than one series, you can do some transformations to your data and chart it, and the NBER recessions are shaded. 

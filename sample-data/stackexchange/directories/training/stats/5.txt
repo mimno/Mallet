@@ -1,0 +1,1 @@
+ The R-project R is valuable and significant because it was the first widely-accepted Open-Source alternative to big-box packages. It's mature, well supported, and a standard within many scientific communities. Some reasons why it is useful and valuable There are some nice tutorials here . 

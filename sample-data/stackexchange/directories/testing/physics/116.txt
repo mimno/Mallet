@@ -1,0 +1,1 @@
+ Structure and Interpretation of Classical Mechanics ( table of contents ) certainly deserves mention. It might not have as much differential geometry as you'd like, though they have a followup article titled Functional Differential Geometry . 

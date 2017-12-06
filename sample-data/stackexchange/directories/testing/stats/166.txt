@@ -1,0 +1,1 @@
+ Australia is currently having an election and understandably the media reports new political poll results daily. In a country of 22 million what percentage of the population would need to be sampled to get a statistically valid result? Is it possible that using too large a sample could affect the results, or does statistical validity monotonically increase with sample size? 

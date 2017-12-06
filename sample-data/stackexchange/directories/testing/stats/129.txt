@@ -1,0 +1,1 @@
+ I quite like Markov Chain Monte Carlo: Stochastic Simulation for Bayesian Inference by Gamerman and Lopes. 
