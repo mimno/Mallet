@@ -36,8 +36,15 @@ public class Text2Vectors {
 	
 	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File(Text2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
 		 "Use the pipe and alphabets from a previously created vectors file. " +
+	 	 "   That previous file is *rewritten* to include any newly observed features.\n" +
 		 "Allows the creation, for example, of a test set of vectors that are " +
 		 "compatible with a previously created set of training vectors", null);
+
+	static CommandOption.File usePipeFromVectorsFileNoRewrite = new CommandOption.File(Text2Vectors.class, "use-pipe-from-without-rewrite", "FILE", true, new File("text.vectors"),
+		"Use the pipe and alphabets from a previously created vectors file.\n" +
+	 	"   *No change* is made to that previous file.\n" +
+		"   Allows the creation, for example, of a test set of vectors that are\n" +
+		"   compatible with a previously created set of training vectors", null);
 
 	static CommandOption.Boolean preserveCase = new CommandOption.Boolean(Text2Vectors.class, "preserve-case", "[TRUE|FALSE]", false, false,
 		 "If true, do not force all strings to lowercase.", null);
@@ -142,6 +149,10 @@ public class Text2Vectors {
 
 		if (usePipeFromVectorsFile.wasInvoked()) {
 			previousInstanceList = InstanceList.load (usePipeFromVectorsFile.value);
+			instancePipe = previousInstanceList.getPipe();
+		}
+		else if (usePipeFromVectorsFileNoRewrite.wasInvoked()) {
+			previousInstanceList = InstanceList.load (usePipeFromVectorsFileNoRewrite.value);
 			instancePipe = previousInstanceList.getPipe();
 		}
 		else {

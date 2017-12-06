@@ -58,9 +58,16 @@ public class Csv2Vectors {
 		 "The index of the group containing the data.", null);
 	
 	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File(Csv2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
-		 "Use the pipe and alphabets from a previously created vectors file.\n" +
-		 "   Allows the creation, for example, of a test set of vectors that are\n" +
-		 "   compatible with a previously created set of training vectors", null);
+		"Use the pipe and alphabets from a previously created data file.\n" +
+		"   That previous file is *rewritten* to include any newly observed features.\n" +
+		"   Allows the creation, for example, of a test set of vectors that are\n" +
+		"   compatible with a previously created set of training vectors", null);
+
+	static CommandOption.File usePipeFromVectorsFileNoRewrite = new CommandOption.File(Csv2Vectors.class, "use-pipe-from-without-rewrite", "FILE", true, new File("text.vectors"),
+		"Use the pipe and alphabets from a previously created vectors file.\n" +
+	 	"   *No change* is made to that previous file.\n" +
+		"   Allows the creation, for example, of a test set of vectors that are\n" +
+		"   compatible with a previously created set of training vectors", null);
 
 	static CommandOption.Boolean keepSequence = new CommandOption.Boolean(Csv2Vectors.class, "keep-sequence", "[TRUE|FALSE]", false, false,
 	     "If true, final data will be a FeatureSequence rather than a FeatureVector.", null);
@@ -124,11 +131,22 @@ public class Csv2Vectors {
 		Pipe instancePipe;
 		InstanceList previousInstanceList = null;
 		
+		// The legacy function is to rewrite the earlier file to include
+		//  any new words. This doesn't work well for parallel processing.
+		// I'm adding a new option that does not rewrite rather than
+		//  changing the behavior of the existing option.
 		if (usePipeFromVectorsFile.wasInvoked()) {
 
 			// Ignore all options, use a previously created pipe
 
 			previousInstanceList = InstanceList.load (usePipeFromVectorsFile.value);
+			instancePipe = previousInstanceList.getPipe();			
+		}
+		else if (usePipeFromVectorsFileNoRewrite.wasInvoked()) {
+
+			// Ignore all options, use a previously created pipe
+
+			previousInstanceList = InstanceList.load (usePipeFromVectorsFileNoRewrite.value);
 			instancePipe = previousInstanceList.getPipe();			
 		}
 		else {

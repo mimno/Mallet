@@ -44,22 +44,25 @@ public class SvmLight2Vectors {
 
 	private static Logger logger = MalletLogger.getLogger(SvmLight2Vectors.class.getName());
 
-	static CommandOption.SpacedStrings inputFiles =	new CommandOption.SpacedStrings
-		(SvmLight2Vectors.class, "input", "FILE", true, null,
+	static CommandOption.SpacedStrings inputFiles =	new CommandOption.SpacedStrings(SvmLight2Vectors.class, "input", "FILE", true, null,
 		 "The files containing data to be classified, one instance per line", null);
 
-	static CommandOption.SpacedStrings outputFiles = new CommandOption.SpacedStrings
-		(SvmLight2Vectors.class, "output", "FILE", true, null,
+	static CommandOption.SpacedStrings outputFiles = new CommandOption.SpacedStrings(SvmLight2Vectors.class, "output", "FILE", true, null,
 		 "Write the instance list to this file; Using - indicates stdout.", null);
 	
-	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File
-		(SvmLight2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
+	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File(SvmLight2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
 		 "Use the pipe and alphabets from a previously created vectors file.\n" +
+		 "   That previous file is *rewritten* to include any newly observed features.\n" +
 		 "   Allows the creation, for example, of a test set of vectors that are\n" +
 		 "   compatible with a previously created set of training vectors", null);
 
-	static CommandOption.Boolean printOutput = new CommandOption.Boolean
-		(SvmLight2Vectors.class, "print-output", "[TRUE|FALSE]", false, false,
+	static CommandOption.File usePipeFromVectorsFileNoRewrite = new CommandOption.File(SvmLight2Vectors.class, "use-pipe-from-without-rewrite", "FILE", true, new File("text.vectors"),
+		"Use the pipe and alphabets from a previously created vectors file.\n" +
+	 	"   *No change* is made to that previous file.\n" +
+		"   Allows the creation, for example, of a test set of vectors that are\n" +
+		"   compatible with a previously created set of training vectors", null);
+
+	static CommandOption.Boolean printOutput = new CommandOption.Boolean(SvmLight2Vectors.class, "print-output", "[TRUE|FALSE]", false, false,
 		 "If true, print a representation of the processed data\n" +
 		 "   to standard output. This option is intended for debugging.", null);
 
@@ -88,11 +91,12 @@ public class SvmLight2Vectors {
 		InstanceList previousInstanceList = null;
 		
 		if (usePipeFromVectorsFile.wasInvoked()) {
-
-			// Ignore all options, use a previously created pipe
-
 			previousInstanceList = InstanceList.load (usePipeFromVectorsFile.value);
 			instancePipe = previousInstanceList.getPipe();			
+		}
+		else if (usePipeFromVectorsFileNoRewrite.wasInvoked()) {
+			previousInstanceList = InstanceList.load (usePipeFromVectorsFileNoRewrite.value);
+			instancePipe = previousInstanceList.getPipe();
 		}
 		else {
 			// Build a new pipe
