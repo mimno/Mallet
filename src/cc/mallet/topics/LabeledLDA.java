@@ -581,7 +581,7 @@ public class LabeledLDA implements Serializable {
 		out.writeObject (topicAlphabet);
 
 		out.writeInt (numTopics);
-		out.writeObject (alpha);
+		out.writeDouble (alpha);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
 
