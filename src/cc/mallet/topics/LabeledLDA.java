@@ -579,6 +579,7 @@ public class LabeledLDA implements Serializable {
 		out.writeObject (data);
 		out.writeObject (alphabet);
 		out.writeObject (topicAlphabet);
+		out.writeObject (labelAlphabet);
 
 		out.writeInt (numTopics);
 		out.writeDouble (alpha);
@@ -605,6 +606,7 @@ public class LabeledLDA implements Serializable {
 		data = (ArrayList<TopicAssignment>) in.readObject ();
 		alphabet = (Alphabet) in.readObject();
 		topicAlphabet = (LabelAlphabet) in.readObject();
+		labelAlphabet = (Alphabet) in.readObject();
 
 		numTopics = in.readInt();
 		alpha = in.readDouble();
