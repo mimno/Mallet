@@ -201,6 +201,7 @@ public class LabeledLDA implements Serializable {
 	
 	public Alphabet getAlphabet() { return alphabet; }
 	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
+	public Alphabet getLabelAlphabet() { return labelAlphabet; }
 	public ArrayList<TopicAssignment> getData() { return data; }
 	
 	public void setTopicDisplay(int interval, int n) {
