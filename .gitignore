@@ -10,3 +10,4 @@ dist/mallet.jar
 .idea
 *.class
 mallet.iml
+test/TEST-*.*
