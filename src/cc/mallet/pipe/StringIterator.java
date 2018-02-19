@@ -25,6 +25,27 @@ final public class StringIterator implements Iterator<Character> {
     reset(text);
   }
 
+  /**
+   * Sets the current document and resets the current position to the start of it.
+   *
+   * @param text
+   */
+  public void reset(String text) {
+
+    // Preconditions.checkNotNull(text);
+
+    if (text == null) {
+      throw new NullPointerException("\"text\" should not be null");
+    }
+
+    text_ = text;
+    position_ = 0;
+  }
+
+  public boolean hasNextSentence() {
+    return hasNext();
+  }
+
   @Override
   public boolean hasNext() {
     return !isEndOfText();
@@ -37,50 +58,110 @@ final public class StringIterator implements Iterator<Character> {
     return c;
   }
 
-  public String string() {
-    return text_;
-  }
-
-  public int position() {
-    return position_;
-  }
-
-  public int remaining() {
-    return text_.length() - position_;
-  }
-
-  /**
-   * Sets the current document and resets the current position to the start of it.
-   *
-   * @param text
-   */
-  public void reset(String text) {
-
-    if (text == null) {
-      throw new IllegalArgumentException("StringIterator expects a non-null String.");
-    }
-
-    text_ = text;
-    position_ = 0;
-  }
-
   /**
    * Indicates if the current position is at the end of the current document.
    *
-   * @return
+   * @return true iif we reached the end of the document, false otherwise.
    */
   public boolean isEndOfText() {
     return position_ >= text_.length();
   }
 
   /**
-   * Returns the character beyond the current position, or a null character if the specified
-   * position is at the end of the document.
+   * Instead of iterating on characters, iterate on sentences. Words between parenthesis and
+   * brackets are removed.
    *
-   * @return The character at the current position.
+   * @return a sentence.
    */
-  public char peek() {
-    return peek(0);
+  public String nextSentence() {
+
+    int inParenthesis = -1;
+    int inBrackets = -1;
+
+    StringBuilder builder = new StringBuilder();
+
+    while (hasNext()) {
+
+      char c = next();
+      switch (c) {
+        case '\n':
+        case '\r':
+          if (inParenthesis < 0 && inBrackets < 0 && (peek() == '\n' || peek() == '\r')) {
+            return builder.toString().trim();
+          }
+        case ',':
+          if (builder.length() > 0 && Character.isDigit(builder.charAt(builder.length() - 1))
+              && Character.isDigit(peek())) { // 3,14
+            builder.append(c);
+            break;
+          }
+        case '\t':
+        case '“':
+        case '”':
+        case '"':
+          if (!Character.isWhitespace(peek())) {
+            builder.append(' ');
+          }
+          break;
+        case '(':
+          inParenthesis++;
+          break;
+        case '[':
+          inBrackets++;
+          break;
+        case ')':
+          inParenthesis--;
+          break;
+        case ']':
+          inBrackets--;
+          break;
+        case '.':
+        case ':':
+          if (builder.length() > 0 && Character.isDigit(builder.charAt(builder.length() - 1))
+              && Character.isDigit(peek())) { // 3.14 or 2:30
+            builder.append(c);
+            break;
+          }
+        case '?':
+        case '!':
+        case ';':
+          if (inParenthesis < 0 && inBrackets < 0) {
+            return builder.toString().trim();
+          }
+          builder.append(' ');
+          break;
+        default:
+          if (inParenthesis < 0 && inBrackets < 0) {
+            builder.append(c);
+          }
+          break;
+      }
+    }
+    return builder.toString().trim();
+  }
+
+  /**
+   * Instead of iterating on characters or sentences, iterate on paragraphs.
+   *
+   * @return a paragraph.
+   */
+  public String nextParagraph() {
+
+    char prevChar = '\n';
+    StringBuilder builder = new StringBuilder();
+
+    while (hasNext()) {
+
+      char c = next();
+
+      if ((c == '\n' || c == '\r') && (prevChar == '\n' || prevChar == '\r')) {
+        return builder.toString().trim();
+      }
+
+      prevChar = c;
+      builder.append(c);
+    }
+    return builder.toString().trim();
   }
 
   /**
@@ -99,6 +180,47 @@ final public class StringIterator implements Iterator<Character> {
       return text_.charAt(pos);
     }
     return 0;
+  }
+
+  /**
+   * Returns the character beyond the current position, or a null character if the specified
+   * position is at the end of the document.
+   *
+   * @return The character at the current position.
+   */
+  public char peek() {
+    return peek(0);
+  }
+
+  /**
+   * Moves the current position ahead of one character.
+   */
+  public void moveAhead() {
+    moveAhead(1);
+  }
+
+  /**
+   * Moves the current position ahead the specified number of characters.
+   *
+   * @param ahead The number of characters to move ahead.
+   */
+  public void moveAhead(int ahead) {
+
+    // Preconditions.checkArgument(ahead >= 0);
+
+    position_ = Math.min(position_ + ahead, text_.length());
+  }
+
+  public String string() {
+    return text_;
+  }
+
+  public int position() {
+    return position_;
+  }
+
+  public int remaining() {
+    return text_.length() - position_;
   }
 
   /**
@@ -124,25 +246,6 @@ final public class StringIterator implements Iterator<Character> {
     // Preconditions.checkArgument(end >= 0 && end <= text_.length() && end >= start);
 
     return text_.substring(start, end);
-  }
-
-  /**
-   * Moves the current position ahead of one character.
-   */
-  public void moveAhead() {
-    moveAhead(1);
-  }
-
-  /**
-   * Moves the current position ahead the specified number of characters.
-   *
-   * @param ahead The number of characters to move ahead.
-   */
-  public void moveAhead(int ahead) {
-
-    // Preconditions.checkArgument(ahead >= 0);
-
-    position_ = Math.min(position_ + ahead, text_.length());
   }
 
   /**
