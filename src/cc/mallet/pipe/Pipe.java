@@ -325,7 +325,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 		instanceId = (VMID) in.readObject();
 	}
 
-	private transient static ConcurrentMap<VMID, Object> deserializedEntries = new ConcurrentHashMap<VMID, Object>();
+	private transient ConcurrentMap<VMID, Object> deserializedEntries = new ConcurrentHashMap<VMID, Object>();
 	
 	/**
 	 * This gets called after readObject; it lets the object decide whether
@@ -337,6 +337,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 	 */
 
 	public Object readResolve() throws ObjectStreamException {
+		if (deserializedEntries == null) return this;
 		//System.out.println(" *** Pipe ReadResolve: instance id= " + instanceId);
 		Object previous = deserializedEntries.get(instanceId);
 		if (previous != null){
