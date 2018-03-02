@@ -370,7 +370,7 @@ public class Alphabet implements Serializable
         }
     }
 
-	private transient static ConcurrentMap<VMID,Object> deserializedEntries = new ConcurrentHashMap<VMID,Object>();
+    private transient ConcurrentMap<VMID,Object> deserializedEntries = new ConcurrentHashMap<VMID,Object>();
 
 	/**
 	 * This gets called after readObject; it lets the object decide whether
@@ -382,6 +382,8 @@ public class Alphabet implements Serializable
 	 */
 
 	public Object readResolve() throws ObjectStreamException {
+        if (deserializedEntries == null) return this;
+
 		Object previous = deserializedEntries.get(instanceId);
 		if (previous != null){
 			//System.out.println(" ***Alphabet ReadResolve:Resolving to previous instance. instance id= " + instanceId);
