@@ -201,6 +201,7 @@ public class LabeledLDA implements Serializable {
 	
 	public Alphabet getAlphabet() { return alphabet; }
 	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
+	public Alphabet getLabelAlphabet() { return labelAlphabet; }
 	public ArrayList<TopicAssignment> getData() { return data; }
 	
 	public void setTopicDisplay(int interval, int n) {
@@ -521,26 +522,49 @@ public class LabeledLDA implements Serializable {
 
 		StringBuilder output = new StringBuilder();
 
-		IDSorter[] sortedWords = new IDSorter[numTypes];
-
 		for (int topic = 0; topic < numTopics; topic++) {
-			if (tokensPerTopic[topic] == 0) { continue; }
-			
-			for (int type = 0; type < numTypes; type++) {
-				sortedWords[type] = new IDSorter(type, typeTopicCounts[type][topic]);
+
+			Map<String, Double> words = topWordsPerTopic(topic, numWords);
+
+			if (words.isEmpty()) { continue; }
+
+			output.append(topic + "\t" + labelAlphabet.lookupObject(topic) + "\t" + tokensPerTopic[topic] + "\t");
+			for (Map.Entry<String, Double> entry : words.entrySet()) {
+				output.append(entry.getKey() + " ");
 			}
 
-			Arrays.sort(sortedWords);
-			
-			output.append(topic + "\t" + labelAlphabet.lookupObject(topic) + "\t" + tokensPerTopic[topic] + "\t");
-			for (int i=0; i < numWords; i++) {
-				if (sortedWords[i].getWeight() == 0) { break; }
-				output.append(alphabet.lookupObject(sortedWords[i].getID()) + " ");
-			}
 			output.append("\n");
 		}
 
 		return output.toString();
+	}
+
+	public Map<String,Double> topWordsPerTopic (int topic, int numWords) {
+
+		Map<String,Double> output = new HashMap<String, Double>();
+
+		IDSorter[] sortedWords = new IDSorter[numTypes];
+
+		if (tokensPerTopic[topic] == 0) { return output; }
+
+		int acc = 0;
+		for (int type = 0; type < numTypes; type++) {
+			int count = typeTopicCounts[type][topic];
+			acc += count;
+			sortedWords[type] = new IDSorter(type, count);
+		}
+
+		Arrays.sort(sortedWords);
+
+		for (int i=0; i < numWords; i++) {
+			if (sortedWords[i].getWeight() == 0) { break; }
+			String word 	= (String) alphabet.lookupObject(sortedWords[i].getID());
+			Double weight 	= Double.valueOf(sortedWords[i].getWeight()/Double.valueOf(acc));
+			output.put(word,weight);
+
+		}
+
+		return output;
 	}
 
 		
@@ -579,9 +603,10 @@ public class LabeledLDA implements Serializable {
 		out.writeObject (data);
 		out.writeObject (alphabet);
 		out.writeObject (topicAlphabet);
+		out.writeObject (labelAlphabet);
 
 		out.writeInt (numTopics);
-		out.writeObject (alpha);
+		out.writeDouble (alpha);
 		out.writeDouble (beta);
 		out.writeDouble (betaSum);
 
@@ -605,6 +630,7 @@ public class LabeledLDA implements Serializable {
 		data = (ArrayList<TopicAssignment>) in.readObject ();
 		alphabet = (Alphabet) in.readObject();
 		topicAlphabet = (LabelAlphabet) in.readObject();
+		labelAlphabet = (Alphabet) in.readObject();
 
 		numTopics = in.readInt();
 		alpha = in.readDouble();
