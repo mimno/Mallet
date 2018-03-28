@@ -59,15 +59,19 @@ public class Csv2Vectors {
 	
 	static CommandOption.File usePipeFromVectorsFile = new CommandOption.File(Csv2Vectors.class, "use-pipe-from", "FILE", true, new File("text.vectors"),
 		"Use the pipe and alphabets from a previously created data file.\n" +
-		"   That previous file is *rewritten* to include any newly observed features.\n" +
-		"   Allows the creation, for example, of a test set of vectors that are\n" +
-		"   compatible with a previously created set of training vectors", null);
+		"   This option ensures that new data is compatible with models trained\n" +
+		"   on that data file, for example for testing and production use.\n" +
+		"   That previous file is *rewritten* to include any newly observed features,\n" +
+		"   so that the alphabet for the new file will be identical to the alphabet\n" +
+		"   of the original file. (This does not add those new features to models.)", null);
 
 	static CommandOption.File usePipeFromVectorsFileNoRewrite = new CommandOption.File(Csv2Vectors.class, "use-pipe-from-without-rewrite", "FILE", true, new File("text.vectors"),
-		"Use the pipe and alphabets from a previously created vectors file.\n" +
-	 	"   *No change* is made to that previous file.\n" +
-		"   Allows the creation, for example, of a test set of vectors that are\n" +
-		"   compatible with a previously created set of training vectors", null);
+		"Use the pipe and alphabets from a previously created data file.\n" +
+		"   This option ensures that new data is compatible with models trained\n" +
+		"   on that data file, for example for testing and production use.\n" +
+		"   That previous file is left unchanged, so if there are previously\n" + 
+		"   unseen features in the new file, the alphabet for the new file\n" +
+		"   will be a super-set of the alphabet in the original file.", null);
 
 	static CommandOption.Boolean keepSequence = new CommandOption.Boolean(Csv2Vectors.class, "keep-sequence", "[TRUE|FALSE]", false, false,
 	     "If true, final data will be a FeatureSequence rather than a FeatureVector.", null);

@@ -86,7 +86,7 @@ public abstract class Classifier implements AlphabetCarrying, Serializable
 		return instancePipe;
 	}
 
-	public Alphabet getAlphabet ()
+	@Override public Alphabet getAlphabet ()
 	{
 		return (Alphabet) instancePipe.getDataAlphabet();
 	}
@@ -96,7 +96,7 @@ public abstract class Classifier implements AlphabetCarrying, Serializable
 		return (LabelAlphabet) instancePipe.getTargetAlphabet();
 	}
 	
-	public Alphabet[] getAlphabets() 
+	@Override public Alphabet[] getAlphabets() 
 	{
 		return new Alphabet[] {getAlphabet(), getLabelAlphabet()};
 	}

@@ -52,46 +52,41 @@ import com.carrotsearch.hppc.ObjectIntHashMap;
  */
 public class Alphabet implements Serializable
 {
-	ObjectIntHashMap map;
-	ArrayList entries;
-	volatile boolean growthStopped = false;
-	Class entryClass = null;
-	VMID instanceId = new VMID();  //used in readResolve to identify persitent instances
+    ObjectIntHashMap map;
+    ArrayList entries;
+    volatile boolean growthStopped = false;
+    Class entryClass = null;
+    VMID instanceId = new VMID();  //used in readResolve to identify persitent instances
 
     private transient ReadWriteLock lock = new ReentrantReadWriteLock();
 
-	public Alphabet (int capacity, Class entryClass)
-	{
-		this.map = new ObjectIntHashMap (capacity);
-		this.entries = new ArrayList (capacity);
-		this.entryClass = entryClass;
-		// someone could try to deserialize us into this image (e.g., by RMI).  Handle this.
-		deserializedEntries.putIfAbsent(instanceId, this);
-	}
+    public Alphabet (int capacity, Class entryClass) {
+        this.map = new ObjectIntHashMap (capacity);
+        this.entries = new ArrayList (capacity);
+        this.entryClass = entryClass;
+        // someone could try to deserialize us into this image (e.g., by RMI).  Handle this.
+        deserializedEntries.putIfAbsent(instanceId, this);
+    }
 
-	public Alphabet (Class entryClass)
-	{
-		this (8, entryClass);
-	}
+    public Alphabet (Class entryClass) {
+        this (8, entryClass);
+    }
 
-	public Alphabet (int capacity)
-	{
-		this (capacity, null);
-	}
+    public Alphabet (int capacity) {
+        this (capacity, null);
+    }
 
-	public Alphabet ()
-	{
-		this (8, null);
-	}
+    public Alphabet () {
+        this (8, null);
+    }
 
-	public Alphabet (Object[] entries) {
-		this (entries.length);
-		for (Object entry : entries)
-			this.lookupIndex(entry);
-	}
+    public Alphabet (Object[] entries) {
+        this (entries.length);
+        for (Object entry : entries)
+            this.lookupIndex(entry);
+    }
 
-	public Object clone ()
-	{
+    @Override public Object clone () {
         lock.readLock().lock();
         try {
             Alphabet ret = new Alphabet();
@@ -103,16 +98,17 @@ public class Alphabet implements Serializable
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	/** Return -1 if entry isn't present. */
-	public int lookupIndex (Object entry, boolean addIfNotPresent)
-	{
-		if (entry == null)
-			throw new IllegalArgumentException ("Can't lookup \"null\" in an Alphabet.");
-		if (entryClass == null) {
+    /** Return -1 if entry isn't present. */
+    public int lookupIndex (Object entry, boolean addIfNotPresent) {
+        if (entry == null) {
+            throw new IllegalArgumentException ("Can't lookup \"null\" in an Alphabet.");
+        }
+        if (entryClass == null) {
             entryClass = entry.getClass();
-        } else {
+        }
+        else {
             // Insist that all entries in the Alphabet are of the same
             // class.  This may not be strictly necessary, but will catch a
             // bunch of easily-made errors.
@@ -129,37 +125,34 @@ public class Alphabet implements Serializable
             lock.readLock().unlock();
         }
 
-		if (!growthStopped && addIfNotPresent) {
+        if (!growthStopped && addIfNotPresent) {
             lock.writeLock().lock();
             try {
                 int retIndex = entries.size();
                 map.put(entry, retIndex);
                 entries.add(entry);
                 return retIndex;
-
             } finally {
                 lock.writeLock().unlock();
             }
-		}
-		return -1;
-	}
+        }
+        return -1;
+    }
 
-	public int lookupIndex (Object entry)
-	{
-		return lookupIndex (entry, true);
-	}
+    public int lookupIndex (Object entry) {
+        return lookupIndex (entry, true);
+    }
 
-	public Object lookupObject (int index)
-	{
+    public Object lookupObject (int index) {
         lock.readLock().lock();
         try {
             return entries.get(index);
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	public Object[] toArray () {
+    public Object[] toArray () {
         lock.readLock().lock();
         try {
             return entries.toArray();
@@ -168,25 +161,25 @@ public class Alphabet implements Serializable
         }
     }
 
-	/**
-	 * Returns an array containing all the entries in the Alphabet.
-	 *  The runtime type of the returned array is the runtime type of in.
-	 *  If in is large enough to hold everything in the alphabet, then it
-	 *  it used.  The returned array is such that for all entries <tt>obj</tt>,
-	 *  <tt>ret[lookupIndex(obj)] = obj</tt> .
-	 */
-	public Object[] toArray (Object[] in) {
+    /**
+     * Returns an array containing all the entries in the Alphabet.
+     *  The runtime type of the returned array is the runtime type of in.
+     *  If in is large enough to hold everything in the alphabet, then it
+     *  it used.  The returned array is such that for all entries <tt>obj</tt>,
+     *  <tt>ret[lookupIndex(obj)] = obj</tt> .
+     */
+    public Object[] toArray (Object[] in) {
         lock.readLock().lock();
         try {
             return entries.toArray(in);
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	// xxx This should disable the iterator's remove method...
+    // xxx This should disable the iterator's remove method...
     // for thread safety returns a _copy_ of the array; should probably use size() and lookupObject() instead
-	public Iterator iterator () {
+    public Iterator iterator () {
         lock.readLock().lock();
         try {
             ArrayList copy = new ArrayList();
@@ -195,59 +188,57 @@ public class Alphabet implements Serializable
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	public Object[] lookupObjects (int[] indices)
-	{
+    public Object[] lookupObjects (int[] indices) {
         lock.readLock().lock();
         try {
             Object[] ret = new Object[indices.length];
-            for (int i = 0; i < indices.length; i++)
+            for (int i = 0; i < indices.length; i++) {
                 ret[i] = entries.get(indices[i]);
+            }
             return ret;
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	/**
-	 * Returns an array of the objects corresponding to
-	 * @param indices An array of indices to look up
-	 * @param buf An array to store the returned objects in.
-	 * @return An array of values from this Alphabet.  The runtime type of the array is the same as buf
-	 */
-	public Object[] lookupObjects (int[] indices, Object[] buf)
-	{
+    /**
+     * Returns an array of the objects corresponding to
+     * @param indices An array of indices to look up
+     * @param buf An array to store the returned objects in.
+     * @return An array of values from this Alphabet.  The runtime type of the array is the same as buf
+     */
+    public Object[] lookupObjects (int[] indices, Object[] buf) {
         lock.readLock().lock();
         try {
-            for (int i = 0; i < indices.length; i++)
+            for (int i = 0; i < indices.length; i++) {
                 buf[i] = entries.get(indices[i]);
+            }
             return buf;
         } finally {
             lock.readLock().unlock();
         }
     }
 
-	public int[] lookupIndices (Object[] objects, boolean addIfNotPresent)
-	{
-		int[] ret = new int[objects.length];
-		for (int i = 0; i < objects.length; i++)
-			ret[i] = lookupIndex (objects[i], addIfNotPresent);
-		return ret;
-	}
+    public int[] lookupIndices (Object[] objects, boolean addIfNotPresent) {
+        int[] ret = new int[objects.length];
+        for (int i = 0; i < objects.length; i++) {
+            ret[i] = lookupIndex (objects[i], addIfNotPresent);
+        }
+        return ret;
+    }
 
-	public boolean contains (Object entry)
-	{
+    public boolean contains (Object entry) {
         lock.readLock().lock();
         try {
             return map.containsKey(entry);
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	public int size ()
-	{
+    public int size () {
         lock.readLock().lock();
         try {
             return entries.size();
@@ -256,33 +247,28 @@ public class Alphabet implements Serializable
         }
     }
 
-	public void stopGrowth ()
-	{
-		growthStopped = true;
-	}
+    public void stopGrowth () {
+        growthStopped = true;
+    }
 
-	public void startGrowth ()
-	{
-		growthStopped = false;
-	}
+    public void startGrowth () {
+        growthStopped = false;
+    }
 
-	public boolean growthStopped ()
-	{
-		return growthStopped;
-	}
+    public boolean growthStopped () {
+        return growthStopped;
+    }
 
-	public Class entryClass ()
-	{
-		return entryClass;
-	}
+    public Class entryClass () {
+        return entryClass;
+    }
 
-	/** Return String representation of all Alphabet entries, each
-	separated by a newline. */
-	public String toString()
-	{
+    /** Return String representation of all Alphabet entries, each
+    separated by a newline. */
+    @Override public String toString() {
         lock.readLock().lock();
         try {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < entries.size(); i++) {
                 sb.append(entries.get(i).toString());
                 sb.append('\n');
@@ -291,17 +277,15 @@ public class Alphabet implements Serializable
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	public void dump () { dump (System.out); }
+    public void dump () { dump (System.out); }
 
-	public void dump (PrintStream out)
-	{
-		dump (new PrintWriter (new OutputStreamWriter (out), true));
-	}
+    public void dump (PrintStream out) {
+        dump (new PrintWriter (new OutputStreamWriter (out), true));
+    }
 
-	public void dump (PrintWriter out)
-	{
+    public void dump (PrintWriter out) {
         lock.readLock().lock();
         try {
             for (int i = 0; i < entries.size(); i++) {
@@ -312,42 +296,43 @@ public class Alphabet implements Serializable
         }
     }
 
-	/** Convenience method that can often implement alphabetsMatch in classes that implement the AlphabetsCarrying interface. */
-	public static boolean alphabetsMatch (AlphabetCarrying object1, AlphabetCarrying object2) {
-		Alphabet[] a1 = object1.getAlphabets();
-		Alphabet[] a2 = object2.getAlphabets();
-		if (a1.length != a2.length) return false;
-		for (int i = 0; i < a1.length; i++) {
-			if (a1[i] == a2[i]) continue;
-			if (a1[i] == null || a2[i] == null) return false;  // One is null, but the other isn't
-			if (! a1[i].equals(a2[i])) return false;
-		}
-		return true;
-	}
+    /** Convenience method that can often implement alphabetsMatch in classes that implement the AlphabetsCarrying interface. */
+    public static boolean alphabetsMatch (AlphabetCarrying object1, AlphabetCarrying object2) {
+        Alphabet[] a1 = object1.getAlphabets();
+        Alphabet[] a2 = object2.getAlphabets();
+        if (a1.length != a2.length) return false;
+        for (int i = 0; i < a1.length; i++) {
+            if (a1[i] == a2[i]) { continue; }
+            if (a1[i] == null || a2[i] == null) { return false; } // One is null, but the other isn't
+            if (! a1[i].equals(a2[i])) { return false; }
+        }
+        return true;
+    }
 
-	public VMID getInstanceId() { return instanceId;} // for debugging
-	public void setInstanceId(VMID id) { this.instanceId = id; }
-	// Serialization
+    public VMID getInstanceId() { return instanceId;} // for debugging
+    public void setInstanceId(VMID id) { this.instanceId = id; }
+    // Serialization
 
-	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 1;
+    private static final long serialVersionUID = 1;
+    private static final int CURRENT_SERIAL_VERSION = 1;
 
-	private void writeObject (ObjectOutputStream out) throws IOException {
+    private void writeObject (ObjectOutputStream out) throws IOException {
         lock.readLock().lock();
         try {
             out.writeInt(CURRENT_SERIAL_VERSION);
             out.writeInt(entries.size());
-            for (int i = 0; i < entries.size(); i++)
+            for (int i = 0; i < entries.size(); i++) {
                 out.writeObject(entries.get(i));
+            }
             out.writeBoolean(growthStopped);
             out.writeObject(entryClass);
             out.writeObject(instanceId);
         } finally {
             lock.readLock().unlock();
         }
-	}
+    }
 
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
         lock = new ReentrantReadWriteLock();
         lock.writeLock().lock();
         try {
@@ -370,30 +355,30 @@ public class Alphabet implements Serializable
         }
     }
 
-	private transient static ConcurrentMap<VMID,Object> deserializedEntries = new ConcurrentHashMap<VMID,Object>();
+    private transient static ConcurrentMap<VMID,Object> deserializedEntries = new ConcurrentHashMap<VMID,Object>();
 
-	/**
-	 * This gets called after readObject; it lets the object decide whether
-	 * to return itself or return a previously read in version.
-	 * We use a hashMap of instanceIds to determine if we have already read
-	 * in this object.
-	 * @return
-	 * @throws ObjectStreamException
-	 */
+    /**
+     * This gets called after readObject; it lets the object decide whether
+     * to return itself or return a previously read in version.
+     * We use a hashMap of instanceIds to determine if we have already read
+     * in this object.
+     * @return
+     * @throws ObjectStreamException
+     */
 
-	public Object readResolve() throws ObjectStreamException {
-		Object previous = deserializedEntries.get(instanceId);
-		if (previous != null){
-			//System.out.println(" ***Alphabet ReadResolve:Resolving to previous instance. instance id= " + instanceId);
-			return previous;
-		}
-		if (instanceId != null){
+    public Object readResolve() throws ObjectStreamException {
+        Object previous = deserializedEntries.get(instanceId);
+        if (previous != null){
+            //System.out.println(" ***Alphabet ReadResolve:Resolving to previous instance. instance id= " + instanceId);
+            return previous;
+        }
+        if (instanceId != null){
             Object prev = deserializedEntries.putIfAbsent(instanceId, this);
             if (prev != null) {
                 return prev;
             }
         }
-		//System.out.println(" *** Alphabet ReadResolve: new instance. instance id= " + instanceId);
-		return this;
-	}
+        //System.out.println(" *** Alphabet ReadResolve: new instance. instance id= " + instanceId);
+        return this;
+    }
 }
