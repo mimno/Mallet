@@ -36,30 +36,27 @@ import cc.mallet.util.Lexer;
  */
 public class CharSequence2TokenSequence extends Pipe implements Serializable
 {
-	CharSequenceLexer lexer;
-	
-	public CharSequence2TokenSequence (CharSequenceLexer lexer)
-	{
-		this.lexer = lexer;
-	}
+	Pattern regex;
 
 	public CharSequence2TokenSequence (String regex)
 	{
-		this.lexer = new CharSequenceLexer (regex);
+		this.regex = Pattern.compile(regex);
 	}
 
 	public CharSequence2TokenSequence (Pattern regex)
 	{
-		this.lexer = new CharSequenceLexer (regex);
+		this.regex = regex;
 	}
 
 	public CharSequence2TokenSequence ()
 	{
-		this (new CharSequenceLexer());
 	}
 
 	public Instance pipe (Instance carrier)
 	{
+
+		CharSequenceLexer lexer = new CharSequenceLexer(regex);
+
 		CharSequence string = (CharSequence) carrier.getData();
 		lexer.setCharSequence (string);
 		TokenSequence ts = new StringTokenization (string);
@@ -78,7 +75,7 @@ public class CharSequence2TokenSequence extends Pipe implements Serializable
 				Instance carrier = new Instance (new File(args[i]), null, null, null);
 				SerialPipes p = new SerialPipes (new Pipe[] {
 					new Input2CharSequence (),
-					new CharSequence2TokenSequence(new CharSequenceLexer())});
+					new CharSequence2TokenSequence(Pattern.compile("[\\p{L}\\p{N}_]+"))});
 				carrier = p.newIteratorFrom (new SingleInstanceIterator(carrier)).next();
 				TokenSequence ts = (TokenSequence) carrier.getData();
 				System.out.println ("===");
@@ -98,12 +95,12 @@ public class CharSequence2TokenSequence extends Pipe implements Serializable
 	
 	private void writeObject (ObjectOutputStream out) throws IOException {
 		out.writeInt(CURRENT_SERIAL_VERSION);
-		out.writeObject(lexer);
+		out.writeObject(regex);
 	}
 	
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
 		int version = in.readInt ();
-		lexer = (CharSequenceLexer) in.readObject();
+		regex = (Pattern) in.readObject();
 	}
 
 

@@ -293,8 +293,7 @@ public class MaxEntShell {
 	static public void main (String[] args) throws Exception {
 		Classifier classifier = null;
 		Pipe preprocess =
-			new CharSequence2TokenSequence(
-					new CharSequenceLexer(CharSequenceLexer.LEX_NONWHITESPACE_TOGETHER));
+			new CharSequence2TokenSequence(CharSequenceLexer.LEX_NONWHITESPACE_TOGETHER);
 		InputStreamReader trainingData = null, testData = null;
 		Pattern instanceFormat = Pattern.compile("^\\s*(\\S+)\\s*(.*)\\s*$");
 		Pattern unlabeledInstanceFormat = Pattern.compile("^\\s*(.*)\\s*$");
