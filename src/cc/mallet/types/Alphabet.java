@@ -14,23 +14,17 @@
 
 package cc.mallet.types;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import com.carrotsearch.hppc.ObjectIntHashMap;
+
+import java.io.*;
 import java.rmi.dgc.VMID;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import com.carrotsearch.hppc.ObjectIntHashMap;
 
 /**
  *  A mapping between integers and objects where the mapping in each
@@ -53,7 +47,7 @@ import com.carrotsearch.hppc.ObjectIntHashMap;
 public class Alphabet implements Serializable
 {
 	ObjectIntHashMap map;
-	ArrayList entries;
+    CopyOnWriteArrayList entries;
 	volatile boolean growthStopped = false;
 	Class entryClass = null;
 	VMID instanceId = new VMID();  //used in readResolve to identify persitent instances
@@ -63,7 +57,7 @@ public class Alphabet implements Serializable
 	public Alphabet (int capacity, Class entryClass)
 	{
 		this.map = new ObjectIntHashMap (capacity);
-		this.entries = new ArrayList (capacity);
+		this.entries = new CopyOnWriteArrayList ();
 		this.entryClass = entryClass;
 		// someone could try to deserialize us into this image (e.g., by RMI).  Handle this.
 		deserializedEntries.putIfAbsent(instanceId, this);
@@ -96,7 +90,7 @@ public class Alphabet implements Serializable
         try {
             Alphabet ret = new Alphabet();
             ret.map = (ObjectIntHashMap) map.clone();
-            ret.entries = (ArrayList) entries.clone();
+            ret.entries = (CopyOnWriteArrayList) entries.clone();
             ret.growthStopped = growthStopped;
             ret.entryClass = entryClass;
             return ret;
@@ -353,7 +347,7 @@ public class Alphabet implements Serializable
         try {
             int version = in.readInt();
             int size = in.readInt();
-            entries = new ArrayList(size);
+            entries = new CopyOnWriteArrayList();
             map = new ObjectIntHashMap(size);
             for (int i = 0; i < size; i++) {
                 Object o = in.readObject();

@@ -7,27 +7,20 @@
 
 package cc.mallet.topics;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Iterator;
-import java.util.Formatter;
-import java.util.Locale;
-
-import java.util.concurrent.*;
-import java.util.logging.*;
-import java.util.zip.*;
+import cc.mallet.types.*;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Randoms;
+import com.carrotsearch.hppc.ObjectIntHashMap;
 
 import java.io.*;
 import java.text.NumberFormat;
-
-import cc.mallet.types.*;
-import cc.mallet.topics.TopicAssignment;
-import cc.mallet.util.Randoms;
-import cc.mallet.util.MalletLogger;
-
-import com.carrotsearch.hppc.ObjectIntHashMap;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Simple parallel threaded implementation of LDA,
@@ -44,7 +37,7 @@ public class ParallelTopicModel implements Serializable {
 
 	public static Logger logger = MalletLogger.getLogger(ParallelTopicModel.class.getName());
 	
-	public ArrayList<TopicAssignment> data;  // the training instances and their topic assignments
+	public List<TopicAssignment> data;  // the training instances and their topic assignments
 	public Alphabet alphabet; // the alphabet for the input data
 	public LabelAlphabet topicAlphabet;  // the alphabet for the topics
 	
@@ -80,6 +73,7 @@ public class ParallelTopicModel implements Serializable {
 	public int optimizeInterval = 50; 
 	public int temperingInterval = 0;
 
+	public int validateTopicsInterval = 50;
 	public int showTopicsInterval = 50;
 	public int wordsPerTopic = 7;
 
@@ -99,7 +93,11 @@ public class ParallelTopicModel implements Serializable {
 	int maxTypeCount; 
 	
 	int numThreads = 1;
-	
+
+	List<String> stoplist = new ArrayList<>();
+	private InstanceList instances;
+	public Integer maxRetries = 100;
+
 	public ParallelTopicModel (int numberOfTopics) {
 		this (numberOfTopics, numberOfTopics, DEFAULT_BETA);
 	}
@@ -157,7 +155,7 @@ public class ParallelTopicModel implements Serializable {
 		tokensPerTopic = new int[numTopics];
 	}
 
-	public ArrayList<TopicAssignment> getData() { return data; }
+	public List<TopicAssignment> getData() { return data; }
 	
 	public int[][] getTypeTopicCounts() { return typeTopicCounts; }
 	public int[] getTokensPerTopic() { return tokensPerTopic; }
@@ -172,6 +170,11 @@ public class ParallelTopicModel implements Serializable {
 
 	public void setTopicDisplay(int interval, int n) {
 		this.showTopicsInterval = interval;
+		this.wordsPerTopic = n;
+	}
+
+	public void setTopicValidation(int interval, int n) {
+		this.validateTopicsInterval = interval;
 		this.wordsPerTopic = n;
 	}
 
@@ -224,37 +227,50 @@ public class ParallelTopicModel implements Serializable {
 	}
 
 	public void addInstances (InstanceList training) {
+		this.instances = training;
+		loadInstances();
+	}
 
-		alphabet = training.getDataAlphabet();
+	private void loadInstances(){
+
+		Alphabet dataAlphabet = instances.getDataAlphabet();
+
+		List<Object> allWords = Arrays.asList(dataAlphabet.toArray());
+		Set<String> validWords = new TreeSet<>();
+
+		for (Object data: allWords){
+			String word = (String) data;
+			if (!stoplist.contains(word)) validWords.add(word);
+		}
+
+		alphabet = new Alphabet(validWords.toArray());
+
 		numTypes = alphabet.size();
-		
+
 		betaSum = beta * numTypes;
 
-		Randoms random = null;
-		if (randomSeed == -1) {
-			random = new Randoms();
-		}
-		else {
-			random = new Randoms(randomSeed);
-		}
+		final Randoms random = (randomSeed == -1)? new Randoms(): new Randoms(randomSeed);
 
-		for (Instance instance : training) {
-			FeatureSequence tokens = (FeatureSequence) instance.getData();
+		data = instances.parallelStream().map(instance -> {
+			Instance filteredInstance = removeStopWords(instance);
+
+			FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
+
 			LabelSequence topicSequence =
-				new LabelSequence(topicAlphabet, new int[ tokens.size() ]);
-			
+					new LabelSequence(topicAlphabet, new int[tokens.size()]);
+
 			int[] topics = topicSequence.getFeatures();
 			for (int position = 0; position < topics.length; position++) {
 
 				int topic = random.nextInt(numTopics);
 				topics[position] = topic;
-				
+
 			}
 
-			TopicAssignment t = new TopicAssignment(instance, topicSequence);
-			data.add(t);
-		}
-		
+			TopicAssignment t = new TopicAssignment(filteredInstance, topicSequence);
+			return t;
+		}).collect(Collectors.toList());
+
 		buildInitialTypeTopicCounts();
 		initializeHistograms();
 	}
@@ -332,6 +348,9 @@ public class ParallelTopicModel implements Serializable {
 			FeatureSequence tokens = (FeatureSequence) document.instance.getData();
 			for (int position = 0; position < tokens.getLength(); position++) {
 				int type = tokens.getIndexAtPosition(position);
+				if (type >= typeTotals.length){
+					logger.warning("Error on type: " + type + " for max size: " + typeTotals.length + " in document: " + document);
+				}
 				typeTotals[ type ]++;
 			}
 		}
@@ -711,6 +730,18 @@ public class ParallelTopicModel implements Serializable {
 
 	public void estimate () throws IOException {
 
+		Boolean completed;
+		Integer retries = 0;
+		do{
+			logger.info("estimate model ["+retries+"/"+maxRetries+"]");
+			validateTopicsInterval = (retries++ < maxRetries)? validateTopicsInterval : 0;
+			completed = executeEstimation();
+		}while(!completed);
+		if (retries>=maxRetries) logger.warning("Optimization on topic words not completed");
+	}
+
+	private boolean executeEstimation() throws IOException {
+
 		long startTime = System.currentTimeMillis();
 
 		WorkerRunnable[] runnables = new WorkerRunnable[numThreads];
@@ -785,13 +816,20 @@ public class ParallelTopicModel implements Serializable {
 		}
 
 		ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-	
+
 		for (int iteration = 1; iteration <= numIterations; iteration++) {
 
 			long iterationStart = System.currentTimeMillis();
 
 			if (showTopicsInterval != 0 && iteration != 0 && iteration % showTopicsInterval == 0) {
-				logger.info("\n" + displayTopWords (wordsPerTopic, false));
+				logger.info("\n" + displayTopWords(wordsPerTopic, false));
+			}
+
+			if (validateTopicsInterval != 0 && iteration != 0 && iteration % validateTopicsInterval == 0) {
+				if (!validateTopWords(wordsPerTopic)) {
+					loadInstances();
+					return false;
+				}
 			}
 
 			if (saveStateInterval != 0 && iteration % saveStateInterval == 0) {
@@ -803,86 +841,83 @@ public class ParallelTopicModel implements Serializable {
 			}
 
 			if (numThreads > 1) {
-			
+
 				// Submit runnables to thread pool
-				
+
 				for (int thread = 0; thread < numThreads; thread++) {
 					if (iteration > burninPeriod && optimizeInterval != 0 &&
-						iteration % saveSampleInterval == 0) {
+							iteration % saveSampleInterval == 0) {
 						runnables[thread].collectAlphaStatistics();
 					}
-					
+
 					logger.fine("submitting thread " + thread);
 					executor.submit(runnables[thread]);
 					//runnables[thread].run();
 				}
-				
-				// I'm getting some problems that look like 
+
+				// I'm getting some problems that look like
 				//  a thread hasn't started yet when it is first
-				//  polled, so it appears to be finished. 
+				//  polled, so it appears to be finished.
 				// This only occurs in very short corpora.
 				try {
 					Thread.sleep(20);
 				} catch (InterruptedException e) {
-					
+
 				}
-				
+
 				boolean finished = false;
-				while (! finished) {
-					
+				while (!finished) {
+
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {
-						
+
 					}
-					
+
 					finished = true;
-					
+
 					// Are all the threads done?
 					for (int thread = 0; thread < numThreads; thread++) {
 						//logger.info("thread " + thread + " done? " + runnables[thread].isFinished);
 						finished = finished && runnables[thread].isFinished;
 					}
-					
+
 				}
-				
+
 				//System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
-				
+
 				sumTypeTopicCounts(runnables);
-				
+
 				//System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
-				
+
 				for (int thread = 0; thread < numThreads; thread++) {
 					int[] runnableTotals = runnables[thread].getTokensPerTopic();
 					System.arraycopy(tokensPerTopic, 0, runnableTotals, 0, numTopics);
-					
+
 					int[][] runnableCounts = runnables[thread].getTypeTopicCounts();
 					for (int type = 0; type < numTypes; type++) {
 						int[] targetCounts = runnableCounts[type];
 						int[] sourceCounts = typeTopicCounts[type];
-						
+
 						int index = 0;
 						while (index < sourceCounts.length) {
-							
+
 							if (sourceCounts[index] != 0) {
 								targetCounts[index] = sourceCounts[index];
-							}
-							else if (targetCounts[index] != 0) {
+							} else if (targetCounts[index] != 0) {
 								targetCounts[index] = 0;
-							}
-							else {
+							} else {
 								break;
 							}
-							
+
 							index++;
 						}
 						//System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
 					}
 				}
-			}
-			else {
+			} else {
 				if (iteration > burninPeriod && optimizeInterval != 0 &&
-					iteration % saveSampleInterval == 0) {
+						iteration % saveSampleInterval == 0) {
 					runnables[0].collectAlphaStatistics();
 				}
 				runnables[0].run();
@@ -891,26 +926,24 @@ public class ParallelTopicModel implements Serializable {
 			long elapsedMillis = System.currentTimeMillis() - iterationStart;
 			if (elapsedMillis < 1000) {
 				logger.fine(elapsedMillis + "ms ");
+			} else {
+				logger.fine((elapsedMillis / 1000) + "s ");
 			}
-			else {
-				logger.fine((elapsedMillis/1000) + "s ");
-			}   
 
 			if (iteration > burninPeriod && optimizeInterval != 0 &&
-				iteration % optimizeInterval == 0) {
+					iteration % optimizeInterval == 0) {
 
 				optimizeAlpha(runnables);
 				optimizeBeta(runnables);
-				
+
 				logger.fine("[O " + (System.currentTimeMillis() - iterationStart) + "] ");
 			}
-			
+
 			if (iteration % 10 == 0) {
 				if (printLogLikelihood) {
-					logger.info ("<" + iteration + "> LL/token: " + formatter.format(modelLogLikelihood() / totalTokens));
-				}
-				else {
-					logger.info ("<" + iteration + ">");
+					logger.info("<" + iteration + "> LL/token: " + formatter.format(modelLogLikelihood() / totalTokens));
+				} else {
+					logger.info("<" + iteration + ">");
 				}
 			}
 		}
@@ -930,6 +963,7 @@ public class ParallelTopicModel implements Serializable {
 		timeReport.append(seconds); timeReport.append(" seconds");
 		
 		logger.info(timeReport.toString());
+		return true;
 	}
 
 	/** This method implements iterated conditional modes, which is equivalent to Gibbs sampling,
@@ -1229,6 +1263,74 @@ public class ParallelTopicModel implements Serializable {
 		}
 
 		return out.toString();
+	}
+
+
+	public Boolean validateTopWords (int numWords) {
+
+		Boolean validTopics = true;
+		ArrayList<TreeSet<IDSorter>> topicSortedWords = getSortedWords();
+
+		List<String> words = new ArrayList<>();
+
+		int decrement = 0;
+		// Print results for each topic
+		for (int topic = 0; topic < numTopics; topic++) {
+			TreeSet<IDSorter> sortedWords = topicSortedWords.get(topic);
+			if (sortedWords.size() < numWords) decrement++;
+			int word = 0;
+			Iterator<IDSorter> iterator = sortedWords.iterator();
+			while (iterator.hasNext() && word < numWords) {
+				IDSorter info = iterator.next();
+				words.add((String)alphabet.lookupObject(info.getID()));
+				word++;
+			}
+		}
+
+		int threshold = numTopics>2?numTopics / 3  : numTopics / 2;
+
+		Map<String, List<String>> wordsFreq = words.stream().collect(Collectors.groupingBy(a -> a));
+
+		List<String> stopwordsCandidate = wordsFreq.entrySet().stream().sorted((a, b) -> -Integer.valueOf(a.getValue().size()).compareTo(b.getValue().size())).filter(a -> a.getValue().size() > threshold).map(a -> a.getKey()).collect(Collectors.toList());
+
+		if((decrement >0) && (numTopics-decrement>0)){
+			setNumTopics(numTopics-decrement);
+			validTopics=false;
+			logger.info("sparsed topics: " + decrement);
+
+		}else if (stopwordsCandidate.size() > 0){
+			validTopics = false;
+			logger.info("Increased stopword list with: " + stopwordsCandidate);
+			stoplist.addAll(stopwordsCandidate);
+		}
+
+		return validTopics;
+	}
+
+	private Instance removeStopWords(Instance carrier){
+
+		FeatureSequence ts = (FeatureSequence) carrier.getData();
+
+		int[] features = ts.getFeatures();
+		Alphabet dictionary = ts.getAlphabet();
+
+		FeatureSequence ret = new FeatureSequence (alphabet);
+
+		for(int i=0;i<features.length;i++){
+			int feature = features[i];
+			try{
+				String word = (String) dictionary.lookupObject(feature);
+				int index = alphabet.lookupIndex(word,false);
+				if (index >= 0) ret.add(index);
+			}catch (Exception e){
+				logger.warning("Feature word: " + feature + " not exist!! - " + e.getMessage());
+			}
+		}
+
+		carrier.unLock();
+		carrier.setData(ret);
+		carrier.lock();
+		return carrier;
 	}
 	
 	public void topicXMLReport (PrintWriter out, int numWords) {
@@ -1756,7 +1858,7 @@ public class ParallelTopicModel implements Serializable {
 
 	/**
 	 *  @param out		  A print writer
-	 *  @param count      Print this number of top documents
+	 *  @param max      Print this number of top documents
 	 */
 	public void printTopicDocuments (PrintWriter out, int max)	{
 		out.println("#topic doc name proportion ...");

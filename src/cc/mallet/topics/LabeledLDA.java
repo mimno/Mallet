@@ -1,14 +1,16 @@
 package cc.mallet.topics;
 
-import java.util.*;
-import java.util.logging.*;
-import java.util.zip.*;
+import cc.mallet.pipe.iterator.DBInstanceIterator;
+import cc.mallet.types.*;
+import cc.mallet.util.CommandOption;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Randoms;
 
 import java.io.*;
-
-import cc.mallet.types.*;
-import cc.mallet.util.*;
-import cc.mallet.pipe.iterator.DBInstanceIterator;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -149,7 +151,7 @@ public class LabeledLDA implements Serializable {
 
 
 	// the training instances and their topic assignments
-	protected ArrayList<TopicAssignment> data;  
+	protected List<TopicAssignment> data;
 
 	// the alphabet for the input data
 	protected Alphabet alphabet; 
@@ -183,12 +185,17 @@ public class LabeledLDA implements Serializable {
 
 	public int numIterations = 1000;
 
+	public int validateTopicsInterval = 50;
 	public int showTopicsInterval = 50;
 	public int wordsPerTopic = 10;
 	
 	protected Randoms random;
 	protected boolean printLogLikelihood = false;
-	
+
+	List<String> stoplist = new ArrayList<>();
+	private InstanceList instances;
+	public Integer maxRetries = 100;
+
 	public LabeledLDA (double alpha, double beta) {
 		this.data = new ArrayList<TopicAssignment>();
 
@@ -202,10 +209,15 @@ public class LabeledLDA implements Serializable {
 	public Alphabet getAlphabet() { return alphabet; }
 	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
 	public Alphabet getLabelAlphabet() { return labelAlphabet; }
-	public ArrayList<TopicAssignment> getData() { return data; }
+	public List<TopicAssignment> getData() { return data; }
 	
 	public void setTopicDisplay(int interval, int n) {
 		this.showTopicsInterval = interval;
+		this.wordsPerTopic = n;
+	}
+
+	public void setTopicValidation(int interval, int n) {
+		this.validateTopicsInterval = interval;
 		this.wordsPerTopic = n;
 	}
 
@@ -221,13 +233,29 @@ public class LabeledLDA implements Serializable {
 	public int[] getTopicTotals() { return tokensPerTopic; }
 
 	public void addInstances (InstanceList training) {
+		this.instances = training;
+		loadInstances();
+	}
 
-		alphabet = training.getDataAlphabet();
+	private void loadInstances () {
+
+		Alphabet dataAlphabet = instances.getDataAlphabet();
+
+		List<Object> allWords = Arrays.asList(dataAlphabet.toArray());
+		Set<String> validWords = new TreeSet<>();
+
+		for (Object data: allWords){
+			String word = (String) data;
+			if (!stoplist.contains(word)) validWords.add(word);
+		}
+
+		alphabet = new Alphabet(validWords.toArray());
+
 		numTypes = alphabet.size();
 		betaSum = beta * numTypes;
 		
 		// We have one topic for every possible label.
-		labelAlphabet = training.getTargetAlphabet();
+		labelAlphabet = instances.getTargetAlphabet();
 		numTopics = labelAlphabet.size();
 		oneDocTopicCounts = new int[numTopics];
 		tokensPerTopic = new int[numTopics];
@@ -235,17 +263,17 @@ public class LabeledLDA implements Serializable {
 
 		topicAlphabet = AlphabetFactory.labelAlphabetOfSize(numTopics);
 
-		int doc = 0;
 
-		for (Instance instance : training) {
-			doc++;
+		data = instances.parallelStream().map(instance -> {
 
-			FeatureSequence tokens = (FeatureSequence) instance.getData();
-			FeatureVector labels = (FeatureVector) instance.getTarget();
+			Instance filteredInstance = removeStopWords(instance);
+
+			FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
+			FeatureVector labels = (FeatureVector) filteredInstance.getTarget();
 
 			LabelSequence topicSequence =
-				new LabelSequence(topicAlphabet, new int[ tokens.size() ]);
-			
+					new LabelSequence(topicAlphabet, new int[ tokens.size() ]);
+
 			int[] topics = topicSequence.getFeatures();
 			for (int position = 0; position < tokens.size(); position++) {
 
@@ -253,14 +281,14 @@ public class LabeledLDA implements Serializable {
 
 				topics[position] = topic;
 				tokensPerTopic[topic]++;
-				
+
 				int type = tokens.getIndexAtPosition(position);
 				typeTopicCounts[type][topic]++;
 			}
 
-			TopicAssignment t = new TopicAssignment (instance, topicSequence);
-			data.add (t);
-		}
+			TopicAssignment t = new TopicAssignment (filteredInstance, topicSequence);
+			return t;
+		}).collect(Collectors.toList());
 
 	}
 	
@@ -307,7 +335,20 @@ public class LabeledLDA implements Serializable {
 		}
 	}
 
-	public void estimate() throws IOException {
+	public void estimate () throws IOException {
+
+		Boolean completed;
+		Integer retries = 0;
+		do{
+			logger.info("estimate model ["+retries+"/"+maxRetries+"]");
+			validateTopicsInterval = (retries++ < maxRetries)? validateTopicsInterval : 0;
+			completed = executeEstimation();
+		}while(!completed);
+		if (retries>=maxRetries) logger.warning("Optimization on topic words not completed");
+	}
+
+
+	private boolean executeEstimation() throws IOException {
 
 		for (int iteration = 1; iteration <= numIterations; iteration++) {
 
@@ -316,24 +357,34 @@ public class LabeledLDA implements Serializable {
 			// Loop over every document in the corpus
 			for (int doc = 0; doc < data.size(); doc++) {
 				FeatureSequence tokenSequence =
-					(FeatureSequence) data.get(doc).instance.getData();
+						(FeatureSequence) data.get(doc).instance.getData();
 				FeatureVector labels = (FeatureVector) data.get(doc).instance.getTarget();
 				LabelSequence topicSequence =
-					(LabelSequence) data.get(doc).topicSequence;
+						(LabelSequence) data.get(doc).topicSequence;
 
 				sampleTopicsForOneDoc (tokenSequence, labels, topicSequence);
 			}
-		
-            long elapsedMillis = System.currentTimeMillis() - iterationStart;
+
+			long elapsedMillis = System.currentTimeMillis() - iterationStart;
 			logger.info(iteration + "\t" + elapsedMillis + "ms\t");
 
 			// Occasionally print more information
 			if (showTopicsInterval != 0 && iteration % showTopicsInterval == 0) {
 				logger.info("<" + iteration + "> Log Likelihood: " + modelLogLikelihood() + "\n" +
-							topWords (wordsPerTopic));
+						topWords (wordsPerTopic));
+			}
+
+			Boolean validTopics = true;
+			if (validateTopicsInterval != 0 && iteration % validateTopicsInterval == 0) {
+				if (!validateTopWords(wordsPerTopic)){
+					loadInstances();
+					return false;
+				}
 			}
 
 		}
+		return true;
+
 	}
 	
 	protected void sampleTopicsForOneDoc (FeatureSequence tokenSequence,
@@ -537,6 +588,63 @@ public class LabeledLDA implements Serializable {
 		}
 
 		return output.toString();
+	}
+
+	public Boolean validateTopWords (int numWords) {
+
+		Boolean validTopics = true;
+
+		List<String> words = new ArrayList<>();
+
+		// Print results for each topic
+		for (int topic = 0; topic < numTopics; topic++) {
+			Map<String, Double> topWords = topWordsPerTopic(topic, numWords);
+
+			if (words.isEmpty()) { continue; }
+
+			for (Map.Entry<String, Double> entry : topWords.entrySet()) {
+				words.add(entry.getKey());
+			}
+		}
+
+		int threshold = numTopics>2?numTopics / 3  : numTopics / 2;
+
+		Map<String, List<String>> wordsFreq = words.stream().collect(Collectors.groupingBy(a -> a));
+
+		List<String> stopwordsCandidate = wordsFreq.entrySet().stream().sorted((a, b) -> -Integer.valueOf(a.getValue().size()).compareTo(b.getValue().size())).filter(a -> a.getValue().size() > threshold).map(a -> a.getKey()).collect(Collectors.toList());
+
+		if (stopwordsCandidate.size() > 0){
+			validTopics = false;
+			stoplist.addAll(stopwordsCandidate);
+		}
+
+		return validTopics;
+	}
+
+	private Instance removeStopWords(Instance carrier){
+
+		FeatureSequence ts = (FeatureSequence) carrier.getData();
+
+		int[] features = ts.getFeatures();
+		Alphabet dictionary = ts.getAlphabet();
+
+		FeatureSequence ret = new FeatureSequence (alphabet);
+
+		for(int i=0;i<features.length;i++){
+			int feature = features[i];
+			try{
+				String word = (String) dictionary.lookupObject(feature);
+				int index = alphabet.lookupIndex(word,false);
+				if (index >= 0) ret.add(index);
+			}catch (Exception e){
+				logger.warning("Feature word: " + feature + " not exist!! - " + e.getMessage());
+			}
+		}
+
+		carrier.unLock();
+		carrier.setData(ret);
+		carrier.lock();
+		return carrier;
 	}
 
 	public Map<String,Double> topWordsPerTopic (int topic, int numWords) {

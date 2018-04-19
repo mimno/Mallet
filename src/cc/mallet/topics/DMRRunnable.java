@@ -1,17 +1,12 @@
 package cc.mallet.topics;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-
-import java.util.zip.*;
-
-import java.io.*;
-import java.text.NumberFormat;
-
-import cc.mallet.util.*;
-import cc.mallet.types.*;
-import cc.mallet.util.Randoms;
 import cc.mallet.classify.MaxEnt;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.util.Randoms;
+
+import java.util.List;
 
 /**
  * A parallel Dirichlet-multinomial regression topic model runnable task.
@@ -26,7 +21,7 @@ public class DMRRunnable extends WorkerRunnable implements Runnable {
 	int defaultFeatureIndex;
 	DMRTopicModel model;
 
-	public DMRRunnable (int numTopics, DMRTopicModel model, double beta, Randoms random, ArrayList<TopicAssignment> data, int[][] typeTopicCounts, int[] tokensPerTopic, int startDoc, int numDocs) {
+	public DMRRunnable (int numTopics, DMRTopicModel model, double beta, Randoms random, List<TopicAssignment> data, int[][] typeTopicCounts, int[] tokensPerTopic, int startDoc, int numDocs) {
 		this.data = data;
 		
 		this.model = model;

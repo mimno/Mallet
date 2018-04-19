@@ -7,16 +7,12 @@
 
 package cc.mallet.topics;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-
-import java.util.zip.*;
-
-import java.io.*;
-import java.text.NumberFormat;
-
-import cc.mallet.types.*;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.LabelSequence;
 import cc.mallet.util.Randoms;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A parallel topic model runnable task.
@@ -28,7 +24,7 @@ public class WorkerRunnable implements Runnable {
 	
 	boolean isFinished = true;
 
-	ArrayList<TopicAssignment> data;
+	List<TopicAssignment> data;
 	int startDoc, numDocs;
 
 	protected int numTopics; // Number of topics to be fit
@@ -66,7 +62,7 @@ public class WorkerRunnable implements Runnable {
 	public WorkerRunnable (int numTopics,
 						   double[] alpha, double alphaSum,
 						   double beta, Randoms random,
-						   ArrayList<TopicAssignment> data,
+						   List<TopicAssignment> data,
 						   int[][] typeTopicCounts, 
 						   int[] tokensPerTopic,
 						   int startDoc, int numDocs) {
