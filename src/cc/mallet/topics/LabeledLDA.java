@@ -369,7 +369,11 @@ public class LabeledLDA implements Serializable {
 				LabelSequence topicSequence =
 						(LabelSequence) data.get(doc).topicSequence;
 
-				sampleTopicsForOneDoc (tokenSequence, labels, topicSequence);
+				try{
+					sampleTopicsForOneDoc (tokenSequence, labels, topicSequence);
+				}catch (IllegalStateException e){
+					logger.warning(e.getMessage());
+				}
 			}
 
 			long elapsedMillis = System.currentTimeMillis() - iterationStart;
