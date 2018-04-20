@@ -255,7 +255,13 @@ public class LabeledLDA implements Serializable {
 		betaSum = beta * numTypes;
 		
 		// We have one topic for every possible label.
-		labelAlphabet = instances.getTargetAlphabet();
+
+		List<Object> uniqueLabels = Arrays.asList(instances.getTargetAlphabet().toArray()).stream().map(o -> (String) o).distinct().collect(Collectors.toList());
+
+
+		//labelAlphabet = instances.getTargetAlphabet();
+		labelAlphabet = new Alphabet(uniqueLabels.toArray());
+
 		numTopics = labelAlphabet.size();
 		oneDocTopicCounts = new int[numTopics];
 		tokensPerTopic = new int[numTopics];
@@ -269,7 +275,7 @@ public class LabeledLDA implements Serializable {
 			Instance filteredInstance = removeStopWords(instance);
 
 			FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
-			FeatureVector labels = (FeatureVector) filteredInstance.getTarget();
+//			FeatureVector labels = (FeatureVector) filteredInstance.getTarget();
 
 			LabelSequence topicSequence =
 					new LabelSequence(topicAlphabet, new int[ tokens.size() ]);
@@ -277,7 +283,8 @@ public class LabeledLDA implements Serializable {
 			int[] topics = topicSequence.getFeatures();
 			for (int position = 0; position < tokens.size(); position++) {
 
-				int topic = labels.indexAtLocation(random.nextInt(labels.numLocations()));
+				//int topic = labels.indexAtLocation(random.nextInt(labels.numLocations()));
+				int topic = random.nextInt(numTopics);
 
 				topics[position] = topic;
 				tokensPerTopic[topic]++;
@@ -344,7 +351,7 @@ public class LabeledLDA implements Serializable {
 			validateTopicsInterval = (retries++ < maxRetries)? validateTopicsInterval : 0;
 			completed = executeEstimation();
 		}while(!completed);
-		if (retries>=maxRetries) logger.warning("Optimization on topic words not completed");
+		logger.info("Model built after " + retries + "/" + maxRetries + " retries");
 	}
 
 
@@ -600,14 +607,14 @@ public class LabeledLDA implements Serializable {
 		for (int topic = 0; topic < numTopics; topic++) {
 			Map<String, Double> topWords = topWordsPerTopic(topic, numWords);
 
-			if (words.isEmpty()) { continue; }
+			if (topWords.isEmpty()) { continue; }
 
 			for (Map.Entry<String, Double> entry : topWords.entrySet()) {
 				words.add(entry.getKey());
 			}
 		}
 
-		int threshold = numTopics>2?numTopics / 3  : numTopics / 2;
+		int threshold = Double.valueOf(Math.ceil(Double.valueOf(numTopics)/2.0)).intValue();
 
 		Map<String, List<String>> wordsFreq = words.stream().collect(Collectors.groupingBy(a -> a));
 
@@ -616,6 +623,7 @@ public class LabeledLDA implements Serializable {
 		if (stopwordsCandidate.size() > 0){
 			validTopics = false;
 			stoplist.addAll(stopwordsCandidate);
+			logger.info("Increased stopword list with: " + stopwordsCandidate);
 		}
 
 		return validTopics;
@@ -641,8 +649,24 @@ public class LabeledLDA implements Serializable {
 			}
 		}
 
+
+
+		FeatureVector target	= (FeatureVector) carrier.getTarget();
+		int[] indices = new int[target.getIndices().length];
+
+		for(int i=0;i<target.getIndices().length;i++){
+
+			int index = target.getIndices()[i];
+			String topic = (String) target.getAlphabet().lookupObject(index);
+			int fixIndex = labelAlphabet.lookupIndex(topic, false);
+			indices[i] = fixIndex;
+		}
+
+		FeatureVector fixed 	= new FeatureVector(labelAlphabet, indices,target.getValues());
+
 		carrier.unLock();
 		carrier.setData(ret);
+		carrier.setTarget(fixed);
 		carrier.lock();
 		return carrier;
 	}

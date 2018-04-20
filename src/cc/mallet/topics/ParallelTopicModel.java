@@ -737,7 +737,7 @@ public class ParallelTopicModel implements Serializable {
 			validateTopicsInterval = (retries++ < maxRetries)? validateTopicsInterval : 0;
 			completed = executeEstimation();
 		}while(!completed);
-		if (retries>=maxRetries) logger.warning("Optimization on topic words not completed");
+		logger.info("Model built after " + retries + "/" + maxRetries + " retries");
 	}
 
 	private boolean executeEstimation() throws IOException {
@@ -1287,7 +1287,7 @@ public class ParallelTopicModel implements Serializable {
 			}
 		}
 
-		int threshold = numTopics>2?numTopics / 3  : numTopics / 2;
+		int threshold = Double.valueOf(Math.ceil(Double.valueOf(numTopics)/2.0)).intValue();
 
 		Map<String, List<String>> wordsFreq = words.stream().collect(Collectors.groupingBy(a -> a));
 
@@ -1300,8 +1300,8 @@ public class ParallelTopicModel implements Serializable {
 
 		}else if (stopwordsCandidate.size() > 0){
 			validTopics = false;
-			logger.info("Increased stopword list with: " + stopwordsCandidate);
 			stoplist.addAll(stopwordsCandidate);
+			logger.info("Increased stopword list with: " + stopwordsCandidate);
 		}
 
 		return validTopics;
