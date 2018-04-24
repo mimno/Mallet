@@ -86,21 +86,24 @@ final public class StringIterator implements Iterator<Character> {
       switch (c) {
         case '\n':
         case '\r':
-          if (inParenthesis < 0 && inBrackets < 0 && (peek() == '\n' || peek() == '\r')) {
-            return builder.toString().trim();
-          }
-        case ',':
-          if (builder.length() > 0 && Character.isDigit(builder.charAt(builder.length() - 1))
-              && Character.isDigit(peek())) { // 3,14
-            builder.append(c);
-            break;
+          if (inParenthesis < 0 && inBrackets < 0) {
+
+            // Heuristic: we guess that a new sentence starts after at least 2 line breaks. Very
+            // useful for dealing with bullet points in texts.
+            if (peek() == '\n' || peek() == '\r') {
+              return builder.toString().trim();
+            }
           }
         case '\t':
-        case '“':
-        case '”':
-        case '"':
-          if (!Character.isWhitespace(peek())) {
-            builder.append(' ');
+          if (inParenthesis < 0 && inBrackets < 0) {
+
+            // Do not write a whitespace if:
+            // - we are at the beginning of a new sentence
+            // - the previous character already was a whitespace
+            if (builder.length() > 0
+                && !Character.isWhitespace(builder.charAt(builder.length() - 1))) {
+              builder.append(' ');
+            }
           }
           break;
         case '(':
@@ -117,22 +120,36 @@ final public class StringIterator implements Iterator<Character> {
           break;
         case '.':
         case ':':
-          if (builder.length() > 0 && Character.isDigit(builder.charAt(builder.length() - 1))
-              && Character.isDigit(peek())) { // 3.14 or 2:30
-            builder.append(c);
-            break;
+          if (inParenthesis < 0 && inBrackets < 0) {
+            if (builder.length() > 0 && Character.isDigit(builder.charAt(builder.length() - 1))
+                && Character.isDigit(peek())) { // 3.14 or 2:30
+              builder.append(c);
+              break;
+            }
           }
         case '?':
         case '!':
         case ';':
           if (inParenthesis < 0 && inBrackets < 0) {
+            builder.append(c);
             return builder.toString().trim();
           }
-          builder.append(' ');
           break;
         default:
           if (inParenthesis < 0 && inBrackets < 0) {
-            builder.append(c);
+            if (!Character.isWhitespace(c)) {
+
+              // Append all non-whitespace characters
+              builder.append(c);
+            } else if (builder.length() == 0) {
+
+              // Do not write a whitespace at the beginning of a sentence
+              builder.append(c);
+            } else if (!Character.isWhitespace(builder.charAt(builder.length() - 1))) {
+
+              // Do not write a whitespace if the previous character already was a whitespace
+              builder.append(c);
+            }
           }
           break;
       }
