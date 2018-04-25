@@ -17,6 +17,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -236,12 +237,10 @@ public class ParallelTopicModel implements Serializable {
 		Alphabet dataAlphabet = instances.getDataAlphabet();
 
 		List<Object> allWords = Arrays.asList(dataAlphabet.toArray());
-		Set<String> validWords = new TreeSet<>();
 
-		for (Object data: allWords){
-			String word = (String) data;
-			if (!stoplist.contains(word)) validWords.add(word);
-		}
+		logger.info("validating alphabet ..");
+
+		List<String> validWords = allWords.parallelStream().map(o -> (String) o).distinct().filter(w -> !stoplist.contains(w)).collect(Collectors.toList());
 
 		alphabet = new Alphabet(validWords.toArray());
 
@@ -251,7 +250,12 @@ public class ParallelTopicModel implements Serializable {
 
 		final Randoms random = (randomSeed == -1)? new Randoms(): new Randoms(randomSeed);
 
+		final Integer size = instances.size();
+		AtomicInteger counter = new AtomicInteger(0);
+		logger.info("initializing docs ..");
 		data = instances.parallelStream().map(instance -> {
+			if (counter.incrementAndGet() % 100 == 0) logger.info(" initialized " + counter.get() + " docs of " + size);
+
 			Instance filteredInstance = removeStopWords(instance);
 
 			FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
