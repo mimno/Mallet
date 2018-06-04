@@ -14,7 +14,7 @@ import java.util.Iterator;
  * Java implementation of Jonathan Wood's "Text Parsing Helper Class".
  *
  * @see <a href="http://www.blackbeltcoder.com/Articles/strings/a-text-parsing-helper-class">Text
- *      Parsing Helper Class</a>
+ * Parsing Helper Class</a>
  */
 final public class StringIterator implements Iterator<Character> {
 
@@ -27,8 +27,6 @@ final public class StringIterator implements Iterator<Character> {
 
   /**
    * Sets the current document and resets the current position to the start of it.
-   *
-   * @param text
    */
   public void reset(String text) {
 
@@ -40,6 +38,10 @@ final public class StringIterator implements Iterator<Character> {
 
     text_ = text;
     position_ = 0;
+  }
+
+  public boolean hasNextParagraph() {
+    return hasNext();
   }
 
   public boolean hasNextSentence() {
@@ -91,6 +93,12 @@ final public class StringIterator implements Iterator<Character> {
             // Heuristic: we guess that a new sentence starts after at least 2 line breaks. Very
             // useful for dealing with bullet points in texts.
             if (peek() == '\n' || peek() == '\r') {
+              return builder.toString().trim();
+            }
+
+            // Heuristic: a bullet point starts after one line break followed by a - character
+            // followed itself by a whitespace
+            if (peek() == '-' && Character.isWhitespace(peek(1))) {
               return builder.toString().trim();
             }
           }
@@ -242,9 +250,6 @@ final public class StringIterator implements Iterator<Character> {
 
   /**
    * Extracts a substring from the specified range of the current text.
-   *
-   * @param start
-   * @return
    */
   public String extract(int start) {
     return extract(start, text_.length());
@@ -252,10 +257,6 @@ final public class StringIterator implements Iterator<Character> {
 
   /**
    * Extracts a substring from the specified range of the current text.
-   *
-   * @param start
-   * @param end
-   * @return
    */
   public String extract(int start, int end) {
 
@@ -353,9 +354,8 @@ final public class StringIterator implements Iterator<Character> {
   /**
    * Determines if the specified character exists in the specified character array.
    *
-   * @param c Character to find.
+   * @param c     Character to find.
    * @param chars Character array to search.
-   * @return
    */
   private boolean isInArray(char c, char[] chars) {
 
