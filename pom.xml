@@ -3,7 +3,7 @@
 
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.0.8</version>
+  <version>2.0.9-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>MAchine Learning for LanguagE Toolkit (MALLET)</name>
   <description>
@@ -14,8 +14,8 @@
   <url>http://mallet.cs.umass.edu/</url>
   <licenses>
     <license>
-      <name>Common Public License Version 1.0</name>
-      <url>http://www.eclipse.org/legal/cpl-v10.html</url>
+      <name>Apache License Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
