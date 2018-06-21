@@ -375,6 +375,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 		if (instWeights != null)
 			instWeights.remove(instance);
 	}
+
   
 	public Instance set (int index, Instance instance) {
 		prepareToRemove(get(index));
