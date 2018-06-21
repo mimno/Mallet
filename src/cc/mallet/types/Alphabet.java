@@ -20,6 +20,7 @@ import java.io.*;
 import java.rmi.dgc.VMID;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,7 +48,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Alphabet implements Serializable
 {
 	ObjectIntHashMap map;
-    CopyOnWriteArrayList entries;
+    ArrayList entries;
 	volatile boolean growthStopped = false;
 	Class entryClass = null;
 	VMID instanceId = new VMID();  //used in readResolve to identify persitent instances
@@ -57,7 +58,7 @@ public class Alphabet implements Serializable
 	public Alphabet (int capacity, Class entryClass)
 	{
 		this.map = new ObjectIntHashMap (capacity);
-		this.entries = new CopyOnWriteArrayList ();
+		this.entries = new ArrayList ();
 		this.entryClass = entryClass;
 		// someone could try to deserialize us into this image (e.g., by RMI).  Handle this.
 		deserializedEntries.putIfAbsent(instanceId, this);
@@ -90,7 +91,7 @@ public class Alphabet implements Serializable
         try {
             Alphabet ret = new Alphabet();
             ret.map = (ObjectIntHashMap) map.clone();
-            ret.entries = (CopyOnWriteArrayList) entries.clone();
+            ret.entries = (ArrayList) entries.clone();
             ret.growthStopped = growthStopped;
             ret.entryClass = entryClass;
             return ret;
@@ -347,7 +348,7 @@ public class Alphabet implements Serializable
         try {
             int version = in.readInt();
             int size = in.readInt();
-            entries = new CopyOnWriteArrayList();
+            entries = new ArrayList();
             map = new ObjectIntHashMap(size);
             for (int i = 0; i < size; i++) {
                 Object o = in.readObject();
