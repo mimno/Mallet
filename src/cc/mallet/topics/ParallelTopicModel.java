@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -156,6 +157,10 @@ public class ParallelTopicModel implements Serializable {
 		tokensPerTopic = new int[numTopics];
 	}
 
+	public void addStop(String word){
+		this.stoplist.add(word);
+	}
+
 	public List<TopicAssignment> getData() { return data; }
 	
 	public int[][] getTypeTopicCounts() { return typeTopicCounts; }
@@ -251,30 +256,44 @@ public class ParallelTopicModel implements Serializable {
 		final Randoms random = (randomSeed == -1)? new Randoms(): new Randoms(randomSeed);
 
 		final Integer size = instances.size();
+		final Integer interval = size > 100? size / 100 : 100;
 		AtomicInteger counter = new AtomicInteger(0);
 		logger.info("initializing docs ..");
 		data = instances.parallelStream().map(instance -> {
-			if (counter.incrementAndGet() % 100 == 0) logger.info(" initialized " + counter.get() + " docs of " + size);
+			try{
+				if (counter.incrementAndGet() % interval == 0) {
+					logger.info(" initialized " + counter.get() + " docs of " + size);
+					Thread.sleep(20);
+				}
 
-			Instance filteredInstance = removeStopWords(instance);
+				TopicAssignment t = null;
 
-			FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
+				if (instance != null && instance.getData() != null){
+					Instance filteredInstance = removeStopWords(instance);
 
-			LabelSequence topicSequence =
-					new LabelSequence(topicAlphabet, new int[tokens.size()]);
+					FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
 
-			int[] topics = topicSequence.getFeatures();
-			for (int position = 0; position < topics.length; position++) {
+					LabelSequence topicSequence = new LabelSequence(topicAlphabet, new int[tokens.size()]);
 
-				int topic = random.nextInt(numTopics);
-				topics[position] = topic;
+					int[] topics = topicSequence.getFeatures();
+					for (int position = 0; position < topics.length; position++) {
 
+						int topic = random.nextInt(numTopics);
+						topics[position] = topic;
+
+					}
+
+					t = new TopicAssignment(filteredInstance, topicSequence);
+				}
+
+				return t;
+
+			}catch (Exception e){
+				logger.log(Level.WARNING, "Error setting initial topic distribution",e);
+				return null;
 			}
-
-			TopicAssignment t = new TopicAssignment(filteredInstance, topicSequence);
-			return t;
-		}).collect(Collectors.toList());
-
+		}).filter(v -> v != null).collect(Collectors.toList());
+		logger.info("done!  " + counter.get() + " docs initialized");
 		buildInitialTypeTopicCounts();
 		initializeHistograms();
 	}
