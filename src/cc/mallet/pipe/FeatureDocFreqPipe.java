@@ -4,6 +4,8 @@ import cc.mallet.types.*;
 import com.carrotsearch.hppc.IntIntHashMap;
 import com.carrotsearch.hppc.cursors.IntCursor;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /** 
  *  Pruning low-count features can be a good way to save memory and computation.
@@ -54,7 +56,8 @@ public class FeatureDocFreqPipe extends Pipe {
 		}
 
 		for (IntCursor feature: localCounter.keys()) {
-			counter.increment(feature);
+			int freq = localCounter.get(feature.value);
+			counter.increment(feature.value,freq);
 		}
 
 		numInstances++;
@@ -75,6 +78,25 @@ public class FeatureDocFreqPipe extends Pipe {
                 tokenizer.stop((String) currentAlphabet.lookupObject(feature));
             }
         }
+	}
+
+	/**
+	 *  Get all pruned words.
+	 *
+	 * @param docFrequencyCutoff Remove words that occur in greater than this proportion of documents. 0.05 corresponds to IDF >= 3.
+	 */
+	public List<String> getPrunedWords(double docFrequencyCutoff) {
+		Alphabet currentAlphabet = getDataAlphabet();
+
+		List<String> prunedWords = new ArrayList<>();
+
+		for (int feature = 0; feature < currentAlphabet.size(); feature++) {
+			if ((double) counter.get(feature) / numInstances > docFrequencyCutoff) {
+				prunedWords.add((String) currentAlphabet.lookupObject(feature));
+			}
+		}
+
+		return prunedWords;
 	}
 
 	static final long serialVersionUID = 1;

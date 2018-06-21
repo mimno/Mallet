@@ -15,6 +15,7 @@ package cc.mallet.pipe;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.io.*;
+import java.util.List;
 
 import cc.mallet.types.FeatureSequenceWithBigrams;
 import cc.mallet.types.Instance;
@@ -110,6 +111,13 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 	{
 		for (int i = 0; i < words.length; i++)
 			stoplist.add (words[i]);
+		return this;
+	}
+
+	public TokenSequenceRemoveStopwords addStopWords (List<String> words)
+	{
+		for (String word: words)
+			stoplist.add (word);
 		return this;
 	}
 

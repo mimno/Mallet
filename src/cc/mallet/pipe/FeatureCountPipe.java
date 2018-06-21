@@ -3,6 +3,8 @@ package cc.mallet.pipe;
 import cc.mallet.types.*;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /** 
  *  Pruning low-count features can be a good way to save memory and computation.
@@ -103,6 +105,21 @@ public class FeatureCountPipe extends Pipe {
             }
         }
 	}
+
+	/**
+	 *  Get all pruned words.
+	 */
+	public List<String> getPrunedWords(int minimumCount) {
+		Alphabet currentAlphabet = getDataAlphabet();
+		List<String> prunedWords = new ArrayList<>();
+		for (int feature = 0; feature < currentAlphabet.size(); feature++) {
+			if (counter.get(feature) < minimumCount) {
+				prunedWords.add((String) currentAlphabet.lookupObject(feature));
+			}
+		}
+		return prunedWords;
+	}
+
 
 	/**
 	 * List the most common words, for addition to a stop file
