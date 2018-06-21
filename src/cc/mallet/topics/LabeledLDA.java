@@ -210,7 +210,11 @@ public class LabeledLDA implements Serializable {
 	public LabelAlphabet getTopicAlphabet() { return topicAlphabet; }
 	public Alphabet getLabelAlphabet() { return labelAlphabet; }
 	public List<TopicAssignment> getData() { return data; }
-	
+
+	public void addStop(String word){
+		this.stoplist.add(word);
+	}
+
 	public void setTopicDisplay(int interval, int n) {
 		this.showTopicsInterval = interval;
 		this.wordsPerTopic = n;
@@ -546,8 +550,9 @@ public class LabeledLDA implements Serializable {
 				logLikelihood += Dirichlet.logGamma(beta + topicCounts[topic]);
 
 				if (Double.isNaN(logLikelihood)) {
-					System.out.println(topicCounts[topic]);
-					System.exit(1);
+					logger.warning("loglikelihood is NaN. Topic: " + topic + " only described by: " + topicCounts[topic]);
+//					System.exit(1);
+					return 0.0;
 				}
 			}
 		}
@@ -557,8 +562,10 @@ public class LabeledLDA implements Serializable {
 				Dirichlet.logGamma( (beta * numTopics) +
 											tokensPerTopic[ topic ] );
 			if (Double.isNaN(logLikelihood)) {
-				System.out.println("after topic " + topic + " " + tokensPerTopic[ topic ]);
-				System.exit(1);
+//				System.out.println("after topic " + topic + " " + tokensPerTopic[ topic ]);
+				logger.warning("loglikelihood is NaN after topic " + topic + " " + tokensPerTopic[ topic ]);
+//					System.exit(1);
+				return 0.0;
 			}
 
 		}
@@ -568,8 +575,10 @@ public class LabeledLDA implements Serializable {
 			(Dirichlet.logGamma(beta) * nonZeroTypeTopics);
 
 		if (Double.isNaN(logLikelihood)) {
-			System.out.println("at the end");
-			System.exit(1);
+			logger.warning("loglikelihood is NaN at the end");
+//			System.out.println("at the end");
+//			System.exit(1);
+			return 0.0;
 		}
 
 
@@ -591,10 +600,7 @@ public class LabeledLDA implements Serializable {
 			if (words.isEmpty()) { continue; }
 
 			output.append(topic + "\t" + labelAlphabet.lookupObject(topic) + "\t" + tokensPerTopic[topic] + "\t");
-			for (Map.Entry<String, Double> entry : words.entrySet()) {
-				output.append(entry.getKey() + " ");
-			}
-
+			output.append(words.entrySet().stream().sorted((a, b) -> -a.getValue().compareTo(b.getValue())).map(entry -> entry.getKey()).collect(Collectors.joining(" ")));
 			output.append("\n");
 		}
 
