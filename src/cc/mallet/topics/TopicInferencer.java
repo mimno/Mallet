@@ -66,6 +66,10 @@ public class TopicInferencer implements Serializable {
 
 		random = new Randoms();
 	}
+
+	public TopicInferencer clone(){
+		return new TopicInferencer(typeTopicCounts.clone(), tokensPerTopic.clone(), (Alphabet) alphabet.clone(), alpha.clone(), beta, betaSum);
+	}
 	
 	public TopicInferencer() {}
 
