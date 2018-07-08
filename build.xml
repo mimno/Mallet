@@ -65,6 +65,22 @@
         </javac>
     </target>
 
+    <target
+     name="compile-ep"
+     depends="init"
+     description="Compile all the source files">
+     <javac destdir="build"
+       compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
+       encoding="UTF-8" debug="true"
+       classpathref="project.classpath"
+       includeantruntime="false">
+       <src path="src"/>
+       <compilerclasspath>
+         <pathelement location="lib/errorprone.jar"/>
+       </compilerclasspath>
+     </javac>
+    </target>
+
     <!--
       Target: doc   {build javadoc API documentation}
       -->
