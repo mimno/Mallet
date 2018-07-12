@@ -22,9 +22,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.rmi.dgc.VMID;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -56,7 +56,7 @@ public class Alphabet implements Serializable
     ArrayList entries;
     volatile boolean growthStopped = false;
     Class entryClass = null;
-    VMID instanceId = new VMID();  //used in readResolve to identify persitent instances
+    UUID instanceId = UUID.randomUUID();  //used in readResolve to identify persitent instances
 
     private transient ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -309,8 +309,8 @@ public class Alphabet implements Serializable
         return true;
     }
 
-    public VMID getInstanceId() { return instanceId;} // for debugging
-    public void setInstanceId(VMID id) { this.instanceId = id; }
+    public UUID getInstanceId() { return instanceId;} // for debugging
+    public void setInstanceId(UUID id) { this.instanceId = id; }
     // Serialization
 
     private static final long serialVersionUID = 1;
@@ -348,14 +348,14 @@ public class Alphabet implements Serializable
             growthStopped = in.readBoolean();
             entryClass = (Class) in.readObject();
             if (version > 0) { // instanced id added in version 1S
-                instanceId = (VMID) in.readObject();
+                instanceId = (UUID) in.readObject();
             }
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    private transient static ConcurrentMap<VMID,Object> deserializedEntries = new ConcurrentHashMap<VMID,Object>();
+    private transient static ConcurrentMap<UUID,Object> deserializedEntries = new ConcurrentHashMap<UUID,Object>();
 
     /**
      * This gets called after readObject; it lets the object decide whether

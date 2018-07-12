@@ -16,9 +16,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.rmi.dgc.VMID;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.UUID;
 
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
@@ -93,7 +93,7 @@ public class PagedInstanceList extends InstanceList
     
     /** uniquely identifies this InstanceList. Used in creating
      * serialized page name for swap files. */
-    VMID id = new VMID();
+    UUID id = UUID.randomUUID();
     
     /** Avoids creating a new noop pipe for each page */
     Pipe noopPipe;
@@ -561,7 +561,7 @@ public class PagedInstanceList extends InstanceList
     }
 
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-        this.id = (VMID) in.readObject ();
+        this.id = (UUID) in.readObject ();
         this.pipe = (Pipe) in.readObject();
         // memory attributes
         this.instancesPerPage = in.readInt ();
