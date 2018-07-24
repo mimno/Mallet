@@ -11,8 +11,10 @@
 
 package cc.mallet.pipe;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -138,7 +140,19 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 	{
 		return new SimplePipeInstanceIterator (source);
 	}
-	
+
+	// TODO: Consider naming this simply "iterator"
+	/** Given an InstanceIterator, return a new InstanceIterator whose instances
+	 * have also been processed by this pipe.  If you override this method, be sure to check
+	 * and obey this pipe's {@link skipIfFalse(Instance)} method. */
+	public Iterator<Instance> newParallelIteratorFrom (Iterator<Instance> source)
+	{
+		return new ParallelPipeInstanceIterator (source);
+	}
+
+
+
+
 	/** A convenience method that will pull all instances from source through this pipe,
 	 *  and return the results as an array.
 	 */
@@ -299,6 +313,29 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
 		public Iterator<Instance> getSourceIterator () { return source; }
 		public void remove() { throw new IllegalStateException ("Not supported."); }
 	}
+
+	// The InstanceIterator used to implement the one-to-one pipe() method behavior.
+	private class ParallelPipeInstanceIterator implements Iterator<Instance>
+	{
+		Iterator<Instance> source;
+		public ParallelPipeInstanceIterator (Iterator<Instance> source) {
+			this.source = source;
+		}
+		public synchronized boolean hasNext () { return source.hasNext(); }
+		public synchronized Instance next() {
+			Instance input = source.next();
+			if (!precondition(input))
+				return input;
+			else
+				return pipe (input);
+		}
+		/** Return the @link{Pipe} that processes @link{Instance}s going through this iterator. */
+		public Pipe getPipe () { return null; }
+		public Iterator<Instance> getSourceIterator () { return source; }
+		public void remove() { throw new IllegalStateException ("Not supported."); }
+	}
+
+
 
 	// Serialization
 

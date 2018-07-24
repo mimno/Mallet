@@ -97,6 +97,16 @@ public class SerialPipes extends Pipe implements Serializable
 			ret = pipes.get(i).newIteratorFrom(ret);
 		return ret;
 	}
+
+	public Iterator<Instance> newParallelIteratorFrom (Iterator<Instance> source)
+	{
+		if (pipes.size() == 0)
+			return new EmptyInstanceIterator();
+		Iterator<Instance> ret = pipes.get(0).newParallelIteratorFrom(source);
+		for (int i = 1; i < pipes.size(); i++)
+			ret = pipes.get(i).newParallelIteratorFrom(ret);
+		return ret;
+	}
 	
 	public int size()
 	{
