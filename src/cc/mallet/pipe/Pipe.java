@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 import java.io.*;
-import java.rmi.dgc.VMID;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.AlphabetCarrying;
@@ -81,7 +81,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
     boolean targetAlphabetResolved = false;
     boolean targetProcessing = true;
 
-    VMID instanceId = new VMID();  //used in readResolve to distinguish persistent instances
+    UUID instanceId = UUID.randomUUID();  //used in readResolve to distinguish persistent instances
 
     /** Construct a pipe with no data and target dictionaries
      */
@@ -274,7 +274,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
         }
     }
 
-    public VMID getInstanceId() { return instanceId;} // for debugging
+    public UUID getInstanceId() { return instanceId;} // for debugging
     
     
     // The InstanceIterator used to implement the one-to-one pipe() method behavior.
@@ -321,10 +321,10 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
         dataAlphabetResolved = in.readBoolean();
         targetAlphabetResolved = in.readBoolean();
         targetProcessing = in.readBoolean();
-        instanceId = (VMID) in.readObject();
+        instanceId = (UUID) in.readObject();
     }
 
-    private transient static ConcurrentMap<VMID, Object> deserializedEntries = new ConcurrentHashMap<VMID, Object>();
+    private transient static ConcurrentMap<UUID, Object> deserializedEntries = new ConcurrentHashMap<UUID, Object>();
     
     /**
      * This gets called after readObject; it lets the object decide whether
