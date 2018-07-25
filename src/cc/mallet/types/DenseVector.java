@@ -74,10 +74,8 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 		if (m instanceof DenseVector) {
 			System.arraycopy (((DenseVector)m).values, 0, values, i, ((DenseVector)m).values.length);
 			return i + ((DenseVector)m).values.length;
-		} else if (m instanceof Matrix2) {
-			((Matrix2)m).arrayCopyInto (values, i);
-			return i + m.singleSize();
-		} else {
+		}
+        else {
 			for (int j = 0; j < m.singleSize(); j++)
 				values[i++] = m.singleValue (j);
 			return i;
@@ -112,10 +110,8 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 		if (m instanceof DenseVector) {
 			System.arraycopy (values, i, ((DenseVector)m).values, 0, ((DenseVector)m).values.length);
 			return i + ((DenseVector)m).values.length;
-		} else if (m instanceof Matrix2) {
-			((Matrix2)m).arrayCopyFrom (values, i);
-			return i + m.singleSize();
-		} else {
+		}
+        else {
 			for (int j = 0; j < m.singleSize(); j++)
 				m.setSingleValue (j, values[i++]);
 			return i;

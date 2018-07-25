@@ -86,13 +86,6 @@ public class FeatureVectorSequence implements Sequence<FeatureVector>, Serializa
 		return sequence [i];
 	}
 
-	public double dotProduct (int sequencePosition,
-			Matrix2 weights,
-			int weightRowIndex)
-	{
-		return weights.rowDotProduct (weightRowIndex, sequence[sequencePosition]);
-	}
-
 	public double dotProduct (int sequencePosition,	Vector weights)
 	{
 		return weights.dotProduct (sequence[sequencePosition]);
