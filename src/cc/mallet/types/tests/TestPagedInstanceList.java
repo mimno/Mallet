@@ -31,36 +31,33 @@ import junit.framework.TestSuite;
 /**
  * Created: Apr 19, 2005
  *
- * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
+ * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
  * @version $Id: TestPagedInstanceList.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
  */
 public class TestPagedInstanceList extends TestCase {
 
-  public TestPagedInstanceList (String name)
-  {
-    super (name);
-  }
+    public TestPagedInstanceList (String name) {
+        super (name);
+    }
 
-  public static Test suite ()
-  {
-    return new TestSuite(TestPagedInstanceList.class);
-  }
+    public static Test suite () {
+        return new TestSuite(TestPagedInstanceList.class);
+    }
 
 
-	private static Alphabet dictOfSize (int size)
-	{
-		Alphabet ret = new Alphabet ();
-		for (int i = 0; i < size; i++)
-			ret.lookupIndex ("feature"+i);
-		return ret;
-	}
+    private static Alphabet dictOfSize (int size) {
+        Alphabet ret = new Alphabet ();
+        for (int i = 0; i < size; i++)
+            ret.lookupIndex ("feature"+i);
+        return ret;
+    }
 
   public void testRandomTrained ()
   {
-    Pipe p = new SerialPipes(new Pipe[]	{
-			new TokenSequence2FeatureSequence(),
-			new FeatureSequence2FeatureVector(),
-			new Target2Label()});
+    Pipe p = new SerialPipes(new Pipe[]    {
+            new TokenSequence2FeatureSequence(),
+            new FeatureSequence2FeatureVector(),
+            new Target2Label()});
 
     double testAcc1 = testRandomTrainedOn (new InstanceList (p));
     double testAcc2 = testRandomTrainedOn (new PagedInstanceList (p, 700, 200, new File(".")));
