@@ -17,7 +17,7 @@ import cc.mallet.types.LabelAlphabet;
 /**
  * Created: Nov 24, 2004
  *
- * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
+ * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
  * @version $Id: TestLabelAlphabet.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
  */
 public class TestLabelAlphabet extends TestCase {
@@ -37,6 +37,9 @@ public class TestLabelAlphabet extends TestCase {
       this.theLabel = theLabel;
     }
 
+    @Override public String toString() {
+        return dict.toString() + "\n" + theLabel.toString();
+    }
   }
 
   /** Tests how serializing labels separately can lead to big losses.
@@ -53,11 +56,15 @@ public class TestLabelAlphabet extends TestCase {
     Label t1 = dict.lookupLabel ("TEST1");
     Labelee l = new Labelee (dict, t1);
     Labelee l2 = (Labelee) TestSerializable.cloneViaSerialization (l);
-
+    
+    System.out.println(l);
+    System.out.println(l2);
+    
+    // DM: Changing this from identity comparison (==) to value comparison (.equals()). LabelAlphabet does not serialize the Label objects, but creates them as needed. They will have the same value, but will be different objects.
     assertTrue (l.dict == l2.dict);
-    assertTrue (dict.lookupLabel("TEST1") == l.theLabel);
-    assertTrue (dict.lookupLabel("TEST1") == l2.theLabel);
-    assertTrue (l.theLabel == l2.theLabel);
+    assertTrue (dict.lookupLabel("TEST1").equals(l.theLabel));
+    assertTrue (dict.lookupLabel("TEST1").equals(l2.theLabel));
+    assertTrue (l.theLabel.equals(l2.theLabel));
   }
 
   public static Test suite ()
