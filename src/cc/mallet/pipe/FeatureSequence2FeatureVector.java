@@ -27,39 +27,39 @@ import cc.mallet.types.Instance;
  */
 public class FeatureSequence2FeatureVector extends Pipe implements Serializable
 {
-	boolean binary;
+    boolean binary;
 
-	public FeatureSequence2FeatureVector (boolean binary)
-	{
-		this.binary = binary;
-	}
+    public FeatureSequence2FeatureVector (boolean binary)
+    {
+        this.binary = binary;
+    }
 
-	public FeatureSequence2FeatureVector ()
-	{
-		this (false);
-	}
-	
-	
-	public Instance pipe (Instance carrier)
-	{
-		FeatureSequence fs = (FeatureSequence) carrier.getData();
-		carrier.setData(new FeatureVector (fs, binary));
-		return carrier;
-	}
+    public FeatureSequence2FeatureVector ()
+    {
+        this (false);
+    }
+    
+    
+    @Override public Instance pipe (Instance carrier)
+    {
+        FeatureSequence fs = (FeatureSequence) carrier.getData();
+        carrier.setData(new FeatureVector (fs, binary));
+        return carrier;
+    }
 
-	// Serialization 
-	
-	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 1;
-	
-	private void writeObject (ObjectOutputStream out) throws IOException {
-		out.writeInt (CURRENT_SERIAL_VERSION);
-		out.writeBoolean (binary);
-	}
-	
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int version = in.readInt ();
-		if (version > 0)
-			binary = in.readBoolean();
-	}
+    // Serialization 
+    
+    private static final long serialVersionUID = 1;
+    private static final int CURRENT_SERIAL_VERSION = 1;
+    
+    private void writeObject (ObjectOutputStream out) throws IOException {
+        out.writeInt (CURRENT_SERIAL_VERSION);
+        out.writeBoolean (binary);
+    }
+    
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+        int version = in.readInt ();
+        if (version > 0)
+            binary = in.readBoolean();
+    }
 }

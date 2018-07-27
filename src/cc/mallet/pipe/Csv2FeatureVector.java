@@ -44,7 +44,7 @@ public class Csv2FeatureVector extends Pipe {
      * Convert the data in the given <tt>Instance</tt> from a <tt>CharSequence</tt> 
      * of sparse feature-value pairs to a <tt>FeatureVector</tt>
      */
-    public Instance pipe(Instance carrier) {
+    @Override public Instance pipe(Instance carrier) {
 
         CharSequence c = (CharSequence) carrier.getData();
         String[] pairs = c.toString().trim().split("\\s+");

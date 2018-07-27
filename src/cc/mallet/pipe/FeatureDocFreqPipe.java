@@ -17,66 +17,66 @@ import java.io.*;
  */
 
 public class FeatureDocFreqPipe extends Pipe {
-		
-	FeatureCounter counter;
-	int numInstances;
+        
+    FeatureCounter counter;
+    int numInstances;
 
-	public FeatureDocFreqPipe() {
-		super(new Alphabet(), null);
+    public FeatureDocFreqPipe() {
+        super(new Alphabet(), null);
 
-		counter = new FeatureCounter(this.getDataAlphabet());
-		numInstances = 0;
-	}
-		
-	public FeatureDocFreqPipe(Alphabet dataAlphabet, Alphabet targetAlphabet) {
-		super(dataAlphabet, targetAlphabet);
+        counter = new FeatureCounter(this.getDataAlphabet());
+        numInstances = 0;
+    }
+        
+    public FeatureDocFreqPipe(Alphabet dataAlphabet, Alphabet targetAlphabet) {
+        super(dataAlphabet, targetAlphabet);
 
-		counter = new FeatureCounter(dataAlphabet);
-		numInstances = 0;
-	}
+        counter = new FeatureCounter(dataAlphabet);
+        numInstances = 0;
+    }
 
-	public Instance pipe(Instance instance) {
-		
-		IntIntHashMap localCounter = new IntIntHashMap();
-	
-		if (instance.getData() instanceof FeatureSequence) {
-				
-			FeatureSequence features = (FeatureSequence) instance.getData();
+    @Override public Instance pipe(Instance instance) {
+        
+        IntIntHashMap localCounter = new IntIntHashMap();
+    
+        if (instance.getData() instanceof FeatureSequence) {
+                
+            FeatureSequence features = (FeatureSequence) instance.getData();
 
-			for (int position = 0; position < features.size(); position++) {
-				localCounter.putOrAdd(features.getIndexAtPosition(position), 1, 1);
-			}
+            for (int position = 0; position < features.size(); position++) {
+                localCounter.putOrAdd(features.getIndexAtPosition(position), 1, 1);
+            }
 
-		}
-		else {
-			throw new IllegalArgumentException("Looking for a FeatureSequence, found a " + 
-											   instance.getData().getClass());
-		}
+        }
+        else {
+            throw new IllegalArgumentException("Looking for a FeatureSequence, found a " + 
+                                               instance.getData().getClass());
+        }
 
-		for (IntCursor feature: localCounter.keys()) {
-			counter.increment(feature);
-		}
+        for (IntCursor feature: localCounter.keys()) {
+            counter.increment(feature);
+        }
 
-		numInstances++;
+        numInstances++;
 
-		return instance;
-	}
+        return instance;
+    }
 
-	/** 
-	 *  Add all pruned words to the internal stoplist of a SimpleTokenizer.
-	 * 
-	 * @param docFrequencyCutoff Remove words that occur in greater than this proportion of documents. 0.05 corresponds to IDF >= 3.
-	 */
-	public void addPrunedWordsToStoplist(SimpleTokenizer tokenizer, double docFrequencyCutoff) {
-		Alphabet currentAlphabet = getDataAlphabet();
+    /** 
+     *  Add all pruned words to the internal stoplist of a SimpleTokenizer.
+     * 
+     * @param docFrequencyCutoff Remove words that occur in greater than this proportion of documents. 0.05 corresponds to IDF >= 3.
+     */
+    public void addPrunedWordsToStoplist(SimpleTokenizer tokenizer, double docFrequencyCutoff) {
+        Alphabet currentAlphabet = getDataAlphabet();
 
         for (int feature = 0; feature < currentAlphabet.size(); feature++) {
             if ((double) counter.get(feature) / numInstances > docFrequencyCutoff) {
                 tokenizer.stop((String) currentAlphabet.lookupObject(feature));
             }
         }
-	}
+    }
 
-	static final long serialVersionUID = 1;
+    static final long serialVersionUID = 1;
 
 }

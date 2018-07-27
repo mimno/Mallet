@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.nio.charset.Charset;
 
 import com.carrotsearch.hppc.ObjectIntHashMap;
 
@@ -282,7 +283,7 @@ public class Alphabet implements Serializable
     public void dump () { dump (System.out); }
 
     public void dump (PrintStream out) {
-        dump (new PrintWriter (new OutputStreamWriter (out), true));
+        dump (new PrintWriter (new OutputStreamWriter (out, Charset.defaultCharset()), true));
     }
 
     public void dump (PrintWriter out) {

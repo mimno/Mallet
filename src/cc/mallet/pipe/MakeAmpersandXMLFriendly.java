@@ -24,38 +24,37 @@ import cc.mallet.types.*;
 public class MakeAmpersandXMLFriendly extends Pipe implements Serializable
 {
 
-	public MakeAmpersandXMLFriendly ()
-	{
-	}
+    public MakeAmpersandXMLFriendly ()
+    {
+    }
 
-	public Instance pipe (Instance carrier)
-	{
-		TokenSequence ts = (TokenSequence) carrier.getData();
-		for (int i = 0; i < ts.size(); i++) {
-			Token t = ts.get(i);
-			String s = t.getText();
-			if (s.indexOf("&") != -1) {
-				if (s.indexOf("&amp;") != -1) // already friendly
-					return carrier;
-				else {
-					s.replaceAll ("&", "&amp;");
-					t.setText (s);
-				}
-			}
-		}
-		return carrier;
-	}
-	// Serialization 
-	
-	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 0;
-	
-	private void writeObject (ObjectOutputStream out) throws IOException {
-		out.writeInt (CURRENT_SERIAL_VERSION);
-	}
-	
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int version = in.readInt ();
-	}
+    @Override public Instance pipe (Instance carrier)
+    {
+        TokenSequence ts = (TokenSequence) carrier.getData();
+        for (int i = 0; i < ts.size(); i++) {
+            Token t = ts.get(i);
+            String s = t.getText();
+            if (s.indexOf("&") != -1) {
+                if (s.indexOf("&amp;") != -1) // already friendly
+                    return carrier;
+                else {
+                    t.setText (s.replaceAll ("&", "&amp;"));
+                }
+            }
+        }
+        return carrier;
+    }
+    // Serialization 
+    
+    private static final long serialVersionUID = 1;
+    private static final int CURRENT_SERIAL_VERSION = 0;
+    
+    private void writeObject (ObjectOutputStream out) throws IOException {
+        out.writeInt (CURRENT_SERIAL_VERSION);
+    }
+    
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+        int version = in.readInt ();
+    }
 
 }

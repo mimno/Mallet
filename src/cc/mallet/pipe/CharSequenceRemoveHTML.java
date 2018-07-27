@@ -26,68 +26,68 @@ import java.io.*;
 
 public class CharSequenceRemoveHTML extends Pipe {
 
-	public Instance pipe(Instance carrier) {
-		String text = ((CharSequence) carrier.getData()).toString();
-		
-		// I take these out ahead of time because the
-		// Java HTML parser seems to die here.
-		text = text.replaceAll("\\<NOFRAMES\\>","");
-		text = text.replaceAll("\\<\\/NOFRAMES\\>","");
-		
-		ParserGetter kit = new ParserGetter();
-		HTMLEditorKit.Parser parser = kit.getParser();
-		HTMLEditorKit.ParserCallback callback = new TagStripper();
+    @Override public Instance pipe(Instance carrier) {
+        String text = ((CharSequence) carrier.getData()).toString();
+        
+        // I take these out ahead of time because the
+        // Java HTML parser seems to die here.
+        text = text.replaceAll("\\<NOFRAMES\\>","");
+        text = text.replaceAll("\\<\\/NOFRAMES\\>","");
+        
+        ParserGetter kit = new ParserGetter();
+        HTMLEditorKit.Parser parser = kit.getParser();
+        HTMLEditorKit.ParserCallback callback = new TagStripper();
 
-		try {
-			StringReader r = new StringReader(text);
-			parser.parse(r, callback, true);
-		} catch (IOException e) {
-			System.err.println(e);
-		}
-		String result = ((TagStripper) callback).getText();
-		carrier.setData((CharSequence) result);
-		return carrier;
-	}
+        try {
+            StringReader r = new StringReader(text);
+            parser.parse(r, callback, true);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+        String result = ((TagStripper) callback).getText();
+        carrier.setData((CharSequence) result);
+        return carrier;
+    }
 
-	private class TagStripper extends HTMLEditorKit.ParserCallback {
-		private String text;
+    private class TagStripper extends HTMLEditorKit.ParserCallback {
+        private String text;
 
-		public TagStripper() {
-			text = "";
-		}
+        public TagStripper() {
+            text = "";
+        }
 
-		public void handleText(char[] txt, int position) {
-			for (int index = 0; index < txt.length; index++) {
-				text += txt[index];
-			}
-			text += "\n";
-		}
+        @Override public void handleText(char[] txt, int position) {
+            for (int index = 0; index < txt.length; index++) {
+                text += txt[index];
+            }
+            text += "\n";
+        }
 
-		public String getText() {
-			return text;
-		}
+        public String getText() {
+            return text;
+        }
 
-	}
+    }
 
-	private class ParserGetter extends HTMLEditorKit {
-		// purely to make this method public
-		public HTMLEditorKit.Parser getParser() {
-			return super.getParser();
-		}
-	}
+    private class ParserGetter extends HTMLEditorKit {
+        // purely to make this method public
+        public HTMLEditorKit.Parser getParser() {
+            return super.getParser();
+        }
+    }
 
-	public static void main(String[] args) {
-		String htmldir = args[0];
-		Pipe pipe = new SerialPipes(new Pipe[] { new Input2CharSequence(),
-				new CharSequenceRemoveHTML() });
-		InstanceList list = new InstanceList(pipe);
-		list.addThruPipe(new FileIterator(htmldir, FileIterator.STARTING_DIRECTORIES));
+    public static void main(String[] args) {
+        String htmldir = args[0];
+        Pipe pipe = new SerialPipes(new Pipe[] { new Input2CharSequence(),
+                new CharSequenceRemoveHTML() });
+        InstanceList list = new InstanceList(pipe);
+        list.addThruPipe(new FileIterator(htmldir, FileIterator.STARTING_DIRECTORIES));
 
-		for (int index = 0; index < list.size(); index++) {
-			Instance inst = list.get(index);
-			System.err.println(inst.getData());
-		}
+        for (int index = 0; index < list.size(); index++) {
+            Instance inst = list.get(index);
+            System.err.println(inst.getData());
+        }
 
-	}
+    }
 
 }

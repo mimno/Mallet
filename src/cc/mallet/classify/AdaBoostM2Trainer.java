@@ -35,7 +35,7 @@ public class AdaBoostM2Trainer extends ClassifierTrainer<AdaBoostM2>
 	int numRounds;
 	
 	AdaBoostM2 classifier;
-	public AdaBoostM2 getClassifier () { return classifier; }
+	@Override public AdaBoostM2 getClassifier () { return classifier; }
 
 	public AdaBoostM2Trainer (ClassifierTrainer weakLearner, int numRounds)
 	{
@@ -55,7 +55,7 @@ public class AdaBoostM2Trainer extends ClassifierTrainer<AdaBoostM2>
 	/**
 	 * Boosting method that resamples instances using their weights
 	 */    
-	public AdaBoostM2 train (InstanceList trainingList)
+	@Override public AdaBoostM2 train (InstanceList trainingList)
 	{
 		FeatureSelection selectedFeatures = trainingList.getFeatureSelection();
 		if (selectedFeatures != null)

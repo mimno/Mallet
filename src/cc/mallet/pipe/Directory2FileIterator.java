@@ -30,55 +30,55 @@ import cc.mallet.util.RegexFileFilter;
 
 public class Directory2FileIterator extends Pipe
 {
-	FileFilter fileFilter = null;
-	Pattern labelPattern = null;
+    FileFilter fileFilter = null;
+    Pattern labelPattern = null;
 
-	public Directory2FileIterator (FileFilter fileFilter, Pattern labelRegex)
-	{
-		this.fileFilter = fileFilter;
-		this.labelPattern = labelRegex;
-	}
-		
-	public Directory2FileIterator (Pattern absolutePathRegex,
-																 Pattern filenameRegex,
-																 Pattern labelRegex)
-	{
-		this (new RegexFileFilter (absolutePathRegex, filenameRegex), labelRegex);
-	}
+    public Directory2FileIterator (FileFilter fileFilter, Pattern labelRegex)
+    {
+        this.fileFilter = fileFilter;
+        this.labelPattern = labelRegex;
+    }
+        
+    public Directory2FileIterator (Pattern absolutePathRegex,
+                                                                 Pattern filenameRegex,
+                                                                 Pattern labelRegex)
+    {
+        this (new RegexFileFilter (absolutePathRegex, filenameRegex), labelRegex);
+    }
 
-	public Directory2FileIterator (String filenameRegex)
-	{
-		this (new RegexFileFilter (filenameRegex), null);
-	}
+    public Directory2FileIterator (String filenameRegex)
+    {
+        this (new RegexFileFilter (filenameRegex), null);
+    }
 
-	public Directory2FileIterator ()
-	{
-		// Leave fileFilter == null
-	}
+    public Directory2FileIterator ()
+    {
+        // Leave fileFilter == null
+    }
 
-	public Instance pipe (Instance carrier)
-	{
-		File directory = (File) carrier.getData();
-		carrier.setData(new FileIterator (directory, fileFilter, labelPattern));
-		return carrier;
-	}
-	
-	public Iterator pipe (File directory)
-	{
-		return new FileIterator (directory, fileFilter, labelPattern);
-	}
+    @Override public Instance pipe (Instance carrier)
+    {
+        File directory = (File) carrier.getData();
+        carrier.setData(new FileIterator (directory, fileFilter, labelPattern));
+        return carrier;
+    }
+    
+    public Iterator pipe (File directory)
+    {
+        return new FileIterator (directory, fileFilter, labelPattern);
+    }
 
-	public Iterator pipe (URI directory)
-	{
-		return pipe (new File (directory));
-	}
+    public Iterator pipe (URI directory)
+    {
+        return pipe (new File (directory));
+    }
 
-	public Iterator pipe (String directory)
-	{
-		return pipe (new File (directory));
-	}
+    public Iterator pipe (String directory)
+    {
+        return pipe (new File (directory));
+    }
 
-	
+    
 
 
 }

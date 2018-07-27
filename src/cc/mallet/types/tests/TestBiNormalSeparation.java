@@ -28,59 +28,59 @@ import junit.framework.TestSuite;
  */
 public class TestBiNormalSeparation extends TestCase {
 
-  class BinaryTestData {
+    static class BinaryTestData {
 
-    InstanceList iList;
-    Alphabet dataAlphabet;
-    Label posLabel;
-    Label negLabel;
+        InstanceList iList;
+        Alphabet dataAlphabet;
+        Label posLabel;
+        Label negLabel;
 
-    BinaryTestData(int numFeatures) {
-      LabelAlphabet labelAlphabet = new LabelAlphabet();
-      posLabel = labelAlphabet.lookupLabel("pos", true);
-      negLabel = labelAlphabet.lookupLabel("neg", true);
-      List<String> featureNames = new ArrayList<String>();
-      for (int i = 0; i < numFeatures; i++) {
-        featureNames.add(Integer.toString(i));
-      }
-      dataAlphabet = new Alphabet(featureNames.toArray());
-      iList = new InstanceList(dataAlphabet, labelAlphabet);
+        BinaryTestData(int numFeatures) {
+            LabelAlphabet labelAlphabet = new LabelAlphabet();
+            posLabel = labelAlphabet.lookupLabel("pos", true);
+            negLabel = labelAlphabet.lookupLabel("neg", true);
+            List<String> featureNames = new ArrayList<String>();
+            for (int i = 0; i < numFeatures; i++) {
+                featureNames.add(Integer.toString(i));
+            }
+            dataAlphabet = new Alphabet(featureNames.toArray());
+            iList = new InstanceList(dataAlphabet, labelAlphabet);
+        }
+
+        void addInstance(int[] features, boolean positive) {
+            FeatureVector featureVector = new FeatureVector(dataAlphabet, features);
+            Instance instance = new Instance(featureVector, positive ? posLabel : negLabel,
+                    null, null);
+            iList.add(instance);
+        }
+
+        InstanceList getInstanceList() {
+            return iList;
+        }
     }
 
-    void addInstance(int[] features, boolean positive) {
-      FeatureVector featureVector = new FeatureVector(dataAlphabet, features);
-      Instance instance = new Instance(featureVector, positive ? posLabel : negLabel,
-          null, null);
-      iList.add(instance);
+    public TestBiNormalSeparation(String name) {
+        super(name);
     }
 
-    InstanceList getInstanceList() {
-      return iList;
+    public static Test suite() {
+        return new TestSuite(TestBiNormalSeparation.class);
     }
-  }
 
-  public TestBiNormalSeparation(String name) {
-    super(name);
-  }
-
-  public static Test suite() {
-    return new TestSuite(TestBiNormalSeparation.class);
-  }
-
-  public void testBiNormalSeparation() {
-    BinaryTestData binaryTestData = new BinaryTestData(4);
-    binaryTestData.addInstance(new int[] {0, 1}, true);
-    binaryTestData.addInstance(new int[] {0, 2}, true);
-    binaryTestData.addInstance(new int[] {2, 3}, false);
-    binaryTestData.addInstance(new int[] {3}, false);
-    InstanceList iList = binaryTestData.getInstanceList();
-    RankedFeatureVector rankedFeatureVector = new BiNormalSeparation.Factory()
-        .newRankedFeatureVector(iList);
-    assertEquals(6.58, rankedFeatureVector.getValueAtRank(0), 0.005);
-    assertEquals(3.29, rankedFeatureVector.getValueAtRank(2), 0.005);
-    assertEquals(0, rankedFeatureVector.getValueAtRank(3), 0);
-    assertEquals(6.58, rankedFeatureVector.getValueAtRank(1), 0.005);
-    assertEquals(2, rankedFeatureVector.getIndexAtRank(3));
-    assertEquals(1, rankedFeatureVector.getIndexAtRank(2));
-  }
+    public void testBiNormalSeparation() {
+        BinaryTestData binaryTestData = new BinaryTestData(4);
+        binaryTestData.addInstance(new int[] {0, 1}, true);
+        binaryTestData.addInstance(new int[] {0, 2}, true);
+        binaryTestData.addInstance(new int[] {2, 3}, false);
+        binaryTestData.addInstance(new int[] {3}, false);
+        InstanceList iList = binaryTestData.getInstanceList();
+        RankedFeatureVector rankedFeatureVector = new BiNormalSeparation.Factory()
+                .newRankedFeatureVector(iList);
+        assertEquals(6.58, rankedFeatureVector.getValueAtRank(0), 0.005);
+        assertEquals(3.29, rankedFeatureVector.getValueAtRank(2), 0.005);
+        assertEquals(0, rankedFeatureVector.getValueAtRank(3), 0);
+        assertEquals(6.58, rankedFeatureVector.getValueAtRank(1), 0.005);
+        assertEquals(2, rankedFeatureVector.getIndexAtRank(3));
+        assertEquals(1, rankedFeatureVector.getIndexAtRank(2));
+    }
 }

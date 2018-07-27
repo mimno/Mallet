@@ -22,26 +22,26 @@ import cc.mallet.types.TokenSequence;
 public class CharSequenceArray2TokenSequence extends Pipe
   implements Serializable
 {
-	public CharSequenceArray2TokenSequence ()
-	{
-	}
+    public CharSequenceArray2TokenSequence ()
+    {
+    }
   
-	public Instance pipe (Instance carrier)
-	{
+    @Override public Instance pipe (Instance carrier)
+    {
     carrier.setData(new TokenSequence((CharSequence[]) carrier.getData()));
-		return carrier;
-	}
+        return carrier;
+    }
 
-	// Serialization 
-	
-	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 0;
-	
-	private void writeObject (ObjectOutputStream out) throws IOException {
-		out.writeInt(CURRENT_SERIAL_VERSION);
-	}
-	
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int version = in.readInt ();
-	}
+    // Serialization 
+    
+    private static final long serialVersionUID = 1;
+    private static final int CURRENT_SERIAL_VERSION = 0;
+    
+    private void writeObject (ObjectOutputStream out) throws IOException {
+        out.writeInt(CURRENT_SERIAL_VERSION);
+    }
+    
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+        int version = in.readInt ();
+    }
 }

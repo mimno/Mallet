@@ -19,31 +19,31 @@ import cc.mallet.types.TokenSequence;
  */
 
 public class CharSequenceLowercase extends Pipe implements Serializable {
-	
-	public Instance pipe (Instance carrier) {
+    
+    @Override public Instance pipe (Instance carrier) {
 
-		if (carrier.getData() instanceof CharSequence) {
-			CharSequence data = (CharSequence) carrier.getData();
-			carrier.setData(data.toString().toLowerCase());
-		}
-		else {
-			throw new IllegalArgumentException("CharSequenceLowercase expects a CharSequence, found a " + carrier.getData().getClass());
-		}
+        if (carrier.getData() instanceof CharSequence) {
+            CharSequence data = (CharSequence) carrier.getData();
+            carrier.setData(data.toString().toLowerCase());
+        }
+        else {
+            throw new IllegalArgumentException("CharSequenceLowercase expects a CharSequence, found a " + carrier.getData().getClass());
+        }
 
-		return carrier;
-	}
+        return carrier;
+    }
 
-	// Serialization 
-	
-	private static final long serialVersionUID = 1;
-	private static final int CURRENT_SERIAL_VERSION = 0;
-	
-	private void writeObject (ObjectOutputStream out) throws IOException {
-		out.writeInt (CURRENT_SERIAL_VERSION);
-	}
-	
-	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int version = in.readInt ();
-	}
+    // Serialization 
+    
+    private static final long serialVersionUID = 1;
+    private static final int CURRENT_SERIAL_VERSION = 0;
+    
+    private void writeObject (ObjectOutputStream out) throws IOException {
+        out.writeInt (CURRENT_SERIAL_VERSION);
+    }
+    
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+        int version = in.readInt ();
+    }
 
 }

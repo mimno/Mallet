@@ -66,8 +66,7 @@ public class AdaBoost extends Classifier
         return new AdaBoost(instancePipe, newWeakClassifiers, newAlphas);
     }
     
-    @Override public Classification classify (Instance inst)
-    {
+    @Override public Classification classify (Instance inst) {
         return classify(inst, weakClassifiers.length);
     }
 

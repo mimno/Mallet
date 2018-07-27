@@ -33,7 +33,7 @@ import cc.mallet.types.MatrixOps;
 
 public class MCMaxEnt extends Classifier implements Serializable
 {
-    double [] parameters;										// indexed by <labelIndex,featureIndex>
+    double [] parameters;                                        // indexed by <labelIndex,featureIndex>
     int defaultFeatureIndex;
     FeatureSelection featureSelection;
     FeatureSelection[] perClassFeatureSelection;
@@ -50,7 +50,7 @@ public class MCMaxEnt extends Classifier implements Serializable
         this.featureSelection = featureSelection;
         this.perClassFeatureSelection = perClassFeatureSelection;
         this.defaultFeatureIndex = dataPipe.getDataAlphabet().size();
-//		assert (parameters.getNumCols() == defaultFeatureIndex+1);
+//        assert (parameters.getNumCols() == defaultFeatureIndex+1);
     }
 
     public MCMaxEnt (Pipe dataPipe,
@@ -85,8 +85,8 @@ public class MCMaxEnt extends Classifier implements Serializable
 
     public void getUnnormalizedClassificationScores (Instance instance, double[] scores)
     {
-			  //  arrayOutOfBounds if pipe has grown since training 
-			  //        int numFeatures = getAlphabet().size() + 1;
+              //  arrayOutOfBounds if pipe has grown since training 
+              //        int numFeatures = getAlphabet().size() + 1;
         int numFeatures = this.defaultFeatureIndex + 1;
 
         int numLabels = getLabelAlphabet().size();
@@ -119,8 +119,8 @@ public class MCMaxEnt extends Classifier implements Serializable
         // what we are expecting from our data pipe (and thus our notion
         // of feature probabilities.
         assert (instancePipe == null || fv.getAlphabet () == this.instancePipe.getDataAlphabet ());
-			  //  arrayOutOfBounds if pipe has grown since training 
-			  //        int numFeatures = getAlphabet().size() + 1;
+              //  arrayOutOfBounds if pipe has grown since training 
+              //        int numFeatures = getAlphabet().size() + 1;
         int numFeatures = this.defaultFeatureIndex + 1;
 
         // Include the feature weights according to each label
@@ -146,7 +146,7 @@ public class MCMaxEnt extends Classifier implements Serializable
         }
     }
 
-    public Classification classify (Instance instance)
+    @Override public Classification classify (Instance instance)
     {
         int numClasses = getLabelAlphabet().size();
         double[] scores = new double[numClasses];
@@ -157,26 +157,26 @@ public class MCMaxEnt extends Classifier implements Serializable
                         scores));
     }
 
-	public void print () 
-	{		
-		final Alphabet dict = getAlphabet();
-		final LabelAlphabet labelDict = getLabelAlphabet();
-				
-		int numFeatures = dict.size() + 1;
-		int numLabels = labelDict.size();
-		
-		 // Include the feature weights according to each label
-		 for (int li = 0; li < numLabels; li++) {
-		 	System.out.println ("FEATURES FOR CLASS "+labelDict.lookupObject (li));
-		 	System.out.println (" <default> "+parameters [li*numFeatures + defaultFeatureIndex]);
-		 	for (int i = 0; i < defaultFeatureIndex; i++) {
-		 		Object name = dict.lookupObject (i);
-	            double weight = parameters [li*numFeatures + i];
-		 		System.out.println (" "+name+" "+weight);
-		 	}
-		 }
-	}
-	
+    @Override public void print () 
+    {        
+        final Alphabet dict = getAlphabet();
+        final LabelAlphabet labelDict = getLabelAlphabet();
+                
+        int numFeatures = dict.size() + 1;
+        int numLabels = labelDict.size();
+        
+         // Include the feature weights according to each label
+         for (int li = 0; li < numLabels; li++) {
+             System.out.println ("FEATURES FOR CLASS "+labelDict.lookupObject (li));
+             System.out.println (" <default> "+parameters [li*numFeatures + defaultFeatureIndex]);
+             for (int i = 0; i < defaultFeatureIndex; i++) {
+                 Object name = dict.lookupObject (i);
+                double weight = parameters [li*numFeatures + i];
+                 System.out.println (" "+name+" "+weight);
+             }
+         }
+    }
+    
     private static final long serialVersionUID = 1;
     private static final int CURRENT_SERIAL_VERSION = 1;
     static final int NULL_INTEGER = -1;

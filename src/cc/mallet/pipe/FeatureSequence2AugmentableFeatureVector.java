@@ -27,21 +27,21 @@ import cc.mallet.types.Instance;
  */
 public class FeatureSequence2AugmentableFeatureVector extends Pipe
 {
-	boolean binary;
+    boolean binary;
 
-	public FeatureSequence2AugmentableFeatureVector (boolean binary)
-	{
-		this.binary = binary;
-	}
+    public FeatureSequence2AugmentableFeatureVector (boolean binary)
+    {
+        this.binary = binary;
+    }
 
-	public FeatureSequence2AugmentableFeatureVector ()
-	{
-		this (false);
-	}
-	
-	public Instance pipe (Instance carrier)
-	{
-		carrier.setData(new AugmentableFeatureVector ((FeatureSequence)carrier.getData(), binary));
-		return carrier;
-	}
+    public FeatureSequence2AugmentableFeatureVector ()
+    {
+        this (false);
+    }
+    
+    @Override public Instance pipe (Instance carrier)
+    {
+        carrier.setData(new AugmentableFeatureVector ((FeatureSequence)carrier.getData(), binary));
+        return carrier;
+    }
 }

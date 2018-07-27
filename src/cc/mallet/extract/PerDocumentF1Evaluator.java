@@ -21,7 +21,7 @@ import cc.mallet.types.MatrixOps;
 /**
  * Created: Oct 8, 2004
  *
- * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
+ * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
  * @version $Id: PerDocumentF1Evaluator.java,v 1.1 2007/10/22 21:37:44 mccallum Exp $
  */
 public class PerDocumentF1Evaluator implements ExtractionEvaluator {
@@ -55,7 +55,7 @@ public class PerDocumentF1Evaluator implements ExtractionEvaluator {
   }
 
 
-  public void evaluate (Extraction extraction)
+  @Override public void evaluate (Extraction extraction)
   {
     evaluate (extraction, System.out);
   }

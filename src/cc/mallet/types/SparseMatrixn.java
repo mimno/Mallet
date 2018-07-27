@@ -31,38 +31,38 @@ import cc.mallet.util.ArrayUtils;
  */
 public class SparseMatrixn implements Matrix, Cloneable, Serializable {
 
-  private SparseVector values;
-	private int numDimensions;
-	private int[] sizes;
-  private int singleSize;
+    private SparseVector values;
+    private int numDimensions;
+    private int[] sizes;
+    private int singleSize;
 
-	/**
-	 *  Create a 1-d dense matrix with the given values.
-	 */
-	public SparseMatrixn(double[] vals) {
-		numDimensions = 1;
-		sizes = new int[1];
-		sizes [0] = vals.length;
-		values = new SparseVector (vals);
-    computeSingleSIze ();
-	}
-	
-	/**
-	 *  Create a dense matrix with the given dimensions.
-	 *
-	 *  @param szs An array containing the maximum for
-	 *      each dimension.
-	 */
-	public SparseMatrixn (int szs[]) {
-		numDimensions = szs.length;
-		sizes = (int[])szs.clone();
-		int total = 1;
-		for (int j = 0; j < numDimensions; j++) {
-	    total *= sizes [j];
-		}
-    values = new SparseVector (new double [total]);
-    computeSingleSIze ();
-	}
+    /**
+     *  Create a 1-d dense matrix with the given values.
+     */
+    public SparseMatrixn(double[] vals) {
+        numDimensions = 1;
+        sizes = new int[1];
+        sizes [0] = vals.length;
+        values = new SparseVector (vals);
+        computeSingleSIze ();
+    }
+    
+    /**
+     *  Create a dense matrix with the given dimensions.
+     *
+     *  @param szs An array containing the maximum for
+     *      each dimension.
+     */
+    public SparseMatrixn (int szs[]) {
+        numDimensions = szs.length;
+        sizes = (int[])szs.clone();
+        int total = 1;
+        for (int j = 0; j < numDimensions; j++) {
+        total *= sizes [j];
+        }
+        values = new SparseVector (new double [total]);
+        computeSingleSIze ();
+    }
 
 
   public SparseMatrixn (int[] szs, double[] vals) {
@@ -72,25 +72,25 @@ public class SparseMatrixn implements Matrix, Cloneable, Serializable {
     computeSingleSIze ();
   }
 
-	/**
-	 *  Create a sparse matrix with the given dimensions and
-	 *   the given values.
-	 *
-	 *  @param szs An array containing the maximum for
-	 *      each dimension.
+    /**
+     *  Create a sparse matrix with the given dimensions and
+     *   the given values.
+     *
+     *  @param szs An array containing the maximum for
+     *      each dimension.
    *  @param idxs An array containing the single index
    *     for each entry of the matrix.  A single index is
    *     an integer computed from the indices of each dimension.
    *     as returned by {@link Matrixn#singleIndex}.
-	 *  @param vals A flat array of the entries of the
-	 *      matrix, in row-major order.
-	 */
-	public SparseMatrixn (int[] szs, int[] idxs, double[] vals) {
-		numDimensions = szs.length;
-		sizes = (int[])szs.clone();
+     *  @param vals A flat array of the entries of the
+     *      matrix, in row-major order.
+     */
+    public SparseMatrixn (int[] szs, int[] idxs, double[] vals) {
+        numDimensions = szs.length;
+        sizes = (int[])szs.clone();
     values = new SparseVector (idxs, vals, true, true);
     computeSingleSIze ();
-	}
+    }
 
   private void computeSingleSIze ()
   {
@@ -102,22 +102,22 @@ public class SparseMatrixn implements Matrix, Cloneable, Serializable {
     singleSize = product;
   }
 
-  public int getNumDimensions () { return numDimensions; };
-	
-	public int getDimensions (int [] szs) {
-		for ( int i = 0; i < numDimensions; i++ ) {
-	    szs [i] = this.sizes [i];
-		} 
-		return numDimensions;
-	}
-	
-	public double value (int[] indices) {
-		return values.value (singleIndex (indices));
-	}
-	
-	public void setValue (int[] indices, double value) {
-		values.setValue (singleIndex (indices), value);
-	}
+  @Override public int getNumDimensions () { return numDimensions; };
+    
+    @Override public int getDimensions (int [] szs) {
+        for ( int i = 0; i < numDimensions; i++ ) {
+        szs [i] = this.sizes [i];
+        } 
+        return numDimensions;
+    }
+    
+    @Override public double value (int[] indices) {
+        return values.value (singleIndex (indices));
+    }
+    
+    @Override public void setValue (int[] indices, double value) {
+        values.setValue (singleIndex (indices), value);
+    }
 
   /**
    * Returns an array of all the present indices.
@@ -127,47 +127,51 @@ public class SparseMatrixn implements Matrix, Cloneable, Serializable {
     return values.getIndices ();
   }
 
-  public ConstantMatrix cloneMatrix () {
-		/* The Matrixn constructor will clone the arrays. */
-		return new SparseMatrixn (sizes, values.getIndices (), values.getValues ());
-	}
+  @Override public ConstantMatrix cloneMatrix () {
+        /* The Matrixn constructor will clone the arrays. */
+        return new SparseMatrixn (sizes, values.getIndices (), values.getValues ());
+    }
 
-	public Object clone () {
-		return cloneMatrix(); 
-	}
+    @Override public Object clone () {
+        return cloneMatrix(); 
+    }
 
-	public int singleIndex (int[] indices) 
-	{
-		return Matrixn.singleIndex (sizes, indices);
-	}
+    @Override public int singleIndex (int[] indices) 
+    {
+        return Matrixn.singleIndex (sizes, indices);
+    }
 
-	// This is public static so it will be useful as a general
-	// dereferencing utility for multidimensional arrays.
-	public static int singleIndex (int[] szs, int[] indices)
-	{
-		int idx = 0;
-		for ( int dim = 0; dim < indices.length; dim++ ) {
-			idx = (idx * szs[dim]) + indices [dim];	   
-		} 
-		return idx;
-	}
+    // This is public static so it will be useful as a general
+    // dereferencing utility for multidimensional arrays.
+    public static int singleIndex (int[] szs, int[] indices)
+    {
+        int idx = 0;
+        for ( int dim = 0; dim < indices.length; dim++ ) {
+            idx = (idx * szs[dim]) + indices [dim];       
+        } 
+        return idx;
+    }
 
-	public void singleToIndices (int single, int[] indices) {
-    Matrixn.singleToIndices (single, indices, sizes);
-	}
+    @Override public void singleToIndices (int single, int[] indices) {
+        Matrixn.singleToIndices (single, indices, sizes);
+    }
 
-	public boolean equals (Object o) {
-		if (o instanceof SparseMatrixn) {
-			/* This could be extended to work for all Matrixes. */
-			SparseMatrixn m2 = (SparseMatrixn) o;
-			return 
-				(numDimensions == m2.numDimensions) &&
-				(sizes.equals (m2.sizes)) &&
-				(values.equals (m2.values));
-		} else {
-			return false;
-		}
-	}
+    @Override public boolean equals (Object o) {
+        if (o instanceof SparseMatrixn) {
+            /* This could be extended to work for all Matrixes. */
+            SparseMatrixn m2 = (SparseMatrixn) o;
+            return 
+                (numDimensions == m2.numDimensions) &&
+                (Arrays.equals(sizes, m2.sizes)) &&
+                (values.equals(m2.values));
+        } else {
+            return false;
+        }
+    }
+    
+    @Override public int hashCode() {
+        return values.numLocations();
+    }
 
   /**
    * Returns a one-dimensional array representation of the matrix.
@@ -180,117 +184,117 @@ public class SparseMatrixn implements Matrix, Cloneable, Serializable {
 
   // Methods from Matrix
 
-  public double singleValue (int i)
+  @Override public double singleValue (int i)
   {
     return values.singleValue (i);
   }
 
-  public int singleSize ()
+  @Override public int singleSize ()
   {
     return singleSize;
   }
 
   // Access by index into sparse array, efficient for sparse and dense matrices
-  public int numLocations ()
+  @Override public int numLocations ()
   {
     return values.numLocations ();
   }
 
-  public int location (int index)
+  @Override public int location (int index)
   {
     return values.location (index);
   }
 
-  public double valueAtLocation (int location)
+  @Override public double valueAtLocation (int location)
   {
     return values.valueAtLocation (location);
   }
 
-  public void setValueAtLocation (int location, double value)
+  @Override public void setValueAtLocation (int location, double value)
   {
     values.setValueAtLocation (location, value);
   }
 
   // Returns a "singleIndex"
-  public int indexAtLocation (int location)
+  @Override public int indexAtLocation (int location)
   {
     return values.indexAtLocation (location);
   }
 
-  public double dotProduct (ConstantMatrix m)
+  @Override public double dotProduct (ConstantMatrix m)
   {
     return values.dotProduct (m);
   }
 
-  public double absNorm ()
+  @Override public double absNorm ()
   {
     return values.absNorm ();
   }
 
-  public double oneNorm ()
+  @Override public double oneNorm ()
   {
     return values.oneNorm ();
   }
 
-  public double twoNorm ()
+  @Override public double twoNorm ()
   {
     return values.twoNorm ();
   }
 
-  public double infinityNorm ()
+  @Override public double infinityNorm ()
   {
     return values.infinityNorm ();
   }
 
-  public void print()
+  @Override public void print()
   {
     values.print ();
   }
 
-  public boolean isNaN()
+  @Override public boolean isNaN()
   {
     return values.isNaN ();
   }
 
-  public void setSingleValue (int i, double value)
+  @Override public void setSingleValue (int i, double value)
   {
     values.setValue (i, value);
   }
 
-  public void incrementSingleValue (int i, double delta)
+  @Override public void incrementSingleValue (int i, double delta)
   {
     double value = values.value (i);
     values.setValue (i, value + delta);
 
   }
 
-  public void setAll (double v)
+  @Override public void setAll (double v)
   {
     values.setAll (v);
   }
 
-  public void set (ConstantMatrix m)
+  @Override public void set (ConstantMatrix m)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void setWithAddend (ConstantMatrix m, double addend)
+  @Override public void setWithAddend (ConstantMatrix m, double addend)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void setWithFactor (ConstantMatrix m, double factor)
+  @Override public void setWithFactor (ConstantMatrix m, double factor)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void plusEquals (ConstantMatrix m)
+  @Override public void plusEquals (ConstantMatrix m)
   {
     plusEquals (m, 1.0);
   }
 
   // sucks, but so does the visitor pattern.  not often used.
-  public void plusEquals (ConstantMatrix m, double factor)
+  @Override public void plusEquals (ConstantMatrix m, double factor)
   {
     if (m instanceof SparseVector) {
       values.plusEqualsSparse ((SparseVector) m, factor);
@@ -306,70 +310,70 @@ public class SparseMatrixn implements Matrix, Cloneable, Serializable {
     }
   }
 
-  public void equalsPlus (double factor, ConstantMatrix m)
+  @Override public void equalsPlus (double factor, ConstantMatrix m)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void timesEquals (double factor)
+  @Override public void timesEquals (double factor)
   {
     values.timesEquals (factor);
   }
 
-  public void elementwiseTimesEquals (ConstantMatrix m)
+  @Override public void elementwiseTimesEquals (ConstantMatrix m)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void elementwiseTimesEquals (ConstantMatrix m, double factor)
+  @Override public void elementwiseTimesEquals (ConstantMatrix m, double factor)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void divideEquals (double factor)
+  @Override public void divideEquals (double factor)
   {
     values.timesEquals (1 / factor);
   }
 
-  public void elementwiseDivideEquals (ConstantMatrix m)
+  @Override public void elementwiseDivideEquals (ConstantMatrix m)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public void elementwiseDivideEquals (ConstantMatrix m, double factor)
+  @Override public void elementwiseDivideEquals (ConstantMatrix m, double factor)
   {
     throw new UnsupportedOperationException ("Not yet implemented.");
   }
 
-  public double oneNormalize ()
+  @Override public double oneNormalize ()
   {
     double norm = values.oneNorm();
     values.timesEquals (1 / norm);
     return norm;
   }
 
-  public double twoNormalize ()
+  @Override public double twoNormalize ()
   {
     double norm = values.twoNorm();
     values.timesEquals (1 / norm);
     return norm;
   }
 
-  public double absNormalize ()
+  @Override public double absNormalize ()
   {
     double norm = values.absNorm();
     values.timesEquals (1 / norm);
     return norm;
   }
 
-  public double infinityNormalize ()
+  @Override public double infinityNormalize ()
   {
     double norm = values.infinityNorm();
     values.timesEquals (1 / norm);
     return norm;
   }
 
-  	// Serialization garbage
+      // Serialization garbage
 
   private static final long serialVersionUID = 1;
   private static final int CURRENT_SERIAL_VERSION = 1;

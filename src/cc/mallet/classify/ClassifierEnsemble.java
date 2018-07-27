@@ -37,7 +37,7 @@ public class ClassifierEnsemble extends Classifier
     this.weights = (double[]) weights.clone();
   }
 
-  public Classification classify (Instance instance)
+  @Override public Classification classify (Instance instance)
   {
     int numLabels = ensemble[0].getLabelAlphabet().size();
     double[] scores = new double[numLabels];

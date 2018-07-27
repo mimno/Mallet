@@ -44,7 +44,7 @@ public class C45Trainer extends ClassifierTrainer<C45> implements Boostable
 	int m_minNumInsts = 2;  // minimum number of instances in each node
 	boolean m_doPruning = true;
 	C45 classifier;
-	public C45 getClassifier () { return classifier; }
+	@Override public C45 getClassifier () { return classifier; }
 
 	/**
 	 * Uses default values: not depth limited tree with 
@@ -140,7 +140,7 @@ public class C45Trainer extends ClassifierTrainer<C45> implements Boostable
 		splitTree(node.getRightChild(), depth+1);
 	}
 	
-	public C45 train (InstanceList trainingList)
+	@Override public C45 train (InstanceList trainingList)
 	{
 		FeatureSelection selectedFeatures = trainingList.getFeatureSelection();
 		if (selectedFeatures != null)
