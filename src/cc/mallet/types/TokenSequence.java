@@ -60,13 +60,14 @@ public class TokenSequence extends ArrayList<Token> implements Sequence, Seriali
 
     @Override public String toString () {
         StringBuilder sb = new StringBuilder();
-        sb.append( "TokenSequence " + super.toString() + "\n" );
+        //sb.append( "TokenSequence " + super.toString() + "\n" ); // DM: This seems to provide the same information with worse formatting?
         for (int i = 0; i < this.size(); i++) {
             String tt = get(i).toString();
             sb.append( "Token#" + i + ":" );
             sb.append( tt );
-            if (!tt.endsWith( "\n" ))
+            if (! tt.endsWith( "\n" )) {
                 sb.append( "\n" );
+            }
         }
         return sb.toString();
     }
