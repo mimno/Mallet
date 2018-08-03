@@ -242,6 +242,50 @@ public final class MatrixOps {
         }
     }
     
+    public static double[][] deepClone(double[][] matrix) {
+        int nRow = matrix.length;
+        if (nRow == 0) { return new double[0][]; }
+        int nCol = matrix[0].length;
+        
+        double[][] result = new double[nRow][nCol];
+        
+        for (int row = 0; row < nRow; row++) {
+            for (int col = 0; col < nCol; col++) {
+                result[row][col] = matrix[row][col];
+            }
+        }
+        
+        return result;
+    }
+    
+    public static double[][] aTimesB(double[][] a, double[][] b) {
+        
+        // Dimensions of a-transpose
+        int nRowA = a.length;
+        int nColA = a[0].length;
+        
+        // Dimensions of b
+        int nRowB = b.length;
+        int nColB = b[0].length;
+        
+        assert (nColA == nRowB);
+        
+        double[][] result = new double[nRowA][nColB];
+        
+        for (int row = 0; row < nRowA; row++) {
+            double[] aVector = a[row];
+            
+            for (int rowB = 0; rowB < nRowB; rowB++) {
+                double[] bVector = b[rowB];
+                for (int colB = 0; colB < nColB; colB++) {
+                    result[row][colB] += aVector[rowB] * bVector[colB];
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     public static double[][] aTransposeTimesB(double[][] a, double[][] b) {
         
         // Dimensions of a-transpose
