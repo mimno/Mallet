@@ -63,8 +63,13 @@ public class TestInstanceList {
     testTemplate(labelsString, 6);
     System.out.println();
 
-    testTemplate(labelsString, 15);
-    System.out.println();
+    // Edge case to discuss the type of expected behavior
+    // testTemplate(labelsString, 15);
+    // System.out.println();
+
+
+    labelsString = "000111222";
+    testTemplate(labelsString, 3);
   }
 
 
@@ -98,7 +103,13 @@ public class TestInstanceList {
     Assert.assertTrue(instSplits.length == numFolds);
     for (int i = 0; i < instSplits.length; i++) {
       InstanceList splitList = instSplits[i];
-      Assert.assertTrue(splitList.size() == (labelsString.length() / numFolds));
+
+      if ( labelsString.length() % numFolds == 0 ){
+    	  Assert.assertTrue(splitList.size() == (labelsString.length() / numFolds));
+      } else {
+    	  /* When the split is imperfect, each fold should have at least that many items */
+    	  Assert.assertTrue(splitList.size() >= (labelsString.length() / numFolds));
+      }
     }
   }
 }
