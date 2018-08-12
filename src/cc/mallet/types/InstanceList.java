@@ -482,6 +482,110 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         }
         return ret;
     }
+
+
+    /**
+     * Shuffles the elements of this list among several smaller lists, each sublist
+     * having a number of elements proportional to the amount given in the array.  
+     * Each sublist has (approximately and to the extent possible) the same
+     * distribution of the target classes as the original list.
+     * @param proportions A list of numbers (not necessarily summing to 1) which,
+     *     when normalized, correspond to the proportion of elements in each returned
+     *     sublist. This method (and all the split methods) do not transfer the Instance
+     *     weights to the resulting InstanceLists.
+     * @param r The source of randomness to use in shuffling.
+     * @return one <code>InstanceList</code> for each element of <code>proportions</code>
+     */
+    public InstanceList[] stratifiedSplit(java.util.Random r, double[] proportions) {
+        InstanceList shuffled = this.shallowClone();
+        shuffled.shuffle(r);
+        return shuffled.stratifiedSplitInOrder(proportions);
+    }
+
+    /** 
+     * Chops this list into several sequential sublists, where each sublist
+     * contains an (approximately) equal proportion of each target label.
+     * @param proportions A list of numbers corresponding to the proportion of
+     *     elements in each returned sublist.
+     *     If not already normalized to sum to 1.0, it will be normalized here.
+     * @return one <code>InstanceList</code> for each element of <code>proportions</code>
+     */
+    public InstanceList[] stratifiedSplitInOrder(double[] proportions) {
+
+      InstanceList[] ret = new InstanceList[proportions.length];
+
+      /* Create a normalized version of the given proportions */
+      double normMaxInd[] = proportions.clone();
+      MatrixOps.normalize(normMaxInd);
+      for (int i = 0; i < normMaxInd.length; i++) {
+        ret[i] = this.cloneEmpty();  // Note that we are passing on featureSelection here.
+        if (i > 0) {
+          normMaxInd[i] += normMaxInd[i-1];
+        }
+      }
+
+      /* Keeps track of the fold that each stratum (target class) is currently at */
+      int[] stratCurrentFold = new int[this.targetAlphabet.size()];
+
+      /* Stores for each stratum the indexes that belong to it */
+      List<Integer>[] stratIndexes = new ArrayList[this.targetAlphabet.size()];
+      for (int i = 0; i < this.getTargetAlphabet().size(); i++) {
+        stratIndexes[i] = new ArrayList<Integer>();
+      }
+
+      /* Do a first pass on this instance list and assign each original
+       * instance position to the respective stratum */
+      for ( int i = 0; i < this.size(); i++ ){
+        Instance inst = this.get(i);
+        int targetIndex = this.targetAlphabet.lookupIndex(((Label)inst.getTarget()).entry, false);
+        assert (targetIndex >= 0);
+        stratIndexes[targetIndex].add(i);
+      }
+
+      /* Whether the user has been warned about breaking the distribution */
+      boolean isUserWarned = false;
+
+      /* Do a second pass on this instance list */
+      for ( int i = 0; i < this.size(); i++ ){
+        Instance inst = this.get(i);
+        int targetIndex = this.targetAlphabet.lookupIndex(((Label)inst.getTarget()).entry, false);
+
+        /* Get the current fold that the stratum is at,
+         * and from that also get the expected data proportion */
+        int stratumFold = stratCurrentFold[targetIndex];
+        double stratumFoldRatio = normMaxInd[stratumFold];
+
+        /* Check if a stratum has fewer instances than the number of folds.
+         * In that case, the distribution is destined to fail
+         * XXX Generalize the check for when the distribution will fail */
+        if (stratIndexes[targetIndex].size() < proportions.length && !isUserWarned) {
+          logger.warning("Target stratum has " + stratIndexes[targetIndex].size() + 
+              " instances, less than the requested " + proportions.length + " folds. "
+              + "The folds distribution will not match the original." );
+          isUserWarned = true;
+        }
+
+        /* Find the position in the stratum array corresponding to the percentage.
+         * If the position is out-of-bounds for the array, just use the original size,
+         * to allow for the item to be added to the final fold. Otherwise,
+         * get the original instance index for that position. */
+        int stratumPos = (int)Math.rint (stratumFoldRatio * stratIndexes[targetIndex].size());
+        int stratumMaxInd = this.size();
+        if (stratumPos < stratIndexes[targetIndex].size()){
+          stratumMaxInd = stratIndexes[targetIndex].get(stratumPos);
+        }
+
+        /* If the current instance position exceeds the fold's minimum
+         * proceed to the next fold */
+        if (i >= stratumMaxInd && stratCurrentFold[targetIndex] < ret.length)
+          stratCurrentFold[targetIndex]++;
+
+        /* Add the instance to the fold */
+        ret[stratCurrentFold[targetIndex]].add(this.get(i));
+      }
+
+      return ret;
+  }
     
 
     public InstanceList[] splitInOrder (int[] counts) {
