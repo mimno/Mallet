@@ -984,6 +984,39 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     }
 
 
+    /**
+     * <code>StratifiedCrossValidationIterator</code> allows iterating over pairs of
+     * <code>InstanceList</code>, where each pair is split into training/testing
+     * based on nfolds, and each fold maintains the distribution properties of the
+     * original InstanceList as much as possible. 
+     * @author George Valkanas (lebiathan@gmail.com)
+     */    
+    public class StratifiedCrossValidationIterator extends CrossValidationIterator {
+
+      public StratifiedCrossValidationIterator(int numFolds) {
+        super(numFolds);
+      }
+
+      public StratifiedCrossValidationIterator(int numFolds, int seed) {
+        super(numFolds, seed);
+      }
+
+      /**
+       * Initialize the folds of this Cross Validation instance.
+       * @param seed seed for random number used to split InstanceList
+       * */
+      @Override
+      void init(long seed) {
+        double fraction = (double) 1 / this.nfolds;
+        double[] proportions = new double[this.nfolds];
+        for (int i = 0; i < this.nfolds; i++) {
+          proportions[i] = fraction;
+        }
+        folds = stratifiedSplit(new java.util.Random(seed), proportions);
+      }
+    }
+
+
     /** Returns the pipe through which each added <code>Instance</code> is passed,
      * which may be <code>null</code>. */
     public Pipe getPipe ()
