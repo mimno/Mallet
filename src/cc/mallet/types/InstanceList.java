@@ -911,17 +911,23 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
             assert (_nfolds > 0) : "nfolds: " + nfolds;
             this.nfolds = _nfolds;
             this.index = 0;
-            folds = new InstanceList[_nfolds];         
-            double fraction = (double) 1 / _nfolds;
-            double[] proportions = new double[_nfolds];
-            for (int i=0; i < _nfolds; i++) 
-                proportions[i] = fraction;
-            folds = split (new java.util.Random (seed), proportions);
-
+            this.init(seed);
         }
 
         public CrossValidationIterator (int _nfolds) {
             this (_nfolds, 1);
+        }
+
+        /**
+         * Initialize the folds of this Cross Validation instance.
+         * @param seed seed for random number used to split InstanceList
+         * */
+        void init(long seed){
+          double fraction = (double) 1 / this.nfolds;
+          double[] proportions = new double[this.nfolds];
+          for (int i=0; i < this.nfolds; i++) 
+              proportions[i] = fraction;
+          folds = split (new java.util.Random (seed), proportions);
         }
 
         @Override public boolean hasNext () { return index < nfolds; }
