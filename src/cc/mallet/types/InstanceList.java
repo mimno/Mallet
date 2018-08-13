@@ -536,7 +536,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
        * instance position to the respective stratum */
       for ( int i = 0; i < this.size(); i++ ){
         Instance inst = this.get(i);
-        int targetIndex = this.targetAlphabet.lookupIndex(((Label)inst.getTarget()).entry, false);
+        int targetIndex = ((Label)inst.getTarget()).getIndex();
         assert (targetIndex >= 0);
         stratIndexes[targetIndex].add(i);
       }
@@ -547,7 +547,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
       /* Do a second pass on this instance list */
       for ( int i = 0; i < this.size(); i++ ){
         Instance inst = this.get(i);
-        int targetIndex = this.targetAlphabet.lookupIndex(((Label)inst.getTarget()).entry, false);
+        int targetIndex = ((Label)inst.getTarget()).getIndex();
 
         /* Get the current fold that the stratum is at,
          * and from that also get the expected data proportion */
