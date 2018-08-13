@@ -17,7 +17,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -527,7 +526,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
       /* Keeps track of the fold that each stratum (target class) is currently at */
       int[] stratCurrentFold = new int[this.targetAlphabet.size()];
 
-      /* Stores for each stratum the indexes that belong to it */
+      /* Stores for each stratum the indexes of the original list that belong to it */
       List<Integer>[] stratIndexes = new ArrayList[this.targetAlphabet.size()];
       for (int i = 0; i < this.getTargetAlphabet().size(); i++) {
         stratIndexes[i] = new ArrayList<Integer>();
@@ -922,8 +921,8 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
          * Initialize the folds of this Cross Validation instance.
          * @param seed seed for random number used to split InstanceList
          * */
-        void init(long seed){
-          double fraction = (double) 1 / this.nfolds;
+        void init(long seed) {
+          double fraction = 1.0 / this.nfolds;
           double[] proportions = new double[this.nfolds];
           for (int i=0; i < this.nfolds; i++) 
               proportions[i] = fraction;
@@ -1007,7 +1006,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
        * */
       @Override
       void init(long seed) {
-        double fraction = (double) 1 / this.nfolds;
+        double fraction = 1.0 / this.nfolds;
         double[] proportions = new double[this.nfolds];
         for (int i = 0; i < this.nfolds; i++) {
           proportions[i] = fraction;
