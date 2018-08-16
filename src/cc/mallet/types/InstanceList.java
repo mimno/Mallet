@@ -486,8 +486,14 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     /**
      * Shuffles the elements of this list among several smaller lists, each sublist
      * having a number of elements proportional to the amount given in the array.  
-     * Each sublist has (approximately and to the extent possible) the same
-     * distribution of the target classes as the original list.
+     * If the target alphabet of this list is a {@link LabelAlphabet}, then each 
+     * sublist has (approximately and to the extent possible) the same distribution
+     * of the target classes as the original list.
+     * Otherwise, the sublists are randomly generated without committing to the
+     * underlying distribution.
+     * <p/>
+     * TODO Sublists must conform tothe underlying distribution, even when the target
+     * alphabet is <b>not</b> of LabelAlplhabet type.
      * @param proportions A list of numbers (not necessarily summing to 1) which,
      *     when normalized, correspond to the proportion of elements in each returned
      *     sublist. This method (and all the split methods) do not transfer the Instance
@@ -498,7 +504,13 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     public InstanceList[] stratifiedSplit(java.util.Random r, double[] proportions) {
         InstanceList shuffled = this.shallowClone();
         shuffled.shuffle(r);
-        return shuffled.stratifiedSplitInOrder(proportions);
+
+        /* If the instance list does not have a target */
+        if (this.targetAlphabet == null){
+          return shuffled.splitInOrder(proportions);
+        }else{
+          return shuffled.stratifiedSplitInOrder(proportions);
+        }
     }
 
     /** 
@@ -987,7 +999,12 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * <code>StratifiedCrossValidationIterator</code> allows iterating over pairs of
      * <code>InstanceList</code>, where each pair is split into training/testing
      * based on nfolds, and each fold maintains the distribution properties of the
-     * original InstanceList as much as possible. 
+     * original InstanceList as much as possible.
+     * <p>
+     * If the target alphabet of this {@link InstanceList}, which we split for cross
+     * validation, is null, then classic cross validation is used instead.
+     * 
+     * TODO: Implement stratified split, even when the target alphabet is null.
      * @author George Valkanas (lebiathan@gmail.com)
      */    
     public class StratifiedCrossValidationIterator extends CrossValidationIterator {
