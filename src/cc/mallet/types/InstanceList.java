@@ -17,7 +17,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -482,6 +481,122 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         }
         return ret;
     }
+
+
+    /**
+     * Shuffles the elements of this list among several smaller lists, each sublist
+     * having a number of elements proportional to the amount given in the array.  
+     * If the target alphabet of this list is a {@link LabelAlphabet}, then each 
+     * sublist has (approximately and to the extent possible) the same distribution
+     * of the target classes as the original list.
+     * Otherwise, the sublists are randomly generated without committing to the
+     * underlying distribution.
+     * <p/>
+     * TODO Sublists must conform tothe underlying distribution, even when the target
+     * alphabet is <b>not</b> of LabelAlplhabet type.
+     * @param proportions A list of numbers (not necessarily summing to 1) which,
+     *     when normalized, correspond to the proportion of elements in each returned
+     *     sublist. This method (and all the split methods) do not transfer the Instance
+     *     weights to the resulting InstanceLists.
+     * @param r The source of randomness to use in shuffling.
+     * @return one <code>InstanceList</code> for each element of <code>proportions</code>
+     */
+    public InstanceList[] stratifiedSplit(java.util.Random r, double[] proportions) {
+        InstanceList shuffled = this.shallowClone();
+        shuffled.shuffle(r);
+
+        /* If the instance list does not have a target */
+        if (this.targetAlphabet == null){
+          return shuffled.splitInOrder(proportions);
+        }else{
+          return shuffled.stratifiedSplitInOrder(proportions);
+        }
+    }
+
+    /** 
+     * Chops this list into several sequential sublists, where each sublist
+     * contains an (approximately) equal proportion of each target label.
+     * @param proportions A list of numbers corresponding to the proportion of
+     *     elements in each returned sublist.
+     *     If not already normalized to sum to 1.0, it will be normalized here.
+     * @return one <code>InstanceList</code> for each element of <code>proportions</code>
+     */
+    public InstanceList[] stratifiedSplitInOrder(double[] proportions) {
+
+      InstanceList[] ret = new InstanceList[proportions.length];
+
+      /* Create a normalized version of the given proportions */
+      double normMaxInd[] = proportions.clone();
+      MatrixOps.normalize(normMaxInd);
+      for (int i = 0; i < normMaxInd.length; i++) {
+        ret[i] = this.cloneEmpty();  // Note that we are passing on featureSelection here.
+        if (i > 0) {
+          normMaxInd[i] += normMaxInd[i-1];
+        }
+      }
+
+      /* Keeps track of the fold that each stratum (target class) is currently at */
+      int[] stratCurrentFold = new int[this.targetAlphabet.size()];
+
+      /* Stores for each stratum the indexes of the original list that belong to it */
+      List<Integer>[] stratIndexes = new ArrayList[this.targetAlphabet.size()];
+      for (int i = 0; i < this.getTargetAlphabet().size(); i++) {
+        stratIndexes[i] = new ArrayList<Integer>();
+      }
+
+      /* Do a first pass on this instance list and assign each original
+       * instance position to the respective stratum */
+      for ( int i = 0; i < this.size(); i++ ){
+        Instance inst = this.get(i);
+        int targetIndex = ((Label)inst.getTarget()).getIndex();
+        assert (targetIndex >= 0);
+        stratIndexes[targetIndex].add(i);
+      }
+
+      /* Whether the user has been warned about breaking the distribution */
+      boolean isUserWarned = false;
+
+      /* Do a second pass on this instance list */
+      for ( int i = 0; i < this.size(); i++ ){
+        Instance inst = this.get(i);
+        int targetIndex = ((Label)inst.getTarget()).getIndex();
+
+        /* Get the current fold that the stratum is at,
+         * and from that also get the expected data proportion */
+        int stratumFold = stratCurrentFold[targetIndex];
+        double stratumFoldRatio = normMaxInd[stratumFold];
+
+        /* Check if a stratum has fewer instances than the number of folds.
+         * In that case, the distribution is destined to fail
+         * XXX Generalize the check for when the distribution will fail */
+        if (stratIndexes[targetIndex].size() < proportions.length && !isUserWarned) {
+          logger.warning("Target stratum has " + stratIndexes[targetIndex].size() + 
+              " instances, less than the requested " + proportions.length + " folds. "
+              + "The folds distribution will not match the original." );
+          isUserWarned = true;
+        }
+
+        /* Find the position in the stratum array corresponding to the percentage.
+         * If the position is out-of-bounds for the array, just use the original size,
+         * to allow for the item to be added to the final fold. Otherwise,
+         * get the original instance index for that position. */
+        int stratumPos = (int)Math.rint (stratumFoldRatio * stratIndexes[targetIndex].size());
+        int stratumMaxInd = this.size();
+        if (stratumPos < stratIndexes[targetIndex].size()){
+          stratumMaxInd = stratIndexes[targetIndex].get(stratumPos);
+        }
+
+        /* If the current instance position exceeds the fold's minimum
+         * proceed to the next fold */
+        if (i >= stratumMaxInd && stratCurrentFold[targetIndex] < ret.length)
+          stratCurrentFold[targetIndex]++;
+
+        /* Add the instance to the fold */
+        ret[stratCurrentFold[targetIndex]].add(this.get(i));
+      }
+
+      return ret;
+  }
     
 
     public InstanceList[] splitInOrder (int[] counts) {
@@ -807,17 +922,23 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
             assert (_nfolds > 0) : "nfolds: " + nfolds;
             this.nfolds = _nfolds;
             this.index = 0;
-            folds = new InstanceList[_nfolds];         
-            double fraction = (double) 1 / _nfolds;
-            double[] proportions = new double[_nfolds];
-            for (int i=0; i < _nfolds; i++) 
-                proportions[i] = fraction;
-            folds = split (new java.util.Random (seed), proportions);
-
+            this.init(seed);
         }
 
         public CrossValidationIterator (int _nfolds) {
             this (_nfolds, 1);
+        }
+
+        /**
+         * Initialize the folds of this Cross Validation instance.
+         * @param seed seed for random number used to split InstanceList
+         * */
+        void init(long seed) {
+          double fraction = 1.0 / this.nfolds;
+          double[] proportions = new double[this.nfolds];
+          for (int i=0; i < this.nfolds; i++) 
+              proportions[i] = fraction;
+          folds = split (new java.util.Random (seed), proportions);
         }
 
         @Override public boolean hasNext () { return index < nfolds; }
@@ -871,6 +992,44 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 
         @Override public InstanceList[] next () { return nextSplit(); }        
         @Override public void remove () { throw new UnsupportedOperationException(); }
+    }
+
+
+    /**
+     * <code>StratifiedCrossValidationIterator</code> allows iterating over pairs of
+     * <code>InstanceList</code>, where each pair is split into training/testing
+     * based on nfolds, and each fold maintains the distribution properties of the
+     * original InstanceList as much as possible.
+     * <p>
+     * If the target alphabet of this {@link InstanceList}, which we split for cross
+     * validation, is null, then classic cross validation is used instead.
+     * 
+     * TODO: Implement stratified split, even when the target alphabet is null.
+     * @author George Valkanas (lebiathan@gmail.com)
+     */    
+    public class StratifiedCrossValidationIterator extends CrossValidationIterator {
+
+      public StratifiedCrossValidationIterator(int numFolds) {
+        super(numFolds);
+      }
+
+      public StratifiedCrossValidationIterator(int numFolds, int seed) {
+        super(numFolds, seed);
+      }
+
+      /**
+       * Initialize the folds of this Cross Validation instance.
+       * @param seed seed for random number used to split InstanceList
+       * */
+      @Override
+      void init(long seed) {
+        double fraction = 1.0 / this.nfolds;
+        double[] proportions = new double[this.nfolds];
+        for (int i = 0; i < this.nfolds; i++) {
+          proportions[i] = fraction;
+        }
+        folds = stratifiedSplit(new java.util.Random(seed), proportions);
+      }
     }
 
 
