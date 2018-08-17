@@ -8,6 +8,7 @@ This is a serialization-breaking release due to the switch to HPPC, which affect
 - Nonnegative Matrix Factorization
 - Word embeddings (word2vec clone)
 - PagedInstanceList supports iteration correctly
+- lebiathan added stratified sampling of InstanceList
 - This file!
 
 ### Changed
