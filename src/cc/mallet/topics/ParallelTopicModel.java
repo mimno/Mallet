@@ -9,6 +9,7 @@ package cc.mallet.topics;
 
 import cc.mallet.types.*;
 import cc.mallet.util.MalletLogger;
+import cc.mallet.util.ParallelExecutor;
 import cc.mallet.util.Randoms;
 import com.carrotsearch.hppc.ObjectIntHashMap;
 
@@ -17,6 +18,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1696,39 +1698,46 @@ public class ParallelTopicModel implements Serializable {
 	}
 
 	public void printDenseDocumentTopicsAsCSV(PrintWriter out) {
-		int docLen;
 		int[] topicCounts = new int[numTopics];
+		ParallelExecutor executor = new ParallelExecutor();
+		int interval = data.size() > 100 ? data.size() / 100 : 1;
 		for (int doc = 0; doc < data.size(); doc++) {
-			LabelSequence topicSequence = (LabelSequence) data.get(doc).topicSequence;
-			int[] currentDocTopics = topicSequence.getFeatures();
+			final int index = doc;
+			executor.submit(() -> {
+                int docLen;
+				if (index % interval == 0) System.out.println(index + " docs shaped");
+				LabelSequence topicSequence = (LabelSequence) data.get(index).topicSequence;
+                int[] currentDocTopics = topicSequence.getFeatures();
 
-			StringBuilder builder = new StringBuilder();
+                StringBuilder builder = new StringBuilder();
 
-			if (data.get(doc).instance.getName() != null) {
-				builder.append(data.get(doc).instance.getName());
-			}
-			else {
-				builder.append("no-name");
-			}
+                if (data.get(index).instance.getName() != null) {
+                    builder.append(data.get(index).instance.getName());
+                }
+                else {
+                    builder.append("no-name");
+                }
 
-			builder.append(",");
+                builder.append(",");
 
-			docLen = currentDocTopics.length;
+                docLen = currentDocTopics.length;
 
-			// Count up the tokens
-			for (int token=0; token < docLen; token++) {
-				topicCounts[ currentDocTopics[token] ]++;
-			}
+                // Count up the tokens
+                for (int token=0; token < docLen; token++) {
+                    topicCounts[ currentDocTopics[token] ]++;
+                }
 
-			// And normalize
-			for (int topic = 0; topic < numTopics; topic++) {
-				builder.append(((alpha[topic] + topicCounts[topic]) / (docLen + alphaSum) ));
-				if (topic+1 < numTopics) builder.append(",");
-			}
-			out.println(builder);
+                // And normalize
+                for (int topic = 0; topic < numTopics; topic++) {
+                    builder.append(((alpha[topic] + topicCounts[topic]) / (docLen + alphaSum) ));
+                    if (topic+1 < numTopics) builder.append(",");
+                }
+                out.println(builder);
 
-			Arrays.fill(topicCounts, 0);
+                Arrays.fill(topicCounts, 0);
+            });
 		}
+		executor.awaitTermination(1, TimeUnit.HOURS);
 	}
 
 
