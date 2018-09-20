@@ -1656,6 +1656,82 @@ public class ParallelTopicModel implements Serializable {
 		}		
 	}
 
+	public void printDenseDocumentTopicsAsJson(PrintWriter out) {
+		int docLen;
+		int[] topicCounts = new int[numTopics];
+		for (int doc = 0; doc < data.size(); doc++) {
+			LabelSequence topicSequence = (LabelSequence) data.get(doc).topicSequence;
+			int[] currentDocTopics = topicSequence.getFeatures();
+
+			StringBuilder builder = new StringBuilder();
+
+			builder.append("{ \"doc\":\"");
+
+			if (data.get(doc).instance.getName() != null) {
+				builder.append(data.get(doc).instance.getName());
+			}
+			else {
+				builder.append("no-name");
+			}
+
+			builder.append("\", \"topics\":[");
+
+			docLen = currentDocTopics.length;
+
+			// Count up the tokens
+			for (int token=0; token < docLen; token++) {
+				topicCounts[ currentDocTopics[token] ]++;
+			}
+
+			// And normalize
+			for (int topic = 0; topic < numTopics; topic++) {
+				builder.append(((alpha[topic] + topicCounts[topic]) / (docLen + alphaSum) ));
+				if (topic+1 < numTopics) builder.append(", ");
+			}
+			builder.append("] }");
+			out.println(builder);
+
+			Arrays.fill(topicCounts, 0);
+		}
+	}
+
+	public void printDenseDocumentTopicsAsCSV(PrintWriter out) {
+		int docLen;
+		int[] topicCounts = new int[numTopics];
+		for (int doc = 0; doc < data.size(); doc++) {
+			LabelSequence topicSequence = (LabelSequence) data.get(doc).topicSequence;
+			int[] currentDocTopics = topicSequence.getFeatures();
+
+			StringBuilder builder = new StringBuilder();
+
+			if (data.get(doc).instance.getName() != null) {
+				builder.append(data.get(doc).instance.getName());
+			}
+			else {
+				builder.append("no-name");
+			}
+
+			builder.append(",");
+
+			docLen = currentDocTopics.length;
+
+			// Count up the tokens
+			for (int token=0; token < docLen; token++) {
+				topicCounts[ currentDocTopics[token] ]++;
+			}
+
+			// And normalize
+			for (int topic = 0; topic < numTopics; topic++) {
+				builder.append(((alpha[topic] + topicCounts[topic]) / (docLen + alphaSum) ));
+				if (topic+1 < numTopics) builder.append(",");
+			}
+			out.println(builder);
+
+			Arrays.fill(topicCounts, 0);
+		}
+	}
+
+
 	public void printDocumentTopics (PrintWriter out) {
 		printDocumentTopics (out, 0.0, -1);
 	}
