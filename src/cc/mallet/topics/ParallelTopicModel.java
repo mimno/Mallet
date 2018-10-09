@@ -1698,12 +1698,13 @@ public class ParallelTopicModel implements Serializable {
 	}
 
 	public void printDenseDocumentTopicsAsCSV(PrintWriter out) {
-		int[] topicCounts = new int[numTopics];
 		ParallelExecutor executor = new ParallelExecutor();
 		int interval = data.size() > 100 ? data.size() / 100 : 1;
 		for (int doc = 0; doc < data.size(); doc++) {
 			final int index = doc;
+			final double asum = alphaSum;
 			executor.submit(() -> {
+				int[] topicCounts = new int[numTopics];
                 int docLen;
 				if (index % interval == 0) System.out.println(index + " docs shaped");
 				LabelSequence topicSequence = (LabelSequence) data.get(index).topicSequence;
@@ -1729,10 +1730,11 @@ public class ParallelTopicModel implements Serializable {
 
                 // And normalize
                 for (int topic = 0; topic < numTopics; topic++) {
-                    builder.append(((alpha[topic] + topicCounts[topic]) / (docLen + alphaSum) ));
+					double weight = ((alpha[topic] + topicCounts[topic]) / (docLen + asum) );
+                    builder.append(weight);
                     if (topic+1 < numTopics) builder.append(",");
                 }
-                out.println(builder);
+				out.println(builder.toString());
 
                 Arrays.fill(topicCounts, 0);
             });
