@@ -274,7 +274,7 @@ public class LabeledLDA implements Serializable {
 		topicAlphabet = AlphabetFactory.labelAlphabetOfSize(numTopics);
 
 
-		data = instances.parallelStream().map(instance -> {
+		data = instances.parallelStream().filter(i -> i != null).map(instance -> {
 
 			Instance filteredInstance = removeStopWords(instance);
 
