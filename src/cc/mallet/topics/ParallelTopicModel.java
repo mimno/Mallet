@@ -16,6 +16,7 @@ import com.carrotsearch.hppc.ObjectIntHashMap;
 import java.io.*;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -1697,9 +1698,11 @@ public class ParallelTopicModel implements Serializable {
 		}
 	}
 
-	public void printDenseDocumentTopicsAsCSV(PrintWriter out) {
+	public Map<Integer,Map<Integer,Integer>> printDenseDocumentTopicsAsCSV(PrintWriter out) {
 		ParallelExecutor executor = new ParallelExecutor();
 		int interval = data.size() > 100 ? data.size() / 100 : 1;
+		Map<Integer,Map<Integer,Integer>> cooccurenceMap = new ConcurrentHashMap<>();
+		final Double threshold = 1.0 / Double.valueOf(numTopics);
 		for (int doc = 0; doc < data.size(); doc++) {
 			final int index = doc;
 			final double asum = alphaSum;
@@ -1728,18 +1731,30 @@ public class ParallelTopicModel implements Serializable {
                     topicCounts[ currentDocTopics[token] ]++;
                 }
 
+
+				List<Integer> topics = new ArrayList<Integer>();
+
                 // And normalize
                 for (int topic = 0; topic < numTopics; topic++) {
 					double weight = ((alpha[topic] + topicCounts[topic]) / (docLen + asum) );
                     builder.append(weight);
+					if (weight>threshold) topics.add(topic);
                     if (topic+1 < numTopics) builder.append(",");
                 }
 				out.println(builder.toString());
+
+				// Update co-occurrence topic map
+				for(Integer topic: topics){
+					Map<Integer,Integer> related = cooccurenceMap.containsKey(topic)? cooccurenceMap.get(topic) : new ConcurrentHashMap();
+					topics.stream().filter(t -> t != topic).forEach(t ->  related.put(t, (related.containsKey(t)? related.get(t)+1 : 1 )));
+					cooccurenceMap.put(topic, related);
+				}
 
                 Arrays.fill(topicCounts, 0);
             });
 		}
 		executor.awaitTermination(1, TimeUnit.HOURS);
+		return cooccurenceMap;
 	}
 
 
