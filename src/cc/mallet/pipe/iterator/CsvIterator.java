@@ -95,6 +95,7 @@ public class CsvIterator implements Iterator<Instance>
 			String msg = "Line #"+reader.getLineNumber()+" does not match regex:\n" +
 					currentLine;
 			try {
+				reader.getLineNumber();
 				this.currentLine = reader.readLine();
 			} catch (IOException e) {
 				throw new IllegalStateException ();
