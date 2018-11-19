@@ -1754,6 +1754,7 @@ public class ParallelTopicModel implements Serializable {
             });
 		}
 		executor.awaitTermination(1, TimeUnit.HOURS);
+		System.out.println(data.size() + " docs shaped");
 		return cooccurenceMap;
 	}
 
