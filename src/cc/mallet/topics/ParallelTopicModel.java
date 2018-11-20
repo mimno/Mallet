@@ -242,15 +242,7 @@ public class ParallelTopicModel implements Serializable {
 
 	private void loadInstances(){
 
-		Alphabet dataAlphabet = instances.getDataAlphabet();
-
-		List<Object> allWords = Arrays.asList(dataAlphabet.toArray());
-
-		logger.info("validating alphabet ..");
-
-		List<String> validWords = allWords.parallelStream().map(o -> (String) o).distinct().filter(w -> !stoplist.contains(w)).collect(Collectors.toList());
-
-		alphabet = new Alphabet(validWords.toArray());
+		alphabet = instances.getAlphabet();
 
 		numTypes = alphabet.size();
 
@@ -272,16 +264,25 @@ public class ParallelTopicModel implements Serializable {
 				TopicAssignment t = null;
 
 				if (instance != null && instance.getData() != null){
-					Instance filteredInstance = removeStopWords(instance);
+					//Instance filteredInstance = removeStopWords(instance);
+					Instance filteredInstance = instance;
 
 					FeatureSequence tokens = (FeatureSequence) filteredInstance.getData();
 
 					LabelSequence topicSequence = new LabelSequence(topicAlphabet, new int[tokens.size()]);
 
+					Map<String,Integer> topicPerWord = new HashMap<String, Integer>();
 					int[] topics = topicSequence.getFeatures();
 					for (int position = 0; position < topics.length; position++) {
 
-						int topic = random.nextInt(numTopics);
+						String type = (String) tokens.get(position);
+						int topic;
+						if (topicPerWord.containsKey(type)){
+							topic = topicPerWord.get(type);
+						}else{
+							topic = random.nextInt(numTopics);
+							topicPerWord.put(type,topic);
+						}
 						topics[position] = topic;
 
 					}
@@ -1331,32 +1332,6 @@ public class ParallelTopicModel implements Serializable {
 		}
 
 		return validTopics;
-	}
-
-	private Instance removeStopWords(Instance carrier){
-
-		FeatureSequence ts = (FeatureSequence) carrier.getData();
-
-		int[] features = ts.getFeatures();
-		Alphabet dictionary = ts.getAlphabet();
-
-		FeatureSequence ret = new FeatureSequence (alphabet);
-
-		for(int i=0;i<features.length;i++){
-			int feature = features[i];
-			try{
-				String word = (String) dictionary.lookupObject(feature);
-				int index = alphabet.lookupIndex(word,false);
-				if (index >= 0) ret.add(index);
-			}catch (Exception e){
-				logger.warning("Feature word: " + feature + " not exist!! - " + e.getMessage());
-			}
-		}
-
-		carrier.unLock();
-		carrier.setData(ret);
-		carrier.lock();
-		return carrier;
 	}
 	
 	public void topicXMLReport (PrintWriter out, int numWords) {

@@ -81,7 +81,7 @@ public class TopicInferencer implements Serializable {
 	 *  Use Gibbs sampling to infer a topic distribution.
 	 *  Topics are initialized to the (or a) most probable topic
 	 *   for each token. Using zero iterations returns exactly this
-	 *   initial topic distribution.<p/>
+	 *   initial topic distribution.<p/>in
 	 *  This code does not adjust type-topic counts: P(w|t) is clamped.
 	 */
 	public double[] getSampledDistribution(Instance instance, int numIterations,
