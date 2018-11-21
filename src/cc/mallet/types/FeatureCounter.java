@@ -13,21 +13,21 @@ public class FeatureCounter
 		featureCounts = new IntIntHashMap();
 	}
 	
-	public int increment (Object entry) {
+	public synchronized int increment (Object entry) {
 		return featureCounts.putOrAdd(alphabet.lookupIndex(entry), 1, 1);
 	}
 
-	public int increment (Object entry, int incr) {
+	public synchronized int increment (Object entry, int incr) {
 		return featureCounts.putOrAdd(alphabet.lookupIndex(entry), incr, incr);
 	}
 
-	public int increment (int featureIndex) {
+	public synchronized int increment (int featureIndex) {
 		if (featureIndex < 0 || featureIndex > alphabet.size())
 			throw new IllegalArgumentException ("featureIndex "+featureIndex+" out of range");
 		return featureCounts.putOrAdd(featureIndex, 1, 1);
 	}
 
-	public int increment (int featureIndex, int incr) {
+	public synchronized int increment (int featureIndex, int incr) {
 		if (featureIndex < 0 || featureIndex > alphabet.size())
 			throw new IllegalArgumentException ("featureIndex "+featureIndex+" out of range");
 		return featureCounts.putOrAdd(featureIndex, incr, incr);
@@ -49,13 +49,13 @@ public class FeatureCounter
 			return featureCounts.get (fi);
 	}
 	
-	public int put (int featureIndex, int value) {
+	public synchronized int put (int featureIndex, int value) {
 		if (featureIndex < 0 || featureIndex > alphabet.size())
 			throw new IllegalArgumentException ("featureIndex "+featureIndex+" out of range");
 		return featureCounts.put (featureIndex, value);
 	}
 	
-	public int put (Object entry, int value) {
+	public synchronized int put (Object entry, int value) {
 		return featureCounts.put (alphabet.lookupIndex(entry), value);
 	}
 
