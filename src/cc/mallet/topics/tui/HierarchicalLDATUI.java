@@ -29,7 +29,7 @@ public class HierarchicalLDATUI {
 		 "The random seed for the Gibbs sampler.  Default is 0, which will use the clock.", null);
 	
 	static CommandOption.Integer numIterations = new CommandOption.Integer
-	  	(Vectors2Topics.class, "num-iterations", "INTEGER", true, 1000,
+	  	(HierarchicalLDATUI.class, "num-iterations", "INTEGER", true, 1000,
 		 "The number of iterations of Gibbs sampling.", null);
 
 	static CommandOption.Boolean showProgress = new CommandOption.Boolean
