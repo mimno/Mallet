@@ -42,8 +42,8 @@ echo   import-file       load a single file into mallet instances (one per line)
 echo   import-svmlight   load a single SVMLight format data file into mallet instances (one per line)
 echo   info              get information about Mallet instances
 echo   train-classifier  train a classifier from Mallet data files
-echo   classify-dir      classify data from a single file with a saved classifier
-echo   classify-file     classify the contents of a directory with a saved classifier
+echo   classify-dir      classify the contents of a directory with a saved classifier
+echo   classify-file     classify data from a single file with a saved classifier
 echo   classify-svmlight classify data from a single file in SVMLight format
 echo   train-topics      train a topic model from Mallet data files
 echo   infer-topics      use a trained topic model to infer topics for new documents

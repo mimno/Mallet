@@ -22,8 +22,8 @@ Mallet 2.0 commands:
   import-svmlight    load SVMLight format data files into Mallet instances
   info               get information about Mallet instances
   train-classifier   train a classifier from Mallet data files
-  classify-dir       classify data from a single file with a saved classifier
-  classify-file      classify the contents of a directory with a saved classifier
+  classify-dir       classify the contents of a directory with a saved classifier
+  classify-file      classify data from a single file with a saved classifier
   classify-svmlight  classify data from a single file in SVMLight format
   train-topics       train a topic model from Mallet data files
   infer-topics       use a trained topic model to infer topics for new documents
