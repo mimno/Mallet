@@ -243,17 +243,19 @@ public class LabeledLDA implements Serializable {
 
 	private void loadInstances () {
 
-		Alphabet dataAlphabet = instances.getDataAlphabet();
+//		Alphabet dataAlphabet = instances.getDataAlphabet();
+//
+//		List<Object> allWords = Arrays.asList(dataAlphabet.toArray());
+//		Set<String> validWords = new TreeSet<>();
+//
+//		for (Object data: allWords){
+//			String word = (String) data;
+//			if (!stoplist.contains(word)) validWords.add(word);
+//		}
+//
+//		alphabet = new Alphabet(validWords.toArray());
 
-		List<Object> allWords = Arrays.asList(dataAlphabet.toArray());
-		Set<String> validWords = new TreeSet<>();
-
-		for (Object data: allWords){
-			String word = (String) data;
-			if (!stoplist.contains(word)) validWords.add(word);
-		}
-
-		alphabet = new Alphabet(validWords.toArray());
+		alphabet = instances.getDataAlphabet();
 
 		numTypes = alphabet.size();
 		betaSum = beta * numTypes;
@@ -467,7 +469,7 @@ public class LabeledLDA implements Serializable {
 
 			// Make sure we actually sampled a topic
 			if (labelPosition == -1) {
-				throw new IllegalStateException ("LabeledLDA: New topic not sampled.");
+				throw new IllegalStateException ("LabeledLDA: ºNew topic not sampled.");
 			}
 
 			newTopic = possibleTopics[labelPosition];
