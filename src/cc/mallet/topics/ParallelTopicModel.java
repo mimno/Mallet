@@ -805,7 +805,9 @@ public class ParallelTopicModel implements Serializable {
 
             if (numThreads > 1) {
             
-                // Submit runnables to thread pool
+            	// Submit runnables to thread pool
+
+            	List<Future<?>> futureList = new ArrayList<Future<?>>();
                 
                 for (int thread = 0; thread < numThreads; thread++) {
                     if (iteration > burninPeriod && optimizeInterval != 0 &&
@@ -814,38 +816,16 @@ public class ParallelTopicModel implements Serializable {
                     }
                     
                     logger.fine("submitting thread " + thread);
-                    executor.submit(runnables[thread]);
-                    //runnables[thread].run();
+                    futureList.add(executor.submit(runnables[thread]));
                 }
                 
-                // I'm getting some problems that look like 
-                //  a thread hasn't started yet when it is first
-                //  polled, so it appears to be finished. 
-                // This only occurs in very short corpora.
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    
-                }
-                
-                boolean finished = false;
-                while (! finished) {
-                    
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        
-                    }
-                    
-                    finished = true;
-                    
-                    // Are all the threads done?
-                    for (int thread = 0; thread < numThreads; thread++) {
-                        //logger.info("thread " + thread + " done? " + runnables[thread].isFinished);
-                        finished = finished && runnables[thread].isFinished;
-                    }
-                    
-                }
+                for (Future<?> future : futureList) {
+					try {
+						future.get();
+					} catch (Exception e) {
+						throw new RuntimeException();
+					}
+				}
                 
                 //System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
                 
