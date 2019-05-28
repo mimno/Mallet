@@ -9,65 +9,60 @@
 
 
 /**
-	 The number of instances in which each feature occurs.
+     The number of instances in which each feature occurs.
 
-	 Note that we aren't attending to the feature's value, and MALLET doesn't currently
-	 have any support at all for categorical features.
+     Note that we aren't attending to the feature's value, and MALLET doesn't currently
+     have any support at all for categorical features.
 
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.types;
 
-public class FeatureCounts extends RankedFeatureVector
-{
-	// increment by 1 for each instance that has the feature, ignoring the feature's value
-	static boolean countInstances = true;
-	
-	private static double[] calcFeatureCounts (InstanceList ilist)
-	{
-		int numInstances = ilist.size();
-		int numClasses = ilist.getTargetAlphabet().size();
-		int numFeatures = ilist.getDataAlphabet().size();
-		double[] counts = new double[numFeatures];
-		double count;
-		for (int i = 0; i < ilist.size(); i++) {
-			Instance inst = ilist.get(i);
-			if (!(inst.getData() instanceof FeatureVector))
-				throw new IllegalArgumentException ("Currently only handles FeatureVector data");
-			FeatureVector fv = (FeatureVector) inst.getData ();
-			if (ilist.getInstanceWeight(i) == 0)
-				continue;
-			for (int j = 0; j < fv.numLocations(); j++) {
-				if (countInstances)
-					counts[fv.indexAtLocation(j)] += 1;
-				else
-					counts[fv.indexAtLocation(j)] += fv.valueAtLocation(j);
-			}					
-		}
-		return counts;
-	}
+public class FeatureCounts extends RankedFeatureVector {
+    // increment by 1 for each instance that has the feature, ignoring the feature's value
+    static boolean countInstances = true;
+    
+    private static double[] calcFeatureCounts (InstanceList instances) {
+        int numInstances = instances.size();
+        int numClasses = instances.getTargetAlphabet().size();
+        int numFeatures = instances.getDataAlphabet().size();
+        double[] counts = new double[numFeatures];
+        double count;
+        for (int i = 0; i < instances.size(); i++) {
+            Instance inst = instances.get(i);
+            if (!(inst.getData() instanceof FeatureVector)) {
+                throw new IllegalArgumentException ("Currently only handles FeatureVector data");
+            }
+            FeatureVector fv = (FeatureVector) inst.getData ();
+            if (instances.getInstanceWeight(i) == 0) {
+                continue;
+            }
+            for (int j = 0; j < fv.numLocations(); j++) {
+                if (countInstances) {
+                    counts[fv.indexAtLocation(j)] += 1;
+                }
+                else {
+                    counts[fv.indexAtLocation(j)] += fv.valueAtLocation(j);
+                }
+            }                    
+        }
+        return counts;
+    }
 
-	public FeatureCounts (InstanceList ilist)
-	{
-		super (ilist.getDataAlphabet(), calcFeatureCounts (ilist));
-	}
+    public FeatureCounts (InstanceList instances) {
+        super (instances.getDataAlphabet(), calcFeatureCounts (instances));
+    }
 
-	public FeatureCounts (Alphabet vocab, double[] counts)
-	{
-		super (vocab, counts);
-	}
+    public FeatureCounts (Alphabet vocab, double[] counts) {
+        super (vocab, counts);
+    }
 
-	public static class Factory implements RankedFeatureVector.Factory
-	{
-		public Factory ()
-		{
-		}
-		
-		public RankedFeatureVector newRankedFeatureVector (InstanceList ilist)
-		{
-			return new FeatureCounts (ilist);
-		}
-	}
-	
+    public static class Factory implements RankedFeatureVector.Factory {
+        public Factory () {}
+        
+        public RankedFeatureVector newRankedFeatureVector (InstanceList instances) {
+            return new FeatureCounts (instances);
+        }
+    }
 }
