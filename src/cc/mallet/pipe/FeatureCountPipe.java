@@ -51,6 +51,10 @@ public class FeatureCountPipe extends Pipe {
         return instance;
     }
 
+    public FeatureCounter getFeatureCounter() {
+        return counter;
+    }
+
     /**
      * Returns a new alphabet that contains only features at or above 
      *  the specified limit.
