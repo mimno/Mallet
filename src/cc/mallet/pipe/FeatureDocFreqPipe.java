@@ -54,7 +54,7 @@ public class FeatureDocFreqPipe extends Pipe {
         }
 
         for (IntCursor feature: localCounter.keys()) {
-            counter.increment(feature);
+            counter.increment(feature.value);
         }
 
         numInstances++;
