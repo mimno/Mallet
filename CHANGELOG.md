@@ -12,6 +12,7 @@ This is a serialization-breaking release due to the switch to HPPC, which affect
 - This file!
 
 ### Changed
+- All merging and propagation of sampling statistics for topic modeling is now multi-threaded (if num-threads is more than 1), leading to a 5-10% speed boost.
 - The primitive collections library (for example mapping String to int) has been changed from GNU trove to Carrotlabs HPPC. This change removes all GNU dependencies.
 - The license has been changed from CPL to Apache.
 - Use of VMID for unique identifier for serialized objects. (Breaks serialization!)
