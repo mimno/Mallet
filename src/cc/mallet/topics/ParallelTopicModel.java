@@ -385,7 +385,12 @@ public class ParallelTopicModel implements Serializable {
                 while (currentTypeTopicCounts[index] > 0 && currentTopic != topic) {
                     index++;
                     if (index == currentTypeTopicCounts.length) {
-                        logger.info("overflow on type " + type);
+                        logger.info("overflow on type " + type + " for topic " + topic);
+                        StringBuilder out = new StringBuilder();
+                        for (int value: currentTypeTopicCounts) {
+                            out.append(value + " ");
+                        }
+                        logger.info(out.toString());
                     }
                     currentTopic = currentTypeTopicCounts[index] & topicMask;
                 }
@@ -423,20 +428,11 @@ public class ParallelTopicModel implements Serializable {
         // Clear the topic totals
         Arrays.fill(tokensPerTopic, 0);
         
-        // Clear the type/topic counts, only 
-        //  looking at the entries before the first 0 entry.
+        // Clear the type/topic counts
 
         for (int type = 0; type < numTypes; type++) {
-            
             int[] targetCounts = typeTopicCounts[type];
-            
-            int position = 0;
-            while (position < targetCounts.length && 
-                   targetCounts[position] > 0) {
-                targetCounts[position] = 0;
-                position++;
-            }
-
+            Arrays.fill(targetCounts, 0);
         }
 
         for (int thread = 0; thread < numThreads; thread++) {
@@ -474,7 +470,12 @@ public class ParallelTopicModel implements Serializable {
                     while (targetCounts[targetIndex] > 0 && currentTopic != topic) {
                         targetIndex++;
                         if (targetIndex == targetCounts.length) {
-                            logger.info("overflow in merging on type " + type);
+                            logger.info("overflow in merging on type " + type + " for topic " + topic);
+                            StringBuilder out = new StringBuilder();
+                            for (int value: targetCounts) {
+                                out.append(value + " ");
+                            }
+                            logger.info(out.toString());
                         }
                         currentTopic = targetCounts[targetIndex] & topicMask;
                     }
