@@ -421,109 +421,6 @@ public class ParallelTopicModel implements Serializable {
             }
         }
     }
-    
-
-    public void sumTypeTopicCounts (WorkerCallable[] callables) {
-
-        // Clear the topic totals
-        Arrays.fill(tokensPerTopic, 0);
-        
-        // Clear the type/topic counts
-
-        for (int type = 0; type < numTypes; type++) {
-            int[] targetCounts = typeTopicCounts[type];
-            Arrays.fill(targetCounts, 0);
-        }
-
-        for (int thread = 0; thread < numThreads; thread++) {
-
-            // Handle the total-tokens-per-topic array
-
-            int[] sourceTotals = callables[thread].getTokensPerTopic();
-            for (int topic = 0; topic < numTopics; topic++) {
-                tokensPerTopic[topic] += sourceTotals[topic];
-            }
-            
-            // Now handle the individual type topic counts
-            
-            int[][] sourceTypeTopicCounts = callables[thread].getTypeTopicCounts();
-            
-            for (int type = 0; type < numTypes; type++) {
-
-                // Here the source is the individual thread counts,
-                //  and the target is the global counts.
-
-                int[] sourceCounts = sourceTypeTopicCounts[type];
-                int[] targetCounts = typeTopicCounts[type];
-
-                int sourceIndex = 0;
-                while (sourceIndex < sourceCounts.length &&
-                       sourceCounts[sourceIndex] > 0) {
-                    
-                    int topic = sourceCounts[sourceIndex] & topicMask;
-                    int count = sourceCounts[sourceIndex] >> topicBits;
-
-                    int targetIndex = 0;
-                    int currentTopic = targetCounts[targetIndex] & topicMask;
-                    int currentCount;
-                    
-                    while (targetCounts[targetIndex] > 0 && currentTopic != topic) {
-                        targetIndex++;
-                        if (targetIndex == targetCounts.length) {
-                            logger.info("overflow in merging on type " + type + " for topic " + topic);
-                            StringBuilder out = new StringBuilder();
-                            for (int value: targetCounts) {
-                                out.append(value + " ");
-                            }
-                            logger.info(out.toString());
-                        }
-                        currentTopic = targetCounts[targetIndex] & topicMask;
-                    }
-                    currentCount = targetCounts[targetIndex] >> topicBits;
-                    
-                    targetCounts[targetIndex] =
-                        ((currentCount + count) << topicBits) + topic;
-                    
-                    // Now ensure that the array is still sorted by 
-                    //  bubbling this value up.
-                    while (targetIndex > 0 &&
-                           targetCounts[targetIndex] > targetCounts[targetIndex - 1]) {
-                        int temp = targetCounts[targetIndex];
-                        targetCounts[targetIndex] = targetCounts[targetIndex - 1];
-                        targetCounts[targetIndex - 1] = temp;
-                        
-                        targetIndex--;
-                    }
-                    
-                    sourceIndex++;
-                }
-                
-            }
-        }
-
-        /* // Debuggging code to ensure counts are being 
-           // reconstructed correctly.
-
-        for (int type = 0; type < numTypes; type++) {
-            
-            int[] targetCounts = typeTopicCounts[type];
-            
-            int index = 0;
-            int count = 0;
-            while (index < targetCounts.length &&
-                   targetCounts[index] > 0) {
-                count += targetCounts[index] >> topicBits;
-                index++;
-            }
-            
-            if (count != typeTotals[type]) {
-                System.err.println("Expected " + typeTotals[type] + ", found " + count);
-            }
-            
-        }
-        */
-    }
-    
 
     /** 
      *  Gather statistics on the size of documents 
@@ -805,7 +702,8 @@ public class ParallelTopicModel implements Serializable {
 
             if (numThreads > 1) {
             
-                // Submit callables to thread pool
+                // If this is a hyperparameter-optimizing iteration, ask the threads
+                //  to save the information we need to make that calculation.
                 
                 if (iteration > burninPeriod && optimizeInterval != 0 && iteration % saveSampleInterval == 0) {
                     for (int thread = 0; thread < numThreads; thread++) {
@@ -813,6 +711,7 @@ public class ParallelTopicModel implements Serializable {
                     }
                 }
 
+                // The main sampling process.
                 int totalChanges = 0;
                 try {
                     List<Future<Integer>> futures = executor.invokeAll(Arrays.asList(callables));
@@ -824,41 +723,60 @@ public class ParallelTopicModel implements Serializable {
                 }
                 //logger.info("changes: " + ((double) totalChanges / totalTokens));
                 
-                System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
+                //System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
                 
-                sumTypeTopicCounts(callables);
-                
-                System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
-                
+                // Each thread has now become out of synch. Merge all the 
+                //  sampling statistics back together.
+
+                // Clear the type/topic counts
+                Arrays.fill(tokensPerTopic, 0);
+                for (int type = 0; type < numTypes; type++) {
+                    int[] targetCounts = typeTopicCounts[type];
+                    Arrays.fill(targetCounts, 0);
+                }
+
                 for (int thread = 0; thread < numThreads; thread++) {
-                    int[] callableTotals = callables[thread].getTokensPerTopic();
-                    System.arraycopy(tokensPerTopic, 0, callableTotals, 0, numTopics);
-                    
-                    int[][] callableCounts = callables[thread].getTypeTopicCounts();
-                    for (int type = 0; type < numTypes; type++) {
-                        int[] targetCounts = callableCounts[type];
-                        int[] sourceCounts = typeTopicCounts[type];
-                        
-                        int index = 0;
-                        while (index < sourceCounts.length) {
-                            
-                            if (sourceCounts[index] != 0) {
-                                targetCounts[index] = sourceCounts[index];
-                            }
-                            else if (targetCounts[index] != 0) {
-                                targetCounts[index] = 0;
-                            }
-                            else {
-                                break;
-                            }
-                            
-                            index++;
-                        }
-                        //System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
+                    // Handle the total-tokens-per-topic array
+                    int[] sourceTotals = callables[thread].getTokensPerTopic();
+                    for (int topic = 0; topic < numTopics; topic++) {
+                        tokensPerTopic[topic] += sourceTotals[topic];
                     }
+                }
+
+                List mergeCallables = new ArrayList();
+                for (int thread = 0; thread < numThreads; thread++) {
+                    mergeCallables.add(new MergeCallable(callables, typeTopicCounts, numTypes, numTopics, thread, topicMask, topicBits));
+                }
+                try {
+                    List<Future<String>> futures = executor.invokeAll(mergeCallables);
+                    for (Future<String> future: futures) {
+                        future.get();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                
+                //System.out.print("[" + (System.currentTimeMillis() - iterationStart) + "] ");
+                
+                // Now that we have merged the sampling statistics, propagate 
+                //  them back out to the individual threads.
+
+                List copyCallables = new ArrayList();
+                for (int thread = 0; thread < numThreads; thread++) {
+                    copyCallables.add(new CopyCallable(callables[thread], typeTopicCounts, tokensPerTopic));
+                }
+                try {
+                    List<Future<String>> futures = executor.invokeAll(copyCallables);
+                    for (Future<String> future: futures) {
+                        future.get();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             else {
+                // The single-threaded version
+
                 if (iteration > burninPeriod && optimizeInterval != 0 &&
                     iteration % saveSampleInterval == 0) {
                     callables[0].collectAlphaStatistics();
@@ -873,10 +791,10 @@ public class ParallelTopicModel implements Serializable {
 
             long elapsedMillis = System.currentTimeMillis() - iterationStart;
             if (elapsedMillis < 1000) {
-                logger.info(elapsedMillis + "ms ");
+                logger.fine(elapsedMillis + "ms ");
             }
             else {
-                logger.info((elapsedMillis/1000) + "s ");
+                logger.fine((elapsedMillis/1000) + "s ");
             }   
 
             if (iteration > burninPeriod && optimizeInterval != 0 &&

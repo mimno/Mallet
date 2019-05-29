@@ -26,8 +26,6 @@ import cc.mallet.util.Randoms;
  */
 
 public class WorkerCallable implements Callable<Integer> {
-    
-    boolean isFinished = true;
 
     ArrayList<TopicAssignment> data;
     int startDoc, numDocs;
