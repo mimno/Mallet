@@ -182,6 +182,7 @@ public class TestHashedSparseVector extends TestCase
     }
   }
 
+  /*
   // tests index2location getting screwed up when old (v 1.3) instances are de-serialized
   public void testPlusEqualsFromSaved () throws IOException, ClassNotFoundException
   {
@@ -202,6 +203,7 @@ public class TestHashedSparseVector extends TestCase
     sv.indexVector ();
     FileUtils.writeObject (oldSv, sv);
   }
+      */
 
   public static Test suite ()
 	{

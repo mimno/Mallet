@@ -19,7 +19,7 @@ import cc.mallet.util.CharSequenceLexer;
 /**
  * Created: Oct 12, 2004
  *
- * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
+ * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu"></A>
  * @version $Id: TestDocumentExtraction.java,v 1.1 2007/10/22 21:38:02 mccallum Exp $
  */
 public class TestDocumentExtraction extends TestCase {
@@ -48,8 +48,8 @@ public class TestDocumentExtraction extends TestCase {
 
     DocumentExtraction extr = new DocumentExtraction ("Test", dict, toks, tags, "O");
     String actualXml = extr.toXmlString();
-    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-            "<doc>the <ANIMAL>quick brown fox </ANIMAL><VERB>leapt </VERB>over the <ANIMAL>lazy dog</ANIMAL></doc>\r\n";
+    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<doc>the <ANIMAL>quick brown fox</ANIMAL> <VERB>leapt</VERB> over the <ANIMAL>lazy dog</ANIMAL></doc>\n";
     assertEquals (expectedXml, actualXml);
   }
 
@@ -67,8 +67,8 @@ public class TestDocumentExtraction extends TestCase {
 
     DocumentExtraction extr = new DocumentExtraction ("Test", dict, toks, tags, null, "O", new BIOTokenizationFilter());
     String actualXml = extr.toXmlString();
-    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-            "<doc>the <ANIMAL>quick brown </ANIMAL><ANIMAL>fox </ANIMAL><VERB>leapt over </VERB>the <ANIMAL>lazy dog</ANIMAL></doc>\r\n";
+    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<doc>the <ANIMAL>quick brown</ANIMAL> <ANIMAL>fox</ANIMAL> <VERB>leapt over</VERB> the <ANIMAL>lazy dog</ANIMAL></doc>\n";
     assertEquals (expectedXml, actualXml);
   }
 
@@ -95,8 +95,8 @@ public class TestDocumentExtraction extends TestCase {
 
     DocumentExtraction extr = new DocumentExtraction ("Test", dict, toks, spans, null, "O");
     String actualXml = extr.toXmlString();
-    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-            "<doc>the <ANIMAL>quick brown <MAMMAL>fox </MAMMAL></ANIMAL><VERB>leapt </VERB>over <ANIMAL>the <ADJ>lazy </ADJ>dog</ANIMAL></doc>\r\n";
+    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<doc>the <ANIMAL>quick brown <MAMMAL>fox</MAMMAL></ANIMAL> <VERB>leapt</VERB> over <ANIMAL>the <ADJ>lazy</ADJ> dog</ANIMAL></doc>\n";
     assertEquals (expectedXml, actualXml);
 
   }
@@ -118,8 +118,8 @@ public class TestDocumentExtraction extends TestCase {
     DocumentExtraction extr = new DocumentExtraction ("Test", dict, toks, tags, null, "O", new HierarchicalTokenizationFilter ());
 
     String actualXml = extr.toXmlString();
-    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-            "<doc>the <ANIMAL>quick brown <MAMMAL>fox </MAMMAL></ANIMAL><VERB>leapt </VERB>over <ANIMAL>the <ADJ>lazy <MAMMAL>dog</MAMMAL></ADJ></ANIMAL></doc>\r\n";
+    String expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<doc>the <ANIMAL>quick brown <MAMMAL>fox</MAMMAL></ANIMAL> <VERB>leapt</VERB> over <ANIMAL>the <ADJ>lazy <MAMMAL>dog</MAMMAL></ADJ></ANIMAL></doc>\n";
     assertEquals (expectedXml, actualXml);
 
     // Test the ignore function
@@ -127,8 +127,8 @@ public class TestDocumentExtraction extends TestCase {
     extr = new DocumentExtraction ("Test", dict, toks, tags, null, "O", new HierarchicalTokenizationFilter (Pattern.compile ("AD.*")));
 
     actualXml = extr.toXmlString();
-    expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-            "<doc>the <ANIMAL>quick brown <MAMMAL>fox </MAMMAL></ANIMAL><VERB>leapt </VERB>over <ANIMAL>the lazy <MAMMAL>dog</MAMMAL></ANIMAL></doc>\r\n";
+    expectedXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<doc>the <ANIMAL>quick brown <MAMMAL>fox</MAMMAL></ANIMAL> <VERB>leapt</VERB> over <ANIMAL>the lazy <MAMMAL>dog</MAMMAL></ANIMAL></doc>\n";
     assertEquals (expectedXml, actualXml);
 
 

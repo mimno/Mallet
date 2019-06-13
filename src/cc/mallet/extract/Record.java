@@ -6,7 +6,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.extract;
 
-import com.carrotsearch.hppc.ObjectObjectHashMap;
+import java.util.HashMap;
 
 import java.util.Iterator;
 
@@ -15,17 +15,17 @@ import cc.mallet.types.Label;
 /**
  * Created: Oct 12, 2004
  *
- * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
+ * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu"></A>
  * @version $Id: Record.java,v 1.1 2007/10/22 21:37:44 mccallum Exp $
  */
 public class Record {
 
-  private ObjectObjectHashMap fieldMap;
+  private HashMap fieldMap;
   private String name;
 
   public Record (String name, LabeledSpans spans) {
     this.name = name;
-    fieldMap = new ObjectObjectHashMap ();
+    fieldMap = new HashMap ();
     for (int i = 0; i < spans.size(); i++) {
       LabeledSpan span = spans.getLabeledSpan (i);
       if (!span.isBackground()) {
