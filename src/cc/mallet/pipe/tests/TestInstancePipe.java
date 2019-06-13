@@ -23,7 +23,6 @@ import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.PrintInput;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.TokenSequence2FeatureSequence;
-import cc.mallet.pipe.TokenSequence2TokenInstances;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.ArrayIterator;
 import cc.mallet.pipe.iterator.StringArrayIterator;
