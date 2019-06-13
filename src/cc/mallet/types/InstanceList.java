@@ -87,8 +87,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * @param capacity The initial capacity of the list; will grow further as necessary.
      */
     // XXX not very useful, should perhaps be removed
-    public InstanceList (Pipe pipe, int capacity)
-    {
+    public InstanceList (Pipe pipe, int capacity) {
         super(capacity);
         this.pipe = pipe;
     }
@@ -101,8 +100,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * It is required that all Instances in this InstanceList share these Alphabets. 
      * @param pipe The default pipe used to process instances added via the addThruPipe methods.
      */
-    public InstanceList (Pipe pipe)
-    {
+    public InstanceList (Pipe pipe) {
         this (pipe, 10);
     }
 
@@ -117,8 +115,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * @param dataAlphabet The vocabulary for added instances' data fields
      * @param targetAlphabet The vocabulary for added instances' targets
      */
-    public InstanceList (Alphabet dataAlphabet, Alphabet targetAlphabet)
-    {
+    public InstanceList (Alphabet dataAlphabet, Alphabet targetAlphabet) {
         this (new Noop(dataAlphabet, targetAlphabet), 10);
         this.dataAlphabet = dataAlphabet;
         this.targetAlphabet = targetAlphabet;
@@ -139,8 +136,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 
     /** Creates a list that will have its pipe set later when its first Instance is added. */
     @Deprecated // Pipe is never set if you use this constructor 
-    public InstanceList ()
-    {
+    public InstanceList () {
         this (notYetSetPipe);
     }
 
@@ -159,8 +155,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
                          // Gaussian variance on the sum of alphas
                          double featureVectorSizePoissonLambda,
                          double classInstanceCountPoissonLambda,
-                         String[] classNames)
-    {
+                         String[] classNames) {
         this (new SerialPipes (new Pipe[]    {
                 new TokenSequence2FeatureSequence (),
                 new FeatureSequence2FeatureVector (),
@@ -174,8 +169,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         this.addThruPipe (iter);
     }
 
-    private static Alphabet dictOfSize (int size)
-    {
+    private static Alphabet dictOfSize (int size) {
         Alphabet ret = new Alphabet ();
         for (int i = 0; i < size; i++) {
             ret.lookupIndex ("feature"+i);
@@ -183,31 +177,27 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         return ret;
     }
 
-    private static String[] classNamesOfSize (int size)
-    {
+    private static String[] classNamesOfSize (int size) {
         String[] ret = new String[size];
         for (int i = 0; i < size; i++)
             ret[i] = "class"+i;
         return ret;
     }
 
-    public InstanceList (Randoms r, Alphabet vocab, String[] classNames, int meanInstancesPerLabel)
-    {
+    public InstanceList (Randoms r, Alphabet vocab, String[] classNames, int meanInstancesPerLabel) {
         this (r, new Dirichlet(vocab, 2.0),
                 30, 0,
                 10, meanInstancesPerLabel, classNames);
     }
     
 
-    public InstanceList (Randoms r, int vocabSize, int numClasses)
-    {
+    public InstanceList (Randoms r, int vocabSize, int numClasses) {
         this (r, new Dirichlet(dictOfSize(vocabSize), 2.0),
                 30, 0,
                 10, 20, classNamesOfSize(numClasses));
     }
 
-    public InstanceList shallowClone ()
-    {
+    public InstanceList shallowClone () {
         InstanceList ret = new InstanceList (pipe, this.size());
         for (int i = 0; i < this.size(); i++)
             ret.add (get(i));
@@ -226,14 +216,12 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         return ret;
     }
     
-    @Override public Object clone ()
-    {
+    @Override public Object clone () {
         return shallowClone();
     }
     
     
-    @Override public InstanceList subList (int start, int end)
-    {
+    @Override public InstanceList subList (int start, int end) {
         InstanceList other = this.cloneEmpty();
         for (int i = start; i < end; i++) {
             other.add (get (i));
@@ -241,8 +229,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         return other;
     }
 
-    public InstanceList subList (double proportion)
-    {
+    public InstanceList subList (double proportion) {
         if (proportion > 1.0)
             throw new IllegalArgumentException ("proportion must by <= 1.0");
         InstanceList other = (InstanceList) clone();
@@ -258,12 +245,10 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     /** Adds to this list every instance generated by the iterator,
      * passing each one through this InstanceList's pipe. */
     // TODO This method should be renamed addPiped(Iterator<Instance> ii)
-    public void addThruPipe (Iterator<Instance> ii)
-    {
+    public void addThruPipe (Iterator<Instance> ii) {
         //for debug
         Iterator<Instance> pipedInstanceIterator = pipe.newIteratorFrom(ii);
-        while (pipedInstanceIterator.hasNext())
-        {    
+        while (pipedInstanceIterator.hasNext()) {    
             add (pipedInstanceIterator.next());
             //System.out.println("Add instance " + pipedInstanceIterator.next().getName());
         }
@@ -276,8 +261,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * If several instances are to be added then accumulate them in a List\<Instance\>
      * and use <tt>addThruPipe(Iterator<Instance>)</tt> instead.
      */
-    public void addThruPipe(Instance inst)
-    {
+    public void addThruPipe(Instance inst) {
       addThruPipe(new SingleInstanceIterator(inst));
     }
 
@@ -287,8 +271,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * @deprecated Use trainingset.addThruPipe (new Instance(data,target,name,source)) instead.
      */
     @Deprecated 
-    public boolean add (Object data, Object target, Object name, Object source, double instanceWeight)
-    {
+    public boolean add (Object data, Object target, Object name, Object source, double instanceWeight) {
         Instance inst = new Instance (data, target, name, source);
         Iterator<Instance> ii = pipe.newIteratorFrom(new SingleInstanceIterator(inst));
         if (ii.hasNext()) {
@@ -304,8 +287,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * @deprecated Use trainingset.add (new Instance(data,target,name,source)) instead.
      */
     @Deprecated
-    public boolean add (Object data, Object target, Object name, Object source)
-    {
+    public boolean add (Object data, Object target, Object name, Object source) {
         return add (data, target, name, source, 1.0);
     }
 
@@ -353,8 +335,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * InstanceList's pipe, assigning it the specified weight.
      * @return <code>true</code>
      */
-    public boolean add (Instance instance, double instanceWeight)
-    {
+    public boolean add (Instance instance, double instanceWeight) {
         // Call the add method above and make sure we
         // correctly handle adding the first instance to this list
         boolean ret = this.add(instance);
@@ -418,8 +399,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     }
 
     // A precursor to cloning subclasses of InstanceList 
-    protected InstanceList cloneEmptyInto (InstanceList ret)
-    {
+    protected InstanceList cloneEmptyInto (InstanceList ret) {
         ret.instWeights = null; // Don't copy these, because its empty! instWeights == null ? null : (HashMap<Instance,Double>) instWeights.clone();
         // xxx Should the featureSelection and perLabel... be cloned?
         // Note that RoostingTrainer currently depends on not cloning its splitting.
@@ -619,8 +599,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
      * every <code>m</code>th element of this list, starting with the first.
      * The second list contains all remaining elements.
      */
-    public InstanceList[] splitInTwoByModulo (int m)
-    {
+    public InstanceList[] splitInTwoByModulo (int m) {
         InstanceList[] ret = new InstanceList[2];
         ret[0] = this.cloneEmpty();
         ret[1] = this.cloneEmpty();
@@ -633,8 +612,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         return ret;
     }
 
-    public InstanceList sampleWithReplacement (java.util.Random r, int numSamples)
-    {
+    public InstanceList sampleWithReplacement (java.util.Random r, int numSamples) {
         InstanceList ret = this.cloneEmpty();
         for (int i = 0; i < numSamples; i++)
             ret.add (this.get(r.nextInt(this.size())));
@@ -721,8 +699,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     //added by Fuchun
     /** Replaces the <code>Instance</code> at position <code>index</code>
      * with a new one. */
-    public void setInstance (int index, Instance instance)
-    {
+    public void setInstance (int index, Instance instance) {
         assert (this.getDataAlphabet().equals(instance.getDataAlphabet()));
         assert (this.getTargetAlphabet().equals(instance.getTargetAlphabet()));
         this.set(index, instance);
@@ -783,8 +760,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         }
     }
 
-    public void setFeatureSelection (FeatureSelection selectedFeatures)
-    {
+    public void setFeatureSelection (FeatureSelection selectedFeatures) {
         if (selectedFeatures != null
                 && selectedFeatures.getAlphabet() != null  // xxx We allow a null vocabulary here?  See CRF3.java
                 && selectedFeatures.getAlphabet() != getDataAlphabet())
@@ -792,13 +768,11 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         featureSelection = selectedFeatures;
     }
 
-    public FeatureSelection getFeatureSelection ()
-    {
+    public FeatureSelection getFeatureSelection () {
         return featureSelection;
     }
 
-    public void setPerLabelFeatureSelection (FeatureSelection[] selectedFeatures)
-    {
+    public void setPerLabelFeatureSelection (FeatureSelection[] selectedFeatures) {
         if (selectedFeatures != null) {
             for (int i = 0; i < selectedFeatures.length; i++)
                 if (selectedFeatures[i].getAlphabet() != getDataAlphabet())
@@ -807,30 +781,26 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         perLabelFeatureSelection = selectedFeatures;
     }
 
-    public FeatureSelection[] getPerLabelFeatureSelection ()
-    {
+    public FeatureSelection[] getPerLabelFeatureSelection () {
         return perLabelFeatureSelection;
     }
 
     /** Sets the "target" field to <code>null</code> in all instances.  This makes unlabeled data. */
-    public void removeTargets()
-    {
+    public void removeTargets() {
         for (Instance instance : this)
             instance.setTarget (null);
     }
 
     /** Sets the "source" field to <code>null</code> in all instances.  This will often save memory when
             the raw data had been placed in that field. */
-    public void removeSources()
-    {
+    public void removeSources() {
         for (int i = 0; i < this.size(); i++)
             get(i).clearSource();
     }
 
     /** Constructs a new <code>InstanceList</code>, deserialized from <code>file</code>.  If the
             string value of <code>file</code> is "-", then deserialize from {@link System.in}. */
-    public static InstanceList load (File file)
-    {
+    public static InstanceList load (File file) {
         try {
             ObjectInputStream ois;
             if (file.toString().equals("-"))
@@ -841,6 +811,8 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
             InstanceList ilist = (InstanceList) ois.readObject();
             ois.close();
             return ilist;
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException ("*** It looks like you might be trying to load an older Mallet instance list. Mallet 2.1 breaks backwards compatibility, you may need to re-import files. ***");
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalArgumentException ("Couldn't read InstanceList from file "+file);
@@ -850,14 +822,15 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     /** Saves this <code>InstanceList</code> to <code>file</code>.
             If the string value of <code>file</code> is "-", then
             serialize to {@link System.out}. */
-    public void save (File file)
-    {
+    public void save (File file) {
         try {
             ObjectOutputStream ois;
-            if (file.toString().equals("-"))
+            if (file.toString().equals("-")) {
                 ois = new ObjectOutputStream (System.out);
-            else
+            }
+            else {
                 ois = new ObjectOutputStream (new FileOutputStream (file));
+            }
             ois.writeObject(this);
             ois.close();
         } catch (Exception e) {
@@ -907,8 +880,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
          <code>InstanceList</code>, where each pair is split into training/testing
          based on nfolds.
      */    
-    public class CrossValidationIterator implements java.util.Iterator<InstanceList[]>, Serializable
-    {
+    public class CrossValidationIterator implements java.util.Iterator<InstanceList[]>, Serializable {
         int nfolds;
         InstanceList[] folds;
         int index;
@@ -917,8 +889,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
              @param _nfolds number of folds to split InstanceList into
              @param seed seed for random number used to split InstanceList
          */
-        public CrossValidationIterator (int _nfolds, int seed)
-        {            
+        public CrossValidationIterator (int _nfolds, int seed) {            
             assert (_nfolds > 0) : "nfolds: " + nfolds;
             this.nfolds = _nfolds;
             this.index = 0;
@@ -936,8 +907,9 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         void init(long seed) {
           double fraction = 1.0 / this.nfolds;
           double[] proportions = new double[this.nfolds];
-          for (int i=0; i < this.nfolds; i++) 
+          for (int i=0; i < this.nfolds; i++) {
               proportions[i] = fraction;
+          }
           folds = split (new java.util.Random (seed), proportions);
         }
 
@@ -952,8 +924,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
             InstanceList[] ret = new InstanceList[2];
             ret[0] = new InstanceList (pipe);
             for (int i=0; i < folds.length; i++) {
-                if (i==index)
-                    continue;
+                if (i==index) { continue; }
                 Iterator<Instance> iter = folds[i].iterator();
                 while (iter.hasNext()) {
                     ret[0].add (iter.next());
@@ -1035,8 +1006,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 
     /** Returns the pipe through which each added <code>Instance</code> is passed,
      * which may be <code>null</code>. */
-    public Pipe getPipe ()
-    {
+    public Pipe getPipe () {
         return pipe;
     }
 
@@ -1050,8 +1020,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 
     /** Returns the <code>Alphabet</code> mapping features of the data to
      * integers. */
-    public Alphabet getDataAlphabet ()
-    {
+    public Alphabet getDataAlphabet () {
         if (dataAlphabet == null && pipe != null) {
             dataAlphabet = pipe.getDataAlphabet ();
         }
@@ -1063,8 +1032,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     
     /** Returns the <code>Alphabet</code> mapping target output labels to
      * integers. */
-    public Alphabet getTargetAlphabet ()
-    {
+    public Alphabet getTargetAlphabet () {
         if (targetAlphabet == null && pipe != null) {
             targetAlphabet = pipe.getTargetAlphabet ();
         }
@@ -1082,11 +1050,11 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         return new Alphabet[] {getDataAlphabet(), getTargetAlphabet() };
     }
     
-    public LabelVector targetLabelDistribution ()
-    {
-        if (this.size() == 0) return null;
-        if (!(get(0).getTarget() instanceof Labeling))
+    public LabelVector targetLabelDistribution () {
+        if (this.size() == 0) {return null;}
+        if (!(get(0).getTarget() instanceof Labeling)) {
             throw new IllegalStateException ("Target is not a labeling.");
+        }
         double[] counts = new double[getTargetAlphabet().size()];
         for (int i = 0; i < this.size(); i++) {
             Instance instance =  get(i);
@@ -1097,49 +1065,46 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     }
 
 
-    public CrossValidationIterator crossValidationIterator (int nfolds, int seed)
-    {
+    public CrossValidationIterator crossValidationIterator (int nfolds, int seed) {
         return new CrossValidationIterator(nfolds, seed);
     }
 
-    public CrossValidationIterator crossValidationIterator (int nfolds)
-    {
+    public CrossValidationIterator crossValidationIterator (int nfolds) {
         return new CrossValidationIterator(nfolds);
     }
 
     public static final String TARGET_PROPERTY = "target";
 
     // I'm not sure these methods best belong here. On the other hand it is easy to find and centrally located here. -AKM Jan 2006
-    public void hideSomeLabels (double proportionToHide, Randoms r)
-    {
+    public void hideSomeLabels (double proportionToHide, Randoms r) {
         for (int i = 0; i < this.size(); i++) {
             if (r.nextBoolean(proportionToHide)) {
                 Instance instance = this.get(i);
                 instance.unLock();
-                if (instance.getProperty(TARGET_PROPERTY) != instance.getTarget())
+                if (instance.getProperty(TARGET_PROPERTY) != instance.getTarget()) {
                     instance.setProperty(TARGET_PROPERTY, instance.getTarget());
+                }
                 instance.setTarget (null);
                 instance.lock();
             }
         }
     }
 
-    public void hideSomeLabels (BitSet bs)
-    {
+    public void hideSomeLabels (BitSet bs) {
         for (int i = 0; i < this.size(); i++) {
             if (bs.get(i)) {
                 Instance instance = this.get(i);
                 instance.unLock();
-                if (instance.getProperty(TARGET_PROPERTY) != instance.getTarget())
+                if (instance.getProperty(TARGET_PROPERTY) != instance.getTarget()) {
                     instance.setProperty(TARGET_PROPERTY, instance.getTarget());
+                }
                 instance.setTarget (null);
                 instance.lock();
             }
         }
     }
 
-    public void unhideAllLabels ()
-    {
+    public void unhideAllLabels () {
         for (int i = 0; i < this.size(); i++) {
             Instance instance = this.get(i);
             Object t;
