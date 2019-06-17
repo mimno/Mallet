@@ -427,7 +427,7 @@ public class ParallelTopicModel implements Serializable {
      *  and create histograms for use in Dirichlet hyperparameter
      *  optimization.
      */
-    private void initializeHistograms() {
+    protected void initializeHistograms() {
 
         int maxTokens = 0;
         totalTokens = 0;
