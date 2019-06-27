@@ -11,59 +11,12 @@ package cc.mallet.pipe.tests;
 import java.util.ArrayList;
 import java.util.List;
 
-import cc.mallet.pipe.StringIterator;
+import org.junit.Test;
 
+import cc.mallet.pipe.StringIterator;
 import junit.framework.TestCase;
 
 public class TestStringIterator extends TestCase {
-
-  private static String text1() {
-    return "In our article, we examine network visualizations as a\n"
-        + "means of enhancing the interpretability of probabilistic topic\n"
-        + "models for insight discovery. We focus on what is perhaps\n"
-        + "the most popular and prevalently used topic model: latent\n"
-        + "Dirichlet allocation or LDA (Blei, Ng and Jordan 2003). Topic\n"
-        + "modeling algorithms like LDA discover latent themes (i.e.,\n"
-        + "topics) in document collections and represent documents as a\n"
-        + "combination of these themes. Thus, they are critical tools for\n"
-        + "exploring text data across many domains. It is often the case\n"
-        + "that users must discover the subject matter buried within large\n"
-        + "and unfamiliar document sets (e.g., sensemaking in text data).\n"
-        + "Keyword searches are inadequate here, since even to begin\n"
-        + "searching is unclear. Topic discovery techniques such as LDA\n"
-        + "are a boon to users in such scenarios, because they reveal the\n"
-        + "content in an unsupervised and automated fashion. However,\n"
-        + "obtaining a “big picture” view of the larger trends in a document\n"
-        + "collection from only the raw output of an LDA model can be\n"
-        + "challenging. In our article, we investigate, the use of what we\n"
-        + "refer to as topic similarity networks to address this challenge.\n"
-        + "Topic similarity networks are graphs in which nodes represent\n"
-        + "latent topics in text collections, and links represent similarity\n"
-        + "among topics. We described efficient and effective methods to\n"
-        + "both building and labeling such networks.";
-  }
-
-  private static String text2() {
-    return "Note de R10 rédigée le 25/10/2000\n" + "\n" + "\n"
-        + "Objet : Observation sur l’individu Christian Dumont\n" + "\n"
-        + "Il a été constaté par R10 que Christian Dumont a rencontré les individus suivants :\n"
-        + "\n" + "-\t Nathalie Guerin\n" + "\n" + "-\t Christine Morel\n" + "\n" + "\n"
-        + "Le rendez-vous a eu lieu le 5/8/2012  à 12:32 dans son habitation situé à Paris.\n"
-        + "\n"
-        + "Cette rencontre a duré environ 5 h.D’après  notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.\n";
-  }
-
-  private static String text3() {
-    return "Compatibility of systems of linear constraints over the set of natural numbers\n\n"
-        + "Criteria of compatibility of a system of linear Diophantine equations, strict "
-        + "inequations,\n"
-        + "and nonstrict inequations are considered. Upper bounds for components of a minimal set\n"
-        + "of solutions and algorithms of construction of minimal generating sets of solutions for "
-        + "all\n"
-        + "types of systems are given. These criteria and the corresponding algorithms for\n"
-        + "constructing a minimal supporting set of solutions can be used in solving all the\n"
-        + "considered types of systems and systems of mixed types.";
-  }
 
   public void testNullStringConstructor() {
 
@@ -121,10 +74,10 @@ public class TestStringIterator extends TestCase {
 
     assertEquals(string, iterator.extract(0));
     assertEquals(string, iterator.extract(0, string.length()));
-    assertEquals("this", iterator.extract(0, 4).toString());
-    assertEquals(" ", iterator.extract(4, 5).toString());
-    assertEquals("\"", iterator.extract(18, 19).toString());
-    assertEquals("https://www.google.com", iterator.extract(19, 41).toString());
+    assertEquals("this", iterator.extract(0, 4));
+    assertEquals(" ", iterator.extract(4, 5));
+    assertEquals("\"", iterator.extract(18, 19));
+    assertEquals("https://www.google.com", iterator.extract(19, 41));
   }
 
   public void testMoveAhead() {
@@ -271,151 +224,240 @@ public class TestStringIterator extends TestCase {
     assertEquals(15, iterator.remaining());
   }
 
-  public void testNextSentence1() {
+  public void testBeginsWithWhitespaces() {
 
-    List<String> sentences = new ArrayList<>();
-    StringIterator iterator = new StringIterator(text1());
+    String textIn = "\n\n\nvéhicule de - de 3,5t";
+    String textOut = "véhicule de - de 3,5t";
 
-    while (iterator.hasNextSentence()) {
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
 
-      String sentence = iterator.nextSentence();
-      if (sentence != null && !sentence.isEmpty()) {
-        sentences.add(sentence);
-      }
-    }
+  public void testEndsWithWhitespaces() {
 
-    assertEquals(12, sentences.size());
+    String textIn = "véhicule de - de 3,5t\n\n\n";
+    String textOut = "véhicule de - de 3,5t";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testNumericBulletPoints() {
+
+    String textIn = "Ma liste:\n1) première entrée ;\n2) dernière entrée.";
+    String textOut = "Ma liste:\n1) première entrée ;\n2) dernière entrée.";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testHyphenBulletPoints() {
+
+    String textIn = "Ma liste:\n- première entrée ;\n- dernière entrée.";
+    String textOut = "Ma liste:\n- première entrée ;\n- dernière entrée.";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testLinebreakInsideSentence() {
+
+    String textIn = "Ceci est un\nretour à la ligne.";
+    String textOut = "Ceci est un retour à la ligne.";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testHyphenInsideSentence() {
+
+    String textIn = "Ceci est un re-\ntour à la ligne.";
+    String textOut = "Ceci est un re- tour à la ligne.";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testIdEst() {
+
+    String textIn = "i.e.\ntopics";
+    String textOut = "i.e. topics";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testExempliGratia() {
+
+    String textIn = "e.g. topics";
+    String textOut = "e.g. topics";
+
+    assertEquals(textOut, StringIterator.clean(textIn));
+  }
+
+  public void testFormula() {
+
+    String text =
+        "Prime HT de l'année N = (indice N / indice N-1) x somme des primes par véhicule.";
+    List<String> sentences = StringIterator.sentences(text, false);
+
+    assertEquals(text, sentences.get(0));
+  }
+
+  public void testIsLowerCase() {
+
+    assertTrue(StringIterator.isLowerCase("lowercase"));
+    assertFalse(StringIterator.isLowerCase("CamelCase"));
+    assertFalse(StringIterator.isLowerCase("UPPERCASE"));
+
+    assertTrue(StringIterator.isLowerCase(" \n\r lowercase"));
+    assertTrue(StringIterator.isLowerCase("lowercase \n\r "));
+
+    assertFalse(StringIterator.isLowerCase(" \n\r CamelCase"));
+    assertFalse(StringIterator.isLowerCase("CamelCase \n\r "));
+
+    assertFalse(StringIterator.isLowerCase(" \n\r UPPERCASE"));
+    assertFalse(StringIterator.isLowerCase("UPPERCASE \n\r "));
+  }
+
+  public void testIsUpperCase() {
+
+    assertTrue(StringIterator.isUpperCase("UPPERCASE"));
+    assertFalse(StringIterator.isUpperCase("CamelCase"));
+    assertFalse(StringIterator.isUpperCase("lowercase"));
+
+    assertTrue(StringIterator.isUpperCase(" \n\r UPPERCASE"));
+    assertTrue(StringIterator.isUpperCase("UPPERCASE \n\r "));
+
+    assertFalse(StringIterator.isUpperCase(" \n\r CamelCase"));
+    assertFalse(StringIterator.isUpperCase("CamelCase \n\r "));
+
+    assertFalse(StringIterator.isUpperCase(" \n\r lowercase"));
+    assertFalse(StringIterator.isUpperCase("lowercase \n\r "));
+  }
+
+  public void testIsCapitalized() {
+
+    assertTrue(StringIterator.isCapitalized("Capitalized"));
+    assertFalse(StringIterator.isCapitalized("UPPERCASE"));
+    assertFalse(StringIterator.isCapitalized("lowercase"));
+    assertFalse(StringIterator.isCapitalized("CamelCase"));
+
+    assertTrue(StringIterator.isCapitalized(" \n\r Capitalized"));
+    assertTrue(StringIterator.isCapitalized("Capitalized \n\r "));
+
+    assertFalse(StringIterator.isCapitalized(" \n\r UPPERCASE"));
+    assertFalse(StringIterator.isCapitalized("UPPERCASE \n\r "));
+
+    assertFalse(StringIterator.isCapitalized(" \n\r lowercase"));
+    assertFalse(StringIterator.isCapitalized("lowercase \n\r "));
+
+    assertFalse(StringIterator.isCapitalized(" \n\r CamelCase"));
+    assertFalse(StringIterator.isCapitalized("CamelCase \n\r "));
+  }
+
+  public void testIsBlank() {
+
+    assertTrue(StringIterator.isBlank(" \n\r\f\t "));
+    assertFalse(StringIterator.isBlank(" nrft "));
+  }
+
+  public void testTrimLeft() {
+
+    assertEquals("Capitalized", StringIterator.trimLeft(" \n Capitalized"));
+    assertEquals("Capitalized", StringIterator.trimLeft(" \r Capitalized"));
+
+    assertEquals("Capitalized \n ", StringIterator.trimLeft("Capitalized \n "));
+    assertEquals("Capitalized \r ", StringIterator.trimLeft("Capitalized \r "));
+  }
+
+  public void testTrimRight() {
+
+    assertEquals(" \n Capitalized", StringIterator.trimRight(" \n Capitalized"));
+    assertEquals(" \r Capitalized", StringIterator.trimRight(" \r Capitalized"));
+
+    assertEquals("Capitalized", StringIterator.trimRight("Capitalized \n "));
+    assertEquals("Capitalized", StringIterator.trimRight("Capitalized \r "));
+  }
+
+  public void testUpperCaseSectionHeader() {
+
+    List<String> strings = new ArrayList<>();
+    strings.add("CONDUITE EN ETAT D'EBRIETE OU SOUS L'EMPRISE DE STUPEFIANTS");
+    strings.add("Les garanties du contrat, y compris de dommages, restent acquises à l'assuré");
+    strings.add("lorsqu'un sinistre intervient alors que le conducteur,");
+    strings.add("employé de l'assuré, conduit, à l'insu de l'assuré,");
+    strings.add("en état d'ébriété ou sous l'emprise de stupéfiants.");
+
+    String text = join(strings);
+    List<String> sentences = StringIterator.sentences(text, false);
+
+    assertEquals("CONDUITE EN ETAT D'EBRIETE OU SOUS L'EMPRISE DE STUPEFIANTS", sentences.get(0));
     assertEquals(
-        "In our article, we examine network visualizations as a means of enhancing the interpretability of probabilistic topic models for insight discovery.",
-        sentences.get(0));
-    assertEquals("We focus on what is perhaps the most popular and prevalently used topic model:",
+        "Les garanties du contrat, y compris de dommages, restent acquises à l'assuré lorsqu'un sinistre intervient alors que le conducteur, employé de l'assuré, conduit, à l'insu de l'assuré, en état d'ébriété ou sous l'emprise de stupéfiants.",
         sentences.get(1));
-    assertEquals("latent Dirichlet allocation or LDA .", sentences.get(2));
-    assertEquals(
-        "Topic modeling algorithms like LDA discover latent themes in document collections and represent documents as a combination of these themes.",
-        sentences.get(3));
-    assertEquals("Thus, they are critical tools for exploring text data across many domains.",
-        sentences.get(4));
-    assertEquals(
-        "It is often the case that users must discover the subject matter buried within large and unfamiliar document sets .",
-        sentences.get(5));
-    assertEquals("Keyword searches are inadequate here, since even to begin searching is unclear.",
-        sentences.get(6));
-    assertEquals(
-        "Topic discovery techniques such as LDA are a boon to users in such scenarios, because they reveal the content in an unsupervised and automated fashion.",
-        sentences.get(7));
-    assertEquals(
-        "However, obtaining a “big picture” view of the larger trends in a document collection from only the raw output of an LDA model can be challenging.",
-        sentences.get(8));
-    assertEquals(
-        "In our article, we investigate, the use of what we refer to as topic similarity networks to address this challenge.",
-        sentences.get(9));
-    assertEquals(
-        "Topic similarity networks are graphs in which nodes represent latent topics in text collections, and links represent similarity among topics.",
-        sentences.get(10));
-    assertEquals(
-        "We described efficient and effective methods to both building and labeling such networks.",
-        sentences.get(11));
   }
 
-  public void testNextSentence2() {
+  public void testSimpleText() {
 
-    List<String> sentences = new ArrayList<>();
-    StringIterator iterator = new StringIterator(text2());
+    List<String> strings = new ArrayList<>();
+    strings.add("Note de R10 rédigée le 25/10/2000");
+    strings.add("Objet : Observation sur l'individu Christian Dumont");
+    strings
+        .add("Il a été constaté par R10 que Christian Dumont a rencontré les individus suivants :");
+    strings.add("- Nathalie Guerin");
+    strings.add("- Christine Morel");
+    strings.add(
+        "Le rendez-vous a eu lieu le 5/8/2012 à 12:32 dans son habitation situé à Paris.\nCette rencontre a duré environ 5 h.\nD'après notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.");
 
-    while (iterator.hasNextSentence()) {
+    String text = join(strings);
+    List<String> sentences = StringIterator.sentences(text, false);
 
-      String sentence = iterator.nextSentence();
-      if (sentence != null && !sentence.isEmpty()) {
-        sentences.add(sentence);
-      }
-    }
-
-    assertEquals(9, sentences.size());
     assertEquals("Note de R10 rédigée le 25/10/2000", sentences.get(0));
-    assertEquals("Objet :", sentences.get(1));
-    assertEquals("Observation sur l’individu Christian Dumont", sentences.get(2));
+    assertEquals("Objet : Observation sur l'individu Christian Dumont", sentences.get(1));
     assertEquals(
         "Il a été constaté par R10 que Christian Dumont a rencontré les individus suivants :",
-        sentences.get(3));
-    assertEquals("- Nathalie Guerin", sentences.get(4));
-    assertEquals("- Christine Morel", sentences.get(5));
+        sentences.get(2));
+    assertEquals("- Nathalie Guerin", sentences.get(3));
+    assertEquals("- Christine Morel", sentences.get(4));
     assertEquals("Le rendez-vous a eu lieu le 5/8/2012 à 12:32 dans son habitation situé à Paris.",
-        sentences.get(6));
-    assertEquals("Cette rencontre a duré environ 5 h.", sentences.get(7));
+        sentences.get(5));
+    assertEquals("Cette rencontre a duré environ 5 h.", sentences.get(6));
     assertEquals(
-        "D’après notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.",
-        sentences.get(8));
+        "D'après notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.",
+        sentences.get(7));
   }
 
-  public void testNextParagraph1() {
+  @Test
+  public void testHeader() {
 
-    List<String> paragraphs = new ArrayList<>();
-    StringIterator iterator = new StringIterator(text1());
+    List<String> strings = new ArrayList<>();
+    strings.add("1. Conduite en état d'ébriété ou sous l'emprise de stupéfiants");
+    strings.add("Les garanties du contrat, y compris de dommages, restent acquises à l'assuré");
+    strings.add("lorsqu'un sinistre intervient alors que le conducteur,");
+    strings.add("employé de l'assuré, conduit, à l'insu de l'assuré,");
+    strings.add("en état d'ébriété ou sous l'emprise de stupéfiants.");
 
-    while (iterator.hasNextSentence()) {
+    String text = join(strings);
+    List<String> sentences = StringIterator.sentences(text, false);
 
-      String sentence = iterator.nextParagraph();
-      if (sentence != null && !sentence.isEmpty()) {
-        paragraphs.add(sentence);
-      }
-    }
-
-    assertEquals(1, paragraphs.size());
-    assertEquals(text1(), paragraphs.get(0));
+    assertEquals("1. Conduite en état d'ébriété ou sous l'emprise de stupéfiants",
+        sentences.get(0));
+    assertEquals(
+        "Les garanties du contrat, y compris de dommages, restent acquises à l'assuré lorsqu'un sinistre intervient alors que le conducteur, employé de l'assuré, conduit, à l'insu de l'assuré, en état d'ébriété ou sous l'emprise de stupéfiants.",
+        sentences.get(1));
   }
 
-  public void testNextParagraph2() {
-
-    List<String> paragraphs = new ArrayList<>();
-    StringIterator iterator = new StringIterator(text2());
-
-    while (iterator.hasNextSentence()) {
-
-      String sentence = iterator.nextParagraph();
-      if (sentence != null && !sentence.isEmpty()) {
-        paragraphs.add(sentence);
+  /**
+   * Join a list of strings. Similar to Guava's
+   *
+   * <pre>
+   * Joiner.on('\n').join(strings)
+   * </pre>
+   *
+   * @return a string.
+   */
+  private String join(List<String> strings) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < strings.size(); i++) {
+      if (i > 0) {
+        builder.append('\n');
       }
+      builder.append(strings.get(i));
     }
-
-    assertEquals(7, paragraphs.size());
-    assertEquals("Note de R10 rédigée le 25/10/2000", paragraphs.get(0));
-    assertEquals("Objet : Observation sur l’individu Christian Dumont", paragraphs.get(1));
-    assertEquals(
-        "Il a été constaté par R10 que Christian Dumont a rencontré les individus suivants :",
-        paragraphs.get(2));
-    assertEquals("-\t Nathalie Guerin", paragraphs.get(3));
-    assertEquals("-\t Christine Morel", paragraphs.get(4));
-    assertEquals("Le rendez-vous a eu lieu le 5/8/2012  à 12:32 dans son habitation situé à Paris.",
-        paragraphs.get(5));
-    assertEquals(
-        "Cette rencontre a duré environ 5 h.D’après  notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.",
-        paragraphs.get(6));
-  }
-
-  public void testNextParagraph3() {
-
-    List<String> paragraphs = new ArrayList<>();
-    StringIterator iterator = new StringIterator(text3());
-
-    while (iterator.hasNextSentence()) {
-
-      String sentence = iterator.nextParagraph();
-      if (sentence != null && !sentence.isEmpty()) {
-        paragraphs.add(sentence);
-      }
-    }
-
-    assertEquals(2, paragraphs.size());
-    assertEquals("Compatibility of systems of linear constraints over the set of natural numbers",
-        paragraphs.get(0));
-    assertEquals("Criteria of compatibility of a system of linear Diophantine equations, strict "
-        + "inequations,\n"
-        + "and nonstrict inequations are considered. Upper bounds for components of a minimal set\n"
-        + "of solutions and algorithms of construction of minimal generating sets of solutions for "
-        + "all\n"
-        + "types of systems are given. These criteria and the corresponding algorithms for\n"
-        + "constructing a minimal supporting set of solutions can be used in solving all the\n"
-        + "considered types of systems and systems of mixed types.", paragraphs.get(1));
+    return builder.toString();
   }
 }

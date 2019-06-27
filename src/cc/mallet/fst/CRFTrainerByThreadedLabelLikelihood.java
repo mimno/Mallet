@@ -167,7 +167,7 @@ public class CRFTrainerByThreadedLabelLikelihood extends TransducerTrainer imple
 		boolean converged = false;
 		for (int i = 0; i < trainingProportions.length; i++) {
 			assert (trainingProportions[i] <= 1.0);
-			logger.info ("Training on "+trainingProportions[i]+"% of the data this round.");
+			logger.info("Training on " + (trainingProportions[i] * 100) + "% of the data this round.");
 			if (trainingProportions[i] == 1.0) {
 				converged = this.train (training, numIterationsPerProportion);
 			}
