@@ -8,10 +8,20 @@
 package cc.mallet.topics;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.Arrays;
-import java.io.*;
 
-import cc.mallet.types.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.AugmentableFeatureVector;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureSequenceWithBigrams;
+import cc.mallet.types.InstanceList;
 import cc.mallet.util.Randoms;
 
 /**
@@ -407,7 +417,7 @@ public class TopicalNGrams {
   {
     pw.println ("#doc source topic proportions");
     int docLen;
-    double topicDist[] = new double[topics.length];
+    double topicDist[] = new double[numTopics];
     for (int di = 0; di < topics.length; di++) {
       pw.print (di); pw.print (' ');
       pw.print (ilist.get(di).getSource().toString()); pw.print (' ');
