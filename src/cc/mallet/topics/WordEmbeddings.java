@@ -204,49 +204,29 @@ public class WordEmbeddings {
 
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
-        WordEmbeddingRunnable[] runnables = new WordEmbeddingRunnable[numThreads];
+        WordEmbeddingCallable[] callables = new WordEmbeddingCallable[numThreads];
         for (int thread = 0; thread < numThreads; thread++) {
-            runnables[thread] = new WordEmbeddingRunnable(this, instances, numSamples, numThreads, thread);
-            runnables[thread].setOrdering(orderingStrategy);
-            executor.submit(runnables[thread]);
+            callables[thread] = new WordEmbeddingCallable(this, instances, numSamples, numThreads, thread);
+            callables[thread].setOrdering(orderingStrategy);
         }
 
         long startTime = System.currentTimeMillis();
         double difference = 0.0;
-
-        boolean finished = false;
-        while (! finished) {
-                               
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                                                
-            }
-
+        
+        for (int iteration = 0; iteration < numIterations; iteration++) {
             long wordsSoFar = 0;
-                                        
-            // Are all the threads done?
-            boolean anyRunning = false;
-            double sumMeanError = 0.0;
-            for (int thread = 0; thread < numThreads; thread++) {
-                if (runnables[thread].shouldRun) { anyRunning = true; }
-                wordsSoFar += runnables[thread].wordsSoFar;
-                sumMeanError += runnables[thread].getMeanError();
-                //System.out.format("%.3f ", runnables[thread].getMeanError());
+            try {
+                List<Future<Long>> futures = executor.invokeAll(Arrays.asList(callables));
+                for (Future<Long> future: futures) {
+                    wordsSoFar += future.get();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             long runningMillis = System.currentTimeMillis() - startTime;
-            System.out.format("%d\t%d\t%fk w/s %.3f avg %.3f step\n", wordsSoFar, runningMillis, (double) wordsSoFar / runningMillis, 
-                              averageAbsWeight(), sumMeanError / numThreads);
-            //variances();
-            difference = 0.0;
-
-            if (! anyRunning || wordsSoFar > numIterations * totalWords) {
-                finished = true;
-                for (int thread = 0; thread < numThreads; thread++) {
-                    runnables[thread].shouldRun = false;
-                }
-            }
+            System.out.format("%d\t%d\t%fk w/s %.3f avg\n", wordsSoFar, runningMillis, (double) wordsSoFar / runningMillis, 
+                              averageAbsWeight());
 
             if (queryWord != null && vocabulary.contains(queryWord)) {
                 findClosest(copy(queryWord));
