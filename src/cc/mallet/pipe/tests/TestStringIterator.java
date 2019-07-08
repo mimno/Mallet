@@ -8,8 +8,6 @@
 
 package cc.mallet.pipe.tests;
 
-import java.util.ArrayList;
-import java.util.List;
 import cc.mallet.pipe.StringIterator;
 import junit.framework.TestCase;
 
@@ -221,79 +219,6 @@ public class TestStringIterator extends TestCase {
     assertEquals(15, iterator.remaining());
   }
 
-  public void testBeginsWithWhitespaces() {
-
-    String textIn = "\n\n\nvéhicule de - de 3,5t";
-    String textOut = "véhicule de - de 3,5t";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testEndsWithWhitespaces() {
-
-    String textIn = "véhicule de - de 3,5t\n\n\n";
-    String textOut = "véhicule de - de 3,5t";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testNumericBulletPoints() {
-
-    String textIn = "Ma liste:\n1) première entrée ;\n2) dernière entrée.";
-    String textOut = "Ma liste:\n1) première entrée ;\n2) dernière entrée.";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testHyphenBulletPoints() {
-
-    String textIn = "Ma liste:\n- première entrée ;\n- dernière entrée.";
-    String textOut = "Ma liste:\n- première entrée ;\n- dernière entrée.";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testLinebreakInsideSentence() {
-
-    String textIn = "Ceci est un\nretour à la ligne.";
-    String textOut = "Ceci est un retour à la ligne.";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testHyphenInsideSentence() {
-
-    String textIn = "Ceci est un re-\ntour à la ligne.";
-    String textOut = "Ceci est un re- tour à la ligne.";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testIdEst() {
-
-    String textIn = "i.e.\ntopics";
-    String textOut = "i.e. topics";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testExempliGratia() {
-
-    String textIn = "e.g. topics";
-    String textOut = "e.g. topics";
-
-    assertEquals(textOut, StringIterator.clean(textIn));
-  }
-
-  public void testFormula() {
-
-    String text =
-        "Prime HT de l'année N = (indice N / indice N-1) x somme des primes par véhicule.";
-    List<String> sentences = StringIterator.sentences(text, false);
-
-    assertEquals(text, sentences.get(0));
-  }
-
   public void testIsLowerCase() {
 
     assertTrue(StringIterator.isLowerCase("lowercase"));
@@ -368,92 +293,5 @@ public class TestStringIterator extends TestCase {
 
     assertEquals("Capitalized", StringIterator.trimRight("Capitalized \n "));
     assertEquals("Capitalized", StringIterator.trimRight("Capitalized \r "));
-  }
-
-  public void testUpperCaseSectionHeader() {
-
-    List<String> strings = new ArrayList<>();
-    strings.add("CONDUITE EN ETAT D'EBRIETE OU SOUS L'EMPRISE DE STUPEFIANTS");
-    strings.add("Les garanties du contrat, y compris de dommages, restent acquises à l'assuré");
-    strings.add("lorsqu'un sinistre intervient alors que le conducteur,");
-    strings.add("employé de l'assuré, conduit, à l'insu de l'assuré,");
-    strings.add("en état d'ébriété ou sous l'emprise de stupéfiants.");
-
-    String text = join(strings);
-    List<String> sentences = StringIterator.sentences(text, false);
-
-    assertEquals("CONDUITE EN ETAT D'EBRIETE OU SOUS L'EMPRISE DE STUPEFIANTS", sentences.get(0));
-    assertEquals(
-        "Les garanties du contrat, y compris de dommages, restent acquises à l'assuré lorsqu'un sinistre intervient alors que le conducteur, employé de l'assuré, conduit, à l'insu de l'assuré, en état d'ébriété ou sous l'emprise de stupéfiants.",
-        sentences.get(1));
-  }
-
-  public void testSimpleText() {
-
-    List<String> strings = new ArrayList<>();
-    strings.add("Note de R10 rédigée le 25/10/2000");
-    strings.add("Objet : Observation sur l'individu Christian Dumont");
-    strings
-        .add("Il a été constaté par R10 que Christian Dumont a rencontré les individus suivants :");
-    strings.add("- Nathalie Guerin");
-    strings.add("- Christine Morel");
-    strings.add(
-        "Le rendez-vous a eu lieu le 5/8/2012 à 12:32 dans son habitation situé à Paris.\nCette rencontre a duré environ 5 h.\nD'après notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.");
-
-    String text = join(strings);
-    List<String> sentences = StringIterator.sentences(text, false);
-
-    assertEquals("Note de R10 rédigée le 25/10/2000", sentences.get(0));
-    assertEquals("Objet : Observation sur l'individu Christian Dumont", sentences.get(1));
-    assertEquals(
-        "Il a été constaté par R10 que Christian Dumont a rencontré les individus suivants :",
-        sentences.get(2));
-    assertEquals("- Nathalie Guerin", sentences.get(3));
-    assertEquals("- Christine Morel", sentences.get(4));
-    assertEquals("Le rendez-vous a eu lieu le 5/8/2012 à 12:32 dans son habitation situé à Paris.",
-        sentences.get(5));
-    assertEquals("Cette rencontre a duré environ 5 h.", sentences.get(6));
-    assertEquals(
-        "D'après notre source il semblerait que le sujet de la réunion était la préparation d'une recette de cuisine.",
-        sentences.get(7));
-  }
-
-  public void testHeader() {
-
-    List<String> strings = new ArrayList<>();
-    strings.add("1. Conduite en état d'ébriété ou sous l'emprise de stupéfiants");
-    strings.add("Les garanties du contrat, y compris de dommages, restent acquises à l'assuré");
-    strings.add("lorsqu'un sinistre intervient alors que le conducteur,");
-    strings.add("employé de l'assuré, conduit, à l'insu de l'assuré,");
-    strings.add("en état d'ébriété ou sous l'emprise de stupéfiants.");
-
-    String text = join(strings);
-    List<String> sentences = StringIterator.sentences(text, false);
-
-    assertEquals("1. Conduite en état d'ébriété ou sous l'emprise de stupéfiants",
-        sentences.get(0));
-    assertEquals(
-        "Les garanties du contrat, y compris de dommages, restent acquises à l'assuré lorsqu'un sinistre intervient alors que le conducteur, employé de l'assuré, conduit, à l'insu de l'assuré, en état d'ébriété ou sous l'emprise de stupéfiants.",
-        sentences.get(1));
-  }
-
-  /**
-   * Join a list of strings. Similar to Guava's
-   *
-   * <pre>
-   * Joiner.on('\n').join(strings)
-   * </pre>
-   *
-   * @return a string.
-   */
-  private String join(List<String> strings) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < strings.size(); i++) {
-      if (i > 0) {
-        builder.append('\n');
-      }
-      builder.append(strings.get(i));
-    }
-    return builder.toString();
   }
 }
