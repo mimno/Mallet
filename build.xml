@@ -58,7 +58,8 @@
                 classpathref="project.classpath"
                 debug="true"
                 deprecation="off"
-                listfiles="no">
+                listfiles="no"
+                includeantruntime="false">
             <src path="${src}"/>
             <include name="cc/**/*.java"/>
             <!-- compilerarg value="-Xlint:unchecked"/ -->
@@ -76,7 +77,7 @@
        includeantruntime="false">
        <src path="src"/>
        <compilerclasspath>
-         <pathelement location="lib/errorprone.jar"/>
+         <pathelement location="lib/error_prone_ant-2.2.0.jar"/>
        </compilerclasspath>
      </javac>
     </target>

@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import cc.mallet.types.Instance;
 
 /**
- * Be careful here: this pipe must be applied before {@link CharSequenceToLowercase} because it is
+ * Be careful here: this pipe must be applied before {@link CharSequenceLowercase} because it is
  * case sensitive.
  */
 public class CharSequenceReplaceHtmlEntities extends Pipe implements Serializable {
