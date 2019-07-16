@@ -245,7 +245,7 @@ public class ParallelTopicModel implements Serializable {
                 new LabelSequence(topicAlphabet, new int[ tokens.size() ]);
             
             int[] topics = topicSequence.getFeatures();
-            for (int position = 0; position < topics.length; position++) {
+            for (int position = 0; position < tokens.getLength(); position++) {
 
                 int topic = random.nextInt(numTopics);
                 topics[position] = topic;
@@ -1473,7 +1473,7 @@ public class ParallelTopicModel implements Serializable {
             }
 
             builder.append("\t");
-            docLen = currentDocTopics.length;
+            docLen = topicSequence.getLength();
 
             // Count up the tokens
             for (int token=0; token < docLen; token++) {
@@ -1506,9 +1506,10 @@ public class ParallelTopicModel implements Serializable {
         
         for (int doc = 0; doc < data.size(); doc++) {
             if (documentMask[doc]) {
-                int[] words = ((FeatureSequence) data.get(doc).instance.getData()).getFeatures();
+                FeatureSequence tokenSequence = (FeatureSequence) data.get(doc).instance.getData();
+                int[] words = tokenSequence.getFeatures();
                 int[] topics = data.get(doc).topicSequence.getFeatures();
-                for (int position = 0; position < topics.length; position++) {
+                for (int position = 0; position < tokenSequence.getLength(); position++) {
                     result[ topics[position] ][ words[position] ]++;
                     subCorpusTokensPerTopic[ topics[position] ]++;
                 }
@@ -1600,8 +1601,9 @@ public class ParallelTopicModel implements Serializable {
         double[][] result = new double[data.size()][numTopics];
 
         for (int doc = 0; doc < data.size(); doc++) {
-            int[] topics = data.get(doc).topicSequence.getFeatures();
-            for (int position = 0; position < topics.length; position++) {
+            LabelSequence topicSequence = data.get(doc).topicSequence;
+            int[] topics = topicSequence.getFeatures();
+            for (int position = 0; position < topicSequence.getLength(); position++) {
                 result[doc][ topics[position] ]++;
             }
 
@@ -1637,8 +1639,9 @@ public class ParallelTopicModel implements Serializable {
         int[] topicCounts = new int[numTopics];
 
         for (int doc = 0; doc < data.size(); doc++) {
-            int[] topics = data.get(doc).topicSequence.getFeatures();
-            for (int position = 0; position < topics.length; position++) {
+            LabelSequence topicSequence = data.get(doc).topicSequence;
+            int[] topics = topicSequence.getFeatures();
+            for (int position = 0; position < topicSequence.getLength(); position++) {
                 topicCounts[ topics[position] ]++;
             }
 
@@ -1764,7 +1767,7 @@ public class ParallelTopicModel implements Serializable {
 
             docTopics = topicSequence.getFeatures();
 
-            for (int token=0; token < docTopics.length; token++) {
+            for (int token=0; token < topicSequence.getLength(); token++) {
                 topicCounts[ docTopics[token] ]++;
             }
 
