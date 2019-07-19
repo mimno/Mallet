@@ -317,7 +317,12 @@ public class Csv2Vectors {
 			oos = new ObjectOutputStream(System.out);
 		}
 		else {
-			Files.delete(outputFile.value.toPath());
+			try {
+				Files.delete(outputFile.value.toPath());
+			} catch (java.nio.file.NoSuchFileException e){
+				// file doesn't exist
+
+			}
 			oos = new ObjectOutputStream(new FileOutputStream(outputFile.value, true));
 		}
 		CsvIterator csvIterator = new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
