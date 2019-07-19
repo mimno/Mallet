@@ -12,7 +12,9 @@ import java.util.logging.*;
 import java.util.regex.*;
 import java.io.*;
 import java.nio.charset.Charset;
-
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import cc.mallet.classify.*;
 import cc.mallet.pipe.*;
 import cc.mallet.pipe.iterator.*;
@@ -295,35 +297,46 @@ public class Csv2Vectors {
 		// Create the instance list and open the input file
 		// 
 
-		InstanceList instances = new InstanceList (instancePipe);
-		Reader fileReader;
+
+		BufferedReader fileReader;
 
 		if (inputFile.value.toString().equals ("-")) {
-			fileReader = new InputStreamReader (System.in);
+			fileReader = new BufferedReader(new InputStreamReader (System.in));
 		}
 		else {
-			fileReader = new InputStreamReader(new FileInputStream(inputFile.value), encoding.value);
+			fileReader = Files.newBufferedReader(Paths.get(inputFile.value.toString()));
 		}
 
 		// 
 		// Read instances from the file
 		//
 
-		instances.addThruPipe (new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
-												dataOption.value, labelOption.value, nameOption.value));
-		
-		// 
-		// Save instances to output file
-		//
 
 		ObjectOutputStream oos;
 		if (outputFile.value.toString().equals ("-")) {
 			oos = new ObjectOutputStream(System.out);
 		}
 		else {
-			oos = new ObjectOutputStream(new FileOutputStream(outputFile.value));
+			Files.delete(outputFile.value.toPath());
+			oos = new ObjectOutputStream(new FileOutputStream(outputFile.value, true));
 		}
-		oos.writeObject(instances);
+		CsvIterator csvIterator = new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
+												   dataOption.value, labelOption.value, nameOption.value);
+		InstanceList instances = new InstanceList (instancePipe);
+		while (csvIterator.hasNext())  {
+
+			instances.addThruPipe(csvIterator.next());
+			if (instances.size() == 1000000) {
+				oos.writeObject(instances);
+				instances = new InstanceList(instancePipe);
+			}
+
+		}
+
+
+		if (instances.size() > 0)
+			oos.writeObject(instances);
+
 		oos.close();
 
 
@@ -332,7 +345,6 @@ public class Csv2Vectors {
 		//  or feature alphabets. To maintain compatibility,
 		//  we now save that original instance list back to disk
 		//  with the new alphabet.
-
 		if (usePipeFromVectorsFile.wasInvoked()) {
 
 			System.out.println(" Rewriting extended pipe from " + usePipeFromVectorsFile.value);
