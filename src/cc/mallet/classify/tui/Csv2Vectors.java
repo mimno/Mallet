@@ -331,8 +331,8 @@ public class Csv2Vectors {
 		while (csvIterator.hasNext())  {
 
 			instances.addThruPipe(csvIterator.next());
-			if (instances.size() == 1000000) {
-				oos.writeObject(instances);
+			if (instances.size() == 10000) {
+				oos.writeUnshared(instances);
 				instances = new InstanceList(instancePipe);
 			}
 
@@ -340,7 +340,7 @@ public class Csv2Vectors {
 
 
 		if (instances.size() > 0)
-			oos.writeObject(instances);
+			oos.writeUnshared(instances);
 
 		oos.close();
 
