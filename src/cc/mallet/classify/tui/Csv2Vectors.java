@@ -334,6 +334,7 @@ public class Csv2Vectors {
 			if (instances.size() == 10000) {
 				oos.writeUnshared(instances);
 				instances = new InstanceList(instancePipe);
+				oos.reset();
 			}
 
 		}
@@ -343,6 +344,7 @@ public class Csv2Vectors {
 			oos.writeUnshared(instances);
 
 		oos.close();
+		fileReader.close();
 
 
 		// If we are reusing a pipe from an instance list 
