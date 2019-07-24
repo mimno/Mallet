@@ -328,11 +328,14 @@ public class Csv2Vectors {
 		CsvIterator csvIterator = new CsvIterator (fileReader, Pattern.compile(lineRegex.value),
 												   dataOption.value, labelOption.value, nameOption.value);
 		InstanceList instances = new InstanceList (instancePipe);
+		Integer totalInstances =  0;
 		while (csvIterator.hasNext())  {
 
 			instances.addThruPipe(csvIterator.next());
 			if (instances.size() == 10000) {
 				oos.writeUnshared(instances);
+				totalInstances +=  instances.size();
+				logger.info(String.format("wrote %d instances to output file", totalInstances));
 				instances = new InstanceList(instancePipe);
 				oos.reset();
 			}
@@ -342,7 +345,8 @@ public class Csv2Vectors {
 
 		if (instances.size() > 0)
 			oos.writeUnshared(instances);
-
+		totalInstances += instances.size();
+		logger.info(String.format("wrote %d instances to output file", totalInstances));
 		oos.close();
 		fileReader.close();
 
