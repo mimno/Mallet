@@ -95,9 +95,12 @@ public class AdaBoostM2 extends Classifier implements Serializable
     	for (int round = 0; round < numWeakClassifiersToUse; round++) {
     		bestIndex = weakClassifiers[round].classify(inst).getLabeling().getBestIndex();
     		scores[bestIndex] += alphas[round];
-    		sum += scores[bestIndex];
+//    		sum += scores[bestIndex];
     	}
     	// Normalize the scores
+    	for (int i = 0; i < scores.length; i++)
+    		sum += scores[i];
+    	
     	for (int i = 0; i < scores.length; i++)
     		scores[i] /= sum;
     	return new Classification (inst, this, new LabelVector (getLabelAlphabet(), scores));

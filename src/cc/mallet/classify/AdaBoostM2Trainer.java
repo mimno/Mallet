@@ -140,7 +140,8 @@ public class AdaBoostM2Trainer extends ClassifierTrainer<AdaBoostM2>
 					logger.info("AdaBoostM2Trainer weight[weakLearner[" + i + "]]=" 
 							+ classifierWeights2[i]);
 				}
-				return new AdaBoostM2 (trainingInsts.getPipe(), weakLearners2, classifierWeights2);
+				this.classifier = new AdaBoostM2 (trainingInsts.getPipe(), weakLearners2, classifierWeights2);
+				return this.classifier;
 			}
 			double beta = epsilon / (1 - epsilon);
 			classifierWeights[round] = Math.log(1.0 / beta);

@@ -121,7 +121,8 @@ public class AdaBoostTrainer extends ClassifierTrainer<AdaBoost>
 				for (int i = 0; i < betas.length; i++)
 					logger.info("AdaBoostTrainer weight[weakLearner[" + i + "]]=" + betas[i]);
 
-				return new AdaBoost (roundTrainingInsts.getPipe(), weakClassifiers, betas);
+				this.classifier = new AdaBoost (roundTrainingInsts.getPipe(), weakClassifiers, betas);
+				return this.classifier;
 			}
 
 			// Calculate the weight to assign to this weak classifier
