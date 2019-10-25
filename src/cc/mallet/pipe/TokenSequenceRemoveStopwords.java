@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import cc.mallet.types.FeatureSequenceWithBigrams;
 import cc.mallet.types.Instance;
@@ -29,15 +30,15 @@ import cc.mallet.types.TokenSequence;
 public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 {
 	// xxx Use a gnu.trove collection instead
-	HashSet<String> stoplist = null;
+	ConcurrentHashMap<String, Integer> stoplist = null;
 	boolean caseSensitive = true;
 	boolean markDeletions = false;
 
-	private HashSet<String> newDefaultStopList ()
+	private ConcurrentHashMap<String, Integer> newDefaultStopList ()
 	{
-		HashSet<String> sl = new HashSet<String>();
+		ConcurrentHashMap<String, Integer> sl = new ConcurrentHashMap<String, Integer>();
 		for (int i = 0; i < stopwords.length; i++)
-			sl.add (stopwords[i]);
+			sl.put (stopwords[i],1);
 		return sl;
 	}
 
@@ -82,7 +83,8 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 
 	public TokenSequenceRemoveStopwords(InputStream stoplistStream, String encoding, boolean includeDefault,
 										boolean caseSensitive, boolean markDeletions) {
-		if (! includeDefault) { stoplist = new HashSet<String>(); }
+		if (! includeDefault) {
+			stoplist = new ConcurrentHashMap<>(); }
 		else { stoplist = newDefaultStopList(); }
 
 		try {
@@ -110,14 +112,14 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 	public TokenSequenceRemoveStopwords addStopWords (String[] words)
 	{
 		for (int i = 0; i < words.length; i++)
-			stoplist.add (words[i]);
+			stoplist.put (words[i],1);
 		return this;
 	}
 
 	public TokenSequenceRemoveStopwords addStopWords (List<String> words)
 	{
 		for (String word: words)
-			stoplist.add (word);
+			stoplist.put (word,1);
 		return this;
 	}
 
@@ -183,7 +185,7 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		Token prevToken = null;
 		for (int i = 0; i < ts.size(); i++) {
 			Token t = ts.get(i);
-			if (! stoplist.contains (caseSensitive ? t.getText() : t.getText().toLowerCase())) {
+			if (! stoplist.containsKey (caseSensitive ? t.getText() : t.getText().toLowerCase())) {
 				// xxx Should we instead make and add a copy of the Token?
 				ret.add (t);
 				prevToken = t;
@@ -212,7 +214,7 @@ public class TokenSequenceRemoveStopwords extends Pipe implements Serializable
 		if (version > 0)
 			markDeletions = in.readBoolean();
 		if (version > 1) {
-			stoplist = (HashSet<String>) in.readObject();
+			stoplist = (ConcurrentHashMap<String, Integer>) in.readObject();
 		}
 
 	}
