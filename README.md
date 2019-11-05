@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/MNCC/Mallet.svg?branch=master)](https://travis-ci.com/MNCC/Mallet)
+
 Mallet
 ======
 
