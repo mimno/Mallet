@@ -1,0 +1,8 @@
+language: java
+addons:
+  apt:
+    packages:
+      - ant
+jdk:
+  - oraclejdk8
+  - openjdk8
