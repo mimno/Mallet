@@ -1,3 +1,5 @@
+# see https://travis-ci.community/t/error-installing-oraclejdk8-expected-feature-release-number-in-range-of-9-to-14-but-got-8/3766/4
+dist: trusty
 language: java
 addons:
   apt:
