@@ -2,8 +2,9 @@ package cc.mallet.topics;
 
 import java.util.*;
 import cc.mallet.types.*;
+import java.util.concurrent.Callable;
 
-public class WordEmbeddingRunnable implements Runnable {
+public class WordEmbeddingCallable implements Callable<Long> {
     public WordEmbeddings model;
     public InstanceList instances;
     public int numSamples;
@@ -27,7 +28,7 @@ public class WordEmbeddingRunnable implements Runnable {
     public long wordsSoFar = 0;
     private int minDocumentLength;
 
-    public WordEmbeddingRunnable(WordEmbeddings model, InstanceList instances, int numSamples, int numThreads, int threadID) {
+    public WordEmbeddingCallable(WordEmbeddings model, InstanceList instances, int numSamples, int numThreads, int threadID) {
         this.model = model;
         this.stride = model.stride;
         this.instances = instances;
@@ -58,7 +59,7 @@ public class WordEmbeddingRunnable implements Runnable {
         return result;
     }
 
-    @Override public void run() {
+    public Long call() {
         long previousWordsSoFar = 0;
         long wordsConsidered = 0;
         long wordsSampled = 0;
@@ -104,7 +105,6 @@ public class WordEmbeddingRunnable implements Runnable {
             }
         }
 
-        docID = 0;
         int maxDocID = (threadID + 1) * (numDocuments / numThreads);
         if (maxDocID > numDocuments) {
             maxDocID = numDocuments;
@@ -114,19 +114,8 @@ public class WordEmbeddingRunnable implements Runnable {
         
         int[] tokenBuffer = new int[100000];
                 
-        while (shouldRun) {
+        for (int docID = 0; docID < numDocs; docID++) {
             Instance instance = instances.get( agenda[docID] );
-            docID++;
-
-            if (docID == numDocs) { 
-                // start over at the beginning
-                docID = 0;
-                iteration++;
-                if (iteration >= model.numIterations) {
-                    shouldRun = false;
-                    return;
-                }
-            }
 
             if (wordsSoFar - previousWordsSoFar > 10000) {
                 learningRate = Math.max(0.025 * 0.0001, 0.025 * (1.0 - (double) numThreads * wordsSoFar / (model.numIterations * model.totalWords)));            
@@ -231,7 +220,9 @@ public class WordEmbeddingRunnable implements Runnable {
                         weights[outputTypeOffset + col] += gradient[col];
                     }
                 }
-            }                    
+            }
         }
+        
+        return wordsSoFar;
     }
 }
