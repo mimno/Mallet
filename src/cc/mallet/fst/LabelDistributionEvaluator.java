@@ -7,14 +7,15 @@
 
 package cc.mallet.fst;
 
+import java.text.NumberFormat;
 import java.util.logging.Logger;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.MalletLogger;
-
-import java.text.NumberFormat;
 
 /**
  * Prints predicted and true label distribution.
@@ -38,6 +39,7 @@ public class LabelDistributionEvaluator extends TransducerEvaluator {
     double[] predCounts = new double[instances.getTargetAlphabet().size()];
     double[] trueCounts = new double[instances.getTargetAlphabet().size()];
 
+    @Var
     int total = 0;
     for (int i = 0; i < instances.size(); i++) {
       Instance instance = instances.get(i);

@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.types.Instance;
 
 /**
@@ -320,7 +322,7 @@ public class CharSequenceReplaceHtmlEntities extends Pipe implements Serializabl
   /**
    * Replace all the HTML entities in string with their corresponding unicode characters.
    */
-  private String replace(String string) {
+  private String replace(@Var String string) {
 
     if (string == null) {
       return null;

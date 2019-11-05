@@ -12,16 +12,36 @@
 package cc.mallet.classify.tui;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Random;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.*;
-import java.lang.reflect.*;
+import com.google.errorprone.annotations.Var;
 
-import cc.mallet.classify.*;
-import cc.mallet.classify.evaluate.*;
-import cc.mallet.types.*;
-import cc.mallet.util.*;
+import cc.mallet.classify.Classification;
+import cc.mallet.classify.Classifier;
+import cc.mallet.classify.ClassifierTrainer;
+import cc.mallet.classify.Trial;
+import cc.mallet.classify.evaluate.ConfusionMatrix;
+import cc.mallet.types.CrossValidationIterator;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Labeling;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.util.BshInterpreter;
+import cc.mallet.util.CommandOption;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.MalletProgressMessageLogger;
+import cc.mallet.util.ProgressMessageLogFormatter;
+
 /**
  * Classify documents, run trials, print statistics from a vector file.
  @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
@@ -73,6 +93,7 @@ public abstract class Vectors2Classify
 				java.lang.String fields[] = arg.split("[:=]");
 				java.lang.String dataSet = fields[0];
 				java.lang.String reportOption = fields[1];
+				@Var
 				java.lang.String reportOptionArg = null;
 
 				if (fields.length >=3){
@@ -81,7 +102,9 @@ public abstract class Vectors2Classify
 				//System.out.println("Report option arg " + reportOptionArg);
 
 				//find the datasource (test,train,validation)
+				@Var
 				boolean foundDataSource = false;
+				@Var
 				int i=0;
 				for (; i<ReportOption.dataOptions.length; i++){
 					if (dataSet.equals(ReportOption.dataOptions[i])){
@@ -94,7 +117,9 @@ public abstract class Vectors2Classify
 				}
 
 				//find the report option (accuracy, f1, confusion, raw, precision, recall)
+				@Var
 				boolean foundReportOption = false;
+				@Var
 				int j=0;
 				for (; j<ReportOption.reportOptions.length; j++){
 					if (reportOption.equals(ReportOption.reportOptions[j])){
@@ -227,9 +252,13 @@ public abstract class Vectors2Classify
 
 			boolean separateIlists = testFile.wasInvoked() || trainingFile.wasInvoked() ||
 					validationFile.wasInvoked();
+			@Var
 			InstanceList ilist=null;
+			@Var
 			InstanceList testFileIlist=null;
+			@Var
 			InstanceList trainingFileIlist=null;
+			@Var
 			InstanceList validationFileIlist=null;
 
 			String labels[] ; 
@@ -367,7 +396,9 @@ public abstract class Vectors2Classify
 			String[] trainerNames = new String[numTrainers];
 			for (int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
 				System.out.println("\n-------------------- Trial " + trialIndex + "  --------------------\n");
+				@Var
 				InstanceList[] ilists;
+				@Var
 				BitSet unlabeledIndices = null;
 				if (!separateIlists){
 					if (crossValidation.wasInvoked()) {
@@ -482,6 +513,7 @@ public abstract class Vectors2Classify
 					}	
 
 					if (outputFile.wasInvoked()) {
+						@Var
 						String filename = outputFile.value;
 						if (numTrainers > 1) filename = filename+trainer.toString();
 						if (numTrials > 1) filename = filename+".trial"+trialIndex;
@@ -731,6 +763,7 @@ public abstract class Vectors2Classify
 							parameterName + "\n"+e);
 				}
 
+				@Var
 				boolean foundSetter = false;
 				for (int j=0; j<methods.length; j++){
 					// System.out.println("method " + j + " name is " + methods[j].getName());

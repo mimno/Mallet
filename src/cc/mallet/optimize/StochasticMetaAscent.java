@@ -1,10 +1,11 @@
 package cc.mallet.optimize;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import java.text.DecimalFormat;
 
-import cc.mallet.optimize.Optimizer;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.types.MatrixOps;
 import cc.mallet.util.MalletLogger;
 
@@ -72,7 +73,9 @@ public class StochasticMetaAscent implements Optimizer.ByBatches {
     maxable.getParameters(parameters);
 		
 		for (int iteration = 0; iteration < numIterations; iteration++) {
+            @Var
       double oldApproxValue = 0;
+            @Var
 			double approxValue = 0;
 			for (int batch = 0; batch < numBatches; batch++) {
 				logger.info("Iteration " + (totalIterations + iteration) + ", batch " + batch + " of " + numBatches);

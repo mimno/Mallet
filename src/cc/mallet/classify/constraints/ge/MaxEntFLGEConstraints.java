@@ -7,12 +7,13 @@
 
 package cc.mallet.classify.constraints.ge;
 
+import java.util.BitSet;
+
 import com.carrotsearch.hppc.DoubleArrayList;
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.cursors.ObjectCursor;
-
-import java.util.BitSet;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
@@ -50,6 +51,7 @@ public abstract class MaxEntFLGEConstraints implements MaxEntGEConstraint {
   public abstract void addConstraint(int fi, double[] ex, double weight);
 
   public double getCompositeConstraintFeatureValue(FeatureVector input, int label) {
+    @Var
     double value = 0;
     for (int i = 0; i < indexCache.size(); i++) {
       if (useValues) {
@@ -85,8 +87,11 @@ public abstract class MaxEntFLGEConstraints implements MaxEntGEConstraint {
 
   public BitSet preProcess(InstanceList data) {
     // count
+    @Var
     int ii = 0;
+    @Var
     int fi;
+    @Var
     FeatureVector fv;
     BitSet bitSet = new BitSet(data.size());
     for (Instance instance : data) {
@@ -117,6 +122,7 @@ public abstract class MaxEntFLGEConstraints implements MaxEntGEConstraint {
   public void preProcess(FeatureVector input) {
     indexCache.clear();
     if (useValues) valueCache.clear();
+    @Var
     int fi;
     // cache constrained input features
     for (int loc = 0; loc < input.numLocations(); loc++) {

@@ -4,18 +4,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.util.BitSet;
 import java.util.logging.Logger;
 
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.optimize.Optimizable;
 import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.MatrixOps;
-
-import cc.mallet.optimize.Optimizable;
-
 import cc.mallet.util.MalletLogger;
 
 /** An objective function for CRFs that is the label likelihood plus a Gaussian or hyperbolic prior on parameters. */
@@ -114,7 +113,9 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 		// Instance values must either always or never be included in
 		// the total values; we can't just sometimes skip a value
 		// because it is infinite, this throws off the total values.
+		@Var
 		boolean initializingInfiniteValues = false;
+		@Var
 		double value = 0;
 		if (infiniteValues == null) {
 			infiniteValues = new BitSet ();
@@ -126,12 +127,20 @@ public class CRFOptimizableByLabelLikelihood implements Optimizable.ByGradientVa
 		expectations.zero();
 
 		// count the number of instances that have infinite weight
+		@Var
 		int numInfLabeledWeight = 0;
+		@Var
 		int numInfUnlabeledWeight = 0;
+		@Var
 		int numInfWeight = 0;
 		
 		// Calculate the value of each instance, and also fill in expectations
-		double unlabeledWeight, labeledWeight, weight;
+		@Var
+		double unlabeledWeight;
+		@Var
+		double labeledWeight;
+		@Var
+		double weight;
 		for (int ii = 0; ii < trainingSet.size(); ii++) {
 			Instance instance = trainingSet.get(ii);
 			double instanceWeight = trainingSet.getInstanceWeight(instance);

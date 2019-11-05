@@ -16,13 +16,16 @@ package cc.mallet.pipe.iterator;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.net.URI;
-import java.io.*;
 
-import cc.mallet.fst.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.fst.MaxLatticeDefault;
+import cc.mallet.fst.Segment;
+import cc.mallet.fst.Transducer;
 import cc.mallet.pipe.Noop;
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.Sequence;
 
 /**
 	 Iterates over {@link Segment}s extracted by a {@link Transducer}
@@ -100,6 +103,7 @@ public class SegmentIterator implements Iterator<Instance>
 		for (int n=0; n < predicted.size (); n++) {
 			for (int s=0; s < startTags.length; s++) {
 				if (startTags[s].equals (predicted.get (n))) { // found start tag
+					@Var
 					int j=n+1;
 					while (j < predicted.size() &&  inTags[s].equals (predicted.get (j))) // find end tag
 						j++;
@@ -128,6 +132,7 @@ public class SegmentIterator implements Iterator<Instance>
 			for (int n=0; n < predOutput.size (); n++) {
 				for (int s=0; s < startTags.length; s++) {
 					if (startTags[s].equals (predOutput.get (n))) { // found start tag
+						@Var
 						int j=n+1;
 						while (j < predOutput.size() &&
 									 inTags[s].equals (predOutput.get (j))) // find end tag
@@ -157,6 +162,7 @@ public class SegmentIterator implements Iterator<Instance>
 			for (int i=0; i < predOutput.size (); i++) {
 				for (int s=0; s < segmentStartTags.length; s++) {
 					if (segmentStartTags[s].equals (predOutput.get (i))) { // found start tag
+						@Var
 						int j=i+1;
 						while (j < predOutput.size() &&
 									 segmentContinueTags[s].equals (predOutput.get (j))) // find end tag

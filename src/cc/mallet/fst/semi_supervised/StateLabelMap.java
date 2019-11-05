@@ -8,8 +8,9 @@
 package cc.mallet.fst.semi_supervised;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.Alphabet;
 
@@ -217,6 +218,7 @@ public class StateLabelMap {
     }
 
     // add the state and get its index
+    @Var
     int stateIndex = stateAlphabet.lookupIndex(stateName, false);
     if (stateIndex != -1) {
       throw new IllegalArgumentException("Duplicate state: " + stateName);

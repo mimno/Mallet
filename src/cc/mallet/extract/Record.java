@@ -7,8 +7,9 @@
 package cc.mallet.extract;
 
 import java.util.HashMap;
-
 import java.util.Iterator;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.Label;
 
@@ -30,6 +31,7 @@ public class Record {
       LabeledSpan span = spans.getLabeledSpan (i);
       if (!span.isBackground()) {
         Label tag = span.getLabel ();
+        @Var
         Field field = (Field) fieldMap.get (tag);
         if (field == null) {
           field = new Field (span);

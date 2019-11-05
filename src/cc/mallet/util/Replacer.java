@@ -1,12 +1,18 @@
 package cc.mallet.util;
 
-import cc.mallet.types.*;
-import cc.mallet.pipe.*;
-import cc.mallet.pipe.iterator.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.logging.Logger;
 
-import java.util.*;
-import java.util.logging.*;
-import java.io.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.pipe.NGramPreprocessor;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.iterator.CsvIterator;
+import cc.mallet.types.Instance;
 
 /**
  * This class replaces ngrams as specified in the configuration files.
@@ -87,7 +93,8 @@ public class Replacer {
 												 nameGroup.value);
 			
 			Iterator<Instance> iterator = preprocessor.newIteratorFrom(reader);
-			
+
+			@Var
 			int count = 0;
 			
 			// We're not saving the instance list, just writing to the out file

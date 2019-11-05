@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,15 +25,15 @@ import java.util.Random;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Multinomial;
 import cc.mallet.types.Sequence;
-
-import cc.mallet.pipe.Pipe;
-
 import cc.mallet.util.MalletLogger;
 
 /** A Hidden Markov Model. */
@@ -179,11 +178,13 @@ public class HMM extends Transducer implements Serializable {
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = labelConnectionsIn(trainingSet);
 		for (int i = 0; i < numLabels; i++) {
+			@Var
 			int numDestinations = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
 					numDestinations++;
 			String[] destinationNames = new String[numDestinations];
+			@Var
 			int destinationIndex = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
@@ -202,11 +203,13 @@ public class HMM extends Transducer implements Serializable {
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = labelConnectionsIn(trainingSet);
 		for (int i = 0; i < numLabels; i++) {
+			@Var
 			int numDestinations = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
 					numDestinations++;
 			String[] destinationNames = new String[numDestinations];
+			@Var
 			int destinationIndex = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
@@ -230,11 +233,13 @@ public class HMM extends Transducer implements Serializable {
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = labelConnectionsIn(trainingSet);
 		for (int i = 0; i < numLabels; i++) {
+			@Var
 			int numDestinations = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
 					numDestinations++;
 			String[] destinationNames = new String[numDestinations];
+			@Var
 			int destinationIndex = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j]) {
@@ -295,12 +300,14 @@ public class HMM extends Transducer implements Serializable {
 			for (int j = 0; j < numLabels; j++) {
 				if (!connections[i][j])
 					continue;
+				@Var
 				int numDestinations = 0;
 				for (int k = 0; k < numLabels; k++)
 					if (connections[j][k])
 						numDestinations++;
 				String[] destinationNames = new String[numDestinations];
 				String[] labels = new String[numDestinations];
+				@Var
 				int destinationIndex = 0;
 				for (int k = 0; k < numLabels; k++)
 					if (connections[j][k]) {
@@ -354,6 +361,7 @@ public class HMM extends Transducer implements Serializable {
 	}
 
 	private String concatLabels(String[] labels) {
+		@Var
 		String sep = "";
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < labels.length; i++) {
@@ -364,6 +372,7 @@ public class HMM extends Transducer implements Serializable {
 	}
 
 	private String nextKGram(String[] history, int k, String next) {
+		@Var
 		String sep = "";
 		StringBuffer buf = new StringBuffer();
 		int start = history.length + 1 - k;
@@ -439,9 +448,11 @@ public class HMM extends Transducer implements Serializable {
 	public String addOrderNStates(InstanceList trainingSet, int[] orders,
 			boolean[] defaults, String start, Pattern forbidden,
 			Pattern allowed, boolean fullyConnected) {
+		@Var
 		boolean[][] connections = null;
 		if (!fullyConnected)
 			connections = labelConnectionsIn(trainingSet);
+		@Var
 		int order = -1;
 		if (defaults != null && defaults.length != orders.length)
 			throw new IllegalArgumentException(
@@ -469,8 +480,11 @@ public class HMM extends Transducer implements Serializable {
 				logger.info("Preparing " + concatLabels(history));
 				if (allowedHistory(history, forbidden, allowed)) {
 					String stateName = concatLabels(history);
+					@Var
 					int nt = 0;
+					@Var
 					String[] destNames = new String[numLabels];
+					@Var
 					String[] labelNames = new String[numLabels];
 					for (int nextIndex = 0; nextIndex < numLabels; nextIndex++) {
 						String next = (String) outputAlphabet
@@ -751,6 +765,7 @@ public class HMM extends Transducer implements Serializable {
 	// kedarb: p[i] = (1+random)^noise/sum
 	private double[] getRandomArray(int size, Random random, double noise) {
 		double[] ret = new double[size];
+		@Var
 		double sum = 0;
 		for (int i = 0; i < size; i++) {
 			ret[i] = random == null ? 1.0 : Math.pow(1.0 + random.nextDouble(),
@@ -772,7 +787,10 @@ public class HMM extends Transducer implements Serializable {
 	/* Need to check for null pointers. */
 	/* Bug fix from Cheng-Ju Kuo cju.kuo@gmail.com */
 	private void writeObject(ObjectOutputStream out) throws IOException {
-		int i, size;
+		@Var
+		int i;
+		@Var
+		int size;
 		out.writeInt(CURRENT_SERIAL_VERSION);
 		out.writeObject(inputPipe);
 		out.writeObject(outputPipe);
@@ -820,7 +838,10 @@ public class HMM extends Transducer implements Serializable {
 	/* Bug fix from Cheng-Ju Kuo cju.kuo@gmail.com */
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
-		int size, i;
+		@Var
+		int size;
+		@Var
+		int i;
 		int version = in.readInt();
 		inputPipe = (Pipe) in.readObject();
 		outputPipe = (Pipe) in.readObject();
@@ -945,6 +966,7 @@ public class HMM extends Transducer implements Serializable {
 		}
 
 		public State getDestinationState(int index) {
+			@Var
 			State ret;
 			if ((ret = destinations[index]) == null) {
 				ret = destinations[index] = (State) hmm.name2state
@@ -994,7 +1016,10 @@ public class HMM extends Transducer implements Serializable {
 		private static final int NULL_INTEGER = -1;
 
 		private void writeObject(ObjectOutputStream out) throws IOException {
-			int i, size;
+			@Var
+			int i;
+			@Var
+			int size;
 			out.writeInt(CURRENT_SERIAL_VERSION);
 			out.writeObject(name);
 			out.writeInt(index);
@@ -1024,7 +1049,10 @@ public class HMM extends Transducer implements Serializable {
 
 		private void readObject(ObjectInputStream in) throws IOException,
 				ClassNotFoundException {
-			int size, i;
+			@Var
+			int size;
+			@Var
+			int i;
 			int version = in.readInt();
 			name = (String) in.readObject();
 			index = in.readInt();

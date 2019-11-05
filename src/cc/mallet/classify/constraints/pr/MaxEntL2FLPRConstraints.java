@@ -7,8 +7,9 @@
 
 package cc.mallet.classify.constraints.pr;
 
-import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntObjectCursor;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.FeatureVector;
 
@@ -47,6 +48,7 @@ public class MaxEntL2FLPRConstraints extends MaxEntFLPRConstraints {
   }
 
   public double getAuxiliaryValueContribution(double[] parameters) {
+    @Var
     double value = 0;
     for (IntObjectCursor<MaxEntFLPRConstraint> fi : constraints) {
       int ci = constraintIndices.get(fi.key);
@@ -81,6 +83,7 @@ public class MaxEntL2FLPRConstraints extends MaxEntFLPRConstraints {
   }
 
   public double getCompleteValueContribution() {
+    @Var
     double value = 0;
     for (IntObjectCursor<MaxEntFLPRConstraint> fi : constraints) {
       double norm;
@@ -98,6 +101,7 @@ public class MaxEntL2FLPRConstraints extends MaxEntFLPRConstraints {
   }
 
   public double getScore(FeatureVector input, int label, double[] parameters) {
+    @Var
     double score = 0;
     for (int i = 0; i < indexCache.size(); i++) {
       int ci = constraintIndices.get(indexCache.get(i));

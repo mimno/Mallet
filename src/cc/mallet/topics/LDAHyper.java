@@ -7,23 +7,44 @@
 
 package cc.mallet.topics;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
+import java.util.zip.GZIPOutputStream;
+
 import com.carrotsearch.hppc.IntIntHashMap;
 import com.carrotsearch.hppc.ObjectIntHashMap;
-import com.carrotsearch.hppc.cursors.IntIntCursor;
 import com.carrotsearch.hppc.cursors.IntCursor;
+import com.carrotsearch.hppc.cursors.IntIntCursor;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Iterator;
-
-import java.util.zip.*;
-
-import java.io.*;
-import java.text.NumberFormat;
-
-import cc.mallet.types.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.AugmentableFeatureVector;
+import cc.mallet.types.Dirichlet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureSequenceWithBigrams;
+import cc.mallet.types.IDSorter;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.types.Labeling;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.types.RankedFeatureVector;
 import cc.mallet.util.Randoms;
 
 /**
@@ -32,7 +53,7 @@ import cc.mallet.util.Randoms;
  * @author David Mimno, Andrew McCallum
  * @deprecated Use ParallelTopicModel instead, which uses substantially faster data structures even for non-parallel operation.
  */
-
+@Deprecated
 public class LDAHyper implements Serializable {
 	
 	// Analogous to a cc.mallet.classify.Classification

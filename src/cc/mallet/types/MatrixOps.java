@@ -7,18 +7,16 @@ information, see the file `LICENSE' included with this distribution. */
 
 package cc.mallet.types;
 
-import java.util.Random;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.File;
-import java.io.BufferedReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Formatter;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Formatter;
+import java.util.List;
+import java.util.Random;
 
 /** 
  *  A class of static utility functions for manipulating arrays of
@@ -103,6 +101,7 @@ public final class MatrixOps {
 
 
     /** @deprecated  Use dotProduct() */
+    @Deprecated
     public static double dot (double[] m1, double[] m2) {
         assert (m1.length == m2.length) : "m1.length != m2.length\n";
         double ret = 0.0;

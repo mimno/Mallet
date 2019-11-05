@@ -4,6 +4,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
@@ -74,6 +76,7 @@ public class ViterbiWriter extends TransducerEvaluator {
         viterbiOutputStream.println ("Viterbi path for "+description+" instance #"+i);
       Instance instance = instances.get(i);
       Sequence input = (Sequence) instance.getData();
+      @Var
       TokenSequence sourceTokenSequence = null;
       if (instance.getSource() instanceof TokenSequence)
       	sourceTokenSequence = (TokenSequence) instance.getSource();

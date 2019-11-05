@@ -14,12 +14,16 @@
 
 package cc.mallet.pipe.iterator.tests;
 
-import junit.framework.*;
 import java.util.Iterator;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
-import cc.mallet.pipe.iterator.*;
-import cc.mallet.types.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.pipe.iterator.PatternMatchIterator;
+import cc.mallet.types.Instance;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class TestPatternMatchIterator extends TestCase
 {
@@ -31,6 +35,7 @@ public class TestPatternMatchIterator extends TestCase
   
   public void testOne () {
     Iterator iter = new PatternMatchIterator( data, Pattern.compile("<p>(.+?)</p>", Pattern.DOTALL));
+    @Var
     int i=0;
     while (iter.hasNext()) {
       Instance inst = (Instance) iter.next();

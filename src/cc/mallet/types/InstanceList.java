@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.pipe.FeatureSequence2FeatureVector;
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
@@ -33,7 +35,6 @@ import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.Target2Label;
 import cc.mallet.pipe.TokenSequence2FeatureSequence;
 import cc.mallet.pipe.iterator.RandomTokenSequenceIterator;
-
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Randoms;
 
@@ -229,7 +230,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         return other;
     }
 
-    public InstanceList subList (double proportion) {
+    public InstanceList subList (@Var double proportion) {
         if (proportion > 1.0)
             throw new IllegalArgumentException ("proportion must by <= 1.0");
         InstanceList other = (InstanceList) clone();
@@ -305,7 +306,9 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         
         if (!Alphabet.alphabetsMatch(this, instance)) {
             // gsc
+            @Var
             Alphabet data_alphabet = instance.getDataAlphabet();
+            @Var
             Alphabet target_alphabet = instance.getTargetAlphabet();
             StringBuilder sb = new StringBuilder();
             sb.append("Alphabets don't match: ");
@@ -534,6 +537,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
       }
 
       /* Whether the user has been warned about breaking the distribution */
+      @Var
       boolean isUserWarned = false;
 
       /* Do a second pass on this instance list */
@@ -561,6 +565,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
          * to allow for the item to be added to the final fold. Otherwise,
          * get the original instance index for that position. */
         int stratumPos = (int)Math.rint (stratumFoldRatio * stratIndexes[targetIndex].size());
+        @Var
         int stratumMaxInd = this.size();
         if (stratumPos < stratIndexes[targetIndex].size()){
           stratumMaxInd = stratIndexes[targetIndex].get(stratumPos);
@@ -582,6 +587,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
     public InstanceList[] splitInOrder (int[] counts) {
         InstanceList[] ret = new InstanceList[counts.length];
         // Will leave ununsed instances if sum of counts[] != this.size()!
+        @Var
         int idx = 0;
         for (int num = 0; num < counts.length; num++){
             ret[num] = cloneEmpty();
@@ -650,6 +656,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         if (size() == 0)
             return cloneEmpty();
 
+        @Var
         double sumOfWeights = 0;
         for (int i = 0; i < size(); i++) {
             if (weights[i] < 0)
@@ -661,6 +668,7 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
 
         InstanceList newList = new InstanceList(getPipe(), size());
         double[] probabilities = new double[size()];
+        @Var
         double sumProbs = 0;
         for (int i = 0; i < size(); i++) {
             sumProbs += r.nextDouble();
@@ -671,7 +679,11 @@ public class InstanceList extends ArrayList<Instance> implements Serializable, I
         // make sure rounding didn't mess things up
         probabilities[size() - 1] = sumOfWeights;
         // do sampling
-        int a = 0; int b = 0; sumProbs = 0;
+        @Var
+        int a = 0;
+        @Var
+        int b = 0;
+        sumProbs = 0;
         while (a < size() && b < size()) {
             sumProbs += weights[b];
 

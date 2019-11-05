@@ -10,13 +10,14 @@ package cc.mallet.classify;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.PrintStream;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
-import cc.mallet.types.DenseVector;
 import cc.mallet.types.FeatureSelection;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
@@ -157,6 +158,7 @@ public class MaxEnt extends Classifier implements Serializable
 		// Move scores to a range where exp() is accurate, and normalize
 		int numLabels = getLabelAlphabet().size();
 		double max = MatrixOps.max (scores);
+		@Var
 		double sum = 0;
 		for (int li = 0; li < numLabels; li++)
 			sum += (scores[li] = Math.exp (scores[li] - max));
@@ -177,6 +179,7 @@ public class MaxEnt extends Classifier implements Serializable
 		// Move scores to a range where exp() is accurate, and normalize
 		int numLabels = getLabelAlphabet().size();
 		double max = MatrixOps.max (scores);
+		@Var
 		double sum = 0;
 		for (int li = 0; li < numLabels; li++)
 			sum += (scores[li] = Math.exp (scores[li] - max));
@@ -205,8 +208,8 @@ public class MaxEnt extends Classifier implements Serializable
 
 	@Override
 	public void print(PrintWriter out) {
-		final Alphabet dict = getAlphabet();
-		final LabelAlphabet labelDict = getLabelAlphabet();
+		Alphabet dict = getAlphabet();
+		LabelAlphabet labelDict = getLabelAlphabet();
 
 		int numFeatures = dict.size() + 1;
 		int numLabels = labelDict.size();
@@ -230,12 +233,13 @@ public class MaxEnt extends Classifier implements Serializable
 	//printRank, added by Limin Yao
 	public void printRank (PrintWriter out)
 	{
-		final Alphabet dict = getAlphabet();
-		final LabelAlphabet labelDict = getLabelAlphabet();
+		Alphabet dict = getAlphabet();
+		LabelAlphabet labelDict = getLabelAlphabet();
 
 		int numFeatures = dict.size() + 1;
 		int numLabels = labelDict.size();
 	// Include the feature weights according to each label
+		@Var
 		RankedFeatureVector rfv;
 		double[] weights = new double[numFeatures-1]; // do not deal with the default feature
 		for (int li = 0; li < numLabels; li++) {
@@ -252,13 +256,14 @@ public class MaxEnt extends Classifier implements Serializable
 
 	public void printExtremeFeatures (PrintWriter out,int num)
 	{
-		final Alphabet dict = getAlphabet();
-		final LabelAlphabet labelDict = getLabelAlphabet();
+		Alphabet dict = getAlphabet();
+		LabelAlphabet labelDict = getLabelAlphabet();
 
 		int numFeatures = dict.size() + 1;
 		int numLabels = labelDict.size();
 
 		// Include the feature weights according to each label
+		@Var
 		RankedFeatureVector rfv;
 		double[] weights = new double[numFeatures-1]; // do not deal with the default feature
 		for (int li = 0; li < numLabels; li++) {
@@ -324,6 +329,7 @@ public class MaxEnt extends Classifier implements Serializable
 		for (int p = 0; p < np; p++)
 			parameters[p] = in.readDouble();
 		defaultFeatureIndex = in.readInt();
+		@Var
 		int opt = in.readInt();
 		if (opt == 1)
 			featureSelection = (FeatureSelection)in.readObject();

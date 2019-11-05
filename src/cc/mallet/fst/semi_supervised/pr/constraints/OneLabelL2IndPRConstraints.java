@@ -7,14 +7,15 @@
 
 package cc.mallet.fst.semi_supervised.pr.constraints;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.carrotsearch.hppc.cursors.ObjectCursor;
-
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 import cc.mallet.types.FeatureVector;
@@ -91,6 +92,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   
   public void preProcess(FeatureVector fv) {
     cache.clear();
+    @Var
     int fi;
     // cache constrained input features
     for (int loc = 0; loc < fv.numLocations(); loc++) {
@@ -104,8 +106,11 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   // find examples that contain constrained input features
   public BitSet preProcess(InstanceList data) {
     // count
+    @Var
     int ii = 0;
+    @Var
     int fi;
+    @Var
     FeatureVector fv;
     BitSet bitSet = new BitSet(data.size());
     for (Instance instance : data) {
@@ -127,6 +132,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   
   public double getScore(FeatureVector input, int inputPosition,
       int srcIndex, int destIndex, double[] parameters) {
+    @Var
     double dot = 0;
     int li2 = map.getLabelIndex(destIndex);
     for (int i = 0; i < cache.size(); i++) {
@@ -166,6 +172,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   }
 
   public double getAuxiliaryValueContribution(double[] parameters) {
+    @Var
     double value = 0;
     for (ObjectCursor<OneLabelL2IndPRConstraint> fi : constraints.values()) {
       OneLabelL2IndPRConstraint constraint = fi.value;
@@ -175,6 +182,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
   }
 
   public double getCompleteValueContribution(double[] parameters) {
+    @Var
     double value = 0;
     for (ObjectCursor<OneLabelL2IndPRConstraint> fi : constraints.values()) {
       OneLabelL2IndPRConstraint constraint = fi.value;
@@ -270,6 +278,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     }
     
     public double getProjectionValueContrib(double[] parameters) {
+      @Var
       double value = 0;
       for (int i = 0; i < paramIndices.size(); i++) {
         double param = parameters[paramIndices.get(i)];
@@ -279,6 +288,7 @@ public class OneLabelL2IndPRConstraints implements PRConstraint {
     }
     
     public double getCompleteValueContrib() {
+      @Var
       double value = 0;
       for (int i = 0; i < paramIndices.size(); i++) {
         if (normalized) {

@@ -18,10 +18,11 @@ package cc.mallet.fst;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
-
 import cc.mallet.util.MalletLogger;
 
 /**
@@ -54,7 +55,9 @@ public class TokenAccuracyEvaluator extends TransducerEvaluator
 
 	public void evaluateInstanceList (TransducerTrainer trainer, InstanceList instances, String description) 
   {
+	  	@Var
 		int numCorrectTokens;
+	  	@Var
 		int totalTokens;
 
 		Transducer transducer = trainer.getTransducer();

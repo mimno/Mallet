@@ -1,10 +1,18 @@
 package cc.mallet.topics;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
-import java.io.*;
 
-import cc.mallet.types.*;
-import cc.mallet.util.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.IDSorter;
+import cc.mallet.types.InstanceList;
+import cc.mallet.util.CommandOption;
+import cc.mallet.util.FeatureCountTool;
+import cc.mallet.util.Randoms;
 
 public class NonNegativeMatrixFactorization {
 
@@ -119,6 +127,7 @@ public class NonNegativeMatrixFactorization {
 				FeatureVector data = (FeatureVector) instances.get(random.nextInt(numInstances)).getData();
 				for (int location = 0; location < data.numLocations(); location++) {
 					int feature = data.indexAtLocation(location);
+					@Var
 					double value = data.valueAtLocation(location);
 					if (idfWeighting) {
 						value *= featureWeights[feature];
@@ -132,7 +141,7 @@ public class NonNegativeMatrixFactorization {
 	
     public static final String[] BARS = { " ", "\u2581", "\u2582", "\u2583", "\u2584", "\u2585", "\u2586", "\u2587", "\u2588" };
 
-     public static String getBar(double x, double min, double max) {
+     public static String getBar(@Var double x, double min, double max) {
              if (x > max) { x = max; }
              if (x < min) { x = min; }
              return BARS[ (int) Math.round(8.0 * (x - min) / (max - min)) ];
@@ -148,7 +157,9 @@ public class NonNegativeMatrixFactorization {
       }
 
      public static String getBars(double[] sequence) {
+     		 @Var
              double max = Double.NEGATIVE_INFINITY;
+             @Var
              double min = Double.POSITIVE_INFINITY;
              
              for (double x : sequence) {
@@ -160,6 +171,7 @@ public class NonNegativeMatrixFactorization {
      }
 
 	public double getDivergence() {
+		@Var
 		double divergence = 0.0;
 		for (int instance = 0; instance < numInstances; instance++) {
 			FeatureVector data = (FeatureVector) instances.get(instance).getData();
@@ -169,6 +181,7 @@ public class NonNegativeMatrixFactorization {
 		
 			for (int location = 0; location < data.numLocations(); location++) {
 				int feature = data.indexAtLocation(location);
+				@Var
 				double value = data.valueAtLocation(location);
 				if (idfWeighting) {
 					value *= featureWeights[feature];
@@ -176,7 +189,8 @@ public class NonNegativeMatrixFactorization {
 				
 				double[] currentFeatureFactorWeights = 
 					featureFactorWeights[feature];
-				
+
+				@Var
 				double innerProduct = 0.0;
 
 				for (int factor = 0; factor < numFactors; factor++) {
@@ -206,11 +220,12 @@ public class NonNegativeMatrixFactorization {
 			// Gather the expected counts (W * H)
 
 			double[] updateRatios = new double[ numFactors ];
-			
+			@Var
 			double valueSum = 0.0;
 
 			for (int location = 0; location < data.numLocations(); location++) {
 				int feature = data.indexAtLocation(location);
+				@Var
 				double value = data.valueAtLocation(location);
 				if (idfWeighting) {
 					value *= featureWeights[feature];
@@ -219,7 +234,8 @@ public class NonNegativeMatrixFactorization {
 				
 				double[] currentFeatureFactorWeights = 
 					featureFactorWeights[feature];
-				
+
+				@Var
 				double innerProduct = 0.0;
 
 				for (int factor = 0; factor < numFactors; factor++) {
@@ -281,6 +297,7 @@ public class NonNegativeMatrixFactorization {
 
 			for (int location = 0; location < data.numLocations(); location++) {
                 int feature = data.indexAtLocation(location);
+				@Var
                 double value = data.valueAtLocation(location);
 				if (idfWeighting) {
 					value *= featureWeights[feature];
@@ -293,6 +310,7 @@ public class NonNegativeMatrixFactorization {
                 double[] currentFeatureFactorWeights =
                     featureFactorWeights[feature];
 
+				@Var
                 double innerProduct = 0.0;
 
                 for (int factor = 0; factor < numFactors; factor++) {
@@ -422,6 +440,7 @@ public class NonNegativeMatrixFactorization {
 
 		System.out.println("Finding " + numDimensions.value + " factors.");
 		System.out.println("Histograms show relative factor sizes, the number measures factorization error (smaller is better).");
+		@Var
 		double previousDivergence = Double.POSITIVE_INFINITY;
 		for (int iteration = 1; iteration <= numIterationsOption.value; iteration++) {
 			nmf.updateWeights();

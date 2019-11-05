@@ -7,16 +7,14 @@
 
 package cc.mallet.topics;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
-import java.util.zip.*;
+import com.google.errorprone.annotations.Var;
 
-import java.io.*;
-import java.text.NumberFormat;
-
-import cc.mallet.types.*;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.LabelSequence;
 import cc.mallet.util.Randoms;
 
 /**
@@ -186,8 +184,10 @@ public class WorkerCallable implements Callable<Integer> {
                 // Here we are only adding counts, so if we find 
                 //  an existing location with the topic, we only need
                 //  to ensure that it is not larger than its left neighbor.
-                
+
+                @Var
                 int index = 0;
+                @Var
                 int currentTopic = currentTypeTopicCounts[index] & topicMask;
                 int currentValue;
                 
@@ -245,7 +245,8 @@ public class WorkerCallable implements Callable<Integer> {
             smoothingOnlyMass += alpha[topic] * beta / (tokensPerTopic[topic] + betaSum);
             cachedCoefficients[topic] =  alpha[topic] / (tokensPerTopic[topic] + betaSum);
         }
-        
+
+        @Var
         int changed = 0;
 
         for (int doc = startDoc; doc < data.size() && doc < startDoc + numDocs; doc++) {
@@ -278,9 +279,14 @@ public class WorkerCallable implements Callable<Integer> {
 
         int[] oneDocTopics = topicSequence.getFeatures();
 
+        @Var
         int[] currentTypeTopicCounts;
-        int type, oldTopic, newTopic;
-        double topicWeightsSum;
+        @Var
+        int type;
+        @Var
+        int oldTopic;
+        @Var
+        int newTopic;
         int docLength = tokenSequence.getLength();
 
         int[] localTopicCounts = new int[numTopics];
@@ -294,6 +300,7 @@ public class WorkerCallable implements Callable<Integer> {
 
         // Build an array that densely lists the topics that
         //  have non-zero counts.
+        @Var
         int denseIndex = 0;
         for (int topic = 0; topic < numTopics; topic++) {
             if (localTopicCounts[topic] != 0) {
@@ -303,9 +310,11 @@ public class WorkerCallable implements Callable<Integer> {
         }
 
         // Record the total number of non-zero topics
+        @Var
         int nonZeroTopics = denseIndex;
 
         //        Initialize the topic count/beta sampling bucket
+        @Var
         double topicBetaMass = 0.0;
 
         // Initialize cached coefficients and the topic/beta 
@@ -322,14 +331,16 @@ public class WorkerCallable implements Callable<Integer> {
             cachedCoefficients[topic] =    (alpha[topic] + n) / (tokensPerTopic[topic] + betaSum);
         }
 
+        @Var
         double topicTermMass = 0.0;
 
         double[] topicTermScores = new double[numTopics];
-        int[] topicTermIndices;
-        int[] topicTermValues;
+        @Var
         int i;
+        @Var
         double score;
 
+        @Var
         int changed = 0;
 
         //    Iterate over the positions (words) in the document 
@@ -403,9 +414,14 @@ public class WorkerCallable implements Callable<Integer> {
             //  where appropriate, and calculating the score
             //  for each topic at the same time.
 
+            @Var
             int index = 0;
-            int currentTopic, currentValue;
+            @Var
+            int currentTopic;
+            @Var
+            int currentValue;
 
+            @Var
             boolean alreadyDecremented = (oldTopic == ParallelTopicModel.UNASSIGNED_TOPIC);
 
             topicTermMass = 0.0;
@@ -435,6 +451,7 @@ public class WorkerCallable implements Callable<Integer> {
                     
                     // Shift the reduced value to the right, if necessary.
 
+                    @Var
                     int subIndex = index;
                     while (subIndex < currentTypeTopicCounts.length - 1 && 
                            currentTypeTopicCounts[subIndex] < currentTypeTopicCounts[subIndex + 1]) {
@@ -456,7 +473,8 @@ public class WorkerCallable implements Callable<Integer> {
                     index++;
                 }
             }
-            
+
+            @Var
             double sample = random.nextUniform() * (smoothingOnlyMass + topicBetaMass + topicTermMass);
             double origSample = sample;
 

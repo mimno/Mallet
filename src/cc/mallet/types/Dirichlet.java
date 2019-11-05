@@ -7,10 +7,6 @@
 
 package cc.mallet.types;
 
-import com.carrotsearch.hppc.IntHashSet;
-import com.carrotsearch.hppc.IntIntHashMap;
-import com.carrotsearch.hppc.cursors.IntCursor;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,8 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import cc.mallet.types.Multinomial;
-import cc.mallet.util.Maths;
+import com.carrotsearch.hppc.IntHashSet;
+import com.carrotsearch.hppc.IntIntHashMap;
+import com.carrotsearch.hppc.cursors.IntCursor;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.util.Randoms;
 
 /** 
@@ -172,6 +171,7 @@ public class Dirichlet {
 		initRandom();
 
 //		For each dimension, draw a sample from Gamma(mp_i, 1)
+		@Var
 		double sum = 0;
 		for (int i=0; i<distribution.length; i++) {
 			distribution[i] = random.nextGamma(partition[i] * magnitude, 1);
@@ -276,6 +276,7 @@ dirichlet, then draw n samples from that multinomial. */
 	 *	It's extremely inefficient -- use this for comparison only.
 	 */
 	public static double logGammaDefinition(double z) {
+		@Var
 		double result = EULER_MASCHERONI * z - Math.log(z);
 		for (int k=1; k < 10000000; k++) {
 			result += (z/k) - Math.log(1 + (z/k));
@@ -289,6 +290,7 @@ dirichlet, then draw n samples from that multinomial. */
 	 *	 n=2, so it's not necessarily worth using this.
 	 */
 	public static double logGammaDifference(double z, int n) {
+		@Var
 		double result = 0.0;
 		for (int i=0; i < n; i++) {
 			result += Math.log(z + i);
@@ -305,13 +307,15 @@ dirichlet, then draw n samples from that multinomial. */
 	 * 
 	 *	@param z Note that Stirling's approximation is increasingly unstable as <code>z</code> approaches 0. If <code>z</code> is less than 2, we shift it up, calculate the approximation, and then shift the answer back down.
 	 */
-	public static double logGammaStirling(double z) {
+	public static double logGammaStirling(@Var double z) {
+		@Var
 		int shift = 0;
 		while (z < 2) {
 			z++;
 			shift++;
 		}
 
+		@Var
 		double result = HALF_LOG_TWO_PI + (z - 0.5) * Math.log(z) - z +
 		1/(12 * z) - 1 / (360 * z * z * z) + 1 / (1260 * z * z * z * z * z);
 
@@ -334,11 +338,12 @@ dirichlet, then draw n samples from that multinomial. */
 
 	/** Calculate digamma using an asymptotic expansion involving
 Bernoulli numbers. */
-	public static double digamma(double z) {
+	public static double digamma(@Var double z) {
 //		This is based on matlab code by Tom Minka
 
 //		if (z < 0) { System.out.println(" less than zero"); }
 
+		@Var
 		double psi = 0;
 
 		if (z < DIGAMMA_SMALL) {
@@ -370,6 +375,7 @@ Bernoulli numbers. */
 	}
 
 	public static double digammaDifference(double x, int n) {
+		@Var
 		double sum = 0;
 		for (int i=0; i<n; i++) {
 			sum += 1 / (x + i);
@@ -377,7 +383,8 @@ Bernoulli numbers. */
 		return sum;
 	}
 
-	public static double trigamma(double z) {
+	public static double trigamma(@Var double z) {
+		@Var
 		int shift = 0;
         while (z < 2) {
             z++;
@@ -387,6 +394,7 @@ Bernoulli numbers. */
 		double oneOverZ = 1.0 / z;
 		double oneOverZSquared = oneOverZ * oneOverZ;
 
+		@Var
 		double result = 
 			oneOverZ +
 			0.5 * oneOverZSquared +
@@ -417,8 +425,9 @@ Bernoulli numbers. */
 
 	public static double learnSymmetricConcentration(int[] countHistogram,
 													 int[] observationLengths,
-													 int numDimensions, 
-													 double currentValue) {
+													 int numDimensions,
+													 @Var double currentValue) {
+		@Var
 		double currentDigamma;
 
 		// The histogram arrays are presumably allocated before
@@ -426,6 +435,7 @@ Bernoulli numbers. */
 		//  the largest non-zero value may be much closer to the 
 		//  beginning than the end. We don't want to iterate over
 		//  a whole bunch of zeros, so keep track of the last value.
+		@Var
 		int largestNonZeroCount = 0;
 		int[] nonZeroLengthIndex = new int[ observationLengths.length ];
 		
@@ -433,6 +443,7 @@ Bernoulli numbers. */
 			if (countHistogram[index] > 0) { largestNonZeroCount = index; }
 		}
 
+		@Var
 		int denseIndex = 0;
 		for (int index = 0; index < observationLengths.length; index++) {
 			if (observationLengths[index] > 0) {
@@ -450,6 +461,7 @@ Bernoulli numbers. */
 			// Calculate the numerator
 			
 			currentDigamma = 0;
+			@Var
 			double numerator = 0;
 		
 			// Counts of 0 don't matter, so start with 1
@@ -459,9 +471,11 @@ Bernoulli numbers. */
 			}
 			
 			// Now calculate the denominator, a sum over all observation lengths
-			
+
 			currentDigamma = 0;
+			@Var
 			double denominator = 0;
+			@Var
 			int previousLength = 0;
 			
 			double cachedDigamma = digamma(currentValue);
@@ -516,7 +530,7 @@ Bernoulli numbers. */
 
 			for (int i=0; i < numObservations; i++) {
 				int[] observation = (int[]) observations[i];
-				
+				@Var
 				int total = 0;
 				for (int k=0; k < numDimensions; k++) {
 					if (observation[k] > 0) {
@@ -571,8 +585,11 @@ Bernoulli numbers. */
 										 int[] observationLengths, 
 										 double shape, double scale,
 										 int numIterations) {
-		int i, k;
-
+		@Var
+		int i;
+		@Var
+		int k;
+		@Var
 		double parametersSum = 0;
 
 		//	Initialize the parameter sum
@@ -581,10 +598,14 @@ Bernoulli numbers. */
 			parametersSum += parameters[k];
 		}
 
+		@Var
 		double oldParametersK;
+		@Var
 		double currentDigamma;
+		@Var
 		double denominator;
 
+		@Var
 		int nonZeroLimit;
 		int[] nonZeroLimits = new int[observations.length];
 		Arrays.fill(nonZeroLimits, -1);
@@ -594,6 +615,7 @@ Bernoulli numbers. */
 		//	We avoid looping over empty arrays by saving the index of the largest
 		//	non-zero value.
 
+		@Var
 		int[] histogram;
 
 		for (i=0; i<observations.length; i++) {
@@ -661,12 +683,14 @@ Bernoulli numbers. */
 	/** Use the fixed point iteration described by Tom Minka. */
 	public long learnParametersWithHistogram(Object[] observations) {
 
+		@Var
 		int maxLength = 0;
 		int[] maxBinCounts = new int[partition.length];
 		Arrays.fill(maxBinCounts, 0);
 
 		for (int i=0; i < observations.length; i++) {
 
+			@Var
 			int length = 0;
 
 			int[] observation = (int[]) observations[i];
@@ -698,6 +722,7 @@ Bernoulli numbers. */
 //		System.out.println("got lengths: " + (System.currentTimeMillis() - start));
 
 		for (int i=0; i < observations.length; i++) {
+			@Var
 			int length = 0;
 			int[] observation = (int[]) observations[i];
 			for (int bin=0; bin < observation.length; bin++) {
@@ -715,13 +740,18 @@ Bernoulli numbers. */
 		long start = System.currentTimeMillis();
 
 		double[] newParameters = new double[partition.length];
-
+		@Var
 		double alphaK;
+		@Var
 		double currentDigamma;
+		@Var
 		double denominator;
+		@Var
 		double parametersSum = 0.0;
-
-		int i, k;
+		@Var
+		int i;
+		@Var
+		int k;
 
 		for (k = 0; k < partition.length; k++) {
 			newParameters[k] = magnitude * partition[k];
@@ -831,12 +861,16 @@ Bernoulli numbers. */
 
 		double[] newParameters = new double[partition.length];
 
+		@Var
 		double alphaK;
+		@Var
 		double denominator;
-
+		@Var
 		double newMagnitude;
-
-		int i, k;
+		@Var
+		int i;
+		@Var
+		int k;
 
 		for (int iteration=0; iteration<1000; iteration++) {
 			newMagnitude = 0;
@@ -918,9 +952,14 @@ Bernoulli numbers. */
 	 *	 described by Ronning.
 	 */
 	public long learnParametersWithMoments(Object[] observations) {
+
+		@Var
 		long start = System.currentTimeMillis();
 
-		int i, bin;
+		@Var
+		int i;
+		@Var
+		int bin;
 
 		int[] observationLengths = new int[observations.length];
 		double[] variances = new double[partition.length];
@@ -949,7 +988,7 @@ Bernoulli numbers. */
 		}
 
 //		Find var[p_k]'s
-
+		@Var
 		double difference;
 		for (i=0; i < observations.length; i++) {
 			int[] observation = (int[]) observations[i];
@@ -968,6 +1007,7 @@ Bernoulli numbers. */
 //		Now calculate the magnitude:
 //		log \sum_k \alpha_k = 1/(K-1) \sum_k log[ ( E[p_k](1 - E[p_k]) / var[p_k] ) - 1 ]
 
+		@Var
 		double sum = 0.0;
 
 		for (bin=0; bin < partition.length; bin++) {
@@ -1007,12 +1047,18 @@ Bernoulli numbers. */
 			int[] observationLengths) {
 		long start = System.currentTimeMillis();
 
-		int i, bin;
+		@Var
+		int i;
+		@Var
+		int bin;
 
 		double[] newParameters = new double[partition.length];
 		double[] binSums = new double[partition.length];
+		@Var
 		double observationSum = 0.0;
+		@Var
 		double parameterSum = 0.0;
+		@Var
 		int[] counts;
 
 //		Uniform initialization
@@ -1074,6 +1120,7 @@ Bernoulli numbers. */
 			throw new IllegalArgumentException("dirichlets must have the same dimension to be compared");
 		}
 
+		@Var
 		double residual = 0.0;
 
 		for (int k=0; k<partition.length; k++) {
@@ -1090,6 +1137,7 @@ Bernoulli numbers. */
 			throw new IllegalArgumentException("dirichlets must have the same dimension to be compared");
 		}
 
+		@Var
 		double residual = 0.0;
 
 		for (int k=0; k<partition.length; k++) {
@@ -1101,7 +1149,13 @@ Bernoulli numbers. */
 	}
 
 	public void checkBreakeven(double x) {
-		long start, clock1, clock2;
+
+		@Var
+		long start;
+		@Var
+		long clock1;
+		@Var
+		long clock2;
 
 		double digammaX = digamma(x);
 
@@ -1143,8 +1197,9 @@ Bernoulli numbers. */
 
 //		System.out.println("Done drawing...");
 
+		@Var
 		long time;
-
+		@Var
 		Dirichlet estimatedDirichlet = new Dirichlet(k, sum/k);
 
 		time = estimatedDirichlet.learnParametersWithDigamma(observations);
@@ -1198,14 +1253,19 @@ Bernoulli numbers. */
 //		prod Gamma(alpha + X_i)		  prod Gamma(alpha + Y_i)
 //		Gamma( alpha_sum + X_sum )	  Gamma( alpha_sum + Y_sum )
 
-
+		@Var
 		double logLikelihood = 0.0;
 		double logGammaAlpha = logGamma(alpha);
-
+		@Var
 		int totalX = 0;
+		@Var
 		int totalY = 0;
-
-		int key, x, y;
+		@Var
+		int key;
+		@Var
+		int x;
+		@Var
+		int y;
 
 		IntHashSet distinctKeys = new IntHashSet();
 		distinctKeys.addAll(countsX.keys());
@@ -1252,13 +1312,17 @@ Bernoulli numbers. */
 			throw new IllegalArgumentException("both arrays must contain the same number of dimensions");
 		}
 
+		@Var
 		double logLikelihood = 0.0;
 		double logGammaAlpha = logGamma(alpha);
-
+		@Var
 		int totalX = 0;
+		@Var
 		int totalY = 0;
-
-		int x, y;
+		@Var
+		int x;
+		@Var
+		int y;
 
 		for (int key=0; key < countsX.length; key++) {
 			x = countsX[key];
@@ -1285,13 +1349,18 @@ Bernoulli numbers. */
 			throw new IllegalArgumentException("both arrays and the Dirichlet prior must contain the same number of dimensions");
 		}
 
+		@Var
 		double logLikelihood = 0.0;
+		@Var
 		double alpha;
-
+		@Var
 		int totalX = 0;
+		@Var
 		int totalY = 0;
-
-		int x, y;
+		@Var
+		int x;
+		@Var
+		int y;
 
 		for (int key=0; key < countsX.length; key++) {
 			x = countsX[key];
@@ -1321,14 +1390,22 @@ Bernoulli numbers. */
 			throw new IllegalArgumentException("both arrays must contain the same number of dimensions");
 		}
 
+		@Var
 		double logLikelihood = 0.0;
+		@Var
 		double alpha;
 
+		@Var
 		int totalX = 0;
+		@Var
 		int totalY = 0;
+		@Var
 		int total = 0;
 
-		int x, y;
+		@Var
+		int x;
+		@Var
+		int y;
 
 //		First count up the totals
 		for (int key=0; key < countsX.length; key++) {
@@ -1382,9 +1459,11 @@ Bernoulli numbers. */
 	}
 
 	public static void runComparison() {
-		double precision;
+		@Var
 		int dimensions;
+		@Var
 		int documents;
+		@Var
 		int meanSize;
 
 		try {
@@ -1493,6 +1572,7 @@ Bernoulli numbers. */
 
 	protected double[] randomRawMultinomial (Randoms r)
 	{
+		@Var
 		double sum = 0;
 		double[] pr = new double[this.partition.length];
 		for (int i = 0; i < this.partition.length; i++) {
@@ -1587,6 +1667,7 @@ Bernoulli numbers. */
 			double[] alphas = new double[dims];
 			for (int i = 1; i < multinomials.size(); i++)
 				multinomials.get(i).addProbabilitiesTo(alphas);
+			@Var
 			double alphaSum = 0;
 			for (int i = 0; i < alphas.length; i++)
 				alphaSum += alphas[i];

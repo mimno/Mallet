@@ -7,10 +7,12 @@
 package cc.mallet.extract;
 
 
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
@@ -36,9 +38,12 @@ public class BIOTokenizationFilter implements TokenizationFilter, Serializable {
   private void addSpansFromTags (LabeledSpans labeled, Tokenization input, Sequence tags, LabelAlphabet dict,
                                  Label backgroundTag)
   {
+    @Var
     int i = 0;
+    @Var
     int docidx = 0;
     while (i < tags.size ()) {
+      @Var
       Label thisTag = dict.lookupLabel (tags.get (i).toString ());
       int startTokenIdx = i;
       while (++i < tags.size ()) {
@@ -72,7 +77,9 @@ public class BIOTokenizationFilter implements TokenizationFilter, Serializable {
 
   private boolean tagsMatch (Label tag1, Label tag2)
   {
+    @Var
     String name1 = (String) tag1.getEntry ();
+    @Var
     String name2 = (String) tag2.getEntry ();
 
     if (isBeginTag (tag1) || isInsideTag (tag1)) {

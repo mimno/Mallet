@@ -17,6 +17,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.types.InstanceList;
 
 
@@ -80,6 +82,7 @@ public class Clustering implements Serializable {
 	public int getNumInstances() { return instances.size(); }
 
 	public int size (int label) {
+		@Var
 		int size = 0;
 		for (int i = 0; i < labels.length; i++)
 			if (labels[i] == label)
@@ -89,6 +92,7 @@ public class Clustering implements Serializable {
 	
 	public int[] getIndicesWithLabel (int label) {		
 		int[] indices = new int[size(label)];
+		@Var
 		int count = 0;
 		for (int i = 0; i < labels.length; i++)
 			if (labels[i] == label)
@@ -102,6 +106,7 @@ public class Clustering implements Serializable {
 	}
 	
 	public String toString () {
+		@Var
     	String result="";
 		result+="#Clusters: "+getNumClusters()+"\n";
 		for(int i=0;i<getNumClusters();i++)
