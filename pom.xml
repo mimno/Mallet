@@ -156,6 +156,12 @@
                     <parallel>methods</parallel>
                     <threadCount>5</threadCount>
                     <skipTests>false</skipTests>
+                    <systemProperties>
+                        <property>
+                            <name>java.util.logging.config.file</name>
+                            <value>test/resources/logging.properties</value>
+                        </property>
+                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
