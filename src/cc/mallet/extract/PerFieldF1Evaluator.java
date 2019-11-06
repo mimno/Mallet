@@ -7,11 +7,12 @@
 package cc.mallet.extract;
 
 
-import java.io.PrintStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Iterator;
+import java.util.Locale;
 
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
@@ -114,7 +115,8 @@ public class PerFieldF1Evaluator implements ExtractionEvaluator {
     }
     out.println ();
 
-    DecimalFormat f = new DecimalFormat ("0.####");
+    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
+    DecimalFormat f = new DecimalFormat ("0.####", decimalFormatSymbols);
 
     double totalF1 = 0;
     int totalFields = 0;

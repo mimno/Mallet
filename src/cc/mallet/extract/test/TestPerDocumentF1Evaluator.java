@@ -6,23 +6,31 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.extract.test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.OutputStreamWriter;
 
-import cc.mallet.extract.*;
-import cc.mallet.pipe.*;
+import cc.mallet.extract.DocumentExtraction;
+import cc.mallet.extract.Extraction;
+import cc.mallet.extract.PerDocumentF1Evaluator;
+import cc.mallet.extract.PerFieldF1Evaluator;
+import cc.mallet.extract.RegexFieldCleaner;
+import cc.mallet.extract.Tokenization;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.PrintInputAndTarget;
+import cc.mallet.pipe.SGML2TokenSequence;
+import cc.mallet.pipe.SerialPipes;
+import cc.mallet.pipe.Target2LabelSequence;
 import cc.mallet.pipe.iterator.ArrayIterator;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.CharSequenceLexer;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Created: Nov 18, 2004
@@ -142,7 +150,7 @@ public class TestPerDocumentF1Evaluator extends TestCase {
     PerFieldF1Evaluator eval = new PerFieldF1Evaluator ();
     ByteArrayOutputStream out = new ByteArrayOutputStream ();
     eval.evaluate ("Testing", extraction, new PrintStream (out));
-    assertEquals (mpdExpected, out.toString());
+    assertEquals (mpdExpected, out.toString().replaceAll("\\r\\n?", "\n"));
   }
 
     public void testToStdout ()
