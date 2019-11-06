@@ -6,15 +6,20 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.pipe.tsf.tests;
 
-import junit.framework.*;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import cc.mallet.pipe.Pipe;
-import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.tsf.SequencePrintingPipe;
-import cc.mallet.types.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Created: Jul 8, 2005
@@ -72,7 +77,7 @@ public class TestSequencePrintingPipe extends TestCase {
             "\n" +
             "LABEL2 feature1\n" +
             "LABEL1 feature0\n\n",
-            sw.toString());
+            sw.toString().replaceAll("\\r\\n?", "\n"));
   }
 
   private static Alphabet dictOfSize (int n)
