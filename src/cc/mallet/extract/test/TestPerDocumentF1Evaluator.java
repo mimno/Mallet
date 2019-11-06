@@ -116,7 +116,7 @@ public class TestPerDocumentF1Evaluator extends TestCase {
     eval.setErrorOutputStream (System.out);
     eval.evaluate ("Testing", extraction, new PrintWriter (new OutputStreamWriter (out), true));
 
-    String output = out.toString ();
+    String output = out.toString ().replaceAll("\\r\\n?", "\n");
     assertEquals (testAExpected, output);
   }
 
