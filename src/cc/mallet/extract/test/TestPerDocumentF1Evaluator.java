@@ -198,7 +198,7 @@ public class TestPerDocumentF1Evaluator extends TestCase {
     PerFieldF1Evaluator eval = new PerFieldF1Evaluator ();
     ByteArrayOutputStream out = new ByteArrayOutputStream ();
     eval.evaluate ("Testing", extraction, new PrintStream (out));
-    assertEquals (mpdExpected, out.toString());
+    assertEquals (mpdExpected, out.toString().replaceAll("\\r\\n?", "\n"));
   }
 
   public static void main (String[] args) throws Throwable
