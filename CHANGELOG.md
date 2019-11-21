@@ -25,6 +25,7 @@ This is a serialization-breaking release due to the switch to HPPC, which affect
 
 ### Fixed
 - Te Rutherford fixed a bug where non-String instance IDs were being cast as Strings.
+- The import functions (Csv2Vectors, Text2Vectors) have a case-sensitive flag, but this was not being passed to the stopword remover.
 
 ## [2.0.8] - 2016-05-03
 
