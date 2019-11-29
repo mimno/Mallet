@@ -260,7 +260,7 @@ public class Text2Vectors {
 					new TokenSequenceRemoveStopwords(stoplistFile.value,
 													 encoding.value,
 													 false, // don't include default list
-													 false,
+													 preserveCase.value,
 													 keepSequenceBigrams.value);
 
 				if (extraStopwordsFile.wasInvoked()) {
