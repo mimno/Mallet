@@ -13,8 +13,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
@@ -706,15 +704,13 @@ public final class MatrixOps {
     public static void savetxt(double[][] matrix, File saveFile) throws Exception {
 
         PrintWriter out = new PrintWriter(Files.newBufferedWriter(saveFile.toPath(), Charset.defaultCharset()));
-        DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
-        DecimalFormat decimalFormat = new DecimalFormat ("0.####", decimalFormatSymbols);
 
         for (int row = 0; row < matrix.length; row++) {
-            Formatter lineFormatter = new Formatter();
+            Formatter lineFormatter = new Formatter(Locale.ENGLISH);
             for (int col = 0; col < matrix[row].length - 1; col++) {
-                lineFormatter.format("%s ", decimalFormat.format(matrix[row][col]));
+                lineFormatter.format("%f ", matrix[row][col]);
             }
-            lineFormatter.format("%s ", decimalFormat.format(matrix[row][ matrix[row].length - 1 ]));
+            lineFormatter.format("%f ", matrix[row][ matrix[row].length - 1 ]);
             out.println(lineFormatter);
         }
         
