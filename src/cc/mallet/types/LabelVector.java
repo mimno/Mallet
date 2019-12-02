@@ -14,8 +14,7 @@
 
 package cc.mallet.types;
 
-import cc.mallet.types.Label;
-import cc.mallet.types.RankedFeatureVector;
+import com.google.errorprone.annotations.Var;
 
 public class LabelVector extends RankedFeatureVector implements Labeling {
     public LabelVector (LabelAlphabet dict, int[] features, double[] values) {
@@ -80,7 +79,8 @@ public class LabelVector extends RankedFeatureVector implements Labeling {
         if (rankOrder == null) {
             setRankOrder();
         }
-        
+
+        @Var
         int ii=-1;
         int tmpIndex = ((LabelAlphabet)dictionary).lookupIndex(label.entry);
         // Now find this index in the ordered list with a linear search

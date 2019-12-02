@@ -14,61 +14,71 @@
 
 package cc.mallet.util;
 
+import com.google.errorprone.annotations.Var;
+
 // Math and statistics functions
 public final class Maths {
 
 	// From libbow, dirichlet.c
 	// Written by Tom Minka <minka@stat.cmu.edu>
-	public static final double logGamma (double x)
+	public static final double logGamma (@Var double x)
 	{
-		double result, y, xnum, xden;
+		@Var
+		double result;
+		@Var
+		double y;
+		@Var
+		double xnum;
+		@Var
+		double xden;
+		@Var
 		int i;
-		final double d1 = -5.772156649015328605195174e-1;
-		final double p1[] = { 
+		double d1 = -5.772156649015328605195174e-1;
+		double p1[] = {
 			4.945235359296727046734888e0, 2.018112620856775083915565e2, 
 			2.290838373831346393026739e3, 1.131967205903380828685045e4, 
 			2.855724635671635335736389e4, 3.848496228443793359990269e4, 
 			2.637748787624195437963534e4, 7.225813979700288197698961e3 
 		};
-		final double q1[] = {
+		double q1[] = {
 			6.748212550303777196073036e1, 1.113332393857199323513008e3, 
 			7.738757056935398733233834e3, 2.763987074403340708898585e4, 
 			5.499310206226157329794414e4, 6.161122180066002127833352e4, 
 			3.635127591501940507276287e4, 8.785536302431013170870835e3
 		};
-		final double d2 = 4.227843350984671393993777e-1;
-		final double p2[] = {
+		double d2 = 4.227843350984671393993777e-1;
+		double p2[] = {
 			4.974607845568932035012064e0, 5.424138599891070494101986e2, 
 			1.550693864978364947665077e4, 1.847932904445632425417223e5, 
 			1.088204769468828767498470e6, 3.338152967987029735917223e6, 
 			5.106661678927352456275255e6, 3.074109054850539556250927e6
 		};
-		final double q2[] = {
+		double q2[] = {
 			1.830328399370592604055942e2, 7.765049321445005871323047e3, 
 			1.331903827966074194402448e5, 1.136705821321969608938755e6, 
 			5.267964117437946917577538e6, 1.346701454311101692290052e7, 
 			1.782736530353274213975932e7, 9.533095591844353613395747e6
 		};
-		final double d4 = 1.791759469228055000094023e0;
-		final double p4[] = {
+		double d4 = 1.791759469228055000094023e0;
+		double p4[] = {
 			1.474502166059939948905062e4, 2.426813369486704502836312e6, 
 			1.214755574045093227939592e8, 2.663432449630976949898078e9, 
 			2.940378956634553899906876e10, 1.702665737765398868392998e11, 
 			4.926125793377430887588120e11, 5.606251856223951465078242e11
 		};
-		final double q4[] = {
+		double q4[] = {
 			2.690530175870899333379843e3, 6.393885654300092398984238e5, 
 			4.135599930241388052042842e7, 1.120872109616147941376570e9, 
 			1.488613728678813811542398e10, 1.016803586272438228077304e11, 
 			3.417476345507377132798597e11, 4.463158187419713286462081e11
 		};
-		final double c[] = {
+		double c[] = {
 			-1.910444077728e-03, 8.4171387781295e-04, 
 			-5.952379913043012e-04, 7.93650793500350248e-04, 
 			-2.777777777777681622553e-03, 8.333333333333333331554247e-02, 
 			5.7083835261e-03
 		};
-		final double a = 0.6796875;
+		double a = 0.6796875;
 
 		if((x <= 0.5) || ((x > a) && (x <= 1.5))) {
 			if(x <= 0.5) {
@@ -135,8 +145,14 @@ public final class Maths {
 	
 	// This is from "Numeric Recipes in C"
   public static double oldLogGamma (double x) {
+	@Var
     int j;
-    double y, tmp, ser;
+    @Var
+    double y;
+    @Var
+    double tmp;
+    @Var
+    double ser;
     double [] cof = {76.18009172947146, -86.50532032941677 ,
                      24.01409824083091, -1.231739572450155 ,
                       0.1208650973866179e-2, -0.5395239384953e-5};
@@ -184,6 +200,7 @@ public final class Maths {
    * Vastly inefficient O(x) method to compute cdf of B(n,p)
    */
   public static double pbinom (int x, int n, double p) {
+  	@Var
     double sum = Double.NEGATIVE_INFINITY;
     for (int i = 0; i <= x; i++) {
       sum = sumLogProb (sum, logBinom (i, n, p));
@@ -277,6 +294,7 @@ public final class Maths {
    */
   public static double klDivergence(double[] p1, double[] p2) {
     assert (p1.length == p2.length);
+    @Var
     double klDiv = 0.0;
     for (int i = 0; i < p1.length; ++i) {
       if (p1[i] == 0) {
@@ -351,8 +369,10 @@ public final class Maths {
    */
   public static double sumLogProb (double[] vals)
   {
+  	@Var
     double max = Double.NEGATIVE_INFINITY;
     int len = vals.length;
+    @Var
     int maxidx = 0;
 
     for (int i = 0; i < len; i++) {
@@ -362,7 +382,9 @@ public final class Maths {
       }
     }
 
+    @Var
     boolean anyAdded = false;
+    @Var
     double intermediate = 0.0;
     double cutoff = max - LOGTOLERANCE;
 
@@ -410,6 +432,7 @@ public final class Maths {
   }
 
   public static double getEntropy(double[] dist) {
+  	@Var
   	double entropy = 0;
   	for (int i = 0; i < dist.length; i++) {
   		if (dist[i] != 0) {

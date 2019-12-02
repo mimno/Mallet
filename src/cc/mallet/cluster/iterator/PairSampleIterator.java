@@ -1,5 +1,7 @@
 package cc.mallet.cluster.iterator;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.neighbor_evaluator.AgglomerativeNeighbor;
 import cc.mallet.cluster.util.ClusterUtils;
@@ -49,6 +51,7 @@ public class PairSampleIterator extends NeighborIterator {
 	}
 
 	private void setNonSingletons () {
+		@Var
 		int c = 0;
 		for (int i = 0; i < clustering.getNumClusters(); i++)
 			if (clustering.size(i) > 1)
@@ -65,6 +68,7 @@ public class PairSampleIterator extends NeighborIterator {
 	}
 
 	public Instance next () {
+		@Var
 		AgglomerativeNeighbor neighbor = null;
 		
 		if (nonsingletonClusters.length>0 && (  positiveCount < positiveTarget || clustering.getNumClusters() == 1)) { //mmwick modified
@@ -72,6 +76,7 @@ public class PairSampleIterator extends NeighborIterator {
 			int label = nonsingletonClusters[random.nextInt(nonsingletonClusters.length)];
 			int[] instances = clustering.getIndicesWithLabel(label);
 			int ii = instances[random.nextInt(instances.length)];
+			@Var
 			int ij = instances[random.nextInt(instances.length)];
 			while (ii == ij)
 				ij = instances[random.nextInt(instances.length)];
@@ -80,6 +85,7 @@ public class PairSampleIterator extends NeighborIterator {
 																					 ii, ij);			
 		} else {
 			int ii = random.nextInt(instances.size());
+			@Var
 			int ij = random.nextInt(instances.size());
 			while (clustering.getLabel(ii) == clustering.getLabel(ij))
 				ij = random.nextInt(instances.size());

@@ -14,7 +14,12 @@
 
 package cc.mallet.types;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.util.Maths;
 
@@ -253,6 +258,7 @@ public abstract class DenseMatrix implements Matrix, Serializable
 
 	// xxx Perhaps make a special efficient case for binary vectors
 	public double dotProduct (ConstantMatrix m) {
+		@Var
 		double ret = 0;
 		if (m instanceof DenseMatrix) {
 			assert (m.singleSize() == values.length);
@@ -272,6 +278,7 @@ public abstract class DenseMatrix implements Matrix, Serializable
 	}
 	
 	public double absNorm() {
+		@Var
 		double ret = 0;
 		for (int i = 0; i < values.length; i++)
 			ret += Math.abs(values[i]);
@@ -279,6 +286,7 @@ public abstract class DenseMatrix implements Matrix, Serializable
 	}
 
 	public double oneNorm () {
+		@Var
 		double ret = 0;
 		for (int i = 0; i < values.length; i++)
 			ret += values[i];
@@ -286,6 +294,7 @@ public abstract class DenseMatrix implements Matrix, Serializable
 	}
 	
 	public double twoNorm () {
+		@Var
 		double ret = 0;
 		for (int i = 0; i < values.length; i++)
 			ret += values[i] * values[i];
@@ -293,6 +302,7 @@ public abstract class DenseMatrix implements Matrix, Serializable
 	}
 	
 	public double infinityNorm () {
+		@Var
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < values.length; i++)
 			if (Math.abs(values[i]) > max)
@@ -356,7 +366,10 @@ public abstract class DenseMatrix implements Matrix, Serializable
 	private static final int NULL_INTEGER = -1;
 	
 	private void writeObject (ObjectOutputStream out) throws IOException {
-		int i, size;
+		@Var
+		int i;
+		@Var
+		int size;
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		if (values != null) {
 			size = values.length;
@@ -371,7 +384,10 @@ public abstract class DenseMatrix implements Matrix, Serializable
 	}
 	
 	private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-		int i, size;
+		@Var
+		int i;
+		@Var
+		int size;
 		this.hasInfinite = false;
 		int version = in.readInt ();
 		size = in.readInt();
@@ -412,6 +428,7 @@ public abstract class DenseMatrix implements Matrix, Serializable
 
 	public static double infinityNorm (double[] vector)
 	{
+		@Var
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < vector.length; i++)
 			if (Math.abs(vector[i]) > max)

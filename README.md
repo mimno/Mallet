@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/MNCC/Mallet.svg?branch=master)](https://travis-ci.com/MNCC/Mallet)
+[![codecov](https://codecov.io/gh/MNCC/Mallet/branch/master/graph/badge.svg)](https://codecov.io/gh/MNCC/Mallet)
+
 Mallet
 ======
 

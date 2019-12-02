@@ -1,9 +1,10 @@
 package cc.mallet.classify;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Logger;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.optimize.LimitedMemoryBFGS;
 import cc.mallet.optimize.Optimizable;
@@ -17,7 +18,6 @@ import cc.mallet.types.Labeling;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.MalletProgressMessageLogger;
-import cc.mallet.util.Maths;
 
 public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradientValue  //, Serializable TODO needs to be done?
 {
@@ -118,6 +118,7 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 
 			assert(!Double.isNaN(instanceWeight)) : "instanceWeight is NaN";
 
+			@Var
 			boolean hasNaN = false;
 			for (int i = 0; i < fv.numLocations(); i++) {
 				if (Double.isNaN(fv.valueAtLocation(i))) {
@@ -152,7 +153,7 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 		return parameters.length;
 	}
 
-	public void getParameters (double[] buff) {
+	public void getParameters (@Var double[] buff) {
 		if (buff == null || buff.length != parameters.length)
 			buff = new double [parameters.length];
 		System.arraycopy (parameters, 0, buff, 0, parameters.length);
@@ -182,8 +183,10 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 
 			// Incorporate likelihood of data
 			double[] scores = new double[trainingList.getTargetAlphabet().size()];
+			@Var
 			double value = 0.0;
 			Iterator<Instance> iter = trainingList.iterator();
+			@Var
 			int ii=0;
 			while (iter.hasNext()) {
 				ii++;
@@ -236,6 +239,7 @@ public class MaxEntOptimizableByLabelDistribution implements Optimizable.ByGradi
 
 			//logger.info ("-Expectations:"); cachedGradient.print();
 			// Incorporate prior on parameters
+			@Var
 			double prior = 0;
 			for (int li = 0; li < numLabels; li++) {
 				for (int fi = 0; fi < numFeatures; fi++) {

@@ -14,7 +14,12 @@
 
 package cc.mallet.types;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import com.google.errorprone.annotations.Var;
 
 public class DenseVector extends DenseMatrix implements Vector, Serializable
 {
@@ -70,7 +75,7 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 	// i in this Vector, laying out Matrix m in "getSingle()" order.
 	// Return the next index that could be set in this DenseVector after
 	// the indices filled by Matrix m.
-	public final int arrayCopyFrom (int i, Matrix m) {
+	public final int arrayCopyFrom (@Var int i, Matrix m) {
 		if (m instanceof DenseVector) {
 			System.arraycopy (((DenseVector)m).values, 0, values, i, ((DenseVector)m).values.length);
 			return i + ((DenseVector)m).values.length;
@@ -106,7 +111,7 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 	// i in this Vector, setting values in Matrix m in "setSingle()" order.
 	// Return the next index that could be gotten after the indices copied 
 	// into Matrix m.
-	public final int arrayCopyTo (int i, Matrix m) {
+	public final int arrayCopyTo (@Var int i, Matrix m) {
 		if (m instanceof DenseVector) {
 			System.arraycopy (values, i, ((DenseVector)m).values, 0, ((DenseVector)m).values.length);
 			return i + ((DenseVector)m).values.length;
@@ -152,6 +157,7 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 
 	public static double sum (double[] v)
 	{
+		@Var
 		double sum = 0;
 		for (int i = 0; i < v.length; i++)
 			sum += v[i];
@@ -160,6 +166,7 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 	
 	public static double normalize (double[] v)
 	{
+		@Var
 		double sum = 0;
 		for (int i = 0; i < v.length; i++)
 			sum += v[i];
@@ -171,6 +178,7 @@ public class DenseVector extends DenseMatrix implements Vector, Serializable
 
 	public static double max (double[] v)
 	{
+		@Var
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < v.length; i++)
 			if (v[i] > max)

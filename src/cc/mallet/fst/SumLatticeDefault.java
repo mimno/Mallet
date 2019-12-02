@@ -7,9 +7,10 @@ import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.fst.Transducer.State;
 import cc.mallet.fst.Transducer.TransitionIterator;
-import cc.mallet.types.DenseVector;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.MatrixOps;
@@ -123,6 +124,7 @@ public class SumLatticeDefault implements SumLattice
         gammas = new double[latticeLength][numStates];
         if (saveXis) xis = new double[latticeLength][numStates][numStates];
 
+        @Var
         double outputCounts[][] = null;
         if (outputAlphabet != null)
             outputCounts = new double[latticeLength][outputAlphabet.size()];
@@ -138,6 +140,7 @@ public class SumLatticeDefault implements SumLattice
 
         // Forward pass
         logger.fine ("Starting Forward pass");
+        @Var
         boolean atLeastOneInitialState = false;
         for (int i = 0; i < numStates; i++) {
             double initialWeight = t.getState(i).getInitialWeight();

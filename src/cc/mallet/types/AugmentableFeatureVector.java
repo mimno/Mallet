@@ -19,6 +19,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.util.PropertyList;
 
 
@@ -368,6 +370,7 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 	public double dotProduct (DenseVector v) {
 		if (indices != null && size-1 != maxSortedIndex)
 			sortIndices();
+		@Var
 		double ret = 0;
 		if (values == null)
 			for (int i = 0; i < size; i++)
@@ -386,7 +389,9 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 			return dotProduct((AugmentableFeatureVector)v);
 		if (indices != null && size-1 != maxSortedIndex)
 			sortIndices();
+		@Var
 		double ret = 0;
+		@Var
 		int vl = 0;
 		int vnl = v.numLocations ();
 		if (values == null) {
@@ -418,7 +423,9 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 			sortIndices();
 		if (v.indices != null && v.size-1 != v.maxSortedIndex)
 			v.sortIndices();
+		@Var
 		double ret = 0;
+		@Var
 		int vl = 0;
 		int vnl = v.size;
 		if (values == null) {
@@ -468,7 +475,9 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 			sortIndices();
 		if (v.indices != null && v.size-1 != v.maxSortedIndex)
 			v.sortIndices();
+		@Var
 		int vl = 0;
+		@Var
 		int vnl = v.size;
 		assert (values != null);
 		if (indices == null) {
@@ -532,6 +541,7 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 		//assert (false) : v.getClass().getName(); // This code needs to be checked!
 		if (indices != null && size-1 != maxSortedIndex)
 			sortIndices();
+		@Var
 		int vl = 0;
 		assert (values != null);
 		if (indices == null) {
@@ -611,6 +621,7 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 	public double oneNorm () {
 		if (size-1 != maxSortedIndex)
 			sortIndices();
+		@Var
 		double ret = 0;
 		if (values == null)
 			return size;
@@ -622,6 +633,7 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 	public double twoNorm () {
 		if (size-1 != maxSortedIndex)
 			sortIndices();
+		@Var
 		double ret = 0;
 		if (values == null)
 			return Math.sqrt (size);
@@ -635,6 +647,7 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 			sortIndices();
 		if (values == null)
 			return 1.0;
+		@Var
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < size; i++)
 			if (Math.abs(values[i]) > max)
@@ -690,7 +703,7 @@ public class AugmentableFeatureVector extends FeatureVector implements Serializa
 	// otherwise it assumes they have been counted elsewhere, and that numDuplicates
 	// is how many that count yeilded.
 	// Note that this method relies on the indices being sorted first
-	protected void removeDuplicates (int numDuplicates)
+	protected void removeDuplicates (@Var int numDuplicates)
 	{
 		if (indices == null)
 			return;

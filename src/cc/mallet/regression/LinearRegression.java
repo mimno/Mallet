@@ -1,6 +1,10 @@
 package cc.mallet.regression;
 
-import cc.mallet.types.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.Instance;
 
 public class LinearRegression {
 	
@@ -24,6 +28,7 @@ public class LinearRegression {
 	public double[] getParameters() { return parameters; }
 
 	public double predict(Instance instance) {
+		@Var
 		double prediction = parameters[interceptIndex];
 
 		FeatureVector predictors = (FeatureVector) instance.getData();

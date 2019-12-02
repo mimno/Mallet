@@ -11,13 +11,18 @@
 
 package cc.mallet.types;
 
-import java.util.Arrays;
-import java.io.*;
-
-import java.lang.reflect.Method;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.util.PropertyList;
+
 /**
      A vector that allocates memory only for non-zero values.
 
@@ -55,11 +60,11 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     /** If "indices" is null, the vector will be dense.  If "values" is
             null, the vector will be binary.  The capacity and size arguments are
             used by AugmentableFeatureVector. */
-    public SparseVector (int[] indices, double[] values, 
-                                                    int capacity, int size,
-                                                    boolean copy,
-                                                    boolean checkIndicesSorted,
-                                                    boolean removeDuplicates)
+    public SparseVector (int[] indices, double[] values,
+                         @Var int capacity, int size,
+                         boolean copy,
+                         boolean checkIndicesSorted,
+                         boolean removeDuplicates)
     {
         // "size" was pretty much ignored??? Why?
         int length;
@@ -164,7 +169,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     public SparseVector () {
         this (new int[0], new double[0], false, false); }
 
-    public SparseVector (Alphabet dict, PropertyList pl, boolean binary,
+    public SparseVector (Alphabet dict, PropertyList pl, @Var boolean binary,
                                              boolean growAlphabet)
     {
         if (pl == null) {
@@ -175,12 +180,11 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
             return;
         }
 
-        PropertyList.Iterator iter;
         if (binary == false) {
             binary = true;
             // If all the property list features are binary, make a binary SparseVector even if the constructor argument "binary" is false.
             // This will significantly save space, as well as multiplication time later!  -akm 12/2007
-            iter = pl.numericIterator();
+            PropertyList.Iterator iter = pl.numericIterator();
             while (iter.hasNext()) {
                 iter.nextProperty();
                 if (iter.getNumericValue() != 1.0) {
@@ -194,7 +198,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
         //afv.print();
         //System.out.println ("SparseVector binary="+binary);
         //pl.print();
-        iter = pl.numericIterator();
+        PropertyList.Iterator iter = pl.numericIterator();
         while (iter.hasNext()) {
             iter.nextProperty();
             //System.out.println ("SparseVector adding "+iter.getKey()+" "+iter.getNumericValue());
@@ -414,8 +418,10 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     public void plusEqualsSparse (SparseVector v, double factor) {
         // Special case for dense sparse vector
         if (indices == null) { densePlusEqualsSparse (v, factor); return; }
-        
+
+        @Var
         int loc1 = 0;
+        @Var
         int loc2 = 0;
         int numLocations1 = numLocations();
         int numLocations2 = v.numLocations();
@@ -456,7 +462,9 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
         // Special case for dense sparse vector
         if (indices == null) { denseTimesEqualsSparse (v, factor); return; }
 
+        @Var
         int loc1 = 0;
+        @Var
         int loc2 = 0;
         
         while ((loc1 < numLocations()) && (loc2 < v.numLocations())) {
@@ -483,8 +491,10 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     public void timesEqualsSparseZero (SparseVector v, double factor) {
         // Special case for dense sparse vector
         if (indices == null) { denseTimesEqualsSparse (v, factor); return; }
-        
+
+        @Var
         int loc1 = 0;
+        @Var
         int loc2 = 0;
         
         while ((loc1 < numLocations()) && (loc2 < v.numLocations())) {
@@ -647,6 +657,8 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
      ***********************************************************************/
 
     public double dotProduct (double[] v) {
+
+        @Var
         double ret = 0;
         
         if (values == null) {
@@ -672,6 +684,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
         if (v.hasInfinite || this.hasInfinite) {
             return extendedDotProduct(v);
         }
+        @Var
         double ret = 0;
         if (values == null) {
             for (int i = 0; i < indices.length; i++) {
@@ -691,6 +704,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
 
     // sets -Inf * 0 = 0; Inf * 0 = 0
     public double extendedDotProduct (DenseVector v) {
+        @Var
         double ret = 0;
         if (values == null) {
             for (int i = 0; i < indices.length; i++) {
@@ -740,6 +754,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
 
 
     private double dotProductInternal (SparseVector vShort, SparseVector vLong) {
+        @Var
         double ret = 0;
         int numShortLocs = vShort.numLocations();
         if (vShort.isBinary ()) {
@@ -760,8 +775,11 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
 
   // sets -Inf * 0 = 0, Inf * 0 = 0
     public double extendedDotProduct (SparseVector v) {
+        @Var
         double ret = 0.0;
+        @Var
         SparseVector vShort = null;
+        @Var
         SparseVector vLong = null;
         // this ensures minimal computational effort
         if (numLocations() > v.numLocations ()) {
@@ -807,6 +825,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
         }
         int [] newIndices = new int[values.length];
         double [] newVals = new double[values.length]; // dense SparseVector
+        @Var
         int curPos = 0;
         for (int i = 0; i < values.length; i++) {
             double val = values[i]+scale*v.value(i);
@@ -819,6 +838,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     }
 
     @Override public double oneNorm () {
+        @Var
         double ret = 0;
         if (values == null) {
             return indices.length;
@@ -830,6 +850,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     }
 
     @Override public double absNorm () {
+        @Var
         double ret = 0;
         if (values == null) {
             return indices.length;
@@ -841,6 +862,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     }
     
     @Override public double twoNorm () {
+        @Var
         double ret = 0;
         if (values == null) {
             return Math.sqrt (indices.length);
@@ -855,6 +877,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
         if (values == null) {
             return 1.0;
         }
+        @Var
         double max = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < values.length; i++) {
             if (Math.abs(values[i]) > max) {
@@ -919,6 +942,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
             //  when we have added a few additional items to the end of a previously sorted list.
             //  We could be much smarter if we remembered the highest index that was already sorted
             for (int i = indices.length-1; i >= 0; i--) {
+                @Var
                 boolean swapped = false;
                 for (int j = 0; j < i; j++)
                     if (indices[j] > indices[j+1]) {
@@ -942,6 +966,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
         }
 
         //if (values == null)
+        @Var
         int numDuplicates = 0;
         for (int i = 1; i < indices.length; i++) {
             if (indices[i-1] == indices[i]) {
@@ -955,7 +980,7 @@ public class SparseVector implements ConstantMatrix, Vector, Serializable
     }
 
     // Argument zero is special value meaning that this function should count them.
-    protected void removeDuplicates (int numDuplicates) {
+    protected void removeDuplicates (@Var int numDuplicates) {
         if (numDuplicates == 0) {
             for (int i = 1; i < indices.length; i++) {
                 if (indices[i-1] == indices[i]) {

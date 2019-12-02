@@ -8,16 +8,24 @@
 package cc.mallet.classify;
 
 
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 
-import cc.mallet.classify.Classifier;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.LabelVector;
+import cc.mallet.types.Labeling;
+import cc.mallet.types.Multinomial;
 import cc.mallet.types.Multinomial.Logged;
+import cc.mallet.types.RankedFeatureVector;
 
 /**
  * A classifier that classifies instances according to the NaiveBayes method.
@@ -109,7 +117,7 @@ public class NaiveBayes extends Classifier implements Serializable
 	return prior;
   }
 
-  public void printWords (int numToPrint)
+  public void printWords (@Var int numToPrint)
   {
     Alphabet alphabet = instancePipe.getDataAlphabet();
     int numFeatures = alphabet.size();
@@ -165,6 +173,7 @@ public class NaiveBayes extends Classifier implements Serializable
     }
 
     // Get the scores in the range near zero, where exp() is more accurate
+    @Var
     double maxScore = Double.NEGATIVE_INFINITY;
     for (int ci = 0; ci < numClasses; ci++)
       if (scores[ci] > maxScore)
@@ -173,6 +182,7 @@ public class NaiveBayes extends Classifier implements Serializable
       scores[ci] -= maxScore;
 
     // Exponentiate and normalize
+    @Var
     double sum = 0;
     for (int ci = 0; ci < numClasses; ci++)
       sum += (scores[ci] = Math.exp (scores[ci]));
@@ -188,6 +198,7 @@ public class NaiveBayes extends Classifier implements Serializable
   private double dataLogProbability (Instance instance, int labelIndex) {
     FeatureVector fv = (FeatureVector) instance.getData ();
     int fvisize = fv.numLocations();
+    @Var
     double logProb = 0;
 
     for (int fvi = 0; fvi < fvisize; fvi++)
@@ -196,6 +207,7 @@ public class NaiveBayes extends Classifier implements Serializable
  }
 
   public double dataLogLikelihood (InstanceList ilist) {
+    @Var
     double logLikelihood = 0;
     for (int ii = 0; ii < ilist.size(); ii++) {
       double instanceWeight = ilist.getInstanceWeight(ii);
@@ -221,6 +233,7 @@ public class NaiveBayes extends Classifier implements Serializable
 
 
   public double labelLogLikelihood (InstanceList ilist) {
+    @Var
     double logLikelihood = 0;
     for (int ii = 0; ii < ilist.size(); ii++) {
       double instanceWeight = ilist.getInstanceWeight(ii);

@@ -18,11 +18,15 @@
 
 package cc.mallet.pipe.tsf;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import cc.mallet.pipe.*;
-import cc.mallet.types.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.pipe.Pipe;
+import cc.mallet.types.Instance;
+import cc.mallet.types.Token;
+import cc.mallet.types.TokenSequence;
 
 public class CountMatches extends Pipe
 {
@@ -56,6 +60,7 @@ public class CountMatches extends Pipe
 	public Instance pipe (Instance carrier)
 	{
 		TokenSequence ts = (TokenSequence) carrier.getData();
+		@Var
 		int count;
 		for (int i = 0; i < ts.size(); i++) {
 			count = 0;

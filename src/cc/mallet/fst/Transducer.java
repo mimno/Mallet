@@ -18,18 +18,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 import cc.mallet.types.SequencePairAlignment;
-
-import cc.mallet.pipe.Pipe;
-
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Sequences;
 
@@ -89,7 +88,7 @@ public abstract class Transducer implements Serializable
 	/** Take input sequence from instance.data and put the output sequence in instance.target. 
 	 *  Like transduce(Instance), but put best output sequence into instance.target rather than instance.data. */
 	// TODO Consider a different method name. 
-	public Instance label (Instance instance)
+	public Instance label (@Var Instance instance)
 	{
 		if (inputPipe != null)
 			instance = inputPipe.instanceFrom(instance);
@@ -101,7 +100,7 @@ public abstract class Transducer implements Serializable
 	}
 
 	/** Take input sequence from instance.data and put the output sequence in instance.data. */
-	public Instance transduce (Instance instance)
+	public Instance transduce (@Var Instance instance)
 	{
 		if (inputPipe != null)
 			instance = inputPipe.instanceFrom(instance);
@@ -150,6 +149,7 @@ public abstract class Transducer implements Serializable
 	 */
 	public double averageTokenAccuracy (InstanceList ilist)
 	{
+		@Var
 		double accuracy = 0;
 		for (int i = 0; i < ilist.size(); i++) {
 			Instance instance = ilist.get(i);

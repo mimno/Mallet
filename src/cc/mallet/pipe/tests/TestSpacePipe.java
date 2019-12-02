@@ -8,6 +8,14 @@
 package cc.mallet.pipe.tests;
 
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+import org.junit.Test;
+
+import cc.mallet.fst.tests.TestCRF;
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.PrintInputAndTarget;
@@ -16,14 +24,7 @@ import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.ArrayIterator;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
 import cc.mallet.pipe.tsf.TokenText;
-import cc.mallet.fst.tests.TestCRF;
 import cc.mallet.types.InstanceList;
-
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 
 /**
  *  Unit Test for class TestSpacePipe.java
@@ -60,7 +61,7 @@ public class TestSpacePipe {
         lst.addThruPipe (new ArrayIterator(new String[] { TestCRF.data[0], TestCRF.data[1], }));
         System.setOut (oldOut);
         
-        assertEquals (spacePipeOutput, out.toString());
+        assertEquals (spacePipeOutput, out.toString().replaceAll("\\r\\n?", "\n"));
     }
         
     public static String spacePipeOutput =

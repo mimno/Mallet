@@ -1,5 +1,7 @@
 package cc.mallet.cluster.neighbor_evaluator;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.cluster.Clustering;
 import cc.mallet.util.ArrayUtils;
 
@@ -60,6 +62,7 @@ public class AgglomerativeNeighbor extends Neighbor {
 	public int[][] getOldClusters () { return oldClusters; }
 	
 	public String toString () {
+		@Var
 		String ret = super.toString() + "\nnewcluster=";
 		for (int i = 0; i < newCluster.length; i++) 
 			ret += newCluster[i] + " ";

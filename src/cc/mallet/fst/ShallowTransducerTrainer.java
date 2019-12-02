@@ -11,6 +11,7 @@ import cc.mallet.types.InstanceList;
  * @author Gaurav Chandalia
  * @deprecated Use <tt>NoopTransducerTrainer</tt> instead
  */
+@Deprecated
 public class ShallowTransducerTrainer extends TransducerTrainer {
 	protected Transducer transducer;
 	

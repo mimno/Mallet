@@ -11,19 +11,26 @@
 
 package cc.mallet.pipe;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.logging.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
-import java.io.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.AlphabetCarrying;
 import cc.mallet.types.Instance;
 import cc.mallet.types.SingleInstanceIterator;
 import cc.mallet.util.MalletLogger;
+
 /**
     The abstract superclass of all Pipes, which transform one data type to another.
     Pipes are most often used for feature extraction.
@@ -142,7 +149,7 @@ public abstract class Pipe implements Serializable, AlphabetCarrying
     /** A convenience method that will pull all instances from source through this pipe,
      *  and return the results as an array.
      */
-    public Instance[] instancesFrom (Iterator<Instance> source)
+    public Instance[] instancesFrom (@Var Iterator<Instance> source)
     {
         source = this.newIteratorFrom(source);
         if (!source.hasNext())

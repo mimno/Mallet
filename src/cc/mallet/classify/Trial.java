@@ -12,12 +12,10 @@ package cc.mallet.classify;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureVector;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Label;
@@ -65,6 +63,7 @@ public class Trial extends ArrayList<Classification>
 	}
 	
 	public boolean addAll(Collection<? extends Classification> collection) {
+		@Var
 		boolean ret = true;
 		for (Classification c : collection)
 			if (!this.add(c))
@@ -85,6 +84,7 @@ public class Trial extends ArrayList<Classification>
 	/** Return the fraction of instances that have the correct label as their best predicted label. */
 	public double getAccuracy ()
 	{
+		@Var
 		int numCorrect = 0;
 		for (int i = 0; i < this.size(); i++)
 			if (this.get(i).bestLabelIsCorrect())
@@ -115,9 +115,14 @@ public class Trial extends ArrayList<Classification>
 	    array list of classifications */
 	public double getPrecision (int index)
 	{
+		@Var
 		int numCorrect = 0;
+		@Var
 		int numInstances = 0;
-		int trueLabel, classLabel;
+		@Var
+		int trueLabel;
+		@Var
+		int classLabel;
 		for (int i = 0; i<this.size(); i++) {
 			trueLabel = this.get(i).getInstance().getLabeling().getBestIndex();
 			classLabel = this.get(i).getLabeling().getBestIndex();
@@ -164,9 +169,14 @@ public class Trial extends ArrayList<Classification>
 	    array list of classifications */
 	public double getRecall (int labelIndex)
 	{
+		@Var
 		int numCorrect = 0;
+		@Var
 		int numInstances = 0;
-		int trueLabel, classLabel;
+		@Var
+		int trueLabel;
+		@Var
+		int classLabel;
 		for (int i = 0; i<this.size(); i++) {
 			trueLabel = this.get(i).getInstance().getLabeling().getBestIndex();
 			classLabel = this.get(i).getLabeling().getBestIndex();
@@ -227,11 +237,19 @@ public class Trial extends ArrayList<Classification>
 	/** Return the average rank of the correct class label as returned by Labeling.getRank(correctLabel) on the predicted Labeling. */
 	public double getAverageRank ()
 	{
+		@Var
 		double rsum = 0;
+		@Var
 		Labeling tmpL;
+		@Var
 		Classification tmpC;
+		@Var
 		Instance tmpI;
-		Label tmpLbl, tmpLbl2;
+		@Var
+		Label tmpLbl;
+		@Var
+		Label tmpLbl2;
+		@Var
 		int tmpInt;
 		for(int i = 0; i < this.size(); i++) {
 			tmpC = this.get(i);

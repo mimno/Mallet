@@ -2,8 +2,10 @@ package cc.mallet.types.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.pipe.Noop;
-import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Label;
@@ -53,6 +55,7 @@ public class TestInstanceList {
   public void testStratifiedSplit() {
 
     /* The labels of the instances we are going to create, in that order */
+    @Var
     String labelsString = "001011100100100";
     testTemplate(labelsString, 3);
     System.out.println();

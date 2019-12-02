@@ -14,13 +14,17 @@
 
 package cc.mallet.types;
 
-import java.util.logging.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.regex.*;
-import java.io.*;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
-import cc.mallet.types.*;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.util.MalletLogger;
 
 public class FeatureConjunction implements Serializable
@@ -63,6 +67,7 @@ public class FeatureConjunction implements Serializable
 		}
 		if (checkSorted) {
 			for (int i = this.features.length-1; i >= 0; i--) {
+				@Var
 				boolean swapped = false;
 				for (int j = 0; j < i; j++) {
 					if (features[i-1] > features[i]) {
@@ -159,6 +164,7 @@ public class FeatureConjunction implements Serializable
 			if (featureIndices.length > 1) {
 				int newLength = features.length-1+featureIndices.length;
 				int[] newFeatures = new int[newLength];
+				@Var
 				int n = 0;
 				for (int j = 0; j < i; j++)
 					newFeatures[n++] = features[j];
@@ -176,6 +182,7 @@ public class FeatureConjunction implements Serializable
 			if (features[i-1] == features[i]) {
 				// Remove duplicate and try again
 				int[] newFeatures = new int[features.length-1];
+				@Var
 				int n = 0;
 				for (int j = 0; j < i; j++)
 					newFeatures[n++] = features[j];
@@ -272,6 +279,7 @@ public class FeatureConjunction implements Serializable
 		if (fv.getAlphabet() != dictionary)
 			throw new IllegalArgumentException ("Vocabularies do not match.");
 		int fvsize = fv.numLocations();
+		@Var
 		int fvl = 0;
 		for (int fcl = 0; fcl < features.length; fcl++) {
 			int fcli = features[fcl];
@@ -349,6 +357,7 @@ public class FeatureConjunction implements Serializable
 		int version = in.readInt ();
 		name = (String)in.readObject();
 		dictionary = (Alphabet)in.readObject();
+		@Var
 		int size = in.readInt ();
 		if (size == NULL_INTEGER) features = null;
 		else {

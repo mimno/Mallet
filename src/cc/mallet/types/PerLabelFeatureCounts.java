@@ -19,6 +19,8 @@
 
 package cc.mallet.types;
 
+import com.google.errorprone.annotations.Var;
+
 public class PerLabelFeatureCounts
 {
 	Alphabet dataAlphabet, targetAlphabet;
@@ -40,6 +42,7 @@ public class PerLabelFeatureCounts
 			FeatureVector fv = (FeatureVector) inst.getData ();
 			// xxx Note that this ignores uncertain-labels.
 			int labelIndex = inst.getLabeling ().getBestIndex();
+			@Var
 			int fli;
 			for (int fl = 0; fl < fv.numLocations(); fl++) {
 				fli = fv.indexAtLocation(fl);

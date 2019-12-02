@@ -8,13 +8,15 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.util;
 
-import java.util.*;
+import java.util.BitSet;
+
+import com.google.errorprone.annotations.Var;
 
 public class Randoms extends java.util.Random {
 
@@ -23,16 +25,20 @@ public class Randoms extends java.util.Random {
 	public Randoms (int seed) {
 		super(seed);
 	}
-	
+
 	public Randoms () {
 		super();
 	}
-	
-	/** Return random integer from Poission with parameter lambda.  
+
+	/** Return random integer from Poission with parameter lambda.
 	 * The mean of this distribution is lambda.  The variance is lambda. */
   public synchronized int nextPoisson(double lambda) {
-    int i,j,v=-1;
-    double l=Math.exp(-lambda),p;
+    int i,j;
+    @Var
+    int v=-1;
+    double l=Math.exp(-lambda);
+    @Var
+    double p;
     p=1.0;
     while (p>=l) {
       p*=nextUniform();
@@ -69,7 +75,7 @@ public class Randoms extends java.util.Random {
     return bs;
   }
 
-  /** Return a random double in the range 0 to 1, inclusive, uniformly sampled from that range. 
+  /** Return a random double in the range 0 to 1, inclusive, uniformly sampled from that range.
    * The mean of this distribution is 0.5.  The variance is 1/12. */
   public synchronized double nextUniform() {
     long l = ((long)(next(26)) << 27) + next(27);
@@ -84,6 +90,7 @@ public class Randoms extends java.util.Random {
 
 	/** Draw a single sample from multinomial "a". */
 	public synchronized int nextDiscrete (double[] a) {
+	    @Var
 		double b = 0, r = nextUniform();
 		for (int i = 0; i < a.length; i++) {
 			b += a[i];
@@ -96,6 +103,7 @@ public class Randoms extends java.util.Random {
 
 	/** draw a single sample from (unnormalized) multinomial "a", with normalizing factor "sum". */
 	public synchronized int nextDiscrete (double[] a, double sum) {
+	    @Var
 		double b = 0, r = nextUniform() * sum;
 		for (int i = 0; i < a.length; i++) {
 			b += a[i];
@@ -147,11 +155,25 @@ public class Randoms extends java.util.Random {
 	/* From Numerical "Recipes in C", page 292 */
 	public synchronized double oldNextGamma (int ia)
 	{
+	    @Var
 		int j;
-		double am, e, s, v1, v2, x, y;
+	    @Var
+		double am;
+        @Var
+        double e;
+        @Var
+        double s;
+        @Var
+        double v1;
+        @Var
+        double v2;
+		@Var
+		double x;
+		@Var
+		double y;
 
 		assert (ia >= 1) ;
-		if (ia < 6) 
+		if (ia < 6)
     {
       x = 1.0;
       for (j = 1; j <= ia; j++)
@@ -183,7 +205,7 @@ public class Randoms extends java.util.Random {
 		return x;
 	}
 
-	
+
 	/** Return a random double drawn from a Gamma distribution with mean alpha*beta and variance alpha*beta^2. */
   public synchronized double nextGamma(double alpha, double beta) {
     return nextGamma(alpha,beta,0);
@@ -191,18 +213,25 @@ public class Randoms extends java.util.Random {
 
 	/** Return a random double drawn from a Gamma distribution
 	 *  with mean alpha*beta+lamba and variance alpha*beta^2.
-	 *  Note that this means the pdf is: 
+	 *  Note that this means the pdf is:
 	 *     <code>frac{ x^{alpha-1} exp(-x/beta) }{ beta^alpha Gamma(alpha) }</code>
-	 *  in other words, beta is a "scale" parameter. An alternative 
+	 *  in other words, beta is a "scale" parameter. An alternative
 	 *  parameterization would use 1/beta, the "rate" parameter.
 	 */
 	public synchronized double nextGamma(double alpha, double beta, double lambda) {
+	    @Var
 		double gamma=0;
 		if (alpha <= 0 || beta <= 0) {
 			throw new IllegalArgumentException ("alpha and beta must be strictly positive.");
 		}
 		if (alpha < 1) {
-			double b,p;
+
+		    @Var
+			double b;
+		    @Var
+		    double p;
+
+			@Var
 			boolean flag = false;
 
 			b = 1 + alpha * ONE_OVER_E;
@@ -224,7 +253,7 @@ public class Randoms extends java.util.Random {
 			}
 		}
 		else if (alpha == 1) {
-			// Gamma(1) is equivalent to Exponential(1). We can 
+			// Gamma(1) is equivalent to Exponential(1). We can
 			//  sample from an exponential by inverting the CDF:
 
 			gamma = -Math.log (nextUniform ());
@@ -232,39 +261,48 @@ public class Randoms extends java.util.Random {
 			// There is no known closed form for Gamma(alpha != 1)...
 		}
 		else {
-			
+
 			// This is Best's algorithm: see pg 410 of
 			//  Luc Devroye's "non-uniform random variate generation"
 			// This algorithm is constant time for alpha > 1.
-			
+
 			double b = alpha - 1;
 			double c = 3 * alpha - 0.75;
-			
-			double u, v;
-			double w, y, z;
-			
+
+			@Var
+			double u;
+			@Var
+            double v;
+			@Var
+			double w;
+			@Var
+            double y;
+			@Var
+			double z;
+
+			@Var
 			boolean accept = false;
-			
+
 			while (! accept) {
 				u = nextUniform();
 				v = nextUniform();
-				
+
 				w = u * (1 - u);
 				y = Math.sqrt( c / w ) * (u - 0.5);
 				gamma = b + y;
-				
+
 				if (gamma >= 0.0) {
 					z = 64 * w * w * w * v * v;  // ie: 64 * w^3 v^2
-					
+
 					accept = z <= 1.0 - ((2 * y * y) / gamma);
-					
+
 					if (! accept) {
 						accept = (Math.log(z) <=
 								  2 * (b * Math.log(gamma / b) - y));
 					}
 				}
 			}
-			
+
 			/* // Old version, uses time linear in alpha
 			   double y = -Math.log (nextUniform ());
 			   while (nextUniform () > Math.pow (y * Math.exp (1 - y), alpha - 1))
@@ -290,7 +328,7 @@ public class Randoms extends java.util.Random {
     return nextGamma(1,beta,lambda);
   }
 
-	/** Return a random double drawn from an Chi-squarted distribution with mean 1 and variance 2. 
+	/** Return a random double drawn from an Chi-squarted distribution with mean 1 and variance 2.
 	 * Equivalent to nextChiSq(1) */
   public synchronized double nextChiSq() {
     return nextGamma(0.5,2,0);
@@ -320,11 +358,15 @@ public class Randoms extends java.util.Random {
               L = C * Math.log (C),
               mu = A / C,
               sigma = 0.5 / Math.sqrt (C);
-      double y = nextGaussian (), x = sigma * y + mu;
+      @Var
+      double y = nextGaussian ();
+      @Var
+      double x = sigma * y + mu;
       while (x < 0 || x > 1) {
         y = nextGaussian ();
         x = sigma * y + mu;
       }
+      @Var
       double u = nextUniform ();
       while (Math.log (u) >= A * Math.log (x / A) + B * Math.log ((1 - x) / B) + L + 0.5 * y * y) {
         y = nextGaussian ();
@@ -337,8 +379,10 @@ public class Randoms extends java.util.Random {
       }
       return x;
     } else {
-      double v1 = Math.pow (nextUniform (), 1 / alpha),
-              v2 = Math.pow (nextUniform (), 1 / beta);
+      @Var
+      double v1 = Math.pow (nextUniform (), 1 / alpha);
+      @Var
+      double v2 = Math.pow (nextUniform (), 1 / beta);
       while (v1 + v2 > 1) {
         v1 = Math.pow (nextUniform (), 1 / alpha);
         v2 = Math.pow (nextUniform (), 1 / beta);
@@ -366,7 +410,7 @@ public class Randoms extends java.util.Random {
 		// Prints the nextGamma() and oldNextGamma() distributions to
 		// System.out for testing/comparison.
 		Randoms r = new Randoms();
-		final int resolution = 60;
+		int resolution = 60;
 		int[] histogram1 = new int[resolution];
 		int[] histogram2 = new int[resolution];
 		int scale = 10;
@@ -388,6 +432,6 @@ public class Randoms extends java.util.Random {
 			System.out.print("\n");
 		}
 	}
-	
+
 }
 
