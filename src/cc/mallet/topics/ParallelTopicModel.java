@@ -81,7 +81,7 @@ public class ParallelTopicModel implements Serializable {
     public int topicBits;
 
     public int numTypes;
-    public int totalTokens;
+    public long totalTokens;
 
     public double[] alpha;     // Dirichlet(alpha,alpha,...) is the distribution over topics
     public double alphaSum;
