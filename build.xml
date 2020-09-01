@@ -55,11 +55,12 @@
                 source="${java_version}"
                 target="${java_version}"
                 destdir="${class}"
-                classpathref="project.classpath"
+                encoding="UTF-8"
                 debug="true"
+                classpathref="project.classpath"
+                includeantruntime="false"
                 deprecation="off"
-                listfiles="no"
-                includeantruntime="false">
+                listfiles="no">
             <src path="${src}"/>
             <include name="cc/**/*.java"/>
             <!-- compilerarg value="-Xlint:unchecked"/ -->
@@ -67,19 +68,21 @@
     </target>
 
     <target
-     name="compile-ep"
-     depends="init"
-     description="Compile all the source files">
-     <javac destdir="build"
-       compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
-       encoding="UTF-8" debug="true"
-       classpathref="project.classpath"
-       includeantruntime="false">
-       <src path="src"/>
-       <compilerclasspath>
-         <pathelement location="lib/error_prone_ant-2.2.0.jar"/>
-       </compilerclasspath>
-     </javac>
+            name="compile-ep"
+            depends="init"
+            description="Compile all the source files">
+        <javac
+                destdir="build"
+                compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
+                encoding="UTF-8"
+                debug="true"
+                classpathref="project.classpath"
+                includeantruntime="false">
+            <src path="src"/>
+            <compilerclasspath>
+                <pathelement location="lib/error_prone_ant-2.2.0.jar"/>
+            </compilerclasspath>
+        </javac>
     </target>
 
     <!--
