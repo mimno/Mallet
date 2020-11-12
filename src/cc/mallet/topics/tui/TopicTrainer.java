@@ -147,7 +147,7 @@ public class TopicTrainer {
          "The number of iterations to run before first estimating dirichlet hyperparameters.", null);
 
     static CommandOption.Boolean useSymmetricAlpha = new CommandOption.Boolean(TopicTrainer.class, "use-symmetric-alpha", "true|false", false, false,
-         "Only optimize the concentration parameter of the prior over document-topic distributions. This may reduce the number of very small, poorly estimated topics, but may disperse common words over several topics.", null);
+         "Only optimize the concentration parameter of the prior over topic-words distributions. This may reduce the number of very small, poorly estimated topics, but may disperse common words over several topics.", null);
 
     static CommandOption.Double alpha = new CommandOption.Double(TopicTrainer.class, "alpha", "DECIMAL", true, 5.0,
          "SumAlpha parameter: sum over topics of smoothing over doc-topic distributions. alpha_k = [this value] / [num topics]",null);
