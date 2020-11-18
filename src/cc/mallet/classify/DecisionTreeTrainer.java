@@ -64,7 +64,7 @@ public class DecisionTreeTrainer extends ClassifierTrainer<DecisionTree> impleme
 		splitTree (root, selectedFeatures, 0);
 		root.stopGrowth();
 		finished = true;
-		System.out.println ("DecisionTree learned:");
+//		System.out.println ("DecisionTree learned:");
 		root.print();
 		this.classifier = new DecisionTree (trainingList.getPipe(), root);
 		return classifier;
