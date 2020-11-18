@@ -555,7 +555,7 @@ public class WorkerRunnable implements Runnable {
 					   (currentTypeTopicCounts[index] & topicMask) != newTopic) {
 					index++;
 					if (index == currentTypeTopicCounts.length) {
-						System.err.println("type: " + type + " new topic: " + newTopic);
+//						System.err.println("type: " + type + " new topic: " + newTopic);
 						for (int k=0; k<currentTypeTopicCounts.length; k++) {
 							System.err.print((currentTypeTopicCounts[k] & topicMask) + ":" + 
 											 (currentTypeTopicCounts[k] >> topicBits) + " ");
