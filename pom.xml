@@ -3,7 +3,7 @@
 
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.1-alpha</version>
+  <version>2.1-modified</version>
   <packaging>jar</packaging>
   <name>MAchine Learning for LanguagE Toolkit (MALLET)</name>
   <description>
@@ -46,6 +46,26 @@
     <sourceDirectory>src</sourceDirectory>
     <testSourceDirectory>src</testSourceDirectory>
     <plugins>
+     <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>2.5.1</version>
+            <configuration>
+            <groupId>cc.mallet</groupId>
+            <artifactId>mallet</artifactId>
+            <version>2.1-modified</version>            
+            <packaging>jar</packaging>
+        </configuration>
+        <executions>
+          <execution>
+            <id>install-jar-lib</id>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <!-- <phase>validate</phase> -->
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -59,7 +79,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+   <!--  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
@@ -75,7 +95,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <version>1.5</version>
@@ -88,7 +108,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
     </plugins>
   </build>
   <dependencies>
@@ -110,13 +130,23 @@
     </dependency>
   </dependencies>
   <distributionManagement>
-    <snapshotRepository>
+<!--    <snapshotRepository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <repository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
+    </repository> -->
+                <repository>
+                        <id>sec-classification-artifactory</id>
+                        <name>Data Classification Toolkit artifact repository</name>
+                        <url>https://na.artifactory.swg-devops.com:443/artifactory/sec-classification-team-maven-local</url>
+                </repository>
+                <snapshotRepository>
+                        <id>sec-classification-artifactory</id>
+                        <name>Data Classification Toolkit artifact repository</name>
+                        <url>https://na.artifactory.swg-devops.com:443/artifactory/sec-classification-team-maven-local</url>
+                </snapshotRepository>
   </distributionManagement>
 </project>
