@@ -5,15 +5,19 @@
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.types.tests;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
+import com.google.errorprone.annotations.Var;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 
 
@@ -67,7 +71,7 @@ public class TestSerializable extends TestCase {
       if (this == o) return true;
       if (!(o instanceof WriteMe)) return false;
 
-      final WriteMe writeMe = (WriteMe) o;
+      WriteMe writeMe = (WriteMe) o;
 
       if (bar != writeMe.bar) return false;
       if (foo != null ? !foo.equals (writeMe.foo) : writeMe.foo != null) return false;
@@ -77,6 +81,7 @@ public class TestSerializable extends TestCase {
 
     @Override public int hashCode ()
     {
+      @Var
       int result;
       result = (foo != null ? foo.hashCode () : 0);
       result = 29 * result + bar;

@@ -14,16 +14,18 @@
 
 package cc.mallet.pipe;
 
-import java.util.ArrayList;
-import java.util.logging.*;
+import com.google.errorprone.annotations.Var;
 
-import cc.mallet.classify.*;
-import cc.mallet.classify.evaluate.*;
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
+import cc.mallet.classify.Classification;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.Instance;
+import cc.mallet.types.Label;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelVector;
 import cc.mallet.util.PropertyList;
 
-  /** Pipe features from underlying classifier to
+/** Pipe features from underlying classifier to
    * the confidence prediction instance list
    */
 public class Classification2ConfidencePredictingFeatureVector extends Pipe
@@ -36,6 +38,7 @@ public class Classification2ConfidencePredictingFeatureVector extends Pipe
 	public Instance pipe (Instance carrier)
 	{
 		Classification classification = (Classification) carrier.getData();
+		@Var
 		PropertyList features = null;
 		LabelVector lv = classification.getLabelVector();
 		Label bestLabel = lv.getBestLabel();
@@ -169,6 +172,7 @@ public class Classification2ConfidencePredictingFeatureVector extends Pipe
 	
 	private double getScoreMean(LabelVector lv)
 	{
+		@Var
 		double sum = 0.0;
 		for(int i=0; i<lv.numLocations(); i++) {
 			sum += lv.getValueAtRank(i);
@@ -179,6 +183,7 @@ public class Classification2ConfidencePredictingFeatureVector extends Pipe
 	private double getScoreVariance(LabelVector lv)
 	{
 		double mean = getScoreMean(lv);
+			@Var
 			double squaredDifference = 0.0;
 			for(int i=0; i<lv.numLocations(); i++) {
 				squaredDifference += (mean - lv.getValueAtRank(i)) * (mean - lv.getValueAtRank(i));

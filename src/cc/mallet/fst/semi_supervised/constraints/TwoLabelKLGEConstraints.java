@@ -11,6 +11,8 @@ import java.util.ArrayList;
 
 import com.carrotsearch.hppc.IntIntHashMap;
 import com.carrotsearch.hppc.cursors.IntIntCursor;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 
 /** 
@@ -47,10 +49,12 @@ public class TwoLabelKLGEConstraints extends TwoLabelGEConstraints {
 
   @Override
   public double getValue() {
+    @Var
     double value = 0.0;
     for (IntIntCursor keyVal : constraintsMap) {
       TwoLabelGEConstraint constraint = constraintsList.get(keyVal.value);
       if (constraint.count > 0.0) {
+        @Var
         double constraintValue = 0.0;
         for (int prevLi = 0; prevLi < map.getNumLabels(); prevLi++) {
           for (int currLi = 0; currLi < map.getNumLabels(); currLi++) {

@@ -11,22 +11,20 @@
 package cc.mallet.classify;
 
 
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Iterator;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-import cc.mallet.classify.Classifier;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.AlphabetCarrying;
-import cc.mallet.types.FeatureSelection;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import cc.mallet.types.LabelVector;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.Multinomial;
 
@@ -221,7 +219,7 @@ implements ClassifierTrainer.ByInstanceIncrements<NaiveBayes>, Boostable, Alphab
   }
 
   
-  private void setup (InstanceList instances, Instance instance) {
+  private void setup (InstanceList instances, @Var Instance instance) {
   	assert (instances != null || instance != null);
   	if (instance == null && instances != null)
   		instance = instances.get(0);
@@ -269,7 +267,7 @@ implements ClassifierTrainer.ByInstanceIncrements<NaiveBayes>, Boostable, Alphab
     }
   }
 
-  private void incorporateOneInstance (Instance instance, double instanceWeight) 
+  private void incorporateOneInstance (Instance instance, @Var double instanceWeight)
   {
     Labeling labeling = instance.getLabeling ();
     if (labeling == null) return; // Handle unlabeled instances by skipping them

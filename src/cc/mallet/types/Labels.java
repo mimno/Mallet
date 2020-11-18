@@ -19,12 +19,12 @@
 package cc.mallet.types;
 
 
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-import cc.mallet.types.Label;
+import com.google.errorprone.annotations.Var;
 
 /** Usually some distribution over possible labels for an instance. */
 
@@ -47,6 +47,7 @@ public class Labels implements AlphabetCarrying, Serializable
 
 	public String toString ()
 	{
+		@Var
 		String ret = "";
 		for (int i = 0; i < labels.length; i++) {
 			ret += labels[i].toString();

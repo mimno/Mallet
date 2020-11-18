@@ -1,10 +1,12 @@
 package cc.mallet.util;
 
-import java.util.Arrays;
 import java.text.NumberFormat;
-import cc.mallet.util.Randoms;
+import java.util.Arrays;
 
-import cc.mallet.types.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
 
 /** Tools for working with multivariate normal distributions */
 
@@ -21,7 +23,9 @@ public class MVNormal {
 
 		// Initialize the result. Note that java sets all elements to 0.
 		double[] result = new double[ input.length ];
+		@Var
 		double sumRowSquared = 0.0;
+		@Var
 		double dotProduct = 0.0;
 
 		// For each off-diagonal cell l_{jk} in the result,
@@ -29,7 +33,9 @@ public class MVNormal {
 		// These are therefore both really row offsets, but one
 		//  corresponds to the beginning of the (row)th row 
 		//  and the other to the beginning of the (column)th row.
+		@Var
 		int rowOffset = 0;
+		@Var
 		int colOffset = 0;
 
 		for (int row = 0; row < numRows; row++) {
@@ -68,7 +74,9 @@ public class MVNormal {
 
 		// Initialize the result. Note that java sets all elements to 0.
 		double[] result = new double[ input.length ];
+		@Var
 		double sumRowSquared = 0.0;
+		@Var
 		double dotProduct = 0.0;
 
 		// For each off-diagonal cell l_{jk} in the result,
@@ -76,9 +84,12 @@ public class MVNormal {
 		// These are therefore both really row offsets, but one
 		//  corresponds to the beginning of the (row)th row 
 		//  and the other to the beginning of the (column)th row.
+		@Var
 		int rowOffset = 0;
+		@Var
 		int colOffset = 0;
 
+		@Var
 		int firstNonZero;
 
 		for (int row = 0; row < numRows; row++) {
@@ -162,6 +173,7 @@ public class MVNormal {
 		}
 		
 		// Now solve trans(L) x = z using back substitution
+		@Var
 		double innerProduct;
 		
 		for (int i = n-1; i >= 0; i--) {
@@ -191,6 +203,7 @@ public class MVNormal {
 		int n = mean.length;
 
 		double[] result = nextMVNormalWithCholesky(mean, precisionLowerTriangular, random);
+		@Var
 		double sum = 0.0;
 		for (int i = 0; i < n; i++) {
 			sum += result[i];
@@ -205,6 +218,7 @@ public class MVNormal {
 		double[] firstSolution = solveWithForwardSubstitution(ones, precisionLowerTriangular);
 		double[] rowSums = solveWithBackSubstitution(firstSolution, precisionLowerTriangular);
 
+		@Var
 		double sumOfRowSums = 0.0;
 		for (int i = 0; i < n; i++) {
 			sumOfRowSums += rowSums[i];
@@ -253,6 +267,7 @@ public class MVNormal {
 		for (int i=0; i<dimension; i++) {
 			linearCombination[i] = priorMean[i] * priorPrecisionDiagonal[i];
 
+			@Var
 			double innerProduct = 0.0;
 			for (int j = 0; j < dimension; j++) {
 				innerProduct += precision[ (dimension * i) + j ] * observedMean[j];
@@ -280,6 +295,7 @@ public class MVNormal {
 		double[] posteriorMean = new double[dimension];
 
 		for (int row = 0; row < dimension; row++) {
+			@Var
 			double innerProduct = 0.0;
 			for (int col = 0; col < dimension; col++) {
 				innerProduct +=
@@ -300,6 +316,8 @@ public class MVNormal {
 	 *  back substitution operates on UPPER triangular matrices.
 	 */
 	public static double[] solveWithBackSubstitution(double[] b, double[] lowerTriangular) {
+
+		@Var
         double innerProduct;
 
 		int n = b.length;
@@ -325,6 +343,8 @@ public class MVNormal {
 	 *  where L is lower triangular
 	 */
 	public static double[] solveWithForwardSubstitution(double[] b, double[] lowerTriangular) {
+
+		@Var
         double innerProduct;
 
 		int n = b.length;
@@ -349,6 +369,7 @@ public class MVNormal {
 	public static double[] invertLowerTriangular(double[] inputMatrix, int dimension) {
 		double[] outputMatrix = new double[inputMatrix.length];
 
+		@Var
 		double x;
 
 		for (int row = 0; row < dimension; row++) {
@@ -384,6 +405,7 @@ public class MVNormal {
 		
 		double[] outputMatrix = new double[inputMatrix.length];
 
+		@Var
 		double innerProduct;
 
 		for (int row = 0; row < dimension; row++) {
@@ -410,6 +432,7 @@ public class MVNormal {
 		
 		double[] outputMatrix = new double[leftMatrix.length];
 
+		@Var
         double innerProduct;
 
         for (int row = 0; row < dimension; row++) {

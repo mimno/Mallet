@@ -14,10 +14,16 @@
 
 package cc.mallet.pipe;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.Instance;
 import cc.mallet.types.TokenSequence;
+
 /**
  * Transform a character sequence into a token sequence of character N grams.
  *    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
@@ -36,7 +42,7 @@ public class CharSequence2CharNGrams extends Pipe implements Serializable
         this.distinguishBorders = distinguishBorders;
     }
 
-    protected String[] ngramify (CharSequence s) {
+    protected String[] ngramify (@Var CharSequence s) {
         if (distinguishBorders) {
             s = new StringBuilder().append(startBorderChar).append(s).append(endBorderChar).toString();
         }

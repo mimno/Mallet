@@ -14,15 +14,17 @@
 
 package cc.mallet.types;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.logging.*;
-import java.io.*;
+import java.util.logging.Logger;
 
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureSequence;
-import cc.mallet.types.Vector;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.PropertyList;
 
@@ -128,7 +130,9 @@ public class FeatureVector extends SparseVector implements Serializable, Alphabe
         int[] newIndices = new int[fv.indices.length * conjunctions.length];
         java.util.Arrays.sort (conjunctions);
         System.arraycopy (fv.indices, 0, newIndices, 0, fv.indices.length);
+        @Var
         int size = fv.indices.length;
+        @Var
         int ci = 0;
         for (int i = 0; i < fv.indices.length; i++) {
             if (ci < conjunctions.length && conjunctions[ci] < fv.indices[i])
@@ -178,6 +182,7 @@ public class FeatureVector extends SparseVector implements Serializable, Alphabe
         }
         int[] newIndices = new int[length * length];
         System.arraycopy (fv.indices, 0, newIndices, 0, length);
+        @Var
         int size = length;
         int ci = 0;
         for (int i = 0; i < length; i++) {
@@ -234,11 +239,14 @@ public class FeatureVector extends SparseVector implements Serializable, Alphabe
         int fvNumLocations = fv.numLocations();
 
         int[] indices = new int[fvNumLocations];
-        double[] values = null;
+        double[] values;
         // if feature vectors are binary
         if (fv.values != null) {
             values = new double[indices.length];
+        } else {
+            values = null;
         }
+        @Var
         int size = 0;
         for (int index = 0; index < fvNumLocations; index++) {
             if (fs.contains(fv.indices[index])) {

@@ -7,12 +7,13 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
-import com.carrotsearch.hppc.IntObjectHashMap;
-import com.carrotsearch.hppc.IntArrayList;
-import com.carrotsearch.hppc.cursors.ObjectCursor;
-
 import java.util.ArrayList;
 import java.util.BitSet;
+
+import com.carrotsearch.hppc.IntArrayList;
+import com.carrotsearch.hppc.IntObjectHashMap;
+import com.carrotsearch.hppc.cursors.ObjectCursor;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
@@ -66,6 +67,7 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
   
   public void preProcess(FeatureVector fv) {
     cache.clear();
+    @Var
     int fi;
     // cache constrained input features
     for (int loc = 0; loc < fv.numLocations(); loc++) {
@@ -82,8 +84,11 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
   // find examples that contain constrained input features
   public BitSet preProcess(InstanceList data) {
     // count
+    @Var
     int ii = 0;
+    @Var
     int fi;
+    @Var
     FeatureVector fv;
     BitSet bitSet = new BitSet(data.size());
     for (Instance instance : data) {
@@ -109,6 +114,7 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
   }    
   
   public double getCompositeConstraintFeatureValue(FeatureVector fv, int ip, int si1, int si2) {
+    @Var
     double value = 0;
     int li2 = map.getLabelIndex(si2);
     for (int i = 0; i < cache.size(); i++) {
@@ -126,6 +132,7 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
   }
   
   public void computeExpectations(ArrayList<SumLattice> lattices) {
+    @Var
     double[][] gammas;    
     IntArrayList cache = new IntArrayList();
     for (int i = 0; i < lattices.size(); i++) {
@@ -136,6 +143,7 @@ public abstract class OneLabelGEConstraints implements GEConstraint {
       for (int ip = 0; ip < fvs.size(); ++ip) {
         cache.clear();
         FeatureVector fv = fvs.getFeatureVector(ip);
+        @Var
         int fi;
         for (int loc = 0; loc < fv.numLocations(); loc++) {
           fi = fv.indexAtLocation(loc);

@@ -4,6 +4,8 @@ package cc.mallet.cluster.iterator;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.neighbor_evaluator.AgglomerativeNeighbor;
 import cc.mallet.cluster.util.ClusterUtils;
@@ -36,6 +38,7 @@ public class ClusterSampleIterator extends PairSampleIterator {
 	}
 	
 	public Instance next () {
+		@Var
 		AgglomerativeNeighbor neighbor = null;
 		
 		if ((positiveCount < positiveTarget  || clustering.getNumClusters() == 1) && nonsingletonClusters.length > 0) {
@@ -49,6 +52,7 @@ public class ClusterSampleIterator extends PairSampleIterator {
 																					 clusters);			
 		} else {
 			int labeli = random.nextInt(clustering.getNumClusters());
+			@Var
 			int labelj = random.nextInt(clustering.getNumClusters());
 			while (labeli == labelj)
 				labelj = random.nextInt(clustering.getNumClusters());
@@ -78,6 +82,7 @@ public class ClusterSampleIterator extends PairSampleIterator {
 			toInclude.remove(random.nextInt(toInclude.size()));
 
 		int[] ret = new int[toInclude.size()];
+		@Var
 		int i = 0;
 		for (Iterator iter = toInclude.iterator(); iter.hasNext(); )
 			ret[i++] = a[((Integer)iter.next()).intValue()];
@@ -106,6 +111,7 @@ public class ClusterSampleIterator extends PairSampleIterator {
 		ret[1] = new int[toInclude.size() - size1];
 		for (int i = 0; i < size1; i++)
 			ret[0][i] = ((Integer)toInclude.get(i)).intValue();
+		@Var
 		int nadded = 0;
 		for (int i = size1; i < toInclude.size(); i++)
 			ret[1][nadded++] = ((Integer)toInclude.get(i)).intValue();

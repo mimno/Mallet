@@ -1,0 +1,9 @@
+# see https://travis-ci.community/t/error-installing-oraclejdk8-expected-feature-release-number-in-range-of-9-to-14-but-got-8/3766/4
+dist: trusty
+language: java
+sudo: false # faster builds
+jdk:
+  - oraclejdk8
+  - openjdk8
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t 46fb54b0-d546-4ece-ac7b-de94404711e7

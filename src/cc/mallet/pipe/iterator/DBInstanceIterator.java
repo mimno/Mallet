@@ -1,12 +1,20 @@
 package cc.mallet.pipe.iterator;
 
-import java.sql.*;
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
 
-import cc.mallet.types.*;
-import cc.mallet.pipe.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.pipe.Noop;
+import cc.mallet.pipe.Pipe;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
 
 public class DBInstanceIterator implements Iterator<Instance> {
 
@@ -42,6 +50,7 @@ public class DBInstanceIterator implements Iterator<Instance> {
 		targetAlphabet = new Alphabet(); // How should I distinguish label alphabets?
 
 		statement = connection.createStatement();
+		@Var
 		ResultSet alphabetResults = statement.executeQuery("SELECT * FROM data_alphabet ORDER BY entry_id");
 
 		while (alphabetResults.next()) {
@@ -83,7 +92,9 @@ public class DBInstanceIterator implements Iterator<Instance> {
 		int[] dst = new int[dstLength];
 		
 		for (int i=0; i < dstLength; i++) {
+			@Var
 			int j = i << 2;
+			@Var
 			int x = 0;
 			x += (src[j++] & 0xff) << 0;
 			x += (src[j++] & 0xff) << 8;
@@ -103,9 +114,13 @@ public class DBInstanceIterator implements Iterator<Instance> {
 	}
 
 	public Instance next() {
+		@Var
 		Object name = null;
+		@Var
 		Object data = null;
+		@Var
 		Object target = null;
+		@Var
 		Object source = null;
 		
 		try { 
@@ -156,6 +171,7 @@ public class DBInstanceIterator implements Iterator<Instance> {
 	}
 
 	public void cleanup() throws Exception {
+		@Var
 		String sqlState = "";
 		
 		instanceResults.close();

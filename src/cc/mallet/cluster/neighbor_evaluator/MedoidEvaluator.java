@@ -2,6 +2,9 @@ package cc.mallet.cluster.neighbor_evaluator;
 
 
 //import weka.core.Instances;
+
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.classify.Classifier;
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.util.PairwiseMatrix;
@@ -116,7 +119,9 @@ public class MedoidEvaluator extends ClassifyingNeighborEvaluator {
 	double[] medsA=getMedWeights(result[0],oldIndices[0],original);
 	double[] medsB=getMedWeights(result[1],oldIndices[1],original);
 
+	@Var
 	double numerator=0;
+	@Var
 	double denominator=0;
 	for(int i=0;i<oldIndices[0].length;i++)
 	    {
@@ -187,11 +192,14 @@ public class MedoidEvaluator extends ClassifyingNeighborEvaluator {
 	    return 0;
 	    //return indices[0];
 
+	@Var
 	double centDist=Double.NEGATIVE_INFINITY;
+	@Var
 	int centIdx=-1;
 	double[] scores = new double[indices.length];
 	for(int i=0;i<indices.length;i++)
 	    {
+	    @Var
 		double acc=0;
 		for(int k=0;k<indices.length;k++)
 		    {

@@ -14,10 +14,14 @@
 
 package cc.mallet.util;
 
-import java.util.Iterator;
-import java.util.HashSet;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
-import java.io.*;
+import java.util.HashSet;
+
+import com.google.errorprone.annotations.Var;
 
 public class PropertyList implements Serializable
 {
@@ -134,6 +138,7 @@ public class PropertyList implements Serializable
 			else // sum stored value with current value
 				key2value.put (key, new Double (storedValue.doubleValue() + val));
 		}
+		@Var
 		PropertyList ret = null;
 		java.util.Iterator hashIter = key2value.keySet().iterator();
 		while (hashIter.hasNext()) { // create new property list
@@ -199,7 +204,9 @@ public class PropertyList implements Serializable
 
   public int size ()
   {
+	@Var
     PropertyList pl = this;
+	@Var
     int size = 1;
     while (pl.next != null) {
       pl = pl.next;
@@ -282,7 +289,7 @@ public class PropertyList implements Serializable
 				nextProperty = findReturnablePropertyAtOrAfter (property.next);
 		}
 
-		private PropertyList findReturnablePropertyAtOrAfter (PropertyList property)
+		private PropertyList findReturnablePropertyAtOrAfter (@Var PropertyList property)
 		{
 			while (property != null) {
 				if (property instanceof NumericProperty && returnNumeric) {

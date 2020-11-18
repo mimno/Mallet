@@ -490,6 +490,10 @@ public class DMRTopicModel extends ParallelTopicModel {
             out.close();
         }
     }
+
+    public MaxEnt getDmrParameters() {
+        return dmrParameters;
+    }
     
     public double modelLogLikelihood() {
         double logLikelihood = 0.0;

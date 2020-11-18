@@ -16,8 +16,7 @@
 
 package cc.mallet.types;
 
-import cc.mallet.types.Label;
-import cc.mallet.types.RankedFeatureVector;
+import com.google.errorprone.annotations.Var;
 
 
 public class PartiallyRankedFeatureVector extends RankedFeatureVector
@@ -88,7 +87,13 @@ public class PartiallyRankedFeatureVector extends RankedFeatureVector
 		}
 
 		// Selection sort
-		double max, front, next;
+		@Var
+		double max;
+		@Var
+		double front;
+		@Var
+		double next;
+		@Var
 		int maxIndex;
 
 		for (int i = sortedTo+1 ; i<=sortExtent ; i++ ) {

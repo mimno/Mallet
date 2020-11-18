@@ -8,15 +8,19 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.types;
 
-import java.util.logging.*;
-import java.util.BitSet;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.logging.Logger;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.util.MalletLogger;
 
@@ -33,13 +37,13 @@ public class FeatureInducer implements Serializable
 	RankedFeatureVector.PerLabelFactory perLabelRanker;
 	int beam1 = 300;
 	int beam2 = 1000;
-	
+
 	FeatureConjunction.List fcl;
 
 	// xxx Could perhaps build a hash value for each feature that measures its distribution
 	// over instances, and avoid conjunctions of features that are *exact* duplicates
 	// with this hash value.
-	
+
 	public FeatureInducer (RankedFeatureVector.Factory ranker,
 												 InstanceList ilist,
 												 int numNewFeatures, int beam1, int beam2)
@@ -54,6 +58,7 @@ public class FeatureInducer implements Serializable
 		Alphabet tmpDV = (Alphabet) ilist.getDataAlphabet().clone();
 		FeatureSelection featuresSelected = ilist.getFeatureSelection();
 		InstanceList tmpilist = new InstanceList (tmpDV, ilist.getTargetAlphabet());
+		@Var
 		RankedFeatureVector gg = ranker.newRankedFeatureVector (ilist);
 		logger.info ("Rank values before this round of conjunction-building");
 		int n = Math.min (200, gg.numLocations());
@@ -87,7 +92,7 @@ public class FeatureInducer implements Serializable
 		//// xxx Temporarily remove all feature conjunction pruning
 		//System.out.println ("FeatureInducer: Temporarily not pruning any feature conjunctions from consideration.");
 		//fsMin = fsMax = null; minGain = Double.NEGATIVE_INFINITY;
-		
+
 		//int[] conjunctions = new int[beam];
 		//for (int b = 0; b < beam; b++)
 		//conjunctions[b] = gg.getIndexAtRank(b);
@@ -105,6 +110,7 @@ public class FeatureInducer implements Serializable
 			logger.info ("Conjunction Rank="+i+' '+Double.toString(gg2.getValueAtRank(i))
 									 + ' ' + gg2.getObjectAtRank(i).toString());
 
+		@Var
 		int numFeaturesAdded = 0;
 		Alphabet origV = ilist.getDataAlphabet();
 		int origVSize = origV.size();
@@ -200,7 +206,7 @@ public class FeatureInducer implements Serializable
 			} else {
 				throw new IllegalArgumentException ("Unsupported instance data type "+data.getClass().getName());
 			}
-		}		
+		}
 	}
 
 	// Serialization

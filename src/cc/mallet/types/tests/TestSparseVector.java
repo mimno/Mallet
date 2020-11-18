@@ -13,13 +13,15 @@
 */
 
 package cc.mallet.types.tests;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import cc.mallet.types.DenseVector;
 import cc.mallet.types.SparseVector;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 
 
 public class TestSparseVector extends TestCase
@@ -207,18 +209,18 @@ public class TestSparseVector extends TestCase
 
 		SparseVector standard = new SparseVector (idxs, dbl2);
 		standard.print ();
-		assertEquals ("SparseVector[3] = 1.0\nSparseVector[5] = 1.5\nSparseVector[7] = 2.0\nSparseVector[13] = 1.0\nSparseVector[15] = 1.0\n", baos.toString ());
+		assertEquals ("SparseVector[3] = 1.0\nSparseVector[5] = 1.5\nSparseVector[7] = 2.0\nSparseVector[13] = 1.0\nSparseVector[15] = 1.0\n", baos.toString ().replaceAll("\\r\\n?", "\n"));
 		baos.reset ();
 
 		SparseVector dense = new SparseVector (null, dbl2);
 		dense.print ();
-		assertEquals ("SparseVector[0] = 1.0\nSparseVector[1] = 1.5\nSparseVector[2] = 2.0\nSparseVector[3] = 1.0\nSparseVector[4] = 1.0\n", baos.toString ());
+		assertEquals ("SparseVector[0] = 1.0\nSparseVector[1] = 1.5\nSparseVector[2] = 2.0\nSparseVector[3] = 1.0\nSparseVector[4] = 1.0\n", baos.toString ().replaceAll("\\r\\n?", "\n"));
 		baos.reset ();
 
 		SparseVector binary = new SparseVector (idxs, null, idxs.length, idxs.length,
 																						false, false, false);
 		binary.print ();
-		assertEquals ("SparseVector[3] = 1.0\nSparseVector[5] = 1.0\nSparseVector[7] = 1.0\nSparseVector[13] = 1.0\nSparseVector[15] = 1.0\n", baos.toString ());
+		assertEquals ("SparseVector[3] = 1.0\nSparseVector[5] = 1.0\nSparseVector[7] = 1.0\nSparseVector[13] = 1.0\nSparseVector[15] = 1.0\n", baos.toString ().replaceAll("\\r\\n?", "\n"));
 		baos.reset ();
 	}
 

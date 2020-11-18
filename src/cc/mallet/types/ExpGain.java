@@ -20,8 +20,12 @@
 
 package cc.mallet.types;
 
-import java.util.logging.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.logging.Logger;
+
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.classify.Classification;
 import cc.mallet.util.MalletLogger;
@@ -62,10 +66,12 @@ public class ExpGain extends RankedFeatureVector
 		double[][] q = new double[numClasses][numFeatures];
 		// "alpha", the weight of the new feature
 		double[][] alphas = new double[numClasses][numFeatures];
+		@Var
 		int fli; // feature location index
-		double flv;	// feature location value
 		logger.info ("Starting klgains, #instances="+numInstances);
+		@Var
 		double trueLabelWeightSum = 0;
+		@Var
 		double modelLabelWeightSum = 0;
 
 		// Calculate p~[f] and q[f]
@@ -76,6 +82,7 @@ public class ExpGain extends RankedFeatureVector
 			FeatureVector fv = (FeatureVector) inst.getData ();
 			//double instanceWeight = ilist.getInstanceWeight(i);
 			// The code below relies on labelWeights summing to 1 over all labels!
+			@Var
 			double perInstanceModelLabelWeight = 0;
 			for (int li = 0; li < numClasses; li++) {
 				double trueLabelWeight = labeling.value (li);
@@ -124,19 +131,27 @@ public class ExpGain extends RankedFeatureVector
 		//for (int i = 0; i < numClasses; i++)
 		//for (int j = 0; j < numFeatures; j++)
 		//alphas[i][j] = Math.log ( (p[i][j]*(1.0-q[i][j])) / (q[i][j]*(1.0-p[i][j])) );
-		
+
+		@Var
 		double[][] dalphas = new double[numClasses][numFeatures];	// first derivative
+		@Var
 		double[][] alphaChangeOld = new double[numClasses][numFeatures];	// change in alpha, last iteration
+		@Var
 		double[][] alphaMax = new double[numClasses][numFeatures];	// change in alpha, last iteration
+		@Var
 		double[][] alphaMin = new double[numClasses][numFeatures];	// change in alpha, last iteration
+		@Var
 		double[][] ddalphas = new double[numClasses][numFeatures];// second derivative
 		for (int i = 0; i < numClasses; i++)
 			for (int j = 0; j < numFeatures; j++) {
 				alphaMax[i][j] = Double.POSITIVE_INFINITY;
 				alphaMin[i][j] = Double.NEGATIVE_INFINITY;
 			}
+		@Var
 		double maxAlphachange = 0;
+		@Var
 		double maxDalpha = 99;
+		@Var
 		int maxNewtonSteps = 50;							// xxx Change to more?
 		// alphas[][] are initialized to zero
 		for (int newton = 0; maxDalpha > 1.0E-8 && newton < maxNewtonSteps; newton++) {
@@ -176,7 +191,12 @@ public class ExpGain extends RankedFeatureVector
 			}
 			// We now now first- and second-derivative for this newton step
 			// Run tests on the alphas and their derivatives, and do a newton step
-			double alphachange, newalpha, oldalpha;
+			@Var
+			double alphachange;
+			@Var
+			double newalpha;
+			@Var
+			double oldalpha;
 			maxAlphachange = maxDalpha = 0;
 			for (int i = 0; i < numClasses; i++)
 				for (int j = 0; j < numFeatures; j++) {
@@ -268,7 +288,10 @@ public class ExpGain extends RankedFeatureVector
 		
 		//System.out.println ("Calculating klgain values...");
 		double[] klgains = new double[numFeatures];
-		double klgainIncr, alpha;
+		@Var
+		double klgainIncr;
+		@Var
+		double alpha;
 		for (int i = 0; i < numClasses; i++)
 			for (int j = 0; j < numFeatures; j++) {
 				assert (!Double.isInfinite(alphas[i][j]));

@@ -8,6 +8,7 @@
 package cc.mallet.classify.constraints.ge;
 
 import com.carrotsearch.hppc.cursors.ObjectCursor;
+import com.google.errorprone.annotations.Var;
 
 /**
  * Expectation constraint for use with GE.
@@ -29,11 +30,13 @@ public class MaxEntL2FLGEConstraints extends MaxEntFLGEConstraints {
   }
   
   public double getValue() {
+    @Var
     double value = 0.0;
     for (ObjectCursor<MaxEntFLGEConstraint> fi : constraints.values()) {
       MaxEntFLGEConstraint constraint = fi.value;
       if ( constraint.count > 0.0) {
         // value due to current constraint
+        @Var
         double featureValue = 0.0;
         for (int labelIndex = 0; labelIndex < numLabels; ++labelIndex) {
           double ex;

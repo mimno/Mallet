@@ -7,11 +7,20 @@
 
 package cc.mallet.topics;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Arrays;
-import java.io.*;
 
-import cc.mallet.types.*;
-import cc.mallet.util.ArrayUtils;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
 import cc.mallet.util.Randoms;
 
 /**
@@ -24,6 +33,7 @@ import cc.mallet.util.Randoms;
 // (I think this means we might want to use FeatureSequence directly).
 // We will also need to support a growing vocabulary!
 
+@Deprecated
 public class LDA implements Serializable {
 
 	int numTopics; // Number of topics to be fit

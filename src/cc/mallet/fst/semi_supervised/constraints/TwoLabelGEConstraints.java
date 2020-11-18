@@ -7,12 +7,13 @@
 
 package cc.mallet.fst.semi_supervised.constraints;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.IntIntHashMap;
 import com.carrotsearch.hppc.cursors.IntIntCursor;
-
-import java.util.ArrayList;
-import java.util.BitSet;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.semi_supervised.StateLabelMap;
@@ -70,6 +71,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
   
   public void preProcess(FeatureVector fv) {
     cache.clear();
+    @Var
     int fi;
     for (int loc = 0; loc < fv.numLocations(); loc++) {
       fi = fv.indexAtLocation(loc);
@@ -82,6 +84,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
   public BitSet preProcess(InstanceList data) {
     // count
     BitSet bitSet = new BitSet(data.size());
+    @Var
     int ii = 0;
     for (Instance instance : data) {
       FeatureVectorSequence fvs = (FeatureVectorSequence)instance.getData();
@@ -106,7 +109,8 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
     if (ip == 0) {
       return 0;
     }
-    
+
+    @Var
     double value = 0;
     int li1 = map.getLabelIndex(si1);
     if (li1 == StateLabelMap.START_LABEL) {
@@ -129,6 +133,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
   }
   
   public void computeExpectations(ArrayList<SumLattice> lattices) {
+    @Var
     double[][][] xis;
     IntArrayList cache = new IntArrayList();
     for (int i = 0; i < lattices.size(); i++) {
@@ -139,6 +144,7 @@ public abstract class TwoLabelGEConstraints implements GEConstraint {
       for (int ip = 1; ip < fvs.size(); ++ip) {
         cache.clear();
         FeatureVector fv = fvs.getFeatureVector(ip);
+        @Var
         int fi;
         for (int loc = 0; loc < fv.numLocations(); loc++) {
           fi = fv.indexAtLocation(loc);

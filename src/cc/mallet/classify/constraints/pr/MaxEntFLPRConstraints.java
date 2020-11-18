@@ -7,12 +7,13 @@
 
 package cc.mallet.classify.constraints.pr;
 
+import java.util.BitSet;
+
 import com.carrotsearch.hppc.DoubleArrayList;
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.cursors.IntObjectCursor;
-
-import java.util.BitSet;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
@@ -71,8 +72,11 @@ public abstract class MaxEntFLPRConstraints implements MaxEntPRConstraint {
 
   public BitSet preProcess(InstanceList data) {
     // count
+    @Var
     int ii = 0;
+    @Var
     int fi;
+    @Var
     FeatureVector fv;
     BitSet bitSet = new BitSet(data.size());
     for (Instance instance : data) {
@@ -103,6 +107,7 @@ public abstract class MaxEntFLPRConstraints implements MaxEntPRConstraint {
   public void preProcess(FeatureVector input) {
     indexCache.clear();
     if (useValues) valueCache.clear();
+    @Var
     int fi;
     // cache constrained input features
     for (int loc = 0; loc < input.numLocations(); loc++) {

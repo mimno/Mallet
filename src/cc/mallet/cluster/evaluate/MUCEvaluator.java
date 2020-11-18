@@ -3,6 +3,8 @@ package cc.mallet.cluster.evaluate;
 
 import java.util.HashSet;
 
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.cluster.Clustering;
 
 /**
@@ -46,7 +48,9 @@ public class MUCEvaluator extends ClusteringEvaluator {
 		// Precision = \sum_i [ |siprime| - |pOfsiprime| ] / \sum_i [ |siprime| - 1 ]		
 		// where siprime is a predicted cluster, pOfsiprime is the set of
 		// true clusters that contain elements of siprime.
+		@Var
 		int numerator = 0;
+		@Var
 		int denominator = 0;
 		for (int i = 0; i < predicted.getNumClusters(); i++) {
 			int[] siprime = predicted.getIndicesWithLabel(i);

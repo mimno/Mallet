@@ -14,12 +14,15 @@
 
 package cc.mallet.util;
 
-import java.util.*;
-import java.io.*;
+import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Properties;
 
-import cc.mallet.util.BshInterpreter;
+import com.google.errorprone.annotations.Var;
 
 
 public abstract class CommandOption
@@ -61,6 +64,7 @@ public abstract class CommandOption
 		if (interpreter == null)
 			interpreter = new BshInterpreter ();
 		if (owner != CommandOption.class) {
+			@Var
 			CommandOption.List options = (CommandOption.List) class2options.get (owner);
 			if (options == null) {
 				options = new CommandOption.List ("");
@@ -71,6 +75,7 @@ public abstract class CommandOption
 	}
 
 	/**  @deprecated */
+	@Deprecated
 	public CommandOption (Class owner, java.lang.String name, java.lang.String argName,
 						  Class argType, boolean argRequired,
 						  java.lang.String shortdoc)
@@ -80,7 +85,7 @@ public abstract class CommandOption
 
 	/** Give this CommandOption the opportunity to process the index'th argument in args.
 		Return the next unprocessed index. */
-	public int process (java.lang.String[] args, int index) {
+	public int process (java.lang.String[] args, @Var int index) {
 
 		//System.out.println (name + " processing arg " + args[index]);
 		if (args.length == 0)
@@ -96,7 +101,9 @@ public abstract class CommandOption
 
 		// Determine what the command name is
 		java.lang.String optFullName = args[index].substring(2);
+		@Var
 		int dotIndex = optFullName.lastIndexOf('.');
+		@Var
 		java.lang.String optName = optFullName;
 
 		// Commands may have a package prefix
@@ -303,7 +310,7 @@ public abstract class CommandOption
 				while (keys.hasMoreElements()) {
 					java.lang.String key = (java.lang.String) keys.nextElement();
 					java.lang.String[] values = properties.getProperty(key).split("\\s+");
-					
+					@Var
 					boolean foundValue = false;
 					for (int i = 0; i < options.size(); i++) {
 						CommandOption option = (CommandOption) options.get(i);
@@ -327,8 +334,10 @@ public abstract class CommandOption
 			args occurring after first non-recognized arg that doesn't begin with a dash. */
 		public java.lang.String[] process (java.lang.String[] args)
 		{
+			@Var
 			int index = 0;
 			while (index < args.length) {
+				@Var
 				int newIndex = index;
 				for (int i = 0; i < options.size(); i++) {
 					CommandOption o = (CommandOption)options.get(i);
@@ -352,6 +361,7 @@ public abstract class CommandOption
 		public int processOptions (java.lang.String[] args)
 		{
 			for (int index = 0; index < args.length;) {
+				@Var
 				int newIndex = index;
 				for (int i = 0; i < options.size(); i++) {
 					CommandOption o = (CommandOption)options.get(i);
@@ -456,6 +466,7 @@ public abstract class CommandOption
 		}
 		public java.lang.String defaultValueToString() {
 			StringBuffer b = new StringBuffer();
+			@Var
 			java.lang.String sep = "";
 			for (int i = 0; i < defaultValue.length; i++) {
 				b.append(sep).append(java.lang.Integer.toString(defaultValue[i]));
@@ -465,6 +476,7 @@ public abstract class CommandOption
 		}
 		public java.lang.String valueToString() {
 			StringBuffer b = new StringBuffer();
+			@Var
 			java.lang.String sep = "";
 			for (int i = 0; i < value.length; i++) {
 				b.append(sep).append(java.lang.Integer.toString(value[i]));
@@ -509,6 +521,7 @@ public abstract class CommandOption
 		}
 		public java.lang.String defaultValueToString() {
 			StringBuffer b = new StringBuffer();
+			@Var
 			java.lang.String sep = "";
 			for (int i = 0; i < defaultValue.length; i++) {
 				b.append(sep).append(java.lang.Double.toString(defaultValue[i]));
@@ -518,6 +531,7 @@ public abstract class CommandOption
 		}
 		public java.lang.String valueToString() {
 			StringBuffer b = new StringBuffer();
+			@Var
 			java.lang.String sep = "";
 			for (int i = 0; i < value.length; i++) {
 				b.append(sep).append(java.lang.Double.toString(value[i]));
@@ -554,8 +568,9 @@ public abstract class CommandOption
 			this.defaultValue = value = defaultValue;
 		}
 		public java.lang.String[] value () { return value; }
-		public int parseArg (java.lang.String args[], int index)
+		public int parseArg (java.lang.String args[], @Var int index)
 		{
+			@Var
 			int count = 0;
 			this.value = null;
 			while (index < args.length
@@ -586,6 +601,7 @@ public abstract class CommandOption
 			if (value == null)
 				return "(null)";
 
+			@Var
 			java.lang.String val = "";
 			for (int i = 0; i < value.length; i++) {
 				val += value [i] + " ";
@@ -710,6 +726,7 @@ public abstract class CommandOption
 					                                    parameterName + "\n"+e);
 				}
 
+				@Var
 				boolean foundSetter = false;
 				for (int j=0; j<methods.length; j++){
 					//					System.out.println("method " + j + " name is " + methods[j].getName());

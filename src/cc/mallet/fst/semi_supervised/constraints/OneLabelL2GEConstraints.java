@@ -9,6 +9,7 @@ package cc.mallet.fst.semi_supervised.constraints;
 
 import com.carrotsearch.hppc.IntObjectHashMap;
 import com.carrotsearch.hppc.cursors.ObjectCursor;
+import com.google.errorprone.annotations.Var;
 
 import cc.mallet.fst.semi_supervised.StateLabelMap;
 
@@ -45,11 +46,13 @@ public class OneLabelL2GEConstraints extends OneLabelGEConstraints {
 
   @Override
   public double getValue() {
+    @Var
     double value = 0.0;
     for (ObjectCursor<OneLabelGEConstraint> fi: constraints.values()) {
       OneLabelGEConstraint constraint = fi.value;
       if ( constraint.count > 0.0) {
         // value due to current constraint
+        @Var
         double featureValue = 0.0;
         for (int labelIndex = 0; labelIndex < map.getNumLabels(); ++labelIndex) {
           double ex = constraint.expectation[labelIndex]/constraint.count;

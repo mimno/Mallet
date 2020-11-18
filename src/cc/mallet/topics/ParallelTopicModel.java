@@ -7,27 +7,52 @@
 
 package cc.mallet.topics;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Iterator;
-import java.util.Formatter;
-import java.util.Locale;
-
-import java.util.concurrent.*;
-import java.util.logging.*;
-import java.util.zip.*;
-
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.text.NumberFormat;
-
-import cc.mallet.types.*;
-import cc.mallet.topics.TopicAssignment;
-import cc.mallet.util.Randoms;
-import cc.mallet.util.MalletLogger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.carrotsearch.hppc.ObjectIntHashMap;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.AugmentableFeatureVector;
+import cc.mallet.types.Dirichlet;
+import cc.mallet.types.FeatureSequence;
+import cc.mallet.types.FeatureSequenceWithBigrams;
+import cc.mallet.types.IDSorter;
+import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
+import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.LabelSequence;
+import cc.mallet.types.MatrixOps;
+import cc.mallet.types.RankedFeatureVector;
+import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Randoms;
 
 /**
  * Simple parallel threaded implementation of LDA,
@@ -56,7 +81,7 @@ public class ParallelTopicModel implements Serializable {
     public int topicBits;
 
     public int numTypes;
-    public int totalTokens;
+    public long totalTokens;
 
     public double[] alpha;     // Dirichlet(alpha,alpha,...) is the distribution over topics
     public double alphaSum;
@@ -231,7 +256,7 @@ public class ParallelTopicModel implements Serializable {
         
         betaSum = beta * numTypes;
 
-        Randoms random = null;
+        Randoms random;
         if (randomSeed == -1) {
             random = new Randoms();
         }
@@ -261,7 +286,9 @@ public class ParallelTopicModel implements Serializable {
     }
 
     public void initializeFromState(File stateFile) throws IOException {
+        @Var
         String line;
+        @Var
         String[] fields;
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(stateFile))));
@@ -377,9 +404,12 @@ public class ParallelTopicModel implements Serializable {
                 // Here we are only adding counts, so if we find 
                 //  an existing location with the topic, we only need
                 //  to ensure that it is not larger than its left neighbor.
-                
+
+                @Var
                 int index = 0;
+                @Var
                 int currentTopic = currentTypeTopicCounts[index] & topicMask;
+                @Var
                 int currentValue;
                 
                 while (currentTypeTopicCounts[index] > 0 && currentTopic != topic) {
@@ -429,8 +459,10 @@ public class ParallelTopicModel implements Serializable {
      */
     private void initializeHistograms() {
 
+        @Var
         int maxTokens = 0;
         totalTokens = 0;
+        @Var
         int seqLen;
 
         for (int doc = 0; doc < data.size(); doc++) {
@@ -565,6 +597,7 @@ public class ParallelTopicModel implements Serializable {
         // Now count the number of type/topic pairs that have
         //  each number of tokens.
 
+        @Var
         int index;
         for (int type = 0; type < numTypes; type++) {
             int[] counts = typeTopicCounts[type];
@@ -579,6 +612,7 @@ public class ParallelTopicModel implements Serializable {
             
         // Figure out how large we need to make the "observation lengths"
         //  histogram.
+        @Var
         int maxTopicSize = 0;
         for (int topic = 0; topic < numTopics; topic++) {
             if (tokensPerTopic[topic] > maxTopicSize) {
@@ -613,7 +647,9 @@ public class ParallelTopicModel implements Serializable {
 
         WorkerCallable[] callables = new WorkerCallable[numThreads];
 
+        @Var
         int docsPerThread = data.size() / numThreads;
+        @Var
         int offset = 0;
 
         if (numThreads > 1) {
@@ -634,7 +670,7 @@ public class ParallelTopicModel implements Serializable {
                     docsPerThread = data.size() - offset;
                 }
                 
-                Randoms random = null;
+                Randoms random;
                 if (randomSeed == -1) {
                     random = new Randoms();
                 }
@@ -659,7 +695,7 @@ public class ParallelTopicModel implements Serializable {
             // If there is only one thread, copy the typeTopicCounts
             //  arrays directly, rather than allocating new memory.
 
-            Randoms random = null;
+            Randoms random;
             if (randomSeed == -1) {
                 random = new Randoms();
             }
@@ -712,6 +748,7 @@ public class ParallelTopicModel implements Serializable {
                 }
 
                 // The main sampling process.
+                @Var
                 int totalChanges = 0;
                 try {
                     List<Future<Integer>> futures = executor.invokeAll(Arrays.asList(callables));
@@ -817,10 +854,14 @@ public class ParallelTopicModel implements Serializable {
         }
 
         executor.shutdownNow();
-    
+
+        @Var
         long seconds = Math.round((System.currentTimeMillis() - startTime)/1000.0);
+        @Var
         long minutes = seconds / 60;    seconds %= 60;
+        @Var
         long hours = minutes / 60;    minutes %= 60;
+        @Var
         long days = hours / 24;    hours %= 24;
 
         StringBuilder timeReport = new StringBuilder();
@@ -839,13 +880,18 @@ public class ParallelTopicModel implements Serializable {
      *   reached a good state through Gibbs sampling. */ 
     public void maximize(int iterations) {
 
+        @Var
         int iteration = 0;
 
+        @Var
         int totalChange = Integer.MAX_VALUE;
         
         double[] topicCoefficients = new double[numTopics];
-                
-        int currentTopic, currentValue;
+
+        @Var
+        int currentTopic;
+        @Var
+        int currentValue;
 
         while (iteration < iterations && totalChange > 0) {
 
@@ -861,9 +907,14 @@ public class ParallelTopicModel implements Serializable {
                     (LabelSequence) data.get(doc).topicSequence;
                 
                 int[] oneDocTopics = topicSequence.getFeatures();
-
+                @Var
                 int[] currentTypeTopicCounts;
-                int type, oldTopic, newTopic;
+                @Var
+                int type;
+                @Var
+                int oldTopic;
+                @Var
+                int newTopic;
 
                 int docLength = tokenSequence.getLength();
 
@@ -873,9 +924,12 @@ public class ParallelTopicModel implements Serializable {
                 for (int position = 0; position < docLength; position++) {
                     localTopicCounts[oneDocTopics[position]]++;
                 }
-                
+
+                @Var
                 int globalMaxTopic = 0;
+                @Var
                 double globalMaxScore = 0.0;
+
                 for (int topic = 0; topic < numTopics; topic++) {
                     topicCoefficients[topic] = (alpha[topic] + localTopicCounts[topic]) / (betaSum + tokensPerTopic[topic]);
                     if (beta * topicCoefficients[topic] > globalMaxScore) {
@@ -884,7 +938,10 @@ public class ParallelTopicModel implements Serializable {
                     }
                 }
 
-                double score, maxScore;
+                @Var
+                double score;
+                @Var
+                double maxScore;
                 double[] topicTermScores = new double[numTopics];
 
                 //Iterate over the positions (words) in the document 
@@ -919,7 +976,9 @@ public class ParallelTopicModel implements Serializable {
                     
                     assert(tokensPerTopic[oldTopic] >= 0) : "old Topic " + oldTopic + " below 0";
 
+                    @Var
                     int index = 0;
+                    @Var
                     boolean alreadyDecremented = false;
 
                     while (index < currentTypeTopicCounts.length && 
@@ -945,6 +1004,7 @@ public class ParallelTopicModel implements Serializable {
                             
                             // Shift the reduced value to the right, if necessary.
 
+                            @Var
                             int subIndex = index;
                             while (subIndex < currentTypeTopicCounts.length - 1 && 
                                    currentTypeTopicCounts[subIndex] < currentTypeTopicCounts[subIndex + 1]) {
@@ -975,6 +1035,7 @@ public class ParallelTopicModel implements Serializable {
                     tokensPerTopic[newTopic]++;
 
                     index = 0;
+                    @Var
                     boolean foundTopic = false;
                     while (! foundTopic && index < currentTypeTopicCounts.length) {
                         currentTopic = currentTypeTopicCounts[index] & topicMask;
@@ -1038,6 +1099,7 @@ public class ParallelTopicModel implements Serializable {
 
             int[] topicCounts = typeTopicCounts[type];
 
+            @Var
             int index = 0;
             while (index < topicCounts.length &&
                    topicCounts[index] > 0) {
@@ -1072,6 +1134,7 @@ public class ParallelTopicModel implements Serializable {
             
             // How many words should we report? Some topics may have fewer than
             //  the default number of words with non-zero weight.
+            @Var
             int limit = numWords;
             if (sortedWords.size() < numWords) { limit = sortedWords.size(); }
 
@@ -1106,6 +1169,7 @@ public class ParallelTopicModel implements Serializable {
         // Print results for each topic
         for (int topic = 0; topic < numTopics; topic++) {
             TreeSet<IDSorter> sortedWords = topicSortedWords.get(topic);
+            @Var
             int word = 0;
             Iterator<IDSorter> iterator = sortedWords.iterator();
 
@@ -1140,6 +1204,7 @@ public class ParallelTopicModel implements Serializable {
         for (int topic = 0; topic < numTopics; topic++) {
             out.println("  <topic id='" + topic + "' alpha='" + alpha[topic] +
                         "' totalTokens='" + tokensPerTopic[topic] + "'>");
+            @Var
             int rank = 1;
             Iterator<IDSorter> iterator = topicSortedWords.get(topic).iterator();
             while (iterator.hasNext() && rank <= numWords) {
@@ -1166,12 +1231,18 @@ public class ParallelTopicModel implements Serializable {
             TopicAssignment t = this.getData().get(di);
             Instance instance = t.instance;
             FeatureSequence fvs = (FeatureSequence) instance.getData();
+            @Var
             boolean withBigrams = false;
             if (fvs instanceof FeatureSequenceWithBigrams) withBigrams = true;
+            @Var
             int prevtopic = -1;
+            @Var
             int prevfeature = -1;
+            @Var
             int topic = -1;
+            @Var
             StringBuffer sb = null;
+            @Var
             int feature = -1;
             int doclen = fvs.size();
             for (int pi = 0; pi < doclen; pi++) {
@@ -1218,6 +1289,7 @@ public class ParallelTopicModel implements Serializable {
             AugmentableFeatureVector titles = new AugmentableFeatureVector (new Alphabet());
 
             // Print words
+            @Var
             int word = 0;
             Iterator<IDSorter> iterator = topicSortedWords.get(ti).iterator();
             while (iterator.hasNext() && word < numWords) {
@@ -1249,6 +1321,7 @@ public class ParallelTopicModel implements Serializable {
             for (int i = 0; i < counts.length; i++)    counts[i] = values[i];
             double countssum = MatrixOps.sum (counts);    
             Alphabet alph = new Alphabet(keys);
+            @Var
             RankedFeatureVector rfv = new RankedFeatureVector (alph, counts);
             int max = rfv.numLocations() < numWords ? rfv.numLocations() : numWords;
             for (int ri = 0; ri < max; ri++) {
@@ -1262,6 +1335,7 @@ public class ParallelTopicModel implements Serializable {
             // Select candidate titles
             StringBuffer titlesStringBuffer = new StringBuffer();
             rfv = new RankedFeatureVector (titles.getAlphabet(), titles);
+            @Var
             int numTitles = 10; 
             for (int ri = 0; ri < numTitles && ri < rfv.numLocations(); ri++) {
                 // Don't add redundant titles
@@ -1296,6 +1370,7 @@ public class ParallelTopicModel implements Serializable {
 
             int[] topicCounts = typeTopicCounts[type];
 
+            @Var
             int index = 0;
             while (index < topicCounts.length &&
                    topicCounts[index] > 0) {
@@ -1331,9 +1406,11 @@ public class ParallelTopicModel implements Serializable {
             for (int type = 0; type < numTypes; type++) {
 
                 int[] topicCounts = typeTopicCounts[type];
-                
+
+                @Var
                 double weight = beta;
 
+                @Var
                 int index = 0;
                 while (index < topicCounts.length &&
                        topicCounts[index] > 0) {
@@ -1376,6 +1453,7 @@ public class ParallelTopicModel implements Serializable {
         }
 
         // Add the smoothing parameters and normalize
+        @Var
         double sum = 0.0;
         for (int topic = 0; topic < numTopics; topic++) {
             topicDistribution[topic] += alpha[topic];
@@ -1397,6 +1475,7 @@ public class ParallelTopicModel implements Serializable {
     }
 
     public void printDenseDocumentTopics(PrintWriter out) {
+        @Var
         int docLen;
         int[] topicCounts = new int[numTopics];
         for (int doc = 0; doc < data.size(); doc++) {
@@ -1441,8 +1520,9 @@ public class ParallelTopicModel implements Serializable {
      *  @param threshold   Only print topics with proportion greater than this number
      *  @param max         Print no more than this many topics
      */
-    public void printDocumentTopics (PrintWriter out, double threshold, int max)    {
+    public void printDocumentTopics (PrintWriter out, double threshold, @Var int max)    {
         out.print ("#doc name topic proportion ...\n");
+        @Var
         int docLen;
         int[] topicCounts = new int[ numTopics ];
 
@@ -1553,6 +1633,7 @@ public class ParallelTopicModel implements Serializable {
         for (int type = 0; type < numTypes; type++) {
             int[] topicCounts = typeTopicCounts[type];
 
+            @Var
             int index = 0;
             while (index < topicCounts.length &&
                    topicCounts[index] > 0) {
@@ -1614,6 +1695,7 @@ public class ParallelTopicModel implements Serializable {
             }
 
             if (normalized) {
+                @Var
                 double sum = 0.0;
                 for (int topic = 0; topic < numTopics; topic++) {
                     sum += result[doc][topic];
@@ -1669,13 +1751,14 @@ public class ParallelTopicModel implements Serializable {
 
         for (int topic = 0; topic < numTopics; topic++) {
             TreeSet<IDSorter> sortedDocuments = topicSortedDocuments.get(topic);
-            
+            @Var
             int i = 0;
             for (IDSorter sorter: sortedDocuments) {
                 if (i == max) { break; }
                 
                 int doc = sorter.getID();
                 double proportion = sorter.getWeight();
+                @Var
                 String name = data.get(doc).instance.getName().toString();
                 if (name == null) {
                     name = "no-name";
@@ -1708,6 +1791,7 @@ public class ParallelTopicModel implements Serializable {
             FeatureSequence tokenSequence =    (FeatureSequence) data.get(doc).instance.getData();
             LabelSequence topicSequence =    (LabelSequence) data.get(doc).topicSequence;
 
+            @Var
             String source = "NA";
             if (data.get(doc).instance.getSource() != null) {
                 source = data.get(doc).instance.getSource().toString();
@@ -1736,8 +1820,9 @@ public class ParallelTopicModel implements Serializable {
     }
     
     public double modelLogLikelihood() {
+
+        @Var
         double logLikelihood = 0.0;
-        int nonZeroTopics;
 
         // The likelihood of the model is a combination of a 
         // Dirichlet-multinomial for the words in each topic
@@ -1754,8 +1839,10 @@ public class ParallelTopicModel implements Serializable {
 
         // Do the documents first
 
+        @Var
         int[] topicCounts = new int[numTopics];
         double[] topicLogGammas = new double[numTopics];
+        @Var
         int[] docTopics;
 
         for (int topic=0; topic < numTopics; topic++) {
@@ -1790,6 +1877,7 @@ public class ParallelTopicModel implements Serializable {
         // And the topics
 
         // Count the number of type-topic pairs that are not just (logGamma(beta) - logGamma(beta))
+        @Var
         int nonZeroTypeTopics = 0;
 
         for (int type=0; type < numTypes; type++) {
@@ -1797,6 +1885,7 @@ public class ParallelTopicModel implements Serializable {
 
             topicCounts = typeTopicCounts[type];
 
+            @Var
             int index = 0;
             while (index < topicCounts.length &&
                    topicCounts[index] > 0) {
@@ -1979,6 +2068,7 @@ public class ParallelTopicModel implements Serializable {
 
     public static ParallelTopicModel read (File f) throws Exception {
 
+        @Var
         ParallelTopicModel topicModel = null;
 
         ObjectInputStream ois = new ObjectInputStream (new FileInputStream(f));

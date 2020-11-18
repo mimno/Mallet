@@ -22,7 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
-
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -31,8 +31,10 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import java.text.DecimalFormat;
+import com.google.errorprone.annotations.Var;
 
+import cc.mallet.pipe.Noop;
+import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureInducer;
 import cc.mallet.types.FeatureSelection;
@@ -46,10 +48,6 @@ import cc.mallet.types.MatrixOps;
 import cc.mallet.types.RankedFeatureVector;
 import cc.mallet.types.Sequence;
 import cc.mallet.types.SparseVector;
-
-import cc.mallet.pipe.Noop;
-import cc.mallet.pipe.Pipe;
-
 import cc.mallet.util.ArrayUtils;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.Maths;
@@ -191,6 +189,7 @@ public class CRF extends Transducer implements Serializable
 		public int getNumFactors () {
 			assert (initialWeights.length == finalWeights.length);
 			assert (defaultWeights.length == weights.length);
+			@Var
 			int ret = initialWeights.length + finalWeights.length + defaultWeights.length;
 			for (int i = 0; i < weights.length; i++)
 				ret += weights[i].numLocations();
@@ -256,6 +255,7 @@ public class CRF extends Transducer implements Serializable
 		
 		/** Return the log(p(parameters)) according to a zero-mean Gaussian with given variance. */
 		public double gaussianPrior (double variance) {
+			@Var
 			double value = 0;
 			double priorDenom = 2 * variance;
 			assert (initialWeights.length == finalWeights.length);
@@ -263,6 +263,7 @@ public class CRF extends Transducer implements Serializable
 				if (!Double.isInfinite(initialWeights[i])) value -= initialWeights[i] * initialWeights[i] / priorDenom;
 				if (!Double.isInfinite(finalWeights[i])) value -= finalWeights[i] * finalWeights[i] / priorDenom;
 			}
+			@Var
 			double w;
 			for (int i = 0; i < weights.length; i++) {
 				if (!Double.isInfinite(defaultWeights[i])) value -= defaultWeights[i] * defaultWeights[i] / priorDenom;
@@ -284,7 +285,10 @@ public class CRF extends Transducer implements Serializable
 				if (!Double.isInfinite(finalWeights[i]) && !Double.isInfinite(other.finalWeights[i])) 
           finalWeights[i] -= other.finalWeights[i] / variance;
 			}
-			double w, ow;
+			@Var
+			double w;
+			@Var
+			double ow;
 			for (int i = 0; i < weights.length; i++) {
 				if (weightsFrozen[i]) continue;
 				// TODO Note that there doesn't seem to be a way to freeze the initialWeights and finalWeights 
@@ -300,6 +304,7 @@ public class CRF extends Transducer implements Serializable
 
 		/** Return the log(p(parameters)) according to a a hyperbolic curve that is a smooth approximation to an L1 prior. */
 		public double hyberbolicPrior (double slope, double sharpness) {
+			@Var
 			double value = 0;
 			assert (initialWeights.length == finalWeights.length);
 			for (int i = 0; i < initialWeights.length; i++) {
@@ -308,6 +313,7 @@ public class CRF extends Transducer implements Serializable
 				if (!Double.isInfinite(finalWeights[i]))
 					value -= (slope / sharpness * Math.log (Maths.cosh (sharpness * -finalWeights[i])));
 			}
+			@Var
 			double w;
 			for (int i = 0; i < weights.length; i++) {
 				value -= (slope / sharpness	* Math.log (Maths.cosh (sharpness * defaultWeights[i])));
@@ -332,7 +338,10 @@ public class CRF extends Transducer implements Serializable
 				if (!Double.isInfinite(finalWeights[i]) && !Double.isInfinite(other.finalWeights[i]))
           finalWeights[i] += ss * Maths.tanh (-other.finalWeights[i]);
 			}
-			double w, ow;
+			@Var
+			double w;
+			@Var
+			double ow;
 			for (int i = 0; i < weights.length; i++) {
 				if (weightsFrozen[i]) continue;
 				// TODO Note that there doesn't seem to be a way to freeze the initialWeights and finalWeights 
@@ -359,6 +368,7 @@ public class CRF extends Transducer implements Serializable
 				int index = ti.getIndex();
 				CRF.State source = (CRF.State)ti.getSourceState(); 
 				int nwi = source.weightsIndices[index].length;
+				@Var
 				int weightsIndex;
 				for (int wi = 0; wi < nwi; wi++) {
 					weightsIndex = source.weightsIndices[index][wi];
@@ -373,6 +383,7 @@ public class CRF extends Transducer implements Serializable
 		
 		public double getParametersAbsNorm ()
 		{
+			@Var
 			double ret = 0;
 			for (int i = 0; i < initialWeights.length; i++) {
 				if (initialWeights[i] > Transducer.IMPOSSIBLE_WEIGHT)
@@ -400,10 +411,11 @@ public class CRF extends Transducer implements Serializable
 			public void incrementInitialState(Transducer.State s, double count) {
 				initialWeights[s.getIndex()] += count * instanceWeight;
 			}
-			public void incrementTransition(Transducer.TransitionIterator ti, double count) {
+			public void incrementTransition(Transducer.TransitionIterator ti, @Var double count) {
 				int index = ti.getIndex();
 				CRF.State source = (CRF.State)ti.getSourceState(); 
 				int nwi = source.weightsIndices[index].length;
+				@Var
 				int weightsIndex;
 				count *= instanceWeight;
 				for (int wi = 0; wi < nwi; wi++) {
@@ -421,6 +433,7 @@ public class CRF extends Transducer implements Serializable
 		{
 			if (buffer.length != getNumFactors ())
 				throw new IllegalArgumentException ("Expected size of buffer: " + getNumFactors() + ", actual size: " + buffer.length);
+			@Var
 			int pi = 0;
 			for (int i = 0; i < initialWeights.length; i++) {
 				buffer[pi++] = initialWeights[i];
@@ -434,7 +447,7 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 
-		public double getParameter (int index) {
+		public double getParameter (@Var int index) {
 			int numStateParms = 2 * initialWeights.length;
 			if (index < numStateParms) {
 				if (index % 2 == 0)
@@ -455,6 +468,7 @@ public class CRF extends Transducer implements Serializable
 
 		public void setParameters (double [] buff) {
 			assert (buff.length == getNumFactors());
+			@Var
 			int pi = 0;
 			for (int i = 0; i < initialWeights.length; i++) {
 				initialWeights[i] = buff[pi++];
@@ -468,7 +482,7 @@ public class CRF extends Transducer implements Serializable
 			}
 		}
 
-		public void setParameter (int index, double value) {
+		public void setParameter (@Var int index, double value) {
 			int numStateParms = 2 * initialWeights.length;
 			if (index < numStateParms) {
 				if (index % 2 == 0)
@@ -741,10 +755,12 @@ public class CRF extends Transducer implements Serializable
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = labelConnectionsIn (trainingSet);
 		for (int i = 0; i < numLabels; i++) {
+			@Var
 			int numDestinations = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j]) numDestinations++;
 			String[] destinationNames = new String[numDestinations];
+			@Var
 			int destinationIndex = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
@@ -763,10 +779,12 @@ public class CRF extends Transducer implements Serializable
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = labelConnectionsIn (trainingSet);
 		for (int i = 0; i < numLabels; i++) {
+			@Var
 			int numDestinations = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j]) numDestinations++;
 			String[] destinationNames = new String[numDestinations];
+			@Var
 			int destinationIndex = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j])
@@ -789,11 +807,13 @@ public class CRF extends Transducer implements Serializable
 		int numLabels = outputAlphabet.size();
 		boolean[][] connections = labelConnectionsIn (trainingSet);
 		for (int i = 0; i < numLabels; i++) {
+			@Var
 			int numDestinations = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j]) numDestinations++;
 			String[] destinationNames = new String[numDestinations];
 			String[][] weightNames = new String[numDestinations][];
+			@Var
 			int destinationIndex = 0;
 			for (int j = 0; j < numLabels; j++)
 				if (connections[i][j]) {
@@ -873,11 +893,13 @@ public class CRF extends Transducer implements Serializable
 			for (int j = 0; j < numLabels; j++) {
 				if (!connections[i][j])
 					continue;
+				@Var
 				int numDestinations = 0;
 				for (int k = 0; k < numLabels; k++)
 					if (connections[j][k]) numDestinations++;
 				String[] destinationNames = new String[numDestinations];
 				String[] labels = new String[numDestinations];
+				@Var
 				int destinationIndex = 0;
 				for (int k = 0; k < numLabels; k++)
 					if (connections[j][k]) {
@@ -931,6 +953,7 @@ public class CRF extends Transducer implements Serializable
 
 	private String concatLabels(String[] labels)
 	{
+		@Var
 		String sep = "";
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < labels.length; i++)
@@ -943,6 +966,7 @@ public class CRF extends Transducer implements Serializable
 
 	private String nextKGram(String[] history, int k, String next)
 	{
+		@Var
 		String sep = "";
 		StringBuffer buf = new StringBuffer();
 		int start = history.length + 1 - k;
@@ -1020,11 +1044,13 @@ public class CRF extends Transducer implements Serializable
 			Pattern forbidden, Pattern allowed,
 			boolean fullyConnected)
 	{
+		@Var
 		boolean[][] connections = null;
 		if (start != null)
 			outputAlphabet.lookupIndex (start);
 		if (!fullyConnected)
 			connections = labelConnectionsIn (trainingSet, start);
+		@Var
 		int order = -1;
 		if (defaults != null && defaults.length != orders.length)
 			throw new IllegalArgumentException("Defaults must be null or match orders");
@@ -1053,9 +1079,13 @@ public class CRF extends Transducer implements Serializable
 				if (allowedHistory(history, forbidden, allowed))
 				{
 					String stateName = concatLabels(history);
+					@Var
 					int nt = 0;
+					@Var
 					String[] destNames = new String[numLabels];
+					@Var
 					String[] labelNames = new String[numLabels];
+					@Var
 					String[][] weightNames = new String[numLabels][orders.length];
 					for (int nextIndex = 0; nextIndex < numLabels; nextIndex++)
 					{
@@ -1241,7 +1271,8 @@ public class CRF extends Transducer implements Serializable
   // *note*: 'target' sequence of an unlabeled instance is either null or is of size zero.
 	public void setWeightsDimensionAsIn (InstanceList trainingData, boolean useSomeUnsupportedTrick)
 	{
-		final BitSet[] weightsPresent;
+		BitSet[] weightsPresent;
+		@Var
 		int numWeights = 0;
 		// The value doesn't actually change, because the "new" parameters will have zero value
 		// but the gradient changes because the parameters now have different layout.
@@ -1336,6 +1367,7 @@ public class CRF extends Transducer implements Serializable
 		weightsStructureChanged();
 		SparseVector[] newWeights = new SparseVector [parameters.weights.length];
 		int max = inputAlphabet.size();
+		@Var
 		int numWeights = 0;
 		logger.info ("CRF using dense weights, num input features = "+max);
 		for (int i = 0; i < parameters.weights.length; i++) {
@@ -1349,7 +1381,10 @@ public class CRF extends Transducer implements Serializable
 				FeatureSelection fs = featureSelections[i];
 				nfeatures = fs.getBitSet ().cardinality ();
 				int[] idxs = new int [nfeatures];
-				int j = 0, thisIdx = -1;
+				@Var
+				int j = 0;
+				@Var
+				int thisIdx = -1;
 				while ((thisIdx = fs.nextSelectedIndex (thisIdx + 1)) >= 0) {
 					idxs[j++] = thisIdx;
 				}
@@ -1443,6 +1478,7 @@ public class CRF extends Transducer implements Serializable
 
 	public double getParametersAbsNorm ()
 	{
+		@Var
 		double ret = 0;
 		for (int i = 0; i < numStates(); i++) {
 			ret += Math.abs (parameters.initialWeights[i]);
@@ -1466,6 +1502,7 @@ public class CRF extends Transducer implements Serializable
 		weightsValueChanged();
 		State source = (State)getState(sourceStateIndex);
 		State dest = (State) getState(destStateIndex);
+		@Var
 		int rowIndex;
 		for (rowIndex = 0; rowIndex < source.destinationNames.length; rowIndex++)
 			if (source.destinationNames[rowIndex].equals (dest.name))
@@ -1490,6 +1527,7 @@ public class CRF extends Transducer implements Serializable
 	{
 		State source = (State)getState(sourceStateIndex);
 		State dest = (State) getState(destStateIndex);
+		@Var
 		int rowIndex;
 		for (rowIndex = 0; rowIndex < source.destinationNames.length; rowIndex++)
 			if (source.destinationNames[rowIndex].equals (dest.name))
@@ -1756,6 +1794,7 @@ public class CRF extends Transducer implements Serializable
 
 		public State getDestinationState (int index)
 		{
+			@Var
 			State ret;
 			if ((ret = destinations[index]) == null) {
 				ret = destinations[index] = crf.name2state.get (destinationNames[index]);
@@ -1843,7 +1882,10 @@ public class CRF extends Transducer implements Serializable
 			this.crf = crf;
 			this.input = fv;
 			this.weights = new double[source.destinations.length];
-			int nwi, swi;
+			@Var
+			int nwi;
+			@Var
+			int swi;
 			for (int transIndex = 0; transIndex < source.destinations.length; transIndex++) {
 				// xxx Or do we want output.equals(...) here?
 						if (output == null || output.equals(source.labels[transIndex])) {

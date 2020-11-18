@@ -12,14 +12,13 @@
 package cc.mallet.types;
 
 
-import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureSequence;
-import cc.mallet.types.FeatureVector;
+import com.google.errorprone.annotations.Var;
+
 import cc.mallet.util.Randoms;
 
 /**
@@ -62,6 +61,7 @@ public class Multinomial extends FeatureVector
 		}
 		if (checkSum) {
 			// Check that we have a true probability distribution
+			@Var
 			double sum = 0;
 			for (int i = 0; i < values.length; i++)
 				sum += values[i];
@@ -138,7 +138,9 @@ public class Multinomial extends FeatureVector
 	public int randomIndex (Randoms r)
 	{
 		double f = r.nextUniform();
+		@Var
 		double sum = 0;
+		@Var
 		int i;
 		for (i = 0; i < values.length; i++) {
 			sum += values[i];
@@ -159,7 +161,7 @@ public class Multinomial extends FeatureVector
 		return dictionary.lookupObject (randomIndex (r));
 	}
 
-	public FeatureSequence randomFeatureSequence (Randoms r, int length)
+	public FeatureSequence randomFeatureSequence (Randoms r, @Var int length)
 	{
 		if (! (dictionary instanceof Alphabet))
 			throw new UnsupportedOperationException
@@ -321,6 +323,7 @@ public class Multinomial extends FeatureVector
 			if (index > size)
 				size = index;
 			if (counts.length <= index) {
+				@Var
 				int newLength = ((counts.length < minCapacity)
 												 ? minCapacity
 												 : counts.length);
@@ -479,6 +482,7 @@ public class Multinomial extends FeatureVector
             if (dictionary != null){
                 ensureCapacity(dictionary.size() -1 );   //side effect: updates size member
             }
+			@Var
 			double sum = 0;
 			for (int i = 0; i < pr.length; i++) {
         //if (dictionary != null) System.out.println (dictionary.lookupObject(i).toString()+' '+counts[i]);

@@ -11,14 +11,16 @@
 
 package cc.mallet.pipe.iterator;
 
-import java.io.*;
-import java.util.Iterator;
-import java.util.regex.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.Iterator;
 
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.*;
+import com.google.errorprone.annotations.Var;
+
+import cc.mallet.types.Instance;
 
 public class SimpleFileLineIterator implements Iterator<Instance> {
 
@@ -57,6 +59,7 @@ public class SimpleFileLineIterator implements Iterator<Instance> {
 
 	public Instance next () {
 
+		@Var
 		URI uri = null;
 		try { uri = new URI ("array:" + index++); }
 		catch (Exception e) { throw new RuntimeException (e); }
