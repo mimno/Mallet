@@ -179,24 +179,25 @@ public class CRFTrainerByLabelLikelihood extends TransducerTrainer implements Tr
 	 * quickly getting to reasonable parameters on only a subset of the parameters first, then on progressively more data. 
 	 * @param training The training Instances.
 	 * @param numIterationsPerProportion Maximum number of Maximizer iterations per training proportion.
-	 * @param trainingProportions If non-null, train on increasingly
-	 * larger portions of the data, e.g. new double[] {0.2, 0.5, 1.0}.  This can sometimes speedup convergence. 
+	 * @param trainingProportions Train on increasingly
+	 * larger portions of the data, e.g. new double[] {0.2, 0.5, 1.0}.  This can sometimes speed up convergence, similar to SGD.
 	 * Be sure to end in 1.0 if you want to train on all the data in the end.  
 	 * @return True if training has converged.
 	 */
-	public boolean train (InstanceList training, int numIterationsPerProportion, double[] trainingProportions)
-	{
+	public boolean train (InstanceList training, int numIterationsPerProportion, double[] trainingProportions) {
 		int trainingIteration = 0;
 		assert (trainingProportions.length > 0);
 		boolean converged = false;
 		for (int i = 0; i < trainingProportions.length; i++) {
 			assert (trainingProportions[i] <= 1.0);
-			logger.info ("Training on "+trainingProportions[i]+"% of the data this round.");
-			if (trainingProportions[i] == 1.0)
+			logger.info ("Training on " + (100 * trainingProportions[i]) + "% of the data this round.");
+			if (trainingProportions[i] == 1.0) {
 				converged = this.train (training, numIterationsPerProportion);
-			else 
+			}
+			else  {
 				converged = this.train (training.split (new Random(1),	
-						new double[] {trainingProportions[i],	1-trainingProportions[i]})[0], numIterationsPerProportion);
+						new double[] {trainingProportions[i], 1.0 - trainingProportions[i]})[0], numIterationsPerProportion);
+			}
 			trainingIteration += numIterationsPerProportion;
 		}
 		return converged;
