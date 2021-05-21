@@ -555,6 +555,8 @@ Bernoulli numbers. */
 
 	/** 
 	 * Learn Dirichlet parameters using frequency histograms
+	 * described by Hanna Wallach in "Structured Topic Models for Language" (2008), section 2.4
+	 * Method 1: Using the Digamma Recurrence Relation (pp. 27-28)
 	 * 
 	 * @param parameters A reference to the current values of the parameters, which will be updated in place
 	 * @param observations An array of count histograms. <code>observations[10][3]</code> could be the number of documents that contain exactly 3 tokens of word type 10.
@@ -571,6 +573,8 @@ Bernoulli numbers. */
 
 	/** 
 	 * Learn Dirichlet parameters using frequency histograms
+	 * described by Hanna Wallach in "Structured Topic Models for Language", section 2.4
+	 * Method 1: Using the Digamma Recurrence Relation (pp. 27-28) and gamma hyperpriors (section 2.5, pp. 37-39)
 	 * 
 	 * @param parameters A reference to the current values of the parameters, which will be updated in place
 	 * @param observations An array of count histograms. <code>observations[10][3]</code> could be the number of documents that contain exactly 3 tokens of word type 10.
