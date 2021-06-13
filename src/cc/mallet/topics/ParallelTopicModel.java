@@ -1494,7 +1494,7 @@ public class ParallelTopicModel implements Serializable {
                 builder.append("no-name");
             }
 
-            docLen = currentDocTopics.length;
+            docLen = topicSequence.size();
 
             // Count up the tokens
             for (int token=0; token < docLen; token++) {
