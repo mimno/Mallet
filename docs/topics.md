@@ -14,6 +14,7 @@ The MALLET topic model package includes an extremely fast and highly scalable im
 Once MALLET has been downloaded and installed, the next step is to import text files into MALLET's internal format. The following instructions assume that the documents to be used as input to the topic model are in separate files, in a directory that contains no other files. See the introduction to importing data in MALLET for more information and other import methods.
 
 Change to the MALLET directory and run the command
+
     bin/mallet import-dir --input /data/topic-input --output topic-input.mallet \
       --keep-sequence --remove-stopwords
 
@@ -21,6 +22,7 @@ To learn more about options for the `import-dir` command use the argument `--hel
 
 ### Building Topic Models
 Once you have imported documents into MALLET format, you can use the train-topics command to build a topic model, for example:
+
     bin/mallet train-topics --input topic-input.mallet \
       --num-topics 100 --output-state topic-state.gz
       
