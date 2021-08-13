@@ -1,37 +1,19 @@
-## Welcome to GitHub Pages
+## Mallet: MAchine Learning for LanguagE Toolkit
 
-You can use the [editor on GitHub](https://github.com/mimno/Mallet/edit/master/docs/index.md) to maintain and preview the content for your website in Markdown files.
+MALLET is a Java-based package for statistical natural language processing, document classification, clustering, topic modeling, information extraction, and other machine learning applications to text.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+MALLET includes sophisticated tools for document classification: efficient routines for converting text to "features", a wide variety of algorithms (including Naïve Bayes, Maximum Entropy, and Decision Trees), and code for evaluating classifier performance using several commonly used metrics. [Quick Start](classificationn) [Developer's Guide](classifier-devel)
 
-### Markdown
+In addition to classification, MALLET includes tools for sequence tagging for applications such as named-entity extraction from text. Algorithms include Hidden Markov Models, Maximum Entropy Markov Models, and Conditional Random Fields. These methods are implemented in an extensible system for finite state transducers. [Quick Start](sequences) [Developer's Guide](fst)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Topic models are useful for analyzing large collections of unlabeled text. The MALLET topic modeling toolkit contains efficient, sampling-based implementations of Latent Dirichlet Allocation, Pachinko Allocation, and Hierarchical LDA. [Quick Start](topics)
 
-```markdown
-Syntax highlighted code block
+Many of the algorithms in MALLET depend on numerical optimization. MALLET includes an efficient implementation of Limited Memory BFGS, among many other optimization methods. [Developer's Guide](optimization)
 
-# Header 1
-## Header 2
-### Header 3
+In addition to sophisticated Machine Learning applications, MALLET includes routines for transforming text documents into numerical representations that can then be processed efficiently. This process is implemented through a flexible system of "pipes", which handle distinct tasks such as tokenizing strings, removing stopwords, and converting sequences into count vectors. [Quick Start](import) [Developer's Guide](import-devel)
+An add-on package to MALLET, called GRMM, contains support for inference in general graphical models, and training of CRFs with arbitrary graphical structure. [About GRMM](grmm)
+—
+The toolkit is Open Source Software, and is released under the Apache 2.0 License. You are welcome to use the code under the terms of the licence for research or commercial purposes, however please acknowledge its use with a citation:
 
-- Bulleted
-- List
+    McCallum, Andrew Kachites.  "MALLET: A Machine Learning for Language Toolkit." http://mallet.cs.umass.edu. 2002.
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/mimno/Mallet/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
