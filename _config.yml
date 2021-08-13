@@ -1,1 +1,5 @@
 theme: jekyll-theme-minimal
+title: Mallet
+logo: logo3.png
+description: Machine learning for language toolkit
+show_downloads: true
