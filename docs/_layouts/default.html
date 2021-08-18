@@ -19,6 +19,24 @@
 
         <p>{{ site.description | default: site.github.project_tagline }}</p>
 
+        <div>
+          <div><a href="index">Home</a></div>
+<div><a href="http://www.mimno.org/mallet-tutorial.pdf">Tutorial slides</a> /
+<a href="http://vimeo.com/76668996">video</a></div>
+<div><a href="download">Download</a></div>
+<div><a href="api">API</a></div>
+<div><a href="quick-start">Quick Start</a></div>
+<div><a href="sponsors">Sponsors</a></div>
+<div><a href="about">About</a></div>
+<div>&mdash;</div>
+<div><a href="import">Importing Data</a></div>
+<div><a href="classification">Classification</a></div>
+<div><a href="sequences">Sequence Tagging</a></div>
+<div><a href="topics">Topic Modeling</a></div>
+<div><a href="optimization">Optimization</a></div>
+        </div>
+
+        
         {% if site.github.is_project_page %}
         <p class="view"><a href="{{ site.github.repository_url }}">View the Project on GitHub <small>{{ site.github.repository_nwo }}</small></a></p>
         {% endif %}
@@ -34,7 +52,8 @@
           <li><a href="{{ site.github.repository_url }}">View On <strong>GitHub</strong></a></li>
         </ul>
         {% endif %}
-      </header>
+        
+       </header>
       <section>
 
       {{ content }}
