@@ -1,4 +1,4 @@
-Document Classification
+# Document Classification
 
 A classifier is an algorithm that distinguishes between a fixed set of classes, such as "spam" vs. "non-spam", based on labeled training examples. MALLET includes implementations of several classification algorithms, including Naïve Bayes, Maximum Entropy, and Decision Trees. In addition, MALLET provides tools for evaluating classifiers.
 
