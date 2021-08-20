@@ -1,0 +1,3 @@
+# Mallet sponsors
+
+Work on MALLET has been supported in part by the Center for Intelligent Information Retrieval, and in part by SPAWARSYSCEN-SD grant number N66001-02-1-8903, in part by Advanced Research and Development Activity under contract number MDA904-01-C-0984,in part by The Central Intelligence Agency, the National Security Agency andNational Science Foundation under NSF grant #IIS-0326249, and in part by the Defense Advanced Research Projects Agency (DARPA), through the Department of the Interior, NBC, Acquisition Services Division, under contract number NBCHD030010. Work on and using MALLET at the University of Pennsylvania is funded by NSF grants EIA-0205448 and EIA-0205456 as well as CALO.
