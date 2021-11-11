@@ -35,7 +35,7 @@ public class Vectors2Vectors {
 		 "Read the instance list from this file; Using - indicates stdin.", null);
 
 	static CommandOption.File outputFile = new CommandOption.File(Vectors2Vectors.class, "output", "FILE", true, new File("-"),
-		 "Write pruned instance list to this file (use --training-file etc. if you are splitting the list). Using - indicates stdin.", null);
+		 "Write pruned instance list to this file (use --training-file etc. if you are splitting the list). Using - indicates stdout.", null);
 
 	static CommandOption.File trainingFile = new CommandOption.File(Vectors2Vectors.class, "training-file", "FILE", true, new File("training.vectors"),
 		 "Write the training set instance list to this file (or use --output if you are only pruning features); Using - indicates stdout.", null);

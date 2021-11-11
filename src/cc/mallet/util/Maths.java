@@ -185,6 +185,24 @@ public final class Maths {
   }
 
   /**
+   * Regularized Gamma function, used for Gamma CDF. Operates by 
+   * evaluating an infinite sum that converges quickly in practice.
+   */
+  public static double regularizedGammaP(double shape, double x) {
+    int n = 0;
+    double currentTerm = 1.0 / shape;
+    double total = currentTerm;
+
+    while (Math.abs(currentTerm / total) > 10e-8) {
+      n++;
+      currentTerm *= x / (shape + n);
+      total += currentTerm;
+    }
+
+    return Math.exp(-x + (shape * Math.log(x)) - logGamma(shape)) * total;
+  }
+
+  /**
    * Computes p(x;n,p) where x~B(n,p)
    */
   // Copied as the "classic" method from Catherine Loader.

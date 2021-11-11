@@ -35,6 +35,8 @@ import java.util.logging.*;
 import java.io.*;
 
 import cc.mallet.util.MalletLogger;
+import cc.mallet.util.Maths;
+import cc.mallet.types.Dirichlet;
 
 public final class StatFunctions {
 	private static Logger logger = MalletLogger.getLogger(StatFunctions.class.getName());
@@ -347,6 +349,33 @@ public final class StatFunctions {
     // ALGORITHM AS 63 APPL. STATIST. VOL.32, NO.1
     // Computes P(F>x)
     return(betainv(df1*x/(df1*x+df2),0.5*df1,0.5*df2));
-  }  
+  }
+
+  public static double gammaPDF(double x, double shape, double scale) {
+    return Math.exp(-Dirichlet.logGammaStirling(shape) - shape * Math.log(scale) + 
+      (shape - 1.0) * Math.log(x) - x / scale);
+  }
+
+  public static double gammaCDF(double x, double shape, double scale) {
+    return Maths.regularizedGammaP(shape, x / scale);
+  }
+
+  public static double gammaInverseCDF(double p, double shape, double scale) {
+    if (p <= 0) { return 0; }
+    if (p >= 1.0) { return Double.MAX_VALUE; }
+
+    // Use Newton's method to find the 0 point of CDF(x) - p.
+    // The first derivative will be the PDF.
+    // Start with the mean as a guess:
+    double x = shape * scale;
+    double cdfAtX = gammaCDF(x, shape, scale);
+    while (Math.abs(cdfAtX - p) > 1e-7) {
+      x = x - (cdfAtX - p) / gammaPDF(x, shape, scale);
+      cdfAtX = gammaCDF(x, shape, scale);
+    }
+
+    return x;
+  }
+
 }
 
