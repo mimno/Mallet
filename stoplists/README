@@ -1,3 +1,5 @@
 English stoplist is the standard Mallet stoplist.
 
 German, French, Finnish are borrowed from http://www.ranks.nl.
+
+Spanish under MIT License from https://github.com/stopwords-iso/stopwords-es.
