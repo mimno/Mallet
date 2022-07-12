@@ -93,7 +93,7 @@ public class RTopicModel extends ParallelTopicModel {
 				docCounts.putOrAdd(features.getIndexAtPosition(i), 1, 1);
 			}
 
-			for (IntCursor cursor : docCounts.values()) {
+			for (IntCursor cursor : docCounts.keys()) {
 				int feature = cursor.value;
 				result[feature][0] += docCounts.get(feature);
 				result[feature][1]++;
