@@ -30,9 +30,13 @@ Use the option `--help` to get a complete list of options for the train-topics c
 
 `--input [FILE]` Use this option to specify the MALLET collection file you created in the previous step.
 
+`--input-state [FILE]` Add this option if you would like to reload a previously saved Gibbs sampling state. See the `--output-state` option below for information on creating sampling state files. You must also specify a data file with `--input`.
+
 `--num-topics [NUMBER]` The number of topics to use. The best number depends on what you are looking for in the model. The default (10) will provide a broad overview of the contents of the corpus. The number of topics should depend to some degree on the size of the collection, but 200 to 400 will produce reasonably fine-grained results.
 
-`--num-iterations [NUMBER]` The number of sampling iterations should be a trade off between the time taken to complete sampling and the quality of the topic model.
+`--num-iterations [NUMBER]` The number of sampling iterations should be a trade off between the time taken to complete sampling and the quality of the topic model. If you already have a saved model or sampling state, and only want to generate diagnostics or produce an inferencer, you may want to set this value to 0.
+
+`--num-icm-iterations [NUMBER]` After sampling iterations, which are randomized, you can also perform iterated conditional modes (ICM) iterations, which choose the single most likely topic for each token. The process will continue for the specified number of iterations unless it goes through a complete iteration without changing any topic assignments, in which case it will stop immediately. ICM will almost certainly converge to a more likely state than sampling, but will only reach a local maximum. 
 
 ### Hyperparameter Optimization
 `--optimize-interval [NUMBER]` This option turns on hyperparameter optimization, which allows the model to better fit the data by allowing some topics to be more prominent than others. Optimization every 10 iterations is reasonable.
