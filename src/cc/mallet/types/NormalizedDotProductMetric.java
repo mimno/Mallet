@@ -39,17 +39,17 @@ public class NormalizedDotProductMetric implements CachedMetric {
 
 	public double distance( SparseVector a, int hashCodeA,
 													SparseVector b, int hashCodeB) {		
-		Double cachedA = (Double) hash.get (new Integer (hashCodeA)); 
-		Double cachedB = (Double) hash.get (new Integer (hashCodeB));
+		Double cachedA = (Double) hash.get (Integer.valueOf (hashCodeA)); 
+		Double cachedB = (Double) hash.get (Integer.valueOf (hashCodeB));
 		if (a == null || b == null)
 			return 1.0;
 		if (cachedA == null) {
-			cachedA = new Double (a.dotProduct (a));
- 			hash.put (new Integer (hashCodeA), cachedA);
+			cachedA = Double.valueOf (a.dotProduct (a));
+ 			hash.put (Integer.valueOf (hashCodeA), cachedA);
 		}
 		if (cachedB == null) {
-			cachedB = new Double (b.dotProduct (b));
-			hash.put (new Integer (hashCodeB), cachedB);
+			cachedB = Double.valueOf (b.dotProduct (b));
+			hash.put (Integer.valueOf (hashCodeB), cachedB);
 		}
 		double ab = a.dotProduct (b);
 		

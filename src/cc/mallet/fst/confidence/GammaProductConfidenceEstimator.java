@@ -27,7 +27,7 @@ public class GammaProductConfidenceEstimator extends TransducerConfidenceEstimat
 		string2stateIndex = new HashMap();
 		// store state indices
 		for (int i=0; i < model.numStates(); i++) {
-			string2stateIndex.put (model.getState(i).getName(), new Integer (i));
+			string2stateIndex.put (model.getState(i).getName(), Integer.valueOf (i));
 		}
 	}
 	

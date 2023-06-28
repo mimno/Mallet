@@ -1105,7 +1105,7 @@ public class HMM extends Transducer implements Serializable {
 			this.source = source;
 			this.hmm = hmm;
 			this.inputSequence = inputSeq;
-			this.inputFeature = new Integer(inputSequence
+			this.inputFeature = Integer.valueOf(inputSequence
 					.getIndexAtPosition(inputPosition));
 			this.inputPos = inputPosition;
 			this.weights = new double[source.destinations.length];

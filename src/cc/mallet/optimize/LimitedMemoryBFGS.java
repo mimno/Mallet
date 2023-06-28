@@ -352,10 +352,10 @@ public class LimitedMemoryBFGS implements Optimizer {
 		assert(l.size() <= m);
 		if (l.size() == m) { //pop old double and add new
 			l.removeFirst(); 
-			l.addLast(new Double(toadd));
+			l.addLast(Double.valueOf(toadd));
 		}
 		else {
-			l.addLast(new Double(toadd));
+			l.addLast(Double.valueOf(toadd));
 		}
 	}
 

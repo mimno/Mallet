@@ -77,7 +77,7 @@ public class ClusterSampleIterator extends PairSampleIterator {
 		int size = Math.max(random.nextInt(a.length) + 1, minSize);
 		ArrayList toInclude = new ArrayList();
 		for (int i = 0; i < a.length; i++)
-			toInclude.add(new Integer(i));
+			toInclude.add(Integer.valueOf(i));
 		while (toInclude.size() > size && (size != a.length))
 			toInclude.remove(random.nextInt(toInclude.size()));
 
@@ -101,7 +101,7 @@ public class ClusterSampleIterator extends PairSampleIterator {
 		int size = Math.max(random.nextInt(a.length) + 1, minSize);
 		ArrayList toInclude = new ArrayList();
 		for (int i = 0; i < a.length; i++)
-			toInclude.add(new Integer(i));
+			toInclude.add(Integer.valueOf(i));
 		while (toInclude.size() > size && (size != a.length))
 			toInclude.remove(random.nextInt(toInclude.size()));
 

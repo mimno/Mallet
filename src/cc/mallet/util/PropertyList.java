@@ -64,7 +64,7 @@ public class PropertyList implements Serializable
 			if (this instanceof ObjectProperty)
 				return ((ObjectProperty)this).value;
 			else if (this instanceof NumericProperty)
-				return new Double(((NumericProperty)this).value);
+				return Double.valueOf(((NumericProperty)this).value);
 			else
 				throw new IllegalStateException ("Unrecognitized PropertyList entry.");
 		} else if (this.next == null) {
@@ -134,9 +134,9 @@ public class PropertyList implements Serializable
 			double val = iter.getNumericValue();
 			Double storedValue = (Double)key2value.get (key);
 			if (storedValue == null)
-				key2value.put (key, new Double (val));
+				key2value.put (key, Double.valueOf (val));
 			else // sum stored value with current value
-				key2value.put (key, new Double (storedValue.doubleValue() + val));
+				key2value.put (key, Double.valueOf (storedValue.doubleValue() + val));
 		}
 		@Var
 		PropertyList ret = null;

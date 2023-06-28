@@ -98,8 +98,8 @@ public class Graph extends Canvas
 		yLabelWidth = fm.stringWidth(yLabel);
 		xLabelHeight = fm.getHeight();
 		
-		labelWidth = Math.max(fm.stringWidth(new Integer(min).toString()),
-													fm.stringWidth(new Integer(max).toString())) + 2;
+		labelWidth = Math.max(fm.stringWidth(Integer.valueOf(min).toString()),
+													fm.stringWidth(Integer.valueOf(max).toString())) + 2;
 		top = padding + titleHeight;
 		bottom = getSize().height - padding - xLabelHeight - fm.getHeight();
 		left = padding + yLabelWidth;
@@ -122,15 +122,15 @@ public class Graph extends Canvas
 		g.drawString(yLabel, 0, getSize().height/2);
 		g.drawString(xLabel, (getSize().width - fm.stringWidth(xLabel))/2 ,bottom + fm.getHeight());
 		// draw the max and min values
-		g.drawString(new Integer(min).toString(), 
-								 left - padding - fm.stringWidth(new Integer(min).toString()),
+		g.drawString(Integer.valueOf(min).toString(), 
+								 left - padding - fm.stringWidth(Integer.valueOf(min).toString()),
 								 bottom);
-		g.drawString(new Integer(max).toString(), 
-								 left - padding - fm.stringWidth(new Integer(max).toString()),
+		g.drawString(Integer.valueOf(max).toString(), 
+								 left - padding - fm.stringWidth(Integer.valueOf(max).toString()),
 								 top + titleHeight);
-		g.drawString(new Integer(xmin).toString(), left, bottom + fm.getHeight());
-		g.drawString(new Integer(xmax).toString(), 
-								 right - fm.stringWidth(new Integer(xmax).toString()),
+		g.drawString(Integer.valueOf(xmin).toString(), left, bottom + fm.getHeight());
+		g.drawString(Integer.valueOf(xmax).toString(), 
+								 right - fm.stringWidth(Integer.valueOf(xmax).toString()),
 								 bottom + fm.getHeight());	
 		// draw the vertical and horizontal lines
 		g.drawLine(left, top, left, bottom);

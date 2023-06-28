@@ -20,7 +20,7 @@ public class Target2Integer extends Pipe {
 			if (! (carrier.getTarget() instanceof String)) {
 				throw new IllegalArgumentException ("Target must be a String for conversion to Integer");
 			}
-			carrier.setTarget( new Integer((String) carrier.getTarget()) );
+			carrier.setTarget( Integer.valueOf((String) carrier.getTarget()) );
 		}
 		return carrier;
 	}

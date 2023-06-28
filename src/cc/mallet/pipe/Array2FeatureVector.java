@@ -65,7 +65,7 @@ public class Array2FeatureVector extends Pipe {
 
 		if ( dataLength > dataAlphabet.size() )
 			for (int k=dataAlphabet.size() ; k<dataLength ; k++ )
-				dataAlphabet.lookupIndex( new Integer(k) , true ); // 'add'
+				dataAlphabet.lookupIndex( Integer.valueOf(k) , true ); // 'add'
 
 		FeatureVector fv = new FeatureVector( dataAlphabet, 
 				(double[])carrier.getData() );

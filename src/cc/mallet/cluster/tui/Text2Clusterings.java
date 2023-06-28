@@ -67,7 +67,7 @@ public class Text2Clusterings {
 					File record = records.get(k);
 					labels.add(label);
 					instances.add(new Instance(new Record(fieldAlph, valueAlph, parseFile(record)),
-												new Integer(label), record.toString(),
+												Integer.valueOf(label), record.toString(),
 												record.toString()));
 				}
 			}

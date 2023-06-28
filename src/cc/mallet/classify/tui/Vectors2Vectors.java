@@ -267,7 +267,7 @@ public class Vectors2Vectors {
 					ArrayList seq = new ArrayList();
 					for (int loc = 0; loc < fv.numLocations(); loc++)
 						for (int count = 0; count < fv.valueAtLocation(loc); count++)
-							seq.add (new Integer(fv.indexAtLocation(loc)));
+							seq.add (Integer.valueOf(fv.indexAtLocation(loc)));
 					Collections.shuffle(seq);
 					int[] indices = new int[seq.size()];
 					for (int i = 0; i < indices.length; i++)
@@ -303,7 +303,7 @@ public class Vectors2Vectors {
 				ArrayList seq = new ArrayList();
 				for (int loc = 0; loc < fv.numLocations(); loc++)
 					for (int count = 0; count < fv.valueAtLocation(loc); count++)
-						seq.add (new Integer(fv.indexAtLocation(loc)));
+						seq.add (Integer.valueOf(fv.indexAtLocation(loc)));
 				Collections.shuffle(seq);
 				int[] indices = new int[seq.size()];
 				for (int i = 0; i < indices.length; i++)

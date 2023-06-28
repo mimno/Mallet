@@ -20,7 +20,7 @@ public class Target2Double extends Pipe {
 			if (! (carrier.getTarget() instanceof String)) {
 				throw new IllegalArgumentException ("Target must be a string for conversion to Double");
 			}
-			carrier.setTarget( new Double((String) carrier.getTarget()) );
+			carrier.setTarget( Double.valueOf((String) carrier.getTarget()) );
 		}
 		return carrier;
 	}

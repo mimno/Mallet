@@ -88,20 +88,20 @@ public class PairwiseEvaluator extends ClassifyingNeighborEvaluator {
 			for (int j = 0; j < cluster2.length; j++) {
 				AgglomerativeNeighbor pwneighbor =
 					new AgglomerativeNeighbor(original,	original, cluster1[i], cluster2[j]);
-				scores.add(new Double(getScore(pwneighbor)));
+				scores.add(Double.valueOf(getScore(pwneighbor)));
 			}
 		if (mergeFirst) { // Also add w/in cluster scores.
 			for (int i = 0; i < cluster1.length; i++)
 				for (int j = i + 1; j < cluster1.length; j++) {
 					AgglomerativeNeighbor pwneighbor =
 						new AgglomerativeNeighbor(original,	original, cluster1[i], cluster1[j]);
-				scores.add(new Double(getScore(pwneighbor)));				
+				scores.add(Double.valueOf(getScore(pwneighbor)));				
 			}
 			for (int i = 0; i < cluster2.length; i++)
 				for (int j = i + 1; j < cluster2.length; j++) {
 					AgglomerativeNeighbor pwneighbor =
 						new AgglomerativeNeighbor(original,	original, cluster2[i], cluster2[j]);
-				scores.add(new Double(getScore(pwneighbor)));				
+				scores.add(Double.valueOf(getScore(pwneighbor)));				
 			}				
 		}
 				
@@ -112,7 +112,7 @@ public class PairwiseEvaluator extends ClassifyingNeighborEvaluator {
 //					AgglomerativeNeighbor pwneighbor =
 //						new AgglomerativeNeighbor(original,	original,
 //																			mergedIndices[i], mergedIndices[j]);
-//					scores.add(new Double(getScore(pwneighbor)));
+//					scores.add(Double.valueOf(getScore(pwneighbor)));
 //				}
 //			}
 //		}

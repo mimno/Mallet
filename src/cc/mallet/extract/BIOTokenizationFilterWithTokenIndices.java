@@ -11,8 +11,8 @@ public class BIOTokenizationFilterWithTokenIndices extends
 			int endTokenIdx) {
 		StringSpan span = (StringSpan) input
 				.subspan(startTokenIdx, endTokenIdx);
-		span.setProperty("StartTokenIdx", new Integer(startTokenIdx));
-		span.setProperty("EndTokenIdx", new Integer(endTokenIdx-1));
+		span.setProperty("StartTokenIdx", Integer.valueOf(startTokenIdx));
+		span.setProperty("EndTokenIdx", Integer.valueOf(endTokenIdx-1));
 		return span;
 	}
 

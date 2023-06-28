@@ -69,8 +69,8 @@ public class QBCSequenceConfidenceEstimator extends TransducerSequenceConfidence
 				String label = predictions[j].get(i).toString();
 				Integer count = (Integer)label2Count.get(label);
 				if (count == null)
-					count = new Integer(0);
-				label2Count.put(label, new Integer(count.intValue() + 1));					
+					count = Integer.valueOf(0);
+				label2Count.put(label, Integer.valueOf(count.intValue() + 1));					
 			}
 			sum += voteEntropy(label2Count);
 		}

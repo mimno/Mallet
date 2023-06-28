@@ -57,7 +57,7 @@ public class MostFrequentClassifier extends Classifier {
 		String labelEntry = (String) label.getEntry();
 		
 		if(! this.labels.containsKey(labelEntry) ) {
-			this.sortedLabelMap.put(labelEntry, new Integer(1));
+			this.sortedLabelMap.put(labelEntry, Integer.valueOf(1));
 			this.labels.put(labelEntry, label);
 		}
 		else {

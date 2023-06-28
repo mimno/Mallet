@@ -62,7 +62,7 @@ public class Clusterings2Clusterings {
 					int label = clustering.getLabel(j);
 					Instance instance = oldInstances.get(j);
 					if (clustering.size(label) >= minClusterSize.value) 
-						newInstances.add(noop.pipe(new Instance(instance.getData(), lalph.lookupLabel(new Integer(label)), instance.getName(), instance.getSource())));
+						newInstances.add(noop.pipe(new Instance(instance.getData(), lalph.lookupLabel(Integer.valueOf(label)), instance.getName(), instance.getSource())));
 				}
 				clusterings.set(i, createSmallerClustering(newInstances));
 			}
@@ -97,7 +97,7 @@ public class Clusterings2Clusterings {
 					InstanceList instances = clustering.getCluster(cluster);
 					for (int i = 0; i < instances.size(); i++) {
 						Instance inst = instances.get(i);
-						trainingInstances.add(new Instance(inst.getData(), lalph.lookupLabel(new Integer(cluster)), inst.getName(), inst.getSource()));
+						trainingInstances.add(new Instance(inst.getData(), lalph.lookupLabel(Integer.valueOf(cluster)), inst.getName(), inst.getSource()));
 					}
 				}
 			}
@@ -110,7 +110,7 @@ public class Clusterings2Clusterings {
 					InstanceList instances = clustering.getCluster(i);
 					for (int j = 0; j < instances.size(); j++) {
 						Instance inst = instances.get(j);
-						testingInstances.add(new Instance(inst.getData(), lalph.lookupLabel(new Integer(i)), inst.getName(), inst.getSource()));
+						testingInstances.add(new Instance(inst.getData(), lalph.lookupLabel(Integer.valueOf(i)), inst.getName(), inst.getSource()));
 					}					
 				}
 			}
