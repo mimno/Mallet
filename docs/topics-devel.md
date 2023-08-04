@@ -2,7 +2,7 @@
 
 In this example, I import data from a file, train a topic model, and analyze the topic assignments of the first instance. I then create a new instance, which is made up of the words from topic 0, and infer a topic distribution for that instance.
 
-The input file contains one document per line. Each line has three fields, separated by commas. This is a standard Mallet format. For more information, see the [importing data guide](import). The first field is a name for the document. The second field could contain a document label, as in a classification task, but for this example we won't use that field. It is therefore set to a meaningless placeholder value. The third field contains the full text of the document, with no newline characters.
+The input file contains one document per line. Each line has three fields, separated by tabs (the class refers to CSV format, but tabs are easier to work with for text data). This is a standard Mallet format. For more information, see the [importing data guide](import). The first field is a name for the document. The second field could contain a document label, as in a classification task, but for this example we won't use that field. It is therefore set to a meaningless placeholder value. The third field contains the full text of the document, with no newline characters.
 
 The following example is in the `cc.mallet.examples` package. Annotations are included in comments. You can run this code using the command
 
