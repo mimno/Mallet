@@ -7,15 +7,8 @@ For information about the MALLET data import API, see the [data import developer
 There are two primary methods for importing data into MALLET format, first when the source data consists of many separate files, and second when the data is contained in a single file, with one instance per line.
 For topic modeling, we usually want a large number of short, paragraph- to page-sized text segments. Note that this may *not* be what you think of as a "document"! In this case, the one-text-per-line file format is often a better choice than individual files.
 
-**One instance per file**: After downloading and building MALLET, change to the MALLET directory. As an example, text-only (`.txt`) versions of English web pages are in files in a directory called `sample-data/web/en` and text-only versions of German pages are in `sample-data/web/de`. Now run this command:
 
-    bin/mallet import-dir --input sample-data/web/* --output web.mallet
-
-MALLET will use the directory names as labels and the filenames as instance names. Note: make sure you are in the mallet directory, not the mallet/bin directory; otherwise you will get a ClassNotFoundException exception.
-
-If your files are *not* text formatted, for example `.docx` or `.pdf`, you will need to extract text first. Mallet does not support this function.
-
-**One file, one instance per line**: By default, Mallet assumes each line of the data file is in the following tab-delimited format:
+**One file, one instance per line**: The "spreadsheet" style is the most common and useful. By default, Mallet assumes each line of the data file is in the following tab-delimited format:
 
     [ID]  [tag]  [text of the instance...]
 
@@ -24,6 +17,15 @@ After downloading and building MALLET, change to the MALLET directory and run th
     bin/mallet import-file --input /data/web/data.txt --output web.mallet
 
 In this case, the first token of each line (whitespace delimited, with optional comma) becomes the instance name, the second token becomes the label, and all additional text on the line is interpreted as a sequence of word tokens. Note that the data in this case will be a vector of feature/value pairs, such that a feature consists of a distinct word type and the value is the number of times that word occurs in the text.
+
+**One instance per file**: The "directory" style is also available. It is sometimes preferred for collections that are already broken up into individual files. Make sure to keep track of file sizes: topic modeling works best when a "document" is about 100-500 words, so larger files may need to be broken into smaller segments. After downloading and building MALLET, change to the MALLET directory. As an example, text-only (`.txt`) versions of English web pages are in files in a directory called `sample-data/web/en` and text-only versions of German pages are in `sample-data/web/de`. Now run this command:
+
+    bin/mallet import-dir --input sample-data/web/* --output web.mallet
+
+MALLET will use the directory names as labels and the filenames as instance names. Note: make sure you are in the mallet directory, not the mallet/bin directory; otherwise you will get a ClassNotFoundException exception.
+
+If your files are *not* text formatted, for example `.docx` or `.pdf`, you will need to extract text first. Mallet does not support this function.
+
 
 There are many additional options to the `import-dir` and `import-file` commands. Add the `--help` option to either of these commands to get a full list. Some commonly used options to either command are:
 
