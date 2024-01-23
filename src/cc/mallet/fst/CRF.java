@@ -1596,6 +1596,58 @@ public class CRF extends Transducer implements Serializable
 		}
 	}
 
+  /**
+     * This will take a CRF (that might have different structure) and try to apply any starting
+     * point weight values that it can.  It will match everything using the actual input
+     * Alphabet and weightAlphabet names -- so it doesn't matter if the features have changed- it
+     * will just take as much as it can as a starting point.
+     * You would want to call this _after_ you have setup all of the states and dimensions
+     * @param startingPoint
+     */
+    public void initializeApplicableParametersFrom(CRF startingPoint) {
+      int stateCount = 0;
+      int transitionCount = 0;
+      int featureCount = 0;
+      for (int i = 0; i < this.states.size(); i++) {
+        State thisState = this.states.get(i);
+        State thatState = startingPoint.getState(thisState.getName());
+        if (thatState == null) continue;
+
+        parameters.initialWeights[thisState.index] =
+            startingPoint.parameters.initialWeights[thatState.index];
+        parameters.finalWeights[thisState.index] =
+            startingPoint.parameters.finalWeights[thatState.index];
+        stateCount += 1;
+      }
+
+      for (int i = 0; i < parameters.weightAlphabet.size(); i++) {
+        Object weightKey = parameters.weightAlphabet.lookupObject(i);
+        int spIndex = startingPoint.parameters.weightAlphabet.lookupIndex(weightKey, false);
+        if (spIndex < 0) continue;
+
+        transitionCount += 1;
+        this.parameters.defaultWeights[i] = startingPoint.parameters.defaultWeights[spIndex];
+
+        SparseVector thisFe = this.parameters.weights[i];
+        SparseVector thatFe = startingPoint.parameters.weights[spIndex];
+        for (int j = 0; j < thisFe.numLocations(); j++) {
+          int thisIndex = thisFe.indexAtLocation(j);
+          Object thisFeature = this.inputAlphabet.lookupObject(thisIndex);
+          int thatIndex = startingPoint.inputAlphabet.lookupIndex(thisFeature, false);
+          if (thatIndex < 0) continue;
+
+          double thatValue = thatFe.value(thatIndex);
+          if (thatValue != 0) {
+            thisFe.setValueAtLocation(j, thatValue);
+            featureCount += 1;
+          }
+        }
+      }
+      weightsValueChanged();
+      logger.info("Finished intiailizing from previous model: matched " + transitionCount +
+                  " transitions, " + stateCount + " states, and " + featureCount + " features");
+    }
+
 	// TODO Put support to Optimizable here, including getValue(InstanceList)??
 
 	public void print ()
