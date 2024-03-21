@@ -4,6 +4,7 @@ import cc.mallet.types.*;
 import com.carrotsearch.hppc.IntIntHashMap;
 import com.carrotsearch.hppc.cursors.IntCursor;
 import java.io.*;
+import java.util.ArrayList;
 
 /** A wrapper for a topic model to be used from the R statistical package through rJava.
 	R does not distinguish between integers and floating point numbers, so many of these
@@ -16,6 +17,53 @@ public class RTopicModel extends ParallelTopicModel {
 
 	public RTopicModel(double numTopics, double alpha, double beta) {
 		super((int) Math.floor(numTopics), alpha, beta);
+	}
+	
+	private RTopicModel(ParallelTopicModel model) {
+		super(model.getTopicAlphabet(), model.alphaSum, model.beta);
+		this.data = (ArrayList) model.data.clone();
+	    this.alphabet = model.alphabet;
+	    this.topicAlphabet = model.topicAlphabet;
+	    this.numTopics = model.numTopics;
+	    this.topicMask = model.topicMask;
+	    this.topicBits = model.topicBits;
+	    this.numTypes = model.numTypes;
+	    this.totalTokens = model.totalTokens;
+	    this.alpha = model.alpha;
+	    this.alphaSum = model.alphaSum;
+	    this.beta = model.beta;
+	    this.betaSum = model.betaSum;
+	    this.usingSymmetricAlpha = model.usingSymmetricAlpha;
+	    this.typeTopicCounts = model.typeTopicCounts;
+	    this.tokensPerTopic = model.tokensPerTopic;
+	    this.docLengthCounts = model.docLengthCounts;
+	    this.topicDocCounts = model.topicDocCounts;
+	    this.numIterations = model.numIterations;
+	    this.burninPeriod = model.burninPeriod;
+	    this.saveSampleInterval = model.saveSampleInterval;
+	    this.optimizeInterval = model.optimizeInterval;
+	    this.temperingInterval = model.temperingInterval;
+	    this.showTopicsInterval = model.showTopicsInterval;
+	    this.wordsPerTopic = model.wordsPerTopic;
+	    this.saveStateInterval = model.saveStateInterval;
+	    this.stateFilename = model.stateFilename;
+	    this.saveModelInterval = model.saveModelInterval;
+	    this.modelFilename = model.modelFilename;
+	    this.randomSeed = model.randomSeed;
+	    this.formatter = model.formatter;
+	    this.printLogLikelihood = model.printLogLikelihood;
+	    this.typeTotals = model.typeTotals;
+	    this.maxTypeCount = model.maxTypeCount;
+	    this.numThreads = model.numThreads;
+	    
+	    InstanceList instanceList = new InstanceList();
+	    for (TopicAssignment topic : model.data) {
+			instanceList.add(topic.instance);
+		}
+	    
+	    this.instances = instanceList;
+	    
+	    this.initializeHistograms();
 	}
 
 	public void loadDocuments(String filename) {
@@ -117,4 +165,9 @@ public class RTopicModel extends ParallelTopicModel {
 			System.err.println(e);
 		}
 	}
+	
+    public static RTopicModel read (File f) throws Exception {
+        return new RTopicModel(ParallelTopicModel.read(f));
+    }
+    
 }
