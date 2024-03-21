@@ -2,7 +2,7 @@ MALLET_DIR = $(shell pwd)
 
 JAVAC = javac
 JAVA_FLAGS = \
--classpath "$(MALLET_DIR)/class:$(MALLET_DIR)/lib/mallet-deps.jar:$(MALLET_DIR)/lib/jdom-1.0.jar:$(MALLET_DIR)/lib/grmm-deps.jar:$(MALLET_DIR)/lib/weka.jar " \
+-classpath "$(MALLET_DIR)/lib/wordnet.jar:$(MALLET_DIR)/class:$(MALLET_DIR)/lib/mallet-deps.jar:$(MALLET_DIR)/lib/jdom-1.0.jar:$(MALLET_DIR)/lib/grmm-deps.jar:$(MALLET_DIR)/lib/weka.jar " \
 -sourcepath "$(MALLET_DIR)/src" \
 -g:lines,vars,source \
 -d $(MALLET_DIR)/class \
