@@ -459,6 +459,7 @@ public class HierarchicalLDA implements Serializable {
 
 			doc++;
 		}
+		out.close();
 	}	    
 
     public void printNodes() {

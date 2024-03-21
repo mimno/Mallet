@@ -111,7 +111,7 @@ public class HierarchicalLDATUI {
 		// Output results
 
 		if (stateFile.value() != null) {
-			hlda.printState(new PrintWriter(stateFile.value()));
+			hlda.printState(new PrintWriter(new BufferedWriter(new FileWriter(stateFile.value()))));
 		}
 
 		if (testing != null) {
