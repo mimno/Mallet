@@ -7,7 +7,7 @@ malletdir=`dirname $malletdir`
 cp=$malletdir/class:$malletdir/lib/mallet-deps.jar:$CLASSPATH
 #echo $cp
 
-MEMORY="${MALLET_MEMORY:-1g}"
+MEMORY="${MALLET_MEMORY:-10g}"
 
 CMD=$1
 shift
