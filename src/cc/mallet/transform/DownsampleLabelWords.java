@@ -200,16 +200,20 @@ public class DownsampleLabelWords {
         }
 
         if (reportFile.value != null) {
-            PrintWriter reportWriter = new PrintWriter(reportFile.value);
-            reportWriter.println("Word\tLabel\tCount");
+            try (PrintWriter reportWriter = new PrintWriter(reportFile.value)) {
+                reportWriter.println("Word\tLabel\tCount");
 
-            for (int word = 0; word < numWords; word++) {
-                for (int label = 0; label < numLabels; label++) {
-                    if (wordLabelRemovalCounts[word][label] > 0) {
-                        reportWriter.format("%s\t%s\t%d\n", alphabet.lookupObject(word), labelAlphabet.lookupObject(label), wordLabelRemovalCounts[word][label]);
+                for (int word = 0; word < numWords; word++) {
+                    for (int label = 0; label < numLabels; label++) {
+                        if (wordLabelRemovalCounts[word][label] > 0) {
+                            reportWriter.format("%s\t%s\t%d\n", alphabet.lookupObject(word), labelAlphabet.lookupObject(label), wordLabelRemovalCounts[word][label]);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                System.err.println(": " + e.getMessage());
             }
+            
         }
 
         logger.info("reduced " + inputTokens + " to " + outputTokens + " tokens");
