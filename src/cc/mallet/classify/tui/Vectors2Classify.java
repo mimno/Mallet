@@ -28,6 +28,7 @@ import com.google.errorprone.annotations.Var;
 
 import cc.mallet.classify.Classification;
 import cc.mallet.classify.Classifier;
+import  cc.mallet.util.JShellInterpreter;
 import cc.mallet.classify.ClassifierTrainer;
 import cc.mallet.classify.Trial;
 import cc.mallet.classify.evaluate.ConfusionMatrix;
@@ -36,7 +37,6 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Labeling;
 import cc.mallet.types.MatrixOps;
-import cc.mallet.util.BshInterpreter;
 import cc.mallet.util.CommandOption;
 import cc.mallet.util.MalletLogger;
 import cc.mallet.util.MalletProgressMessageLogger;
@@ -49,7 +49,7 @@ import cc.mallet.util.ProgressMessageLogFormatter;
 
 public abstract class Vectors2Classify
 {
-	static BshInterpreter interpreter = new BshInterpreter();
+	static JShellInterpreter interpreter = new JShellInterpreter();
 
 	private static Logger logger = MalletLogger.getLogger(Vectors2Classify.class.getName());
 	private static Logger progressLogger = MalletProgressMessageLogger.getLogger(Vectors2Classify.class.getName() + "-pl");
@@ -214,7 +214,7 @@ public abstract class Vectors2Classify
 		static CommandOption.Integer crossValidation = new CommandOption.Integer(Vectors2Classify.class, "cross-validation", "INT", true, 0,
 						"The number of folds for cross-validation (DEFAULT=0).", null);
 
-		public static void main (String[] args) throws bsh.EvalError, java.io.IOException
+    public static void main (String[] args) throws Exception
 		{
 			// Process the command-line options
 			CommandOption.setSummary (Vectors2Classify.class,
@@ -722,8 +722,8 @@ public abstract class Vectors2Classify
 		private static Object createTrainer(String arg) {
 			try {
 				return interpreter.eval (arg);
-			} catch (bsh.EvalError e) {
-				throw new IllegalArgumentException ("Java interpreter eval error\n"+e);
+			} catch (Exception e) {
+                throw new IllegalArgumentException ("JShell evaluation error: " + e.getMessage(), e);
 			}
 		}
 
@@ -758,9 +758,10 @@ public abstract class Vectors2Classify
 				java.lang.Object parameterValueObject;
 				try {
 					parameterValueObject = interpreter.eval(parameterValue);
-				} catch (bsh.EvalError e) {
-					throw new IllegalArgumentException ("Java interpreter eval error on parameter "+
-							parameterName + "\n"+e);
+				} catch (Exception e) {
+                    throw new IllegalArgumentException ("JShell evaluation error on parameter '" +
+                            parameterName + "' with value '" +
+                            parameterValue + "': " + e.getMessage(), e);
 				}
 
 				@Var

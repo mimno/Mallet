@@ -157,9 +157,10 @@ public abstract class Calo2Classify
 					java.lang.Object parameterValueObject;
 					try {
 						parameterValueObject = getInterpreter().eval(parameterValue);
-					} catch (bsh.EvalError e) {
-						throw new IllegalArgumentException ("Java interpreter eval error on parameter "+
-						                                    parameterName + "\n"+e);
+					} catch (Exception e) {
+                        throw new IllegalArgumentException ("JShell evaluation error on parameter '" +
+                                parameterName + "' with value '" +
+                                parameterValue + "': " + e.getMessage(), e);
 					}
 
 					boolean foundSetter = false;
@@ -293,7 +294,7 @@ public abstract class Calo2Classify
 	 "Suppress writing-in-place on terminal for progess messages - repetitive messages "
 	 +"of which only the latest is generally of interest", null);
 
-	public static void main (String[] args) throws bsh.EvalError, IOException
+    public static void main (String[] args) throws Exception
 	{
 		// Process the command-line options
 		CommandOption.setSummary (Calo2Classify.class,

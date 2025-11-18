@@ -11,18 +11,10 @@
 
 package cc.mallet.classify;
 
-import java.io.*;
-import java.util.*;
-
-import cc.mallet.classify.Classifier;
-import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.optimize.Optimizer;
-import cc.mallet.types.FeatureSelection;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Labeler;
-import cc.mallet.util.BshInterpreter;
-import cc.mallet.util.CommandOption;
 /**
  * Abstract parent of all classifier trainers.
  * <p>

@@ -93,13 +93,13 @@ public class InstanceListTUI
 			prefixCodeOption,
 		});
 
-	
-	public static void main (String[] args) throws bsh.EvalError, java.io.IOException
+
+    public static void main (String[] args) throws Exception
 	{
 		// Process the command-line options
 		commandOptions.process (args);
 
-		BshInterpreter interpreter = new BshInterpreter(prefixCodeOption.value);
+        JShellInterpreter interpreter = new JShellInterpreter(prefixCodeOption.value);
 
 		// Insert "new " before each constructor in the pipe specification
 		String pipeSpec = ((pipeOption.value == defaultPipe && pipeFileOption.value != null)
