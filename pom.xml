@@ -42,67 +42,45 @@
   </developers>
 
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <encoding>UTF-8</encoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <error-prone.version>2.3.1</error-prone.version>
-    <maven-jacoco-plugin.version>0.8.5</maven-jacoco-plugin.version>
-    <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+    <error-prone.version>2.24.1</error-prone.version>
+    <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
+    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
     <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
-    <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
   </properties>
 
   <build>
 
-    <sourceDirectory>src</sourceDirectory>
-    <testSourceDirectory>src</testSourceDirectory>
+    <sourceDirectory>src/main/java</sourceDirectory>
+    <testSourceDirectory>src/test/java</testSourceDirectory>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+    </testResources>
 
     <plugins>
 
       <!-- Compile project using Google Error-Prone -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
-        <configuration>
-          <compilerId>javac-with-errorprone</compilerId>
-          <showWarnings>true</showWarnings>
-          <compilerArgs>
-            <arg>-Xep:ClassName</arg>
-            <arg>-Xep:DepAnn</arg>
-            <arg>-Xep:EmptyIf</arg>
-            <arg>-Xep:NoAllocation</arg>
-            <arg>-Xep:NumericEquality</arg>
-            <arg>-Xep:NonCanonicalStaticMemberImport</arg>
-            <arg>-Xep:PrimitiveArrayPassedToVarargsMethod</arg>
-            <arg>-Xep:StringEquality</arg>
-            <!-- <arg>-Xep:Var:ERROR</arg> -->
-            <arg>-Xep:Var</arg>
-            <arg>-Xep:WildcardImport</arg>
-            <arg>-XepDisableWarningsInGeneratedCode</arg>
-          </compilerArgs>
-          <forceJavacCompilerUse>true</forceJavacCompilerUse>
-          <!-- maven-compiler-plugin defaults to targeting Java 5, but our javac only supports >=6 -->
-          <source>8</source>
-          <target>8</target>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-compiler-javac-errorprone</artifactId>
-            <version>2.8.3</version>
-          </dependency>
-          <!-- override plexus-compiler-javac-errorprone's dependency on Error Prone with the latest version -->
-          <dependency>
-            <groupId>com.google.errorprone</groupId>
-            <artifactId>error_prone_core</artifactId>
-            <version>${error-prone.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>${maven-compiler-plugin.version}</version>
+            <configuration>
+                <source>17</source>
+                <target>17</target>
+                <showWarnings>true</showWarnings>
+                <compilerArgs>
+                    <arg>-Xlint:all</arg>
+                </compilerArgs>
+            </configuration>
+        </plugin>
 
-      <plugin>
+        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>${maven-source-plugin.version}</version>
@@ -117,43 +95,45 @@
       </plugin>
 
       <!-- Javadoc Generation -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
-        <configuration>
-          <additionalparam>-Xdoclint:none</additionalparam>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.6.3</version>
+            <configuration>
+                <doclint>none</doclint>
+                <source>17</source>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>attach-javadocs</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
 
-      <!-- Code Coverage Reports -->
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${maven-jacoco-plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report</id>
-            <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+
+        <!-- Code Coverage Reports -->
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${maven-jacoco-plugin.version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>report</id>
+                    <phase>test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
 
       <!-- disable signing in order to simplify integration with TravisCI
       <plugin>
@@ -176,15 +156,18 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
+        <version>3.0.0</version>
         <configuration>
-          <parallel>methods</parallel>
-          <threadCount>5</threadCount>
+          <!-- Parallel execution disabled: some tests capture System.out -->
           <skipTests>false</skipTests>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/Test*.java</include>
+          </includes>
           <systemProperties>
             <property>
               <name>java.util.logging.config.file</name>
-              <value>test/resources/logging.properties</value>
+              <value>src/test/resources/logging.properties</value>
             </property>
           </systemProperties>
         </configuration>
@@ -201,12 +184,8 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache-extras.beanshell</groupId>
-      <artifactId>bsh</artifactId>
-      <version>2.0b6</version>
+      <version>4.13.2</version>
+      <scope>test</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.carrotsearch/hppc -->
     <dependency>
@@ -255,5 +234,53 @@
         </repository>
       </distributionManagement>
     </profile>
+
+      <!-- Optional Error Prone profile -->
+      <profile>
+          <id>errorprone</id>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <version>${maven-compiler-plugin.version}</version>
+                      <configuration>
+                          <release>17</release>
+                          <showWarnings>true</showWarnings>
+                          <compilerArgs>
+                              <arg>-Xplugin:ErrorProne</arg>
+                              <arg>-Xep:ClassName</arg>
+                              <arg>-Xep:DepAnn</arg>
+                              <arg>-Xep:EmptyIf</arg>
+                              <arg>-Xep:NoAllocation</arg>
+                              <arg>-Xep:NumericEquality</arg>
+                              <arg>-Xep:NonCanonicalStaticMemberImport</arg>
+                              <arg>-Xep:PrimitiveArrayPassedToVarargsMethod</arg>
+                              <arg>-Xep:StringEquality</arg>
+                              <arg>-Xep:Var</arg>
+                              <arg>-Xep:WildcardImport</arg>
+                              <arg>-XepDisableWarningsInGeneratedCode</arg>
+                          </compilerArgs>
+                          <annotationProcessorPaths>
+                              <path>
+                                  <groupId>com.google.errorprone</groupId>
+                                  <artifactId>error_prone_core</artifactId>
+                                  <version>${error-prone.version}</version>
+                              </path>
+                          </annotationProcessorPaths>
+                      </configuration>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.google.errorprone</groupId>
+                              <artifactId>error_prone_core</artifactId>
+                              <version>${error-prone.version}</version>
+                          </dependency>
+                      </dependencies>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
+
+
   </profiles>
 </project>

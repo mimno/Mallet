@@ -1,0 +1,92 @@
+/* Copyright (C) 2003 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+package cc.mallet.types;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import com.google.errorprone.annotations.Var;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+
+
+/**
+ * Static utility for testing serializable classes in MALLET.
+ *
+ * Created: Aug 24, 2004
+ *
+ * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
+ * @version $Id: TestSerializable.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
+ */
+public class TestSerializable {
+
+  /**
+   * Clones a given object by serializing it to a byte array and reading it back.
+   *  This is useful for testing serialization methods.
+   *
+   * @param obj
+   * @return A copy of obj.
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
+  public static Object cloneViaSerialization (Serializable obj)
+          throws IOException, ClassNotFoundException
+  {
+    ByteArrayOutputStream boas = new ByteArrayOutputStream ();
+    ObjectOutputStream oos = new ObjectOutputStream (boas);
+    oos.writeObject (obj);
+
+    ByteArrayInputStream bias = new ByteArrayInputStream (boas.toByteArray ());
+    ObjectInputStream ois = new ObjectInputStream (bias);
+    return ois.readObject ();
+  }
+
+  private static class WriteMe implements Serializable {
+    String foo;
+    int bar;
+
+    @Override public boolean equals (Object o)
+    {
+      if (this == o) return true;
+      if (!(o instanceof WriteMe)) return false;
+
+      WriteMe writeMe = (WriteMe) o;
+
+      if (bar != writeMe.bar) return false;
+      if (foo != null ? !foo.equals (writeMe.foo) : writeMe.foo != null) return false;
+
+      return true;
+    }
+
+    @Override public int hashCode ()
+    {
+      @Var
+      int result;
+      result = (foo != null ? foo.hashCode () : 0);
+      result = 29 * result + bar;
+      return result;
+    }
+  }
+
+  @Test
+  public void testTestSerializable () throws IOException, ClassNotFoundException
+  {
+    WriteMe w = new WriteMe ();
+    w.foo = "hi there";
+    w.bar = 1;
+    WriteMe w2 = (WriteMe) cloneViaSerialization (w);
+    assertTrue (w != w2); // Make sure this is a clone, NOT the same object.
+    assertTrue (w.equals (w2));
+  }
+
+}

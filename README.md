@@ -22,15 +22,43 @@ An add-on package to MALLET, called GRMM, contains support for inference in gene
 
 ## Installation
 
-To build a Mallet 2.0 development release, you must have the Apache ant build tool installed. From the command prompt, first change to the mallet directory, and then type
-`ant`
+### Prerequisites
 
-If `ant` finishes with `"BUILD SUCCESSFUL"`, Mallet is now ready to use.
+- Java 17 or higher
+- Maven 3.6 or higher
 
-If you would like to deploy Mallet as part of a larger application, it is helpful to create a single ".jar" file that contains all of the compiled code. Once you have compiled the individual Mallet class files, use the command:
-`ant jar`
+### Building from Source
 
-This process will create a file "mallet.jar" in the "dist" directory within Mallet.
+To build MALLET from source, use Maven:
+
+```bash
+mvn package
+```
+
+This compiles the code, runs tests, and creates a JAR file in the `target/` directory.
+
+### Build Commands
+
+| Command | Description |
+|---------|-------------|
+| `mvn compile` | Compile the source code |
+| `mvn test` | Run all tests |
+| `mvn package` | Build JAR file (includes tests) |
+| `mvn package -DskipTests` | Build JAR file (skip tests) |
+| `mvn install` | Install to local Maven repository |
+| `mvn javadoc:javadoc` | Generate API documentation |
+
+### Using as a Maven Dependency
+
+Add MALLET to your project's `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>cc.mallet</groupId>
+  <artifactId>mallet</artifactId>
+  <version>2.1-alpha</version>
+</dependency>
+```
 
 ## Usage
 

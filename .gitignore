@@ -1,13 +1,23 @@
-class
-dist/mallet-deps.jar
-dist/mallet.jar
-/target/
+# Build outputs
+target/
+class/
+dist/
+
+# IDE files
 .classpath
 .project
 .settings/
+.idea/
+*.iml
+
+# Test artifacts
 *.obj
 *.dot
-.idea
-*.class
-mallet.iml
 test/TEST-*.*
+
+# OS files
+.DS_Store
+
+# Temporary files
+*.log
+baseline-results.txt
