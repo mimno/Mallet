@@ -8,6 +8,8 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  release:
+    types: [ published ]
 
 jobs:
   build:
@@ -37,7 +39,7 @@ jobs:
           path: target/surefire-reports/
 
       - name: Publish to GitHub Packages using Apache Maven
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.event_name == 'release'
         run: mvn --batch-mode deploy -P publish-on-github-packages -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
