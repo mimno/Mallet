@@ -25,9 +25,8 @@ import java.io.StringWriter;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
@@ -76,11 +75,7 @@ import cc.mallet.util.FileUtils;
 // TODO (gsc (08/25/08)): some tests fail because tests are using CRFTrainerByLabelLikelihood
 // instead of CRFOptimizableByLabelLikelihood and CRFOptimizableByValueGradients
 /** Tests for CRF training. */
-public class TestCRF extends TestCase {
-
-    public TestCRF(String name) {
-        super(name);
-    }
+public class TestCRF {
 
     public static final String[] data = new String[] {
             "Free software is a matter of the users' freedom to run, copy, distribute, study, change and improve the software. More precisely, it refers to four kinds of freedom, for the users of the software.",
@@ -100,6 +95,7 @@ public class TestCRF extends TestCase {
             "Finally, note that criteria such as those stated in this free software definition require careful thought for their interpretation. To decide whether a specific software license qualifies as a free software license, we judge it based on these criteria to determine whether it fits their spirit as well as the precise words. If a license includes unconscionable restrictions, we reject it, even if we did not anticipate the issue in these criteria. Sometimes a license requirement raises an issue that calls for extensive thought, including discussions with a lawyer, before we can decide if the requirement is acceptable. When we reach a conclusion about a new issue, we often update these criteria to make it easier to see why certain licenses do or don't qualify.",
             "The GNU Project was launched in 1984 to develop a complete Unix-like operating system which is free software: the GNU system." };
 
+    @Test
     public void testGetSetParameters() {
         int inputVocabSize = 100;
         int numStates = 5;
@@ -118,6 +114,7 @@ public class TestCRF extends TestCase {
         TestOptimizable.testGetSetParameters(mcrf);
     }
 
+    @Test
     public void testSumLogProb() {
         double w1 = Math.log(.2);
         double w2 = Math.log(.8);
@@ -131,6 +128,7 @@ public class TestCRF extends TestCase {
         assertEquals(s1, s2, 0.00001);
     }
 
+    @Test
     public void testSumLattice() {
         int inputVocabSize = 1;
         int numStates = 2;
@@ -203,6 +201,7 @@ public class TestCRF extends TestCase {
         }
     }
 
+    @Test
     public void testMaxLattice() {
         int inputVocabSize = 1;
         int numStates = 2;
@@ -365,24 +364,27 @@ public class TestCRF extends TestCase {
                             + " optimizableValue =" + optimizableValue
                             + " gradientNorm =" + gradientNorm);
                 }
-        
+
         // This test was failing because the default gaussian prior was changed from 10 to 1.
         assertTrue("Value should be 35770 but is" + optimizableValue, Math
                 .abs(optimizableValue + 35770) < 0.001);
-        
+
         // This test was failing because oneNorm does not take absolute values, so
         //  the value is -520, not 520.
         assertTrue(Math.abs(gradientNorm + 520) < 0.001);
     }
 
+    @Test
     public void testCost() {
         doTestCost(false);
     }
 
+    @Test
     public void testCostSerialized() {
         doTestCost(true);
     }
 
+    @Test
     public void testIncrement() {
     }
 
@@ -466,10 +468,12 @@ public class TestCRF extends TestCase {
         }
     }
 
+    @Test
     public void testValueGradient() {
         doTestSpacePrediction(true);
     }
 
+    @Test
     public void testTrain() {
         doTestSpacePrediction(false);
     }
@@ -633,6 +637,7 @@ public class TestCRF extends TestCase {
         return p;
     }
 
+    @Test
     public void testAddOrderNStates() {
         Pipe p = makeSpacePredictionPipe();
 
@@ -650,7 +655,7 @@ public class TestCRF extends TestCase {
         CRFTrainerByLabelLikelihood crft1 = new CRFTrainerByLabelLikelihood(crf1);
         crft1.setGaussianPriorVariance(10.0);
         crft1.trainIncremental(lists[0]);
-        
+
         CRF crf2 = new CRF(p.getDataAlphabet(), p.getTargetAlphabet());
         crf2.addOrderNStates(lists[0], new int[] { 1, 2, }, new boolean[] {
                 false, true }, "START", null, null, false);
@@ -697,6 +702,7 @@ public class TestCRF extends TestCase {
         return mcrf.getValue();
     }
 
+    @Test
     public void testFrozenWeights() {
         Pipe p = makeSpacePredictionPipe();
 
@@ -739,10 +745,12 @@ public class TestCRF extends TestCase {
                         + val1 + ", Frozen " + val2, val1 > val2);
     }
 
+    @Test
     public void testDenseTrain() {
         doTestSpacePrediction(false, false, false);
     }
 
+    @Test
     public void testTrainStochasticGradient() {
         Pipe p = makeSpacePredictionPipe();
         Pipe p2 = new TestCRF2String();
@@ -771,6 +779,7 @@ public class TestCRF extends TestCase {
                 + crf.averageTokenAccuracy(lists[1]));
     }
 
+    @Test
     public void testSumLatticeImplementations() {
         Pipe p = makeSpacePredictionPipe();
         Pipe p2 = new TestCRF2String();
@@ -855,14 +864,17 @@ public class TestCRF extends TestCase {
                     + (totalTimeDefault - totalTimeScaling) + " ms)");
     }
 
+    @Test
     public void testSerialization() {
         doTestSpacePrediction(false, true, true);
     }
 
+    @Test
     public void testDenseSerialization() {
         doTestSpacePrediction(false, true, false);
     }
 
+    @Test
     public void testTokenAccuracy() {
         Pipe p = makeSpacePredictionPipe();
 
@@ -888,6 +900,7 @@ public class TestCRF extends TestCase {
 
     }
 
+    @Test
     public void testPrint() {
         Pipe p = new SerialPipes(new Pipe[] {
                 new CharSequence2TokenSequence("."), new TokenText(),
@@ -910,6 +923,7 @@ public class TestCRF extends TestCase {
         crf.print();
     }
 
+    @Test
     public void testCopyStatesAndWeights() {
         Pipe p = new SerialPipes(new Pipe[] {
                 new CharSequence2TokenSequence("."), new TokenText(),
@@ -954,6 +968,7 @@ public class TestCRF extends TestCase {
 
     static String toy = "A a\nB b\nC c\nD d\nB b\nC c\n";
 
+    @Test
     public void testStartState() {
         Pipe p = new SerialPipes(new Pipe[] {
                 new LineGroupString2TokenSequence(),
@@ -988,6 +1003,7 @@ public class TestCRF extends TestCase {
     }
 
     // Tests that setWeightsDimensionDensely respects featureSelections
+    @Test
     public void testDenseFeatureSelection() {
         Pipe p = makeSpacePredictionPipe();
 
@@ -1018,6 +1034,7 @@ public class TestCRF extends TestCase {
 
     }
 
+    @Test
     public void testXis() {
         Pipe p = makeSpacePredictionPipe();
 
@@ -1051,10 +1068,7 @@ public class TestCRF extends TestCase {
         }
     }
 
-    public static Test suite() {
-        return new TestSuite(TestCRF.class);
-    }
-
+    @Test
     public void testStateAddWeights() {
         Pipe p = makeSpacePredictionPipe(); // This used to be
         // MEMM.makeSpacePredictionPipe(),
@@ -1118,20 +1132,6 @@ public class TestCRF extends TestCase {
         Sequence output = crf.transduce((Sequence) inst.getData());
         String std = output.toString();
         assertEquals(" B-PER I-PER O O", std);
-    }
-
-    public static void main(String[] args) {
-        TestSuite theSuite;
-        if (args.length > 0) {
-            theSuite = new TestSuite();
-            for (int i = 0; i < args.length; i++) {
-                theSuite.addTest(new TestCRF(args[i]));
-            }
-        } else {
-            theSuite = (TestSuite) suite();
-        }
-
-        junit.textui.TestRunner.run(theSuite);
     }
 
 }

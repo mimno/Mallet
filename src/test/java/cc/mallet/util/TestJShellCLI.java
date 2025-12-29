@@ -1,13 +1,16 @@
 package cc.mallet.util;
-import junit.framework.TestCase;
+
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.util.List;
 
-public class TestJShellCLI extends TestCase {
+public class TestJShellCLI {
 
+    @Test
     public void testJShellAvailability() {
         // Verify JShell is available in JDK
         try {
@@ -17,6 +20,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testBasicJShellExecution() {
         // Test that JShell can execute basic commands
         try {
@@ -31,6 +35,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testMalletImports() {
         // Verify Mallet classes can be imported in JShell
         try {
@@ -45,6 +50,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testMultipleImports() {
         // Verify multiple Mallet package imports work
         try {
@@ -62,6 +68,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testVariableDeclaration() {
         // Test variable declaration and usage (common BeanShell pattern)
         try {
@@ -78,6 +85,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testMalletObjectCreation() {
         // Verify Mallet objects can be instantiated
         try {
@@ -92,6 +100,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testErrorHandling() {
         // Verify JShell handles syntax errors gracefully
         try {
@@ -107,6 +116,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testJShellStatePersistence() {
         // Verify state persists across evaluations (like BeanShell)
         try {
@@ -122,6 +132,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testJavaStandardLibrary() {
         // Verify standard Java library access (BeanShell compatibility)
         try {
@@ -136,6 +147,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testMethodDefinition() {
         // Test method definition (common scripting pattern)
         try {
@@ -151,6 +163,7 @@ public class TestJShellCLI extends TestCase {
         }
     }
 
+    @Test
     public void testClasspathAccess() {
         // Verify JShell can access compiled Mallet classes from classpath
         try {

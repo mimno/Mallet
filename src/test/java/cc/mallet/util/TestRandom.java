@@ -7,10 +7,8 @@
 package cc.mallet.util;
 
 import cc.mallet.types.MatrixOps;
-import cc.mallet.util.Randoms;
-import junit.framework.TestCase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Created: Jan 19, 2005
@@ -18,42 +16,21 @@ import junit.framework.TestSuite;
  * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
  * @version $Id: TestRandom.java,v 1.1 2007/10/22 21:37:57 mccallum Exp $
  */
-public class TestRandom extends TestCase {
+public class TestRandom {
 
-    public TestRandom (String name) {
-        super (name);
-    }
-
-    public static Test suite () {
-        return new TestSuite (TestRandom.class);
-    }
-
-    public static void testAsJava () {
-        Randoms mRand = new Randoms ();
-        java.util.Random jRand = mRand.asJavaRandom ();
+    @Test
+    public void testAsJava() {
+        Randoms mRand = new Randoms();
+        java.util.Random jRand = mRand.asJavaRandom();
 
         int size = 100000;
-        double[] vals = new double [size];
+        double[] vals = new double[size];
         for (int i = 0; i < size; i++) {
-            vals[i] = jRand.nextGaussian ();
+            vals[i] = jRand.nextGaussian();
         }
 
-        assertEquals (0.0, MatrixOps.mean (vals), 0.01);
-        assertEquals (1.0, MatrixOps.stddev (vals), 0.01);
-    }
-
-    public static void main (String[] args) throws Throwable {
-        TestSuite theSuite;
-        if (args.length > 0) {
-            theSuite = new TestSuite ();
-            for (int i = 0; i < args.length; i++) {
-                theSuite.addTest (new TestRandom (args[i]));
-            }
-        } else {
-            theSuite = (TestSuite) TestRandom.suite ();
-        }
-
-        junit.textui.TestRunner.run (theSuite);
+        assertEquals(0.0, MatrixOps.mean(vals), 0.01);
+        assertEquals(1.0, MatrixOps.stddev(vals), 0.01);
     }
 
 }

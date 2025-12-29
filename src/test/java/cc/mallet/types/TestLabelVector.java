@@ -8,28 +8,24 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.types;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelVector;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import junit.framework.Test;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestLabelVector extends TestCase
+public class TestLabelVector
 {
-	public TestLabelVector (String name)
-	{
-		super (name);
-	}
-
 	private LabelAlphabet ld;
 	private LabelVector lv;
 
-	protected void setUp ()
+	@Before
+	public void setUp ()
 	{
 		ld = new LabelAlphabet ();
 		lv = new LabelVector (ld,
@@ -40,30 +36,23 @@ public class TestLabelVector extends TestCase
 														ld.lookupIndex ("d")},
 													new double[] {3, 4, 2, 1});
 	}
-	
+
+	@Test
 	public void testGetBestLabel ()
 	{
 		assertTrue (lv.getBestLabel() == ld.lookupLabel ("b"));
 	}
 
+	@Test
 	public void testGetLabelAtRank ()
 	{
 		assertTrue (lv.getLabelAtRank(1) == ld.lookupLabel ("a"));
 	}
 
+	@Test
   public void testValue ()
   {
     assertEquals (4.0, lv.value (ld.lookupLabel ("b")), 1e-5);
   }
 
-	public static Test suite ()
-	{
-		return new TestSuite (TestLabelVector.class);
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

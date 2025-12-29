@@ -8,11 +8,15 @@
 
 package cc.mallet.pipe;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import cc.mallet.pipe.StringIterator;
-import junit.framework.TestCase;
 
-public class TestStringIterator extends TestCase {
+public class TestStringIterator {
 
+  @Test
   public void testNullStringConstructor() {
 
     try {
@@ -23,6 +27,7 @@ public class TestStringIterator extends TestCase {
     }
   }
 
+  @Test
   public void testEmptyStringConstructor() {
 
     String string = "";
@@ -39,6 +44,7 @@ public class TestStringIterator extends TestCase {
     assertTrue(iterator.isEndOfText());
   }
 
+  @Test
   public void testStringConstructor() {
 
     String string = "this is a <a href=\"https://www.google.com\">hyperlink</a>!";
@@ -51,6 +57,7 @@ public class TestStringIterator extends TestCase {
     assertFalse(iterator.isEndOfText());
   }
 
+  @Test
   public void testPeek() {
 
     String string = "this is a <a href=\"https://www.google.com\">hyperlink</a>!";
@@ -62,6 +69,7 @@ public class TestStringIterator extends TestCase {
     assertEquals(0, iterator.peek(string.length()));
   }
 
+  @Test
   public void testExtract() {
 
     String string = "this is a <a href=\"https://www.google.com\">hyperlink</a>!";
@@ -75,6 +83,7 @@ public class TestStringIterator extends TestCase {
     assertEquals("https://www.google.com", iterator.extract(19, 41));
   }
 
+  @Test
   public void testMoveAhead() {
 
     String string = "this is a <a href=\"https://www.google.com\">hyperlink</a>!";
@@ -108,6 +117,7 @@ public class TestStringIterator extends TestCase {
     assertTrue(iterator.isEndOfText());
   }
 
+  @Test
   public void testMoveToString() {
 
     String string = "this is a <a href=\"https://www.google.com\">hyperlink</a>!";
@@ -132,6 +142,7 @@ public class TestStringIterator extends TestCase {
     assertEquals(0, iterator.remaining());
   }
 
+  @Test
   public void testMoveToChar() {
 
     String string = "this is a <a href=\"https://www.google.com\">hyperlink</a>!";
@@ -143,6 +154,7 @@ public class TestStringIterator extends TestCase {
     assertEquals(47, iterator.remaining());
   }
 
+  @Test
   public void testMoveToOneChar() {
 
     char[] chars = new char[] {'<', '>'};
@@ -164,6 +176,7 @@ public class TestStringIterator extends TestCase {
     assertEquals("a href=\"https://www.google.com\"", iterator.extract(begin, end).toString());
   }
 
+  @Test
   public void testMoveToEndOfLine() {
 
     String string = "this is a <a href=\"https://www.google.com\">\nhyperlink\n</a>!";
@@ -176,6 +189,7 @@ public class TestStringIterator extends TestCase {
     assertEquals(15, iterator.remaining());
   }
 
+  @Test
   public void testMovePast() {
 
     char[] chars = new char[] {'<', '>'};
@@ -197,6 +211,7 @@ public class TestStringIterator extends TestCase {
     assertEquals("a href=\"https://www.google.com\"", iterator.extract(begin, end).toString());
   }
 
+  @Test
   public void testMovePastWhitespace() {
 
     String string = "this is a <a href=\"https://www.google.com\">\nhyperlink\n</a>!";
@@ -219,6 +234,7 @@ public class TestStringIterator extends TestCase {
     assertEquals(15, iterator.remaining());
   }
 
+  @Test
   public void testIsLowerCase() {
 
     assertTrue(StringIterator.isLowerCase("lowercase"));
@@ -235,6 +251,7 @@ public class TestStringIterator extends TestCase {
     assertFalse(StringIterator.isLowerCase("UPPERCASE \n\r "));
   }
 
+  @Test
   public void testIsUpperCase() {
 
     assertTrue(StringIterator.isUpperCase("UPPERCASE"));
@@ -251,6 +268,7 @@ public class TestStringIterator extends TestCase {
     assertFalse(StringIterator.isUpperCase("lowercase \n\r "));
   }
 
+  @Test
   public void testIsCapitalized() {
 
     assertTrue(StringIterator.isCapitalized("Capitalized"));
@@ -271,12 +289,14 @@ public class TestStringIterator extends TestCase {
     assertFalse(StringIterator.isCapitalized("CamelCase \n\r "));
   }
 
+  @Test
   public void testIsBlank() {
 
     assertTrue(StringIterator.isBlank(" \n\r\f\t "));
     assertFalse(StringIterator.isBlank(" nrft "));
   }
 
+  @Test
   public void testTrimLeft() {
 
     assertEquals("Capitalized", StringIterator.trimLeft(" \n Capitalized"));
@@ -286,6 +306,7 @@ public class TestStringIterator extends TestCase {
     assertEquals("Capitalized \r ", StringIterator.trimLeft("Capitalized \r "));
   }
 
+  @Test
   public void testTrimRight() {
 
     assertEquals(" \n Capitalized", StringIterator.trimRight(" \n Capitalized"));

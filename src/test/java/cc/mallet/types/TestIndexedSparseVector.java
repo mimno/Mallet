@@ -8,25 +8,20 @@
 
 
 
-/** 
+/**
 		@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
 */
 
 package cc.mallet.types;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import junit.framework.Test;
+import org.junit.Test;
+import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Arrays;
 import cc.mallet.types.IndexedSparseVector;
 import cc.mallet.types.SparseVector;
 
-public class TestIndexedSparseVector extends TestCase
+public class TestIndexedSparseVector
 {
-  public TestIndexedSparseVector (String name) {
-    super (name);
-  }
-
   double[] dbl1 = new double[] {1, 2, 3, 4, 5};
   double[] dbl2 = new double[] {1, 1.5, 2, 1, 1};
   double[] dbl3 = new double[] { 2.0, 2.5, 3.0, 4.7, 3.5,
@@ -40,6 +35,7 @@ public class TestIndexedSparseVector extends TestCase
                                       true, true, true);
   SparseVector d1 = new SparseVector (dbl3, true);
 
+  @Test
  public void testLocation ()
  {
    int curidx = 0;
@@ -65,6 +61,7 @@ public class TestIndexedSparseVector extends TestCase
     }
   }
 
+  @Test
   public void testPlusEquals ()
   {
     IndexedSparseVector s = (IndexedSparseVector) s1.cloneMatrix ();
@@ -104,6 +101,7 @@ public class TestIndexedSparseVector extends TestCase
     }
   }
 
+  @Test
   public void testDotProduct () {
     IndexedSparseVector t1 = new IndexedSparseVector (new int[] { 7 }, new double[] { 0.2 });
     assertEquals (0.6, t1.dotProduct (s1), 0.00001);
@@ -116,6 +114,7 @@ public class TestIndexedSparseVector extends TestCase
     assertEquals (10.1, s2.dotProduct (d1), 0.00001);
   }
 
+  @Test
   public void testIncrementValue ()
   {
     IndexedSparseVector s = (IndexedSparseVector) s1.cloneMatrix ();
@@ -127,7 +126,7 @@ public class TestIndexedSparseVector extends TestCase
     }
   }
 
-
+  @Test
   public void testSetValue ()
   {
     IndexedSparseVector s = (IndexedSparseVector) s1.cloneMatrix ();
@@ -141,6 +140,7 @@ public class TestIndexedSparseVector extends TestCase
 
   private static int[] idx2 = { 3, 7, 12, 15, 18 };
 
+  @Test
   public void testBinaryVector ()
   {
     IndexedSparseVector binary1 = new IndexedSparseVector (idxs, null, idxs.length, idxs.length,
@@ -166,6 +166,7 @@ public class TestIndexedSparseVector extends TestCase
     checkAnswer (dblVec2, new double[] { 2, 2, 4, 4, 6 });
   }
 
+  @Test
   public void testCloneMatrixZeroed ()
   {
     IndexedSparseVector s = (IndexedSparseVector) s1.cloneMatrixZeroed ();
@@ -175,6 +176,7 @@ public class TestIndexedSparseVector extends TestCase
     }
   }
 
+  @Test
   public void testEmptyLocations ()
   {
     IndexedSparseVector s = new IndexedSparseVector (new int[0], new double [0]);
@@ -182,6 +184,7 @@ public class TestIndexedSparseVector extends TestCase
     assertEquals (0.0, s.dotProduct (s1), 1e-10);
   }
 
+  @Test
   public void testSerializable () throws IOException, ClassNotFoundException
   {
     IndexedSparseVector s = (IndexedSparseVector) s1.cloneMatrix ();
@@ -191,6 +194,7 @@ public class TestIndexedSparseVector extends TestCase
     assertTrue (Arrays.equals (s.getValues (), sPrime.getValues ()));
   }
 
+  @Test
   public void testSerializable2 () throws IOException, ClassNotFoundException
   {
     SparseVector[][] vecs = new SparseVector[2][];
@@ -205,20 +209,6 @@ public class TestIndexedSparseVector extends TestCase
 
     SparseVector[][] vecsPrime = (SparseVector[][]) TestSerializable.cloneViaSerialization (vecs);
     assertEquals (vecs.length, vecsPrime.length);
-  }
-
-  public static Test suite ()
-  {
-    return new TestSuite (TestIndexedSparseVector.class);
-  }
-
-  protected void setUp ()
-  {
-  }
-
-  public static void main (String[] args)
-  {
-    junit.textui.TestRunner.run (suite());
   }
 
 }

@@ -8,7 +8,7 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
@@ -16,25 +16,20 @@ package cc.mallet.types;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.Multinomial;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import junit.framework.Test;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestMultinomial extends TestCase
+public class TestMultinomial
 {
-	public TestMultinomial (String name)
-	{
-		super (name);
-	}
-
+	@Test
 	public void testMultinomial ()
 	{
 		double[] c = new double[] {.2, .3, .1, .4};
 		Multinomial m = new Multinomial (c);
 		assertTrue (m.probability (0) == .2);
 	}
-	
-	
+
+	@Test
 	public void testEstimating ()
 	{
 		Alphabet dict = new Alphabet ();
@@ -65,18 +60,4 @@ public class TestMultinomial extends TestCase
 		assertTrue (m.logProbability ("w") == ml.logProbability ("w"));
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite(TestMultinomial.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

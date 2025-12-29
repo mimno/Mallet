@@ -5,10 +5,9 @@
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.types;
-import junit.framework.Test;
-import junit.framework.TestCase;
+import org.junit.Test;
+import static org.junit.Assert.*;
 import cc.mallet.types.Alphabet;
-import junit.framework.TestSuite;
 import java.io.IOException;
 
 /**
@@ -17,13 +16,9 @@ import java.io.IOException;
  * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
  * @version $Id: TestAlphabet.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
  */
-public class TestAlphabet extends TestCase {
+public class TestAlphabet {
 
-  public TestAlphabet (String name)
-  {
-    super (name);
-  }
-
+  @Test
   public void testNotFound ()
   {
     Alphabet dict = new Alphabet ();
@@ -35,6 +30,7 @@ public class TestAlphabet extends TestCase {
     assertEquals (3, dict.lookupIndex ("TEST4", true));
   }
 
+  @Test
   public void testReadResolve () throws IOException, ClassNotFoundException
   {
     Alphabet dict = new Alphabet ();
@@ -43,27 +39,6 @@ public class TestAlphabet extends TestCase {
     dict.lookupIndex ("TEST3");
     Alphabet dict2 = (Alphabet) TestSerializable.cloneViaSerialization (dict);
     assertTrue (dict == dict2);
-  }
-
-  public static Test suite ()
-  {
-    return new TestSuite (TestAlphabet.class);
-  }
-
-
-  public static void main (String[] args) throws Throwable
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestAlphabet (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
   }
 
 }

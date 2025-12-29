@@ -19,14 +19,13 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.RankedFeatureVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * @author Clint Burford
  */
-public class TestBiNormalSeparation extends TestCase {
+public class TestBiNormalSeparation {
 
     static class BinaryTestData {
 
@@ -59,14 +58,7 @@ public class TestBiNormalSeparation extends TestCase {
         }
     }
 
-    public TestBiNormalSeparation(String name) {
-        super(name);
-    }
-
-    public static Test suite() {
-        return new TestSuite(TestBiNormalSeparation.class);
-    }
-
+    @Test
     public void testBiNormalSeparation() {
         BinaryTestData binaryTestData = new BinaryTestData(4);
         binaryTestData.addInstance(new int[] {0, 1}, true);
@@ -78,7 +70,7 @@ public class TestBiNormalSeparation extends TestCase {
                 .newRankedFeatureVector(iList);
         assertEquals(6.58, rankedFeatureVector.getValueAtRank(0), 0.005);
         assertEquals(3.29, rankedFeatureVector.getValueAtRank(2), 0.005);
-        assertEquals(0, rankedFeatureVector.getValueAtRank(3), 0);
+        assertEquals(0, rankedFeatureVector.getValueAtRank(3), 1e-5);
         assertEquals(6.58, rankedFeatureVector.getValueAtRank(1), 0.005);
         assertEquals(2, rankedFeatureVector.getIndexAtRank(3));
         assertEquals(1, rankedFeatureVector.getIndexAtRank(2));

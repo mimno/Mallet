@@ -11,12 +11,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import cc.mallet.extract.DocumentExtraction;
-import cc.mallet.extract.Extraction;
-import cc.mallet.extract.PerDocumentF1Evaluator;
-import cc.mallet.extract.PerFieldF1Evaluator;
-import cc.mallet.extract.RegexFieldCleaner;
-import cc.mallet.extract.Tokenization;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.PrintInputAndTarget;
 import cc.mallet.pipe.SGML2TokenSequence;
@@ -28,9 +22,8 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Sequence;
 import cc.mallet.util.CharSequenceLexer;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Created: Nov 18, 2004
@@ -38,18 +31,7 @@ import junit.framework.TestSuite;
  * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu"></A>
  * @version $Id: TestPerDocumentF1Evaluator.java,v 1.1 2007/10/22 21:38:02 mccallum Exp $
  */
-public class TestPerDocumentF1Evaluator extends TestCase {
-
-  public TestPerDocumentF1Evaluator (String name)
-  {
-    super (name);
-  }
-
-
-  public static Test suite ()
-  {
-    return new TestSuite (TestPerDocumentF1Evaluator.class);
-  }
+public class TestPerDocumentF1Evaluator {
 
   private static String[] testPred = {
     "<eater>the big red fox</eater> did it",
@@ -71,31 +53,30 @@ public class TestPerDocumentF1Evaluator extends TestCase {
   };
 
 
-  private Extraction createExtractionFrom (String[] predStrings, String[] trueStrings)
-  {
-    Pipe pipe = new SerialPipes (new Pipe[] {
-      new SGML2TokenSequence (new CharSequenceLexer (CharSequenceLexer.LEX_NONWHITESPACE_CLASSES	), "O"),
-      new Target2LabelSequence (),
-      new PrintInputAndTarget (),
+  private Extraction createExtractionFrom(String[] predStrings, String[] trueStrings) {
+    Pipe pipe = new SerialPipes(new Pipe[]{
+      new SGML2TokenSequence(new CharSequenceLexer(CharSequenceLexer.LEX_NONWHITESPACE_CLASSES), "O"),
+      new Target2LabelSequence(),
+      new PrintInputAndTarget(),
     });
 
-    InstanceList pred = new InstanceList (pipe);
-    pred.addThruPipe (new ArrayIterator (predStrings));
+    InstanceList pred = new InstanceList(pipe);
+    pred.addThruPipe(new ArrayIterator(predStrings));
 
-    InstanceList targets = new InstanceList (pipe);
-    targets.addThruPipe (new ArrayIterator (trueStrings));
+    InstanceList targets = new InstanceList(pipe);
+    targets.addThruPipe(new ArrayIterator(trueStrings));
 
-    LabelAlphabet dict = (LabelAlphabet) pipe.getTargetAlphabet ();
-    Extraction extraction = new Extraction (null, dict);
+    LabelAlphabet dict = (LabelAlphabet) pipe.getTargetAlphabet();
+    Extraction extraction = new Extraction(null, dict);
 
     for (int i = 0; i < pred.size(); i++) {
-      Instance aPred = pred.get (i);
-      Instance aTarget = targets.get (i);
-      Tokenization input = (Tokenization) aPred.getData ();
-      Sequence predSeq = (Sequence) aPred.getTarget ();
-      Sequence targetSeq = (Sequence) aTarget.getTarget ();
-      DocumentExtraction docextr = new DocumentExtraction ("TEST"+i, dict, input, predSeq, targetSeq, "O");
-      extraction.addDocumentExtraction (docextr);
+      Instance aPred = pred.get(i);
+      Instance aTarget = targets.get(i);
+      Tokenization input = (Tokenization) aPred.getData();
+      Sequence predSeq = (Sequence) aPred.getTarget();
+      Sequence targetSeq = (Sequence) aTarget.getTarget();
+      DocumentExtraction docextr = new DocumentExtraction("TEST" + i, dict, input, predSeq, targetSeq, "O");
+      extraction.addDocumentExtraction(docextr);
     }
 
     return extraction;
@@ -108,16 +89,16 @@ public class TestPerDocumentF1Evaluator extends TestCase {
           "OVERALL (micro-averaged) P=0.4286 R=0.4286 F1=0.4286\n" +
           "OVERALL (macro-averaged) F1=0.4286\n\n";
 
-  public void testPerDocEval ()
-  {
-    Extraction extraction = createExtractionFrom (testPred, testTrue);
-    PerDocumentF1Evaluator eval = new PerDocumentF1Evaluator ();
-    ByteArrayOutputStream out = new ByteArrayOutputStream ();
-    eval.setErrorOutputStream (System.out);
-    eval.evaluate ("Testing", extraction, new PrintWriter (new OutputStreamWriter (out), true));
+  @Test
+  public void testPerDocEval() {
+    Extraction extraction = createExtractionFrom(testPred, testTrue);
+    PerDocumentF1Evaluator eval = new PerDocumentF1Evaluator();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    eval.setErrorOutputStream(System.out);
+    eval.evaluate("Testing", extraction, new PrintWriter(new OutputStreamWriter(out), true));
 
-    String output = out.toString ().replaceAll("\\r\\n?", "\n");
-    assertEquals (testAExpected, output);
+    String output = out.toString().replaceAll("\\r\\n?", "\n");
+    assertEquals(testAExpected, output);
   }
 
   private static final String[] mpdPred = {
@@ -144,21 +125,21 @@ public class TestPerDocumentF1Evaluator extends TestCase {
           "OVERALL (micro-averaged) P=0.625 R=0.5 F1=0.5556\n" +
           "OVERALL (macro-averaged) F1=0.5556\n\n";
 
-  public void testPerFieldEval ()
-  {
-    Extraction extraction = createExtractionFrom (mpdPred, mpdTrue);
-    PerFieldF1Evaluator eval = new PerFieldF1Evaluator ();
-    ByteArrayOutputStream out = new ByteArrayOutputStream ();
-    eval.evaluate ("Testing", extraction, new PrintStream (out));
-    assertEquals (mpdExpected, out.toString().replaceAll("\\r\\n?", "\n"));
+  @Test
+  public void testPerFieldEval() {
+    Extraction extraction = createExtractionFrom(mpdPred, mpdTrue);
+    PerFieldF1Evaluator eval = new PerFieldF1Evaluator();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    eval.evaluate("Testing", extraction, new PrintStream(out));
+    assertEquals(mpdExpected, out.toString().replaceAll("\\r\\n?", "\n"));
   }
 
-    public void testToStdout ()
-  {
-    Extraction extraction = createExtractionFrom (mpdPred, mpdTrue);
-    PerFieldF1Evaluator eval = new PerFieldF1Evaluator ();
-    eval.evaluate (extraction);
-    System.out.println ("*** Please verify that something was output above.");
+  @Test
+  public void testToStdout() {
+    Extraction extraction = createExtractionFrom(mpdPred, mpdTrue);
+    PerFieldF1Evaluator eval = new PerFieldF1Evaluator();
+    eval.evaluate(extraction);
+    System.out.println("*** Please verify that something was output above.");
   }
 
   private static final String[] punctPred = {
@@ -173,47 +154,15 @@ public class TestPerDocumentF1Evaluator extends TestCase {
     "<title>Howdy Doody!</title>, if <title>you</title> think this is <title>Mr.</title> <author> nonsense don't you huh</author>",
   };
 
-  //xxx  Currently fails because grabbing the field span for Howdy Doody! grabs the </title> as
-  //  well.  I think this is because getting the text subspan goes to the start of the next,
-  //  rather than the end of the last.  It seems like that should be changed, but I'd need to
-  //  think about the ikmplications for Rexa before doing this.
-  /*
-  public void testPunctuationIgnoringEvaluator ()
-  {
-    Extraction extraction = createExtractionFrom (punctPred, punctTrue);
-    PerFieldF1Evaluator eval = new PerFieldF1Evaluator ();
-    eval.setComparator (new PunctuationIgnoringComparator ());
-    eval.setErrorOutputStream (System.out);
+  @Test
+  public void testFieldCleaning() {
+    Extraction extraction = createExtractionFrom(punctPred, punctTrue);
+    extraction.cleanFields(new RegexFieldCleaner("<.*?>|,|!"));
 
-    ByteArrayOutputStream out = new ByteArrayOutputStream ();
-    eval.evaluate ("Testing", extraction, new PrintStream (out));
-    assertEquals (mpdExpected, out.toString());
-  }*/
-
-  public void testFieldCleaning ()
-  {
-    Extraction extraction = createExtractionFrom (punctPred, punctTrue);
-    extraction.cleanFields (new RegexFieldCleaner ("<.*?>|,|!"));
-
-    PerFieldF1Evaluator eval = new PerFieldF1Evaluator ();
-    ByteArrayOutputStream out = new ByteArrayOutputStream ();
-    eval.evaluate ("Testing", extraction, new PrintStream (out));
-    assertEquals (mpdExpected, out.toString().replaceAll("\\r\\n?", "\n"));
-  }
-
-  public static void main (String[] args) throws Throwable
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestPerDocumentF1Evaluator (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
+    PerFieldF1Evaluator eval = new PerFieldF1Evaluator();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    eval.evaluate("Testing", extraction, new PrintStream(out));
+    assertEquals(mpdExpected, out.toString().replaceAll("\\r\\n?", "\n"));
   }
 
 }

@@ -10,9 +10,8 @@ import cc.mallet.types.Label;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Labels;
 import cc.mallet.types.LabelsSequence;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Created: Sep 21, 2004
@@ -20,13 +19,9 @@ import junit.framework.TestSuite;
  * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
  * @version $Id: TestLabelsSequence.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
  */
-public class TestLabelsSequence extends TestCase {
+public class TestLabelsSequence {
 
-  public TestLabelsSequence (String name)
-  {
-    super (name);
-  }
-
+  @Test
   public void testSerializable () throws IOException, ClassNotFoundException
   {
     LabelAlphabet dict = new LabelAlphabet ();
@@ -43,26 +38,6 @@ public class TestLabelsSequence extends TestCase {
     assertEquals (lblseq.size(), lblseq2.size());
     assertEquals (lblseq.getLabels(0).toString(), lblseq2.getLabels(0).toString ());
     assertEquals (lblseq.getLabels(1).toString(), lblseq2.getLabels(1).toString ());
-  }
-  
-  public static Test suite ()
-  {
-    return new TestSuite(TestLabelsSequence.class);
-  }
-
-  public static void main (String[] args) throws Throwable
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestLabelsSequence (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
   }
 
 }

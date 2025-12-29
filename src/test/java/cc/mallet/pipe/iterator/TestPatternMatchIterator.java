@@ -8,31 +8,30 @@
 
 
 
-/** 
+/**
    @author Aron Culotta <a href="mailto:culotta@cs.umass.edu">culotta@cs.umass.edu</a>
  */
 
 package cc.mallet.pipe.iterator;
 
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.regex.Pattern;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import com.google.errorprone.annotations.Var;
 
 import cc.mallet.pipe.iterator.PatternMatchIterator;
 import cc.mallet.types.Instance;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class TestPatternMatchIterator extends TestCase
+public class TestPatternMatchIterator
 {
-  public TestPatternMatchIterator (String name) {
-    super (name);
-  }
-  
   String data = "<p>Inside inside inside</p> outside <p>inside\ninside</p> outside\noutside";
-  
+
+  @Test
   public void testOne () {
     Iterator iter = new PatternMatchIterator( data, Pattern.compile("<p>(.+?)</p>", Pattern.DOTALL));
     @Var
@@ -46,19 +45,10 @@ public class TestPatternMatchIterator extends TestCase
         assertTrue (inst.getData().equals("inside\ninside"));
     }
   }
-  
-  public static Test suite ()
-  {
-    return new TestSuite (TestPatternMatchIterator.class);
-  }
-  
-  protected void setUp ()
+
+  @Before
+  public void setUp ()
   {
   }
-  
-  public static void main (String[] args)
-  {
-    junit.textui.TestRunner.run (suite());
-  }
-	
+
 }

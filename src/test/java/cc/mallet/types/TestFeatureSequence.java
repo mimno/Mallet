@@ -8,24 +8,20 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.types;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureSequence;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 
-public class TestFeatureSequence extends TestCase
+public class TestFeatureSequence
 {
-	public TestFeatureSequence (String name) {
-		super (name);
-	}
-	
+	@Test
 	public void testNewPutSizeFreeze ()
 	{
 		Alphabet dict = new Alphabet ();
@@ -48,18 +44,4 @@ public class TestFeatureSequence extends TestCase
 		assertTrue (feats[4] == 1);
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite (TestFeatureSequence.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

@@ -8,23 +8,19 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.types;
 import cc.mallet.types.SparseVector;
-import junit.framework.TestCase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 
-public class TestMatrix extends TestCase
+public class TestMatrix
 {
-	public TestMatrix (String name) {
-		super (name);
-	}
-	
+	@Test
 	public void testTimesEquals ()
 	{
 		double[] d1 = new double[] {1, 2, 3, 4, 5};
@@ -34,18 +30,4 @@ public class TestMatrix extends TestCase
 		m2.print();
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite(TestMatrix.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

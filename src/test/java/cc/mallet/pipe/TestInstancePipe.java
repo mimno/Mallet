@@ -8,14 +8,19 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.pipe;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.regex.Pattern;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.FeatureSequence2FeatureVector;
@@ -30,16 +35,9 @@ import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.TestSerializable;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class TestInstancePipe extends TestCase
+public class TestInstancePipe
 {
-	public TestInstancePipe (String name) {
-		super (name);
-	}
-
 	String[] data = new String[] {
 		"This is the first test string",
 		"The second test string is here",
@@ -53,7 +51,7 @@ public class TestInstancePipe extends TestCase
 			return carrier;
 		}
 	}
-	
+
 	public Pipe createPipe () {
 		return new SerialPipes(new Pipe[] {
 				 new CharSequence2TokenSequence(),
@@ -61,7 +59,8 @@ public class TestInstancePipe extends TestCase
 				 new TokenSequence2FeatureSequence(),
 				 new FeatureSequence2FeatureVector()});
 	}
-	
+
+	@Test
 	public void testOne ()
 	{
     Pipe p = createPipe();
@@ -90,6 +89,7 @@ public class TestInstancePipe extends TestCase
 	}
         */
 
+  @Test
   public void testOneFromSerialized () throws IOException, ClassNotFoundException
   {
     Pipe p = createPipe ();
@@ -99,19 +99,9 @@ public class TestInstancePipe extends TestCase
 		assertTrue (ilist.size() == 3);
   }
 
-
-	public static Test suite ()
-	{
-		return new TestSuite(TestInstancePipe.class);
-	}
-
-	protected void setUp ()
+	@Before
+	public void setUp ()
 	{
 	}
 
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

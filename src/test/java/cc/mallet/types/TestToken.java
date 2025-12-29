@@ -8,7 +8,7 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
@@ -19,16 +19,12 @@ import java.io.File;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Token;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestToken extends TestCase
+public class TestToken
 {
-	public TestToken (String name) {
-		super (name);
-	}
-	
+	@Test
 	public void testOne ()
 	{
 		Token t = new Token ("foo");
@@ -46,6 +42,7 @@ public class TestToken extends TestCase
 		assertTrue (fv.value (dict.lookupIndex("length")) == 3);
 	}
 
+	@Test
 	public void testTwo ()
 	{
 		try {
@@ -66,18 +63,4 @@ public class TestToken extends TestCase
 		}
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite(TestToken.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

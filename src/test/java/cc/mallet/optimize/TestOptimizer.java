@@ -7,24 +7,19 @@
 
 package cc.mallet.optimize;
 
-import cc.mallet.optimize.*;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Unit Test for class TestMaximizer.java
- * 
- * 
+ *
+ *
  * Created: Mon Apr 26 19:54:25 2004
- * 
+ *
  * @author <a href="mailto:casutton@cs.umass.edu">Charles Sutton</a>
  * @version $Id: TestMaximizer.java,v 1.1 2007/10/22 21:37:49 mccallum Exp $
  */
-public class TestOptimizer extends TestCase {
-
-	public TestOptimizer(String name) {
-		super(name);
-	}
+public class TestOptimizer {
 
 	// Maximizable for 3x^2 - 5x + 2
 	static class SimplePoly implements Optimizable.ByGradientValue {
@@ -69,6 +64,7 @@ public class TestOptimizer extends TestCase {
 	 * assertEquals (5.0/6.0, poly.params [0], 1e-3); }
 	 */
 
+	@Test
 	public void testGradientAscent() {
 		SimplePoly poly = new SimplePoly();
 		Optimizer gd = new GradientAscent(poly);
@@ -76,6 +72,7 @@ public class TestOptimizer extends TestCase {
 		assertEquals(5.0 / 6.0, poly.params[0], 1e-3);
 	}
 
+	@Test
 	public void testLinearLBFGS() {
 		SimplePoly poly = new SimplePoly();
 		Optimizer bfgs = new LimitedMemoryBFGS(poly);
@@ -83,6 +80,7 @@ public class TestOptimizer extends TestCase {
 		assertEquals(5.0 / 6.0, poly.params[0], 1e-3);
 	}
 
+	@Test
 	public void testOrthantWiseLBFGSWithoutL1() {
 		SimplePoly poly = new SimplePoly();
 		Optimizer bfgs = new OrthantWiseLimitedMemoryBFGS(poly);
@@ -90,6 +88,7 @@ public class TestOptimizer extends TestCase {
 		assertEquals(5.0 / 6.0, poly.params[0], 1e-3);
 	}
 
+	@Test
 	public void testOrthantWiseLBFGSWithL1() {
 		SimplePoly poly = new SimplePoly();
 		Optimizer bfgs = new OrthantWiseLimitedMemoryBFGS(poly, 3.0);
@@ -97,6 +96,7 @@ public class TestOptimizer extends TestCase {
 		assertEquals(2.0 / 6.0, poly.params[0], 1e-3);
 	}
 
+	@Test
 	public void testConjugateGradient() {
 		SimplePoly poly = new SimplePoly();
 		Optimizer cg = new ConjugateGradient(poly);
@@ -104,14 +104,4 @@ public class TestOptimizer extends TestCase {
 		assertEquals(5.0 / 6.0, poly.params[0], 1e-3);
 	}
 
-	/**
-	 * @return a <code>TestSuite</code>
-	 */
-	public static TestSuite suite() {
-		return new TestSuite(TestOptimizer.class);
-	}
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(suite());
-	}
-}// TestMaximizer
+}

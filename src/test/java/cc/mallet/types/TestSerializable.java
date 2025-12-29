@@ -15,41 +15,30 @@ import java.io.Serializable;
 
 import com.google.errorprone.annotations.Var;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 
 
 /**
  * Static utility for testing serializable classes in MALLET.
- * 
+ *
  * Created: Aug 24, 2004
  *
  * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
  * @version $Id: TestSerializable.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
  */
-public class TestSerializable extends TestCase {
-
-  public TestSerializable (String name)
-  {
-    super (name);
-  }
-
-  public static Test suite ()
-  {
-    return new TestSuite(TestSerializable.class);
-  }
+public class TestSerializable {
 
   /**
    * Clones a given object by serializing it to a byte array and reading it back.
    *  This is useful for testing serialization methods.
-   * 
+   *
    * @param obj
    * @return A copy of obj.
    * @throws IOException
    * @throws ClassNotFoundException
-   */ 
+   */
   public static Object cloneViaSerialization (Serializable obj)
           throws IOException, ClassNotFoundException
   {
@@ -61,7 +50,7 @@ public class TestSerializable extends TestCase {
     ObjectInputStream ois = new ObjectInputStream (bias);
     return ois.readObject ();
   }
-  
+
   private static class WriteMe implements Serializable {
     String foo;
     int bar;
@@ -89,6 +78,7 @@ public class TestSerializable extends TestCase {
     }
   }
 
+  @Test
   public void testTestSerializable () throws IOException, ClassNotFoundException
   {
     WriteMe w = new WriteMe ();
@@ -97,21 +87,6 @@ public class TestSerializable extends TestCase {
     WriteMe w2 = (WriteMe) cloneViaSerialization (w);
     assertTrue (w != w2); // Make sure this is a clone, NOT the same object.
     assertTrue (w.equals (w2));
-  }
-
-  public static void main (String[] args) throws Throwable
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestSerializable (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
   }
 
 }

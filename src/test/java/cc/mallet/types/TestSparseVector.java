@@ -8,7 +8,7 @@
 
 
 
-/** 
+/**
 		@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
 */
 
@@ -19,17 +19,12 @@ import java.io.PrintStream;
 
 import cc.mallet.types.DenseVector;
 import cc.mallet.types.SparseVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 
-public class TestSparseVector extends TestCase
+public class TestSparseVector
 {
-	public TestSparseVector (String name) {
-		super (name);
-	}
-	
 	double[] dbl1 = new double[] {1, 2, 3, 4, 5};
 	double[] dbl2 = new double[] {1, 1.5, 2, 1, 1};
 	double[] dbl3 = new double[] { 2.0, 2.5, 3.0, 4.7, 3.5,
@@ -54,18 +49,19 @@ public class TestSparseVector extends TestCase
 										ans[i], actual.valueAtLocation (i) , 0.0);
 		}
 	}
-	
+
+	@Test
 	public void testPlusEquals ()
 	{
 		SparseVector s = (SparseVector) s1.cloneMatrix ();
 		s.plusEqualsSparse (s2, 2.0);
-		checkAnswer (s, new double[] { 3, 5, 7, 6, 7 }); 
+		checkAnswer (s, new double[] { 3, 5, 7, 6, 7 });
 
 		SparseVector s2p = new SparseVector
 											 (new int[] { 13 },
 												new double[] { 0.8 });
 		s.plusEqualsSparse (s2p, 1.0);
-		checkAnswer (s, new double[] { 3, 5, 7, 6.8, 7 }); 
+		checkAnswer (s, new double[] { 3, 5, 7, 6.8, 7 });
 
 		SparseVector s3p = new SparseVector
 											 (new int[] { 14 },
@@ -77,7 +73,7 @@ public class TestSparseVector extends TestCase
 											(new int[] { 7, 14, 15 },
 											 new double[] { 0.2, 0.8, 1.2 });
 		s.plusEqualsSparse (s4, 1.0);
-		checkAnswer (s, new double[] { 3, 5, 7.2, 6.8, 8.2 });	
+		checkAnswer (s, new double[] { 3, 5, 7.2, 6.8, 8.2 });
 
 		SparseVector s5 = new SparseVector (new int[] { 7 }, new double[] { 0.2 });
 		s5.plusEqualsSparse (s1);
@@ -94,11 +90,12 @@ public class TestSparseVector extends TestCase
 		}
 	}
 
+	@Test
 	public void testDotProduct () {
 		SparseVector t1 = new SparseVector (new int[] { 7 }, new double[] { 0.2 });
 		assertEquals (0.6, t1.dotProduct (s1), 0.00001);
 		assertEquals (0.6, s1.dotProduct (t1), 0.00001);
-		
+
 		assertEquals (19.0, s1.dotProduct (s2), 0.00001);
 		assertEquals (19.0, s2.dotProduct (s1), 0.00001);
 
@@ -109,9 +106,10 @@ public class TestSparseVector extends TestCase
 		//   max-index than short vector
 		SparseVector t2 = new SparseVector (new int[] { 3, 30 }, new double[] { 0.2, 3.5 });
 		SparseVector t3 = new SparseVector (null, new double[] { 1, 1, 1, 1, });
-		assertEquals (0.2, t3.dotProduct (t2), 0.00001); 
+		assertEquals (0.2, t3.dotProduct (t2), 0.00001);
 	}
 
+	@Test
 	public void testIncrementValue ()
 	{
 		SparseVector s = (SparseVector) s1.cloneMatrix ();
@@ -123,7 +121,7 @@ public class TestSparseVector extends TestCase
 		}
 	}
 
-	
+	@Test
 	public void testSetValue ()
 	{
 		SparseVector s = (SparseVector) s1.cloneMatrix ();
@@ -135,6 +133,7 @@ public class TestSparseVector extends TestCase
 		}
 	}
 
+	@Test
 	public void testDenseSparseVector ()
 	{
 		SparseVector svDense = new SparseVector (null, dbl3);
@@ -153,7 +152,7 @@ public class TestSparseVector extends TestCase
 																				 9.6, 0,   9,   0,   0,
 																				 0,   0,   0,   12,   0,
 																				 15, });
-		
+
 		double[] dbl4 = new double [dbl3.length + 1];
 		for (int i = 0; i < dbl4.length; i++) dbl4[i] = 2.0;
 		SparseVector sv4 = new SparseVector (null, dbl4);
@@ -166,6 +165,7 @@ public class TestSparseVector extends TestCase
 
 	private static int[] idx2 = { 3, 7, 12, 15, 18 };
 
+	@Test
 	public void testBinaryVector ()
 	{
 		SparseVector binary1 = new SparseVector (idxs, null, idxs.length, idxs.length,
@@ -190,7 +190,8 @@ public class TestSparseVector extends TestCase
 		dblVec2.plusEqualsSparse (binary2);
 		checkAnswer (dblVec2, new double[] { 2, 2, 4, 4, 6 });
 	}
-	
+
+	@Test
 	public void testCloneMatrixZeroed ()
 	{
 		SparseVector s = (SparseVector) s1.cloneMatrixZeroed ();
@@ -200,6 +201,7 @@ public class TestSparseVector extends TestCase
 		}
 	}
 
+	@Test
 	public void testPrint ()
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream ();
@@ -224,6 +226,7 @@ public class TestSparseVector extends TestCase
 		baos.reset ();
 	}
 
+	@Test
 	public void testExtendedDotProduct () {
 		SparseVector v1 = new SparseVector (null, dbl3);
 		SparseVector vInf = new SparseVector (null, dbl4);
@@ -232,19 +235,5 @@ public class TestSparseVector extends TestCase
 		dp = vInf.dotProduct (v1);
 		assertTrue (!Double.isNaN(dp));
 	}
-	
-	public static Test suite ()
-	{
-		return new TestSuite(TestSparseVector.class);
-	}
 
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

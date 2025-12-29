@@ -8,7 +8,7 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
@@ -16,9 +16,9 @@ package cc.mallet.fst;
 
 import java.util.Iterator;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.ArrayListSequence;
@@ -29,17 +29,13 @@ import cc.mallet.fst.MaxLatticeDefault;
 import cc.mallet.fst.SumLatticeDefault;
 import cc.mallet.fst.Transducer;
 
-public class TestFeatureTransducer extends TestCase
+public class TestFeatureTransducer
 {
-	public TestFeatureTransducer (String name)
-	{
-		super (name);
-	}
-
 	FeatureTransducer transducer;
 	ArrayListSequence seq;
 	double seqWeight;
 
+	@Before
 	public void setUp ()
 	{
 		System.out.println ("Setup");
@@ -88,6 +84,7 @@ public class TestFeatureTransducer extends TestCase
 	}
     */
 
+	@Test
 	public void testForwardBackward ()
 	{
 		SumLatticeDefault lattice = new SumLatticeDefault (transducer, seq);
@@ -104,6 +101,7 @@ public class TestFeatureTransducer extends TestCase
 	}
     */
 
+	@Test
 	public void testEstimate ()
 	{
 		transducer.setTrainable (true);
@@ -116,7 +114,7 @@ public class TestFeatureTransducer extends TestCase
 		assertTrue (newWeight < oldWeight);
 	}
 
-	/* I don't see where the estimator is being updated, and I don't think this is used enough to 
+	/* I don't see where the estimator is being updated, and I don't think this is used enough to
         warrant guessing.
     public void testIncrement ()
 	{
@@ -131,15 +129,5 @@ public class TestFeatureTransducer extends TestCase
 		assertTrue (est.getCount(1) == 1.0);
 	}
     */
-	
-	public static Test suite ()
-	{
-		return new TestSuite (TestFeatureTransducer.class);
-	}
 
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

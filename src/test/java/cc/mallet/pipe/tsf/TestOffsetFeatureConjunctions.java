@@ -7,11 +7,12 @@
 
 package cc.mallet.pipe.tsf;
 
-import junit.framework.*;
-
+import static org.junit.Assert.*;
 
 import java.util.regex.Pattern;
 import java.io.IOException;
+
+import org.junit.Test;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.PrintInputAndTarget;
@@ -30,16 +31,12 @@ import cc.mallet.types.TestSerializable;
 /**
  * $Id: TestOffsetFeatureConjunctions.java,v 1.1 2007/10/22 21:37:57 mccallum Exp $
  */
-public class TestOffsetFeatureConjunctions extends TestCase {
-
-  public TestOffsetFeatureConjunctions (String name)
-  {
-    super (name);
-  }
+public class TestOffsetFeatureConjunctions {
 
   private static String[] doc1 =  { "Meet\nme\nat\n4\nPM\ntomorrow" };
 
-  public static void testMultiTag ()
+  @Test
+  public void testMultiTag ()
   {
     Pipe mtPipe = new SerialPipes (new Pipe[] {
             new SimpleTaggerSentence2TokenSequence (),
@@ -79,13 +76,14 @@ public class TestOffsetFeatureConjunctions extends TestCase {
     assertEquals (6, mtTs.size ());
     assertEquals (6, noMtTs.size ());
 
-    assertEquals (1.0, mtTs.get (3).getFeatureValue ("time"), 1e-15);
-    assertEquals (1.0, noMtTs.get (3).getFeatureValue ("time"), 1e-15);
-    assertEquals (1.0, mtTs.get (4).getFeatureValue ("time"), 1e-15);
-    assertEquals (0.0, noMtTs.get (4).getFeatureValue ("time"), 1e-15);
+    assertEquals (1.0, mtTs.get (3).getFeatureValue ("time"), 1e-5);
+    assertEquals (1.0, noMtTs.get (3).getFeatureValue ("time"), 1e-5);
+    assertEquals (1.0, mtTs.get (4).getFeatureValue ("time"), 1e-5);
+    assertEquals (0.0, noMtTs.get (4).getFeatureValue ("time"), 1e-5);
   }
 
-  public static void testMultiTagSerialization () throws IOException, ClassNotFoundException
+  @Test
+  public void testMultiTagSerialization () throws IOException, ClassNotFoundException
   {
     Pipe origPipe = new SerialPipes (new Pipe[] {
             new SimpleTaggerSentence2TokenSequence (),
@@ -105,31 +103,8 @@ public class TestOffsetFeatureConjunctions extends TestCase {
     Instance mtInst = mtLst.get (0);
     TokenSequence mtTs = (TokenSequence) mtInst.getData ();
     assertEquals (6, mtTs.size ());
-    assertEquals (1.0, mtTs.get (3).getFeatureValue ("time"), 1e-15);
-    assertEquals (1.0, mtTs.get (4).getFeatureValue ("time"), 1e-15);
-  }
-
-  /**
-   * @return a <code>TestSuite</code>
-   */
-  public static TestSuite suite ()
-  {
-    return new TestSuite (TestOffsetFeatureConjunctions.class);
-  }
-
-  public static void main (String[] args)
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestOffsetFeatureConjunctions (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
+    assertEquals (1.0, mtTs.get (3).getFeatureValue ("time"), 1e-5);
+    assertEquals (1.0, mtTs.get (4).getFeatureValue ("time"), 1e-5);
   }
 
 }

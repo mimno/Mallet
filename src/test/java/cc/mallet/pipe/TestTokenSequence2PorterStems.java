@@ -8,9 +8,14 @@
 
 package cc.mallet.pipe;
 
+import static org.junit.Assert.*;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.junit.Test;
+
 import cc.mallet.pipe.CharSequence2TokenSequence;
 import cc.mallet.pipe.CharSequenceLowercase;
 import cc.mallet.pipe.Pipe;
@@ -21,11 +26,11 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 import cc.mallet.util.CharSequenceLexer;
-import junit.framework.TestCase;
 
 
-public class TestTokenSequence2PorterStems extends TestCase {
+public class TestTokenSequence2PorterStems {
 
+  @Test
   public void testVector() {
 
     String vector =
@@ -47,6 +52,7 @@ public class TestTokenSequence2PorterStems extends TestCase {
     assertEquals(vector, tokenSequence2String(tokenSequence));
   }
 
+  @Test
   public void testStep1a() {
     assertEquals("caress", oneWordStem("caresses"));
     assertEquals("poni", oneWordStem("ponies"));
@@ -55,6 +61,7 @@ public class TestTokenSequence2PorterStems extends TestCase {
     assertEquals("cat", oneWordStem("cats"));
   }
 
+  @Test
   public void testStep1b() {
     assertEquals("feed", oneWordStem("feed"));
     assertEquals("agre", oneWordStem("agreed"));
@@ -74,11 +81,13 @@ public class TestTokenSequence2PorterStems extends TestCase {
     assertEquals("file", oneWordStem("filing"));
   }
 
+  @Test
   public void testStep1c() {
     assertEquals("happi", oneWordStem("happy"));
     assertEquals("sky", oneWordStem("sky"));
   }
 
+  @Test
   public void testStep2() {
     assertEquals("relat", oneWordStem("relational"));
     assertEquals("condit", oneWordStem("conditional"));
@@ -103,6 +112,7 @@ public class TestTokenSequence2PorterStems extends TestCase {
     assertEquals("sensibl", oneWordStem("sensibiliti"));
   }
 
+  @Test
   public void testStep3() {
     assertEquals("triplic", oneWordStem("triplicate"));
     assertEquals("form", oneWordStem("formative"));
@@ -113,6 +123,7 @@ public class TestTokenSequence2PorterStems extends TestCase {
     assertEquals("good", oneWordStem("goodness"));
   }
 
+  @Test
   public void testStep4() {
     assertEquals("reviv", oneWordStem("revival"));
     assertEquals("allow", oneWordStem("allowance"));
@@ -135,12 +146,14 @@ public class TestTokenSequence2PorterStems extends TestCase {
     assertEquals("bowdler", oneWordStem("bowdlerize"));
   }
 
+  @Test
   public void testStep5a() {
     assertEquals("probat", oneWordStem("probate"));
     assertEquals("rate", oneWordStem("rate"));
     assertEquals("ceas", oneWordStem("cease"));
   }
 
+  @Test
   public void testStep5b() {
     assertEquals("control", oneWordStem("controll"));
     assertEquals("roll", oneWordStem("roll"));

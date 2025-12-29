@@ -8,7 +8,7 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
@@ -17,16 +17,12 @@ package cc.mallet.types;
 
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.RankedFeatureVector;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestRankedFeatureVector extends TestCase
+public class TestRankedFeatureVector
 {
-	public TestRankedFeatureVector (String name) {
-		super (name);
-	}
-	
+	@Test
 	public void testSetRankOrder ()
 	{
 		Alphabet v = new Alphabet ();
@@ -38,18 +34,4 @@ public class TestRankedFeatureVector extends TestCase
 			System.out.println ("Rank="+i+" value="+rfv.getValueAtRank(i));
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite(TestRankedFeatureVector.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

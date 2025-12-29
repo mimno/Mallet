@@ -6,15 +6,18 @@
    information, see the file `LICENSE' included with this distribution. */
 
 package cc.mallet.pipe;
+
+import static org.junit.Assert.*;
+
+import java.io.Reader;
+import java.io.StringReader;
+
+import org.junit.Test;
+
 import cc.mallet.pipe.Noop;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.iterator.ParenGroupIterator;
 import cc.mallet.types.InstanceList;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import java.io.Reader;
-import java.io.StringReader;
 
 
 /**
@@ -26,13 +29,9 @@ import java.io.StringReader;
  * @author <a href="mailto:casutton@cs.umass.edu">Charles Sutton</a>
  * @version $Id: TestIterators.java,v 1.1 2007/10/22 21:37:40 mccallum Exp $
  */
-public class TestIterators extends TestCase {
+public class TestIterators {
 
-	public TestIterators (String name){
-		super(name);
-	}
-
-
+	@Test
 	public void testParenGroupIterator ()
 	{
 		String input = "(a (b c) ((d))  ) f\n\n (3\n 4) (  6) ";
@@ -50,15 +49,4 @@ public class TestIterators extends TestCase {
 		assertEquals ("(  6)", lst.get(2).getData());
 	}
 
-
-/**
- * @return a <code>TestSuite</code>
- */
-	public static TestSuite suite(){
-		return new TestSuite (TestIterators.class);
-	}
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(suite());
-	}
 }// TestIterators

@@ -8,26 +8,27 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.pipe.tsf;
 
-import junit.framework.*;
+import static org.junit.Assert.*;
+
 import java.util.regex.*;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import cc.mallet.pipe.*;
 import cc.mallet.pipe.tsf.*;
 import cc.mallet.types.*;
 
 
-public class TestOffsetConjunctions extends TestCase
+public class TestOffsetConjunctions
 {
-	public TestOffsetConjunctions (String name) {
-		super (name);
-	}
-	
+	@Test
 	public void testOne ()
 	{
 		String input = "abcdefghijklmnopqrstuvwxyz";
@@ -53,19 +54,9 @@ public class TestOffsetConjunctions extends TestCase
 		assertTrue (ts.get(2).getFeatureValue("b@-1_&_c_&_d@1") == 1.0);
 	}
 
-
-	public static Test suite ()
-	{
-		return new TestSuite (TestOffsetConjunctions.class);
-	}
-
-	protected void setUp ()
+	@Before
+	public void setUp ()
 	{
 	}
 
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

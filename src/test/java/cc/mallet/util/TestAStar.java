@@ -6,9 +6,8 @@ import cc.mallet.util.search.AStar;
 import cc.mallet.util.search.AStarState;
 import cc.mallet.util.search.SearchNode;
 import cc.mallet.util.search.SearchState;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,7 +16,7 @@ import junit.framework.TestSuite;
  * Time: 2:36:10 PM
  * Test A* search.
  */
-public class TestAStar extends TestCase {
+public class TestAStar {
   private class State implements AStarState {
     private double to;
     private State next[];
@@ -47,9 +46,8 @@ public class TestAStar extends TestCase {
     }
     public String toString() { return "node " + id; }
   }
-  public TestAStar(String name) {
-    super(name);
-  }
+
+  @Test
   public void testSmall() {
     State node5 = new State(5, 0, 0, true);
     State node6 = new State(6, 0, 0, true);
@@ -103,10 +101,5 @@ public class TestAStar extends TestCase {
     }
     assertTrue("number of answers != " + i, i == 6);
   }
-  public static Test suite() {
-    return new TestSuite(TestAStar.class);
-  }
-  public static void main(String[] args) {
-    junit.textui.TestRunner.run(suite());
-  }
+
 }

@@ -8,50 +8,30 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.util;
 
-import cc.mallet.util.PropertyList;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestPropertyList extends TestCase
-{
-	public TestPropertyList (String name) {
-		super (name);
-	}
-	
-	public void testOne ()
-	{
+public class TestPropertyList {
+
+	@Test
+	public void testOne() {
 		PropertyList pl = null;
-		pl = PropertyList.add ("one", 1.0, pl);
-		pl = PropertyList.add ("two", 2.0, pl);
-		pl = PropertyList.add ("three", 3, pl);
+		pl = PropertyList.add("one", 1.0, pl);
+		pl = PropertyList.add("two", 2.0, pl);
+		pl = PropertyList.add("three", 3, pl);
 
-		assertTrue (pl.lookupNumber("one") == 1.0);
-		pl = PropertyList.remove ("three", pl);
-		assertTrue (pl.lookupNumber("three") == 0.0);
-		
-		pl = PropertyList.add ("color", "red", pl);
-		assertTrue (pl.lookupObject("color").equals("red"));
+		assertTrue(pl.lookupNumber("one") == 1.0);
+		pl = PropertyList.remove("three", pl);
+		assertTrue(pl.lookupNumber("three") == 0.0);
+
+		pl = PropertyList.add("color", "red", pl);
+		assertTrue(pl.lookupObject("color").equals("red"));
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite(TestPropertyList.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

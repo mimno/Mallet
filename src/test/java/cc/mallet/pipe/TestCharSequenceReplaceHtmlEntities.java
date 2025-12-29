@@ -7,8 +7,12 @@
  */
 package cc.mallet.pipe;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 import cc.mallet.pipe.CharSequenceReplaceHtmlEntities;
 import cc.mallet.pipe.Pipe;
@@ -16,10 +20,9 @@ import cc.mallet.pipe.SerialPipes;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
-import junit.framework.TestCase;
+public class TestCharSequenceReplaceHtmlEntities {
 
-public class TestCharSequenceReplaceHtmlEntities extends TestCase {
-
+  @Test
   public void testReplaceAlphaEntities() {
     assertEquals("J'ai \"sorti\" le <strong>chien</strong> tout à l'heure", stringCleansing(
         "J'ai &quot;sorti&quot; le &lt;strong&gt;chien&lt;/strong&gt; tout &amp;agrave; l'heure"));
@@ -27,6 +30,7 @@ public class TestCharSequenceReplaceHtmlEntities extends TestCase {
         "Monsieur le Cur&eacute; of the &laquo;Notre-Dame-de-Gr&acirc;ce&raquo; neighborhood"));
   }
 
+  @Test
   public void testReplaceDigitEntities() {
     assertEquals("I will display ✂", stringCleansing("I will display &#9986;"));
   }

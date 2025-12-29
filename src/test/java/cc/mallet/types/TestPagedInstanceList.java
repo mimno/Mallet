@@ -24,9 +24,8 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.Instance;
 import cc.mallet.types.PagedInstanceList;
 import cc.mallet.util.Randoms;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Created: Apr 19, 2005
@@ -34,16 +33,7 @@ import junit.framework.TestSuite;
  * @author <A HREF="mailto:casutton@cs.umass.edu">casutton@cs.umass.edu</A>
  * @version $Id: TestPagedInstanceList.java,v 1.1 2007/10/22 21:37:55 mccallum Exp $
  */
-public class TestPagedInstanceList extends TestCase {
-
-    public TestPagedInstanceList (String name) {
-        super (name);
-    }
-
-    public static Test suite () {
-        return new TestSuite(TestPagedInstanceList.class);
-    }
-
+public class TestPagedInstanceList {
 
     private static Alphabet dictOfSize (int size) {
         Alphabet ret = new Alphabet ();
@@ -52,6 +42,7 @@ public class TestPagedInstanceList extends TestCase {
         return ret;
     }
 
+  @Test
   public void testRandomTrained ()
   {
     Pipe p = new SerialPipes(new Pipe[]    {
@@ -95,21 +86,6 @@ public class TestPagedInstanceList extends TestCase {
                           + ": " + testAcc);
 
     return testAcc;
-  }
-
-  public static void main (String[] args) throws Throwable
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestPagedInstanceList (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
   }
 
 }

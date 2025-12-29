@@ -8,27 +8,22 @@
 
 
 
-/** 
+/**
 		@author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
 */
 
 package cc.mallet.types;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.Test;
+import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import cc.mallet.types.HashedSparseVector;
 import cc.mallet.types.SparseVector;
 import cc.mallet.util.FileUtils;
 
-public class TestHashedSparseVector extends TestCase
+public class TestHashedSparseVector
 {
-	public TestHashedSparseVector (String name) {
-		super (name);
-	}
-	
 	double[] dbl1 = new double[] {1, 2, 3, 4, 5};
 	double[] dbl2 = new double[] {1, 1.5, 2, 1, 1};
 	double[] dbl3 = new double[] { 2.0, 2.5, 3.0, 4.7, 3.5,
@@ -52,18 +47,19 @@ public class TestHashedSparseVector extends TestCase
 										ans[i], actual.valueAtLocation (i) , 0.0);
 		}
 	}
-	
+
+	@Test
 	public void testPlusEquals ()
 	{
 		HashedSparseVector s = (HashedSparseVector) s1.cloneMatrix ();
 		s.plusEqualsSparse (s2, 2.0);
-		checkAnswer (s, new double[] { 3, 5, 7, 6, 7 }); 
+		checkAnswer (s, new double[] { 3, 5, 7, 6, 7 });
 
 		HashedSparseVector s2p = new HashedSparseVector
 											 (new int[] { 13 },
 												new double[] { 0.8 });
 		s.plusEqualsSparse (s2p, 1.0);
-		checkAnswer (s, new double[] { 3, 5, 7, 6.8, 7 }); 
+		checkAnswer (s, new double[] { 3, 5, 7, 6.8, 7 });
 
 		HashedSparseVector s3p = new HashedSparseVector
 											 (new int[] { 14 },
@@ -75,7 +71,7 @@ public class TestHashedSparseVector extends TestCase
 											(new int[] { 7, 14, 15 },
 											 new double[] { 0.2, 0.8, 1.2 });
 		s.plusEqualsSparse (s4, 1.0);
-		checkAnswer (s, new double[] { 3, 5, 7.2, 6.8, 8.2 });	
+		checkAnswer (s, new double[] { 3, 5, 7.2, 6.8, 8.2 });
 
 		HashedSparseVector s5 = new HashedSparseVector (new int[] { 7 }, new double[] { 0.2 });
 		s5.plusEqualsSparse (s1);
@@ -92,6 +88,7 @@ public class TestHashedSparseVector extends TestCase
 		}
 	}
 
+	@Test
   public void testPlusEqualsAfterClone ()
   {
     s1.indexVector ();
@@ -101,11 +98,12 @@ public class TestHashedSparseVector extends TestCase
     checkAnswer (s, new double[] { 3, 5, 7, 6, 7 });
   }
 
+	@Test
 	public void testDotProduct () {
 		HashedSparseVector t1 = new HashedSparseVector (new int[] { 7 }, new double[] { 0.2 });
 		assertEquals (0.6, t1.dotProduct (s1), 0.00001);
 		assertEquals (0.6, s1.dotProduct (t1), 0.00001);
-		
+
 		assertEquals (19.0, s1.dotProduct (s2), 0.00001);
 		assertEquals (19.0, s2.dotProduct (s1), 0.00001);
 
@@ -113,6 +111,7 @@ public class TestHashedSparseVector extends TestCase
 		assertEquals (10.1, s2.dotProduct (d1), 0.00001);
 	}
 
+	@Test
 	public void testIncrementValue ()
 	{
 		HashedSparseVector s = (HashedSparseVector) s1.cloneMatrix ();
@@ -124,7 +123,7 @@ public class TestHashedSparseVector extends TestCase
 		}
 	}
 
-	
+	@Test
 	public void testSetValue ()
 	{
 		HashedSparseVector s = (HashedSparseVector) s1.cloneMatrix ();
@@ -138,6 +137,7 @@ public class TestHashedSparseVector extends TestCase
 
 	private static int[] idx2 = { 3, 7, 12, 15, 18 };
 
+	@Test
 	public void testBinaryVector ()
 	{
 		HashedSparseVector binary1 = new HashedSparseVector (idxs, null, idxs.length, idxs.length,
@@ -163,6 +163,7 @@ public class TestHashedSparseVector extends TestCase
 		checkAnswer (dblVec2, new double[] { 2, 2, 4, 4, 6 });
 	}
 
+	@Test
 	public void testCloneMatrixZeroed ()
 	{
 		HashedSparseVector s = (HashedSparseVector) s1.cloneMatrixZeroed ();
@@ -172,6 +173,7 @@ public class TestHashedSparseVector extends TestCase
 		}
 	}
 
+	@Test
   public void testSerializable () throws Exception
   {
     // Write out the sparse vector s1
@@ -205,19 +207,4 @@ public class TestHashedSparseVector extends TestCase
   }
       */
 
-  public static Test suite ()
-	{
-		return new TestSuite (TestHashedSparseVector.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-//    saveOldSv ();
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

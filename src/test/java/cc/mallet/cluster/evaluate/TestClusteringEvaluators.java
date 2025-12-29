@@ -8,11 +8,11 @@
 package cc.mallet.cluster.evaluate;
 
 import cc.mallet.cluster.Clustering;
-import cc.mallet.cluster.evaluate.*;
 import cc.mallet.types.InstanceList;
 import cc.mallet.util.Randoms;
 
-import junit.framework.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Examples drawn from Luo, "On Coreference Resolution Performance
@@ -21,32 +21,26 @@ import junit.framework.*;
  * @author "Aron Culotta" <culotta@degas.cs.umass.edu>
  * @version 1.0
  * @since 1.0
- * @see TestCase
  */
-public class TestClusteringEvaluators extends TestCase
-{
-	public TestClusteringEvaluators (String name)
-	{
-		super (name);
-	}
+public class TestClusteringEvaluators {
 
-	private Clustering generateTruth (InstanceList instances) {
-		int[] labels = new int[]{0,0,0,0,0,1,1,2,2,2,2,2};
+	private Clustering generateTruth(InstanceList instances) {
+		int[] labels = new int[]{0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2};
 		return new Clustering(instances, 3, labels);
 	}
-	
-	private Clustering[] generatePredicted (InstanceList instances) {
+
+	private Clustering[] generatePredicted(InstanceList instances) {
 		Clustering[] clusterings = new Clustering[4];
-		clusterings[0] = new Clustering(instances, 2, new int[]{0,0,0,0,0,1,1,1,1,1,1,1});
-		clusterings[1] = new Clustering(instances, 2, new int[]{0,0,0,0,0,1,1,0,0,0,0,0});
-		clusterings[2] = new Clustering(instances, 1, new int[]{0,0,0,0,0,0,0,0,0,0,0,0});
-		clusterings[3] = new Clustering(instances, 12, new int[]{0,1,2,3,4,5,6,7,8,9,10,11});
+		clusterings[0] = new Clustering(instances, 2, new int[]{0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1});
+		clusterings[1] = new Clustering(instances, 2, new int[]{0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0});
+		clusterings[2] = new Clustering(instances, 1, new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+		clusterings[3] = new Clustering(instances, 12, new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
 		return clusterings;
 	}
-	
-	public void testEvaluators ()
-	{
-		InstanceList instances = new InstanceList(new Randoms(1), 100, 2).subList(0,12);
+
+	@Test
+	public void testEvaluators() {
+		InstanceList instances = new InstanceList(new Randoms(1), 100, 2).subList(0, 12);
 		System.err.println(instances.size() + " instances");
 		Clustering truth = generateTruth(instances);
 		System.err.println("truth=" + truth);
@@ -73,19 +67,4 @@ public class TestClusteringEvaluators extends TestCase
 		assertTrue(muceval.evaluateTotals().matches(".*f1=0\\.8059.*"));
 	}
 
-	public static Test suite ()
-	{
-		return new TestSuite (TestClusteringEvaluators.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }
-		

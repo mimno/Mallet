@@ -6,8 +6,12 @@
    information, see the file `LICENSE' included with this distribution. */
 package cc.mallet.pipe.tsf;
 
+import static org.junit.Assert.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import org.junit.Test;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.tsf.SequencePrintingPipe;
@@ -17,9 +21,6 @@ import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * Created: Jul 8, 2005
@@ -27,19 +28,10 @@ import junit.framework.TestSuite;
  * @author <A HREF="mailto:casutton@cs.umass.edu>casutton@cs.umass.edu</A>
  * @version $Id: TestSequencePrintingPipe.java,v 1.1 2007/10/22 21:37:57 mccallum Exp $
  */
-public class TestSequencePrintingPipe extends TestCase {
+public class TestSequencePrintingPipe {
 
-  public TestSequencePrintingPipe (String name)
-  {
-    super (name);
-  }
-
-  public static Test suite ()
-  {
-    return new TestSuite (TestSequencePrintingPipe.class);
-  }
-
-  public static void testPrinting ()
+  @Test
+  public void testPrinting ()
   {
     Alphabet dict = dictOfSize (3);
     FeatureVector[] vecs = new FeatureVector[] {
@@ -96,21 +88,6 @@ public class TestSequencePrintingPipe extends TestCase {
       dict.lookupIndex ("LABEL"+i);
     }
     return dict;
-  }
-
-  public static void main (String[] args) throws Throwable
-  {
-    TestSuite theSuite;
-    if (args.length > 0) {
-      theSuite = new TestSuite ();
-      for (int i = 0; i < args.length; i++) {
-        theSuite.addTest (new TestSequencePrintingPipe (args[i]));
-      }
-    } else {
-      theSuite = (TestSuite) suite ();
-    }
-
-    junit.textui.TestRunner.run (theSuite);
   }
 
 }

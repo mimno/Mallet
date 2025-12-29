@@ -8,21 +8,17 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.fst;
 
-import junit.framework.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestSumNegLogProb2 extends TestCase
+public class TestSumNegLogProb2
 {
-	public TestSumNegLogProb2 (String name)
-	{
-		super (name);
-	}
-
 	private double sumNegLogProb (double a, double b) {
 		return - Math.log (Math.exp(-a) + Math.exp(-b));
 	}
@@ -38,6 +34,7 @@ public class TestSumNegLogProb2 extends TestCase
 		assertTrue (Math.abs (ab - (a+b)) < 0.001);
 	}
 
+	@Test
 	public void testTwo ()
 	{
 		testSum (.5, .5);
@@ -48,15 +45,5 @@ public class TestSumNegLogProb2 extends TestCase
 		testSum (.00000001, 0.00001);
 		testSum (.0000000000001, 0.00001);
 	}
-	
-	public static Test suite ()
-	{
-		return new TestSuite (TestSumNegLogProb2.class);
-	}
 
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
-	}
-	
 }

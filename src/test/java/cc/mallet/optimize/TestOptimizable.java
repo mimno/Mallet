@@ -8,22 +8,18 @@
 
 
 
-/** 
+/**
    @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
 
 package cc.mallet.optimize;
 
-import junit.framework.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 import java.util.logging.*;
-import java.io.*;
 import java.util.Random;
 
-import cc.mallet.classify.*;
-import cc.mallet.optimize.LineOptimizer;
-import cc.mallet.optimize.Optimizable;
-import cc.mallet.pipe.*;
-import cc.mallet.pipe.iterator.*;
 import cc.mallet.types.*;
 import cc.mallet.util.*;
 
@@ -31,17 +27,12 @@ import cc.mallet.util.*;
  *  Contains static methods for testing subclasses of
  *   Maximizable and Maximizable.ByGradient.  Especially
  *   useful are methods that verify the consistency of the value
- *   and gradient functions of an instance of 
+ *   and gradient functions of an instance of
  *   Maximizable.ByGradient.
  */
-public class TestOptimizable extends TestCase
-{
+public class TestOptimizable {
 	private static Logger logger =
 		MalletLogger.getLogger(TestOptimizable.class.getName());
-
-	public TestOptimizable (String name) {
-		super (name);
-	}
 
 	static private int numComponents = -1;
 
@@ -52,7 +43,7 @@ public class TestOptimizable extends TestCase
 	public static void setNumComponents (int n) { numComponents = n; }
 
 	/**
-	 *  Tests that parameters set by setParameters can be retrieved by 
+	 *  Tests that parameters set by setParameters can be retrieved by
 	 *   getParameters.
 	 *  @param maxable Instance of a Maximizable that should be tested.
 	 *   Its current parameters will be overwritten.
@@ -85,7 +76,7 @@ public class TestOptimizable extends TestCase
 		double[] normalizedDirection = direction.clone();
 		System.arraycopy(direction, 0, normalizedDirection, 0, numParameters);
 		MatrixOps.absNormalize(normalizedDirection);
-		
+
 		double value = maxable.getValue();
 		// the gradient from the optimizable function
 		double[] analyticGradient = new double[numParameters];
@@ -123,11 +114,11 @@ public class TestOptimizable extends TestCase
 	/**
 	 * Tests that the value and gradient function are consistent
 	 *  at the current parameters.
-	 *  Computes both the analytic gradient (the one given by 
+	 *  Computes both the analytic gradient (the one given by
 	 *  <tt>maxable.getValueGradient</tt>) and the empirical gradient,
 	 *  which is (if x are the current parameters and f the function
 	 *  computed by maxable) <tt>f(x + epsilon) - f(x)</tt>.  Verifies
-	 *  that the angle between the empirical and analytic gradients 
+	 *  that the angle between the empirical and analytic gradients
 	 *  are close to 0.
 	 * @see #testValueAndGradient testValueAndGradient
 	 * @see #testValueAndGradientRandomParameters testValueAndGradientRandomParameters
@@ -200,7 +191,7 @@ public class TestOptimizable extends TestCase
 				1.0/MatrixOps.twoNorm(analyticGradient));
 		MatrixOps.timesEquals (empiricalGradient,
 				1.0/MatrixOps.twoNorm(empiricalGradient));
-		/* 
+		/*
 	   System.out.println("N   ANA          EMP");
 	   for (int i = 0; i < analyticGradient.length; i++) {
       	System.out.println(i+"   "+analyticGradient[i]+"  "+empiricalGradient[i]);
@@ -252,18 +243,18 @@ public class TestOptimizable extends TestCase
 	}
 
 	/**
-	 * Tests that getValue and getValueGradient are consistent 
+	 * Tests that getValue and getValueGradient are consistent
 	 *   at a random parameter setting.
 	 *  @see #testValueAndGradientCurrentParameters testValueAndGradientCurrentParameters
 	 * @throws IllegalStateException If the test fails.
 	 */
-	public static boolean testValueAndGradientRandomParameters 
+	public static boolean testValueAndGradientRandomParameters
 	(Optimizable.ByGradientValue maxable, Random r)
 	{
 		double[] params = new double [maxable.getNumParameters()];
 		for (int i = 0; i < params.length; i++) {
 			params[i] = r.nextDouble ();
-			if (r.nextBoolean ()) 
+			if (r.nextBoolean ())
 				params [i] = -params[i];
 		}
 		maxable.setParameters (params);
@@ -307,31 +298,16 @@ public class TestOptimizable extends TestCase
 		}
 	}
 
-
-	public void testTestValueAndGradient ()
-	{
-		SimplePoly maxable = new SimplePoly ();
-		testValueAndGradient (maxable);
+	@Test
+	public void testTestValueAndGradient() {
+		SimplePoly maxable = new SimplePoly();
+		testValueAndGradient(maxable);
 
 		try {
-			WrongSimplePoly badMaxable = new WrongSimplePoly ();
-			testValueAndGradient (badMaxable);
-			fail ("WrongSimplyPoly should fail testMaxmiziable!");
+			WrongSimplePoly badMaxable = new WrongSimplePoly();
+			testValueAndGradient(badMaxable);
+			fail("WrongSimplyPoly should fail testMaxmiziable!");
 		} catch (Exception e) {}
-	}
-
-	public static Test suite ()
-	{
-		return new TestSuite (TestOptimizable.class);
-	}
-
-	protected void setUp ()
-	{
-	}
-
-	public static void main (String[] args)
-	{
-		junit.textui.TestRunner.run (suite());
 	}
 
 }

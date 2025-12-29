@@ -8,6 +8,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 import com.google.errorprone.annotations.Var;
 
 import cc.mallet.extract.StringSpan;
@@ -37,9 +40,6 @@ import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
 import cc.mallet.types.MatrixOps;
 import cc.mallet.types.Sequence;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
@@ -52,19 +52,13 @@ import junit.framework.TestSuite;
 
 /**
  * Tests for MEMM training.
- * 
+ *
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
-// gsc (08/25/08): made changes to all tests after removing the option for 
+// gsc (08/25/08): made changes to all tests after removing the option for
 // useSparseWeights from MEMMTrainer, now, the users has to set the weights manually
 // irrespective of above changes, two tests fail (testSpaceMaximizable, testSpaceSerializable)
-public class TestMEMM extends TestCase {
-
-	public TestMEMM (String name)
-	{
-	  super(name);
-	}
-
+public class TestMEMM {
 
 	public static final String[] data = new String[]{
 	  "Free software is a matter of the users' freedom to run, copy, distribute, study, change and improve the software. More precisely, it refers to four kinds of freedom, for the users of the software.",
@@ -86,6 +80,7 @@ public class TestMEMM extends TestCase {
 	};
 
 
+	@Test
 	public void testGetSetParameters()
 	{
 	  int inputVocabSize = 100;
@@ -110,7 +105,7 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 	at cc.mallet.optimize.LimitedMemoryBFGS.optimize(LimitedMemoryBFGS.java:201)
 	at cc.mallet.fst.MEMMTrainer.train(MEMMTrainer.java:124)
 	at cc.mallet.fst.tests.TestMEMM.testSpaceMaximizable(TestMEMM.java:127)
-        
+
   public void testSpaceMaximizable ()
   {
     Pipe p = makeSpacePredictionPipe ();
@@ -124,7 +119,7 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
     memm.addFullyConnectedStatesForLabels();
     memm.addStartState();
     memm.setWeightsDimensionAsIn(training);
-    
+
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
 //    memm.gatherTrainingSets (training); // ANNOYING: Need to set up per-instance training sets
     memmt.train (training, 1);  // Set weights dimension, gathers training sets, etc.
@@ -145,8 +140,8 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 	at cc.mallet.optimize.LimitedMemoryBFGS.optimize(LimitedMemoryBFGS.java:201)
 	at cc.mallet.fst.MEMMTrainer.train(MEMMTrainer.java:124)
 	at cc.mallet.fst.tests.TestMEMM.testSpaceSerializable(TestMEMM.java:150)
-            
-            
+
+
   public void testSpaceSerializable () throws IOException, ClassNotFoundException
   {
     Pipe p = makeSpacePredictionPipe ();
@@ -258,7 +253,7 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 	        unconstrainedCost = new SumLatticeDefault (crf, fvs).getTotalWeight();
 	        constrainedCost = new SumLatticeDefault (crf, fvs, ss).getTotalWeight();
 	        minimizableCost = mcrf.getValue ();
-					mcrf.getValueGradient (gradient);
+				mcrf.getValueGradient (gradient);
 	        minimizableGradientNorm = MatrixOps.oneNorm (gradient);
 	        System.out.println("parameters " + i + " " + j + " " + k
 	                           + ": unconstrainedCost=" + unconstrainedCost
@@ -271,6 +266,7 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 	}
 
 
+	@Test
 	public void testIncrement()
 	{
 	}
@@ -386,7 +382,7 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 	  MEMM memm = new MEMM(p, p2);
 	  memm.addFullyConnectedStatesForLabels();
 	  memm.setWeightsDimensionAsIn(lists[0]);
-	  
+
 	  MEMMTrainer memmt = new MEMMTrainer (memm);
 	  if (testValueAndGradient) {
 	    Optimizable.ByGradientValue minable = memmt.getOptimizableMEMM(lists[0]);
@@ -434,7 +430,7 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 	    crf.setWeightsDimensionAsIn(lists[0]);
 	  else
 	    crf.setWeightsDimensionDensely();
-	  
+
 	  MEMMTrainer memmt = new MEMMTrainer (crf);
 	  // memmt.setUseSparseWeights (useSparseWeights);
 	  if (testValueAndGradient) {
@@ -519,12 +515,12 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 
 	  MEMM crf1 = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
 	  crf1.addOrderNStates (lists [0],
-												 new int[] { 1, },
-												 new boolean[] { false, },
-												 "START",
-												 null,
-												 null,
-												 false);
+											 new int[] { 1, },
+											 new boolean[] { false, },
+											 "START",
+											 null,
+											 null,
+											 false);
 	  crf1.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt1 = new MEMMTrainer (crf1);
 		memmt1.train(lists [0]);
@@ -545,12 +541,12 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 
 	  MEMM crf3 = new MEMM(p.getDataAlphabet(), p.getTargetAlphabet());
 	  crf3.addOrderNStates (lists [0],
-												 new int[] { 1, 2, },
-												 new boolean[] { false, false },
-												 "START",
-												 null,
-												 null,
-												 false);
+											 new int[] { 1, 2, },
+											 new boolean[] { false, false },
+											 "START",
+											 null,
+											 null,
+											 false);
 	  crf3.setWeightsDimensionAsIn(lists[0]);
 	  MEMMTrainer memmt3 = new MEMMTrainer (crf3);
 		memmt3.train(lists [0]);
@@ -631,33 +627,6 @@ cc.mallet.optimize.InvalidOptimizableException: sy = 83.87438991729655 > 0
 		}
 		mcrf.setParameters (params);
 		crf.print ();
-	}
-
-	public static Test suite()
-	{
-	  return new TestSuite(TestMEMM.class);
-	}
-
-
-	public static void main(String[] args)
-	{
-		TestMEMM tm = new TestMEMM ("");
-		tm.doTestSpacePrediction (true);
-		return;
-
-/*
-		TestSuite theSuite;
-		if (args.length > 0) {
-			theSuite = new TestSuite();
-			for (int i = 0; i < args.length; i++) {
-				theSuite.addTest (new TestMEMM (args [i]));
-			}
-		} else {
-			theSuite = (TestSuite) suite();
-		}
-
-		junit.textui.TestRunner.run (theSuite);
-*/
 	}
 
 }

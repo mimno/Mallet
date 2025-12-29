@@ -8,45 +8,55 @@
 
 package cc.mallet.pipe;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 import java.util.ArrayList;
+
+import org.junit.Test;
+
 import cc.mallet.pipe.CharSequenceLowercase;
 import cc.mallet.pipe.CharSequenceNoDiacritics;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import junit.framework.TestCase;
 
 
-public class TestCharSequenceNoDiacritics extends TestCase {
+public class TestCharSequenceNoDiacritics {
 
+  @Test
   public void testAccentAigu() {
     assertEquals("medecin", oneWordCleansing("médecin"));
     assertEquals("etouffer", oneWordCleansing("étouffer"));
     assertEquals("marche", oneWordCleansing("marché"));
   }
 
+  @Test
   public void testAccentGrave() {
     assertEquals("tres", oneWordCleansing("très"));
     assertEquals("deuxieme", oneWordCleansing("deuxième"));
   }
 
+  @Test
   public void testAccentCirconflexe() {
     assertEquals("foret", oneWordCleansing("forêt"));
     assertEquals("hotel", oneWordCleansing("hôtel"));
   }
 
+  @Test
   public void testCedille() {
     assertEquals("garcon", oneWordCleansing("garçon"));
     assertEquals("francais", oneWordCleansing("français"));
   }
 
+  @Test
   public void testTrema() {
     assertEquals("jamaique", oneWordCleansing("Jamaïque"));
     assertEquals("coincidence", oneWordCleansing("coïncidence"));
   }
 
+  @Test
   public void testRussianWords() {
     assertEquals("замок", oneWordCleansing("замо́к"));
     assertEquals("замок", oneWordCleansing("за́мок"));
@@ -68,7 +78,7 @@ public class TestCharSequenceNoDiacritics extends TestCase {
 
   private SerialPipes createPipes() {
 
-    List<Pipe> pipes = new ArrayList<Pipe>(); 
+    List<Pipe> pipes = new ArrayList<Pipe>();
 
     // Convert string to lowercase
     pipes.add(new CharSequenceLowercase());
