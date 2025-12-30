@@ -55,8 +55,13 @@ public class WorkerCallable implements Callable<Integer> {
 
     boolean shouldSaveState = false;
     boolean shouldBuildLocalCounts = true;
-    
+
     protected Randoms random;
+
+    // Reusable working arrays for sampling (allocated once, reused per document)
+    protected int[] localTopicCounts;
+    protected int[] localTopicIndex;
+    protected double[] topicTermScores;
     
     public WorkerCallable() {}
     
@@ -98,7 +103,12 @@ public class WorkerCallable implements Callable<Integer> {
 
         cachedCoefficients = new double[ numTopics ];
 
-        //System.err.println("WorkerCallable Thread: " + numTopics + " topics, " + topicBits + " topic bits, " + 
+        // Allocate reusable working arrays
+        localTopicCounts = new int[numTopics];
+        localTopicIndex = new int[numTopics];
+        topicTermScores = new double[numTopics];
+
+        //System.err.println("WorkerCallable Thread: " + numTopics + " topics, " + topicBits + " topic bits, " +
         //                   Integer.toBinaryString(topicMask) + " topic mask");
 
     }
@@ -289,8 +299,8 @@ public class WorkerCallable implements Callable<Integer> {
         int newTopic;
         int docLength = tokenSequence.getLength();
 
-        int[] localTopicCounts = new int[numTopics];
-        int[] localTopicIndex = new int[numTopics];
+        // Clear reusable working arrays
+        Arrays.fill(localTopicCounts, 0);
 
         //        populate topic counts
         for (int position = 0; position < docLength; position++) {
@@ -334,7 +344,6 @@ public class WorkerCallable implements Callable<Integer> {
         @Var
         double topicTermMass = 0.0;
 
-        double[] topicTermScores = new double[numTopics];
         @Var
         int i;
         @Var

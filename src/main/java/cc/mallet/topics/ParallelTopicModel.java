@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -780,7 +781,7 @@ public class ParallelTopicModel implements Serializable {
                     }
                 }
 
-                List mergeCallables = new ArrayList();
+                List<Callable<String>> mergeCallables = new ArrayList<>();
                 for (int thread = 0; thread < numThreads; thread++) {
                     mergeCallables.add(new MergeCallable(callables, typeTopicCounts, numTypes, numTopics, thread, topicMask, topicBits));
                 }
@@ -798,7 +799,7 @@ public class ParallelTopicModel implements Serializable {
                 // Now that we have merged the sampling statistics, propagate 
                 //  them back out to the individual threads.
 
-                List copyCallables = new ArrayList();
+                List<Callable<String>> copyCallables = new ArrayList<>();
                 for (int thread = 0; thread < numThreads; thread++) {
                     copyCallables.add(new CopyCallable(callables[thread], typeTopicCounts, tokensPerTopic));
                 }

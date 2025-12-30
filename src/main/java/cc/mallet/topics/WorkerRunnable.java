@@ -20,10 +20,12 @@ import cc.mallet.util.Randoms;
 
 /**
  * A parallel topic model runnable task.
- * 
+ *
  * @author David Mimno, Andrew McCallum
+ * @deprecated Use {@link WorkerCallable} instead, which provides better
+ *             thread pool integration via the Callable interface.
  */
-
+@Deprecated
 public class WorkerRunnable implements Runnable {
 	
 	boolean isFinished = true;
