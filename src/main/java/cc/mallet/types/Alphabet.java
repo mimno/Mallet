@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.nio.charset.Charset;
 
 import com.carrotsearch.hppc.ObjectIntHashMap;
@@ -59,8 +57,6 @@ public class Alphabet implements Serializable
     Class entryClass = null;
     UUID instanceId = UUID.randomUUID();  //used in readResolve to identify persitent instances
 
-    private transient ReadWriteLock lock = new ReentrantReadWriteLock();
-
     public Alphabet (int capacity, Class entryClass) {
         this.map = new ObjectIntHashMap (capacity);
         this.entries = new ArrayList (capacity);
@@ -88,17 +84,12 @@ public class Alphabet implements Serializable
     }
 
     @Override public Object clone () {
-        lock.readLock().lock();
-        try {
-            Alphabet ret = new Alphabet();
-            ret.map = (ObjectIntHashMap) map.clone();
-            ret.entries = (ArrayList) entries.clone();
-            ret.growthStopped = growthStopped;
-            ret.entryClass = entryClass;
-            return ret;
-        } finally {
-            lock.readLock().unlock();
-        }
+        Alphabet ret = new Alphabet();
+        ret.map = (ObjectIntHashMap) map.clone();
+        ret.entries = (ArrayList) entries.clone();
+        ret.growthStopped = growthStopped;
+        ret.entryClass = entryClass;
+        return ret;
     }
 
     /** Return -1 if entry isn't present. */
@@ -117,25 +108,15 @@ public class Alphabet implements Serializable
                 throw new IllegalArgumentException("Non-matching entry class, " + entry.getClass() + ", was " + entryClass);
         }
 
-        lock.readLock().lock();
-        try {
-            if (map.containsKey(entry)) {
-                return map.get(entry);
-            }
-        } finally {
-            lock.readLock().unlock();
+        if (map.containsKey(entry)) {
+            return map.get(entry);
         }
 
         if (!growthStopped && addIfNotPresent) {
-            lock.writeLock().lock();
-            try {
-                int retIndex = entries.size();
-                map.put(entry, retIndex);
-                entries.add(entry);
-                return retIndex;
-            } finally {
-                lock.writeLock().unlock();
-            }
+            int retIndex = entries.size();
+            map.put(entry, retIndex);
+            entries.add(entry);
+            return retIndex;
         }
         return -1;
     }
@@ -145,21 +126,11 @@ public class Alphabet implements Serializable
     }
 
     public Object lookupObject (int index) {
-        lock.readLock().lock();
-        try {
-            return entries.get(index);
-        } finally {
-            lock.readLock().unlock();
-        }
+        return entries.get(index);
     }
 
     public Object[] toArray () {
-        lock.readLock().lock();
-        try {
-            return entries.toArray();
-        } finally {
-            lock.readLock().unlock();
-        }
+        return entries.toArray();
     }
 
     /**
@@ -170,38 +141,20 @@ public class Alphabet implements Serializable
      *  <tt>ret[lookupIndex(obj)] = obj</tt> .
      */
     public Object[] toArray (Object[] in) {
-        lock.readLock().lock();
-        try {
-            return entries.toArray(in);
-        } finally {
-            lock.readLock().unlock();
-        }
+        return entries.toArray(in);
     }
 
     // xxx This should disable the iterator's remove method...
-    // for thread safety returns a _copy_ of the array; should probably use size() and lookupObject() instead
     public Iterator iterator () {
-        lock.readLock().lock();
-        try {
-            ArrayList copy = new ArrayList();
-            copy.addAll(entries);
-            return copy.iterator();
-        } finally {
-            lock.readLock().unlock();
-        }
+        return entries.iterator();
     }
 
     public Object[] lookupObjects (int[] indices) {
-        lock.readLock().lock();
-        try {
-            Object[] ret = new Object[indices.length];
-            for (int i = 0; i < indices.length; i++) {
-                ret[i] = entries.get(indices[i]);
-            }
-            return ret;
-        } finally {
-            lock.readLock().unlock();
+        Object[] ret = new Object[indices.length];
+        for (int i = 0; i < indices.length; i++) {
+            ret[i] = entries.get(indices[i]);
         }
+        return ret;
     }
 
     /**
@@ -211,15 +164,10 @@ public class Alphabet implements Serializable
      * @return An array of values from this Alphabet.  The runtime type of the array is the same as buf
      */
     public Object[] lookupObjects (int[] indices, Object[] buf) {
-        lock.readLock().lock();
-        try {
-            for (int i = 0; i < indices.length; i++) {
-                buf[i] = entries.get(indices[i]);
-            }
-            return buf;
-        } finally {
-            lock.readLock().unlock();
+        for (int i = 0; i < indices.length; i++) {
+            buf[i] = entries.get(indices[i]);
         }
+        return buf;
     }
 
     public int[] lookupIndices (Object[] objects, boolean addIfNotPresent) {
@@ -231,21 +179,11 @@ public class Alphabet implements Serializable
     }
 
     public boolean contains (Object entry) {
-        lock.readLock().lock();
-        try {
-            return map.containsKey(entry);
-        } finally {
-            lock.readLock().unlock();
-        }
+        return map.containsKey(entry);
     }
 
     public int size () {
-        lock.readLock().lock();
-        try {
-            return entries.size();
-        } finally {
-            lock.readLock().unlock();
-        }
+        return entries.size();
     }
 
     public void stopGrowth () {
@@ -267,17 +205,12 @@ public class Alphabet implements Serializable
     /** Return String representation of all Alphabet entries, each
     separated by a newline. */
     @Override public String toString() {
-        lock.readLock().lock();
-        try {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < entries.size(); i++) {
-                sb.append(entries.get(i).toString());
-                sb.append('\n');
-            }
-            return sb.toString();
-        } finally {
-            lock.readLock().unlock();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < entries.size(); i++) {
+            sb.append(entries.get(i).toString());
+            sb.append('\n');
         }
+        return sb.toString();
     }
 
     public void dump () { dump (System.out); }
@@ -287,13 +220,8 @@ public class Alphabet implements Serializable
     }
 
     public void dump (PrintWriter out) {
-        lock.readLock().lock();
-        try {
-            for (int i = 0; i < entries.size(); i++) {
-                out.println(i + " => " + entries.get(i));
-            }
-        } finally {
-            lock.readLock().unlock();
+        for (int i = 0; i < entries.size(); i++) {
+            out.println(i + " => " + entries.get(i));
         }
     }
 
@@ -318,41 +246,30 @@ public class Alphabet implements Serializable
     private static final int CURRENT_SERIAL_VERSION = 1;
 
     private void writeObject (ObjectOutputStream out) throws IOException {
-        lock.readLock().lock();
-        try {
-            out.writeInt(CURRENT_SERIAL_VERSION);
-            out.writeInt(entries.size());
-            for (int i = 0; i < entries.size(); i++) {
-                out.writeObject(entries.get(i));
-            }
-            out.writeBoolean(growthStopped);
-            out.writeObject(entryClass);
-            out.writeObject(instanceId);
-        } finally {
-            lock.readLock().unlock();
+        out.writeInt(CURRENT_SERIAL_VERSION);
+        out.writeInt(entries.size());
+        for (int i = 0; i < entries.size(); i++) {
+            out.writeObject(entries.get(i));
         }
+        out.writeBoolean(growthStopped);
+        out.writeObject(entryClass);
+        out.writeObject(instanceId);
     }
 
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-        lock = new ReentrantReadWriteLock();
-        lock.writeLock().lock();
-        try {
-            int version = in.readInt();
-            int size = in.readInt();
-            entries = new ArrayList(size);
-            map = new ObjectIntHashMap(size);
-            for (int i = 0; i < size; i++) {
-                Object o = in.readObject();
-                map.put(o, i);
-                entries.add(o);
-            }
-            growthStopped = in.readBoolean();
-            entryClass = (Class) in.readObject();
-            if (version > 0) { // instanced id added in version 1S
-                instanceId = (UUID) in.readObject();
-            }
-        } finally {
-            lock.writeLock().unlock();
+        int version = in.readInt();
+        int size = in.readInt();
+        entries = new ArrayList(size);
+        map = new ObjectIntHashMap(size);
+        for (int i = 0; i < size; i++) {
+            Object o = in.readObject();
+            map.put(o, i);
+            entries.add(o);
+        }
+        growthStopped = in.readBoolean();
+        entryClass = (Class) in.readObject();
+        if (version > 0) { // instanced id added in version 1S
+            instanceId = (UUID) in.readObject();
         }
     }
 
