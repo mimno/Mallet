@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.1-alpha</version>
+  <version>2.1.0</version>
   <packaging>jar</packaging>
   <name>MAchine Learning for LanguagE Toolkit (MALLET)</name>
   <description>
@@ -135,11 +135,11 @@
             </executions>
         </plugin>
 
-      <!-- disable signing in order to simplify integration with TravisCI
+      <!-- GPG signing for Maven Central -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.5</version>
+        <version>3.2.7</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -150,7 +150,19 @@
           </execution>
         </executions>
       </plugin>
-      -->
+
+      <!-- Maven Central Portal Publishing -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.6.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
+          <waitUntil>published</waitUntil>
+        </configuration>
+      </plugin>
 
       <!-- Copy dependencies for bin/mallet script -->
       <plugin>
@@ -215,16 +227,6 @@
     </dependency>
   </dependencies>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
 
   <profiles>
     <profile>
