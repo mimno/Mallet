@@ -56,13 +56,13 @@ Add MALLET to your project's `pom.xml`:
 <dependency>
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.1-alpha</version>
+  <version>2.1.0</version>
 </dependency>
 ```
 
 ## Usage
 
-Once you have installed Mallet you can use it using the following command:
+After building with `mvn package`, you can use the command-line interface:
 ```
 bin/mallet [command] --option value --option value ...
 ```
