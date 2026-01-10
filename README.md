@@ -27,6 +27,22 @@ An add-on package to MALLET, called GRMM, contains support for inference in gene
 - Java 17 or higher
 - Maven 3.6 or higher
 
+#### macOS Users
+
+The default Java installation on macOS is often outdated. We recommend installing OpenJDK via [Homebrew](https://brew.sh/):
+
+```bash
+brew install openjdk maven
+```
+
+After installation, follow the instructions printed by Homebrew to add OpenJDK to your PATH, or add this to your shell configuration file (e.g., `~/.zshrc`):
+
+```bash
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+```
+
+Verify your Java version with `java --version`.
+
 ### Building from Source
 
 To build MALLET from source, use Maven:

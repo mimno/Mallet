@@ -10,7 +10,7 @@ goto :eof
 
 :gotMalletHome
 
-set MALLET_CLASSPATH=%MALLET_HOME%\class;%MALLET_HOME%\lib\mallet-deps.jar
+set MALLET_CLASSPATH=%MALLET_HOME%\target\classes;%MALLET_HOME%\target\dependency\*
 set MALLET_MEMORY=1G
 set MALLET_ENCODING=UTF-8
 
