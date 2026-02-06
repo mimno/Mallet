@@ -4,8 +4,12 @@
 malletdir=`dirname $0`
 malletdir=`dirname $malletdir`
 
-cp=$malletdir/target/classes:$malletdir/target/dependency/*:$CLASSPATH
-#echo $cp
+# Support both source build (target/) and binary distribution (lib/)
+if [ -d "$malletdir/target/classes" ]; then
+  cp=$malletdir/target/classes:$malletdir/target/dependency/*:$CLASSPATH
+else
+  cp=$malletdir/lib/*:$CLASSPATH
+fi
 
 MEMORY="${MALLET_MEMORY:-1g}"
 
@@ -15,7 +19,7 @@ shift
 help()
 {
 cat <<EOF
-Mallet 2.0 commands: 
+Mallet 2.1.0 commands:
 
   import-dir         load the contents of a directory into mallet instances (one per file)
   import-file        load a single file into mallet instances (one per line)

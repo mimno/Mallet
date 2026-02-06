@@ -10,7 +10,12 @@ goto :eof
 
 :gotMalletHome
 
-set MALLET_CLASSPATH=%MALLET_HOME%\target\classes;%MALLET_HOME%\target\dependency\*
+rem Support both source build (target\) and binary distribution (lib\)
+if exist "%MALLET_HOME%\target\classes" (
+  set MALLET_CLASSPATH=%MALLET_HOME%\target\classes;%MALLET_HOME%\target\dependency\*
+) else (
+  set MALLET_CLASSPATH=%MALLET_HOME%\lib\*
+)
 set MALLET_MEMORY=1G
 set MALLET_ENCODING=UTF-8
 
@@ -36,7 +41,7 @@ if "%CMD%"=="run" set CLASS=%1 & shift
 
 if not "%CLASS%" == "" goto gotClass
 
-echo Mallet 2.0 commands: 
+echo Mallet 2.1.0 commands:
 echo   import-dir        load the contents of a directory into mallet instances (one per file)
 echo   import-file       load a single file into mallet instances (one per line)
 echo   import-svmlight   load a single SVMLight format data file into mallet instances (one per line)

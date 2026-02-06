@@ -16,7 +16,7 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -37,6 +37,12 @@ jobs:
         with:
           name: test-results
           path: target/surefire-reports/
+
+      - name: Upload Binary Distribution
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" target/mallet-*-bin.zip
 
       - name: Publish to GitHub Packages using Apache Maven
         if: github.event_name == 'release'
