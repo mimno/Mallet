@@ -435,19 +435,17 @@ public class ParallelTopicModel implements Serializable {
                         (1 << topicBits) + topic;
                 }
                 else {
-                    currentTypeTopicCounts[index] =
+                    int currentTypeTopicCount =
                         ((currentValue + 1) << topicBits) + topic;
                     
                     // Now ensure that the array is still sorted by 
                     //  bubbling this value up.
                     while (index > 0 &&
-                           currentTypeTopicCounts[index] > currentTypeTopicCounts[index - 1]) {
-                        int temp = currentTypeTopicCounts[index];
+                           currentTypeTopicCount > currentTypeTopicCounts[index - 1]) {
                         currentTypeTopicCounts[index] = currentTypeTopicCounts[index - 1];
-                        currentTypeTopicCounts[index - 1] = temp;
-                        
                         index--;
                     }
+                    currentTypeTopicCounts[index] = currentTypeTopicCount;
                 }
             }
         }

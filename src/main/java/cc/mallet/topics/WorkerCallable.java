@@ -225,18 +225,16 @@ public class WorkerCallable implements Callable<Integer> {
                     currentTypeTopicCounts[index] = (1 << topicBits) + topic;
                 }
                 else {
-                    currentTypeTopicCounts[index] =
+                    int currentTypeTopicCount =
                         ((currentValue + 1) << topicBits) + topic;
                     
                     // Now ensure that the array is still sorted by 
                     //  bubbling this value up.
-                    while (index > 0 && currentTypeTopicCounts[index] > currentTypeTopicCounts[index - 1]) {
-                        int temp = currentTypeTopicCounts[index];
+                    while (index > 0 && currentTypeTopicCount > currentTypeTopicCounts[index - 1]) {
                         currentTypeTopicCounts[index] = currentTypeTopicCounts[index - 1];
-                        currentTypeTopicCounts[index - 1] = temp;
-                        
                         index--;
                     }
+                    currentTypeTopicCounts[index] = currentTypeTopicCount;
                 }
             }
         }
@@ -450,11 +448,12 @@ public class WorkerCallable implements Callable<Integer> {
                     //  look at this cell in the array again.
 
                     currentValue --;
+                    int currentTypeTopicCount;
                     if (currentValue == 0) {
-                        currentTypeTopicCounts[index] = 0;
+                        currentTypeTopicCount = 0;
                     }
                     else {
-                        currentTypeTopicCounts[index] =
+                        currentTypeTopicCount =
                             (currentValue << topicBits) + oldTopic;
                     }
                     
@@ -463,13 +462,11 @@ public class WorkerCallable implements Callable<Integer> {
                     @Var
                     int subIndex = index;
                     while (subIndex < currentTypeTopicCounts.length - 1 && 
-                           currentTypeTopicCounts[subIndex] < currentTypeTopicCounts[subIndex + 1]) {
-                        int temp = currentTypeTopicCounts[subIndex];
+                           currentTypeTopicCount < currentTypeTopicCounts[subIndex + 1]) {
                         currentTypeTopicCounts[subIndex] = currentTypeTopicCounts[subIndex + 1];
-                        currentTypeTopicCounts[subIndex + 1] = temp;
-                        
                         subIndex++;
                     }
+                    currentTypeTopicCounts[subIndex] = currentTypeTopicCount;
 
                     alreadyDecremented = true;
                 }
@@ -502,18 +499,16 @@ public class WorkerCallable implements Callable<Integer> {
                 newTopic = currentTypeTopicCounts[i] & topicMask;
                 currentValue = currentTypeTopicCounts[i] >> topicBits;
                 
-                currentTypeTopicCounts[i] = ((currentValue + 1) << topicBits) + newTopic;
+                int currentTypeTopicCount = ((currentValue + 1) << topicBits) + newTopic;
 
                 // Bubble the new value up, if necessary
                 
                 while (i > 0 &&
-                       currentTypeTopicCounts[i] > currentTypeTopicCounts[i - 1]) {
-                    int temp = currentTypeTopicCounts[i];
+                       currentTypeTopicCount > currentTypeTopicCounts[i - 1]) {
                     currentTypeTopicCounts[i] = currentTypeTopicCounts[i - 1];
-                    currentTypeTopicCounts[i - 1] = temp;
-
                     i--;
                 }
+                currentTypeTopicCounts[i] = currentTypeTopicCount;
 
             }
             else {
@@ -586,17 +581,15 @@ public class WorkerCallable implements Callable<Integer> {
                 }
                 else {
                     currentValue = currentTypeTopicCounts[index] >> topicBits;
-                    currentTypeTopicCounts[index] = ((currentValue + 1) << topicBits) + newTopic;
+                    int currentTypeTopicCount = ((currentValue + 1) << topicBits) + newTopic;
 
                     // Bubble the increased value left, if necessary
                     while (index > 0 &&
-                           currentTypeTopicCounts[index] > currentTypeTopicCounts[index - 1]) {
-                        int temp = currentTypeTopicCounts[index];
+                           currentTypeTopicCount > currentTypeTopicCounts[index - 1]) {
                         currentTypeTopicCounts[index] = currentTypeTopicCounts[index - 1];
-                        currentTypeTopicCounts[index - 1] = temp;
-
                         index--;
                     }
+                    currentTypeTopicCounts[index] = currentTypeTopicCount;
                 }
 
             }
