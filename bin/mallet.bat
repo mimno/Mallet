@@ -41,7 +41,7 @@ if "%CMD%"=="run" set CLASS=%1 & shift
 
 if not "%CLASS%" == "" goto gotClass
 
-echo Mallet 2.1.0 commands:
+echo Mallet 2.1.1 commands:
 echo   import-dir        load the contents of a directory into mallet instances (one per file)
 echo   import-file       load a single file into mallet instances (one per line)
 echo   import-svmlight   load a single SVMLight format data file into mallet instances (one per line)

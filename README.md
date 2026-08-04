@@ -72,7 +72,7 @@ Add MALLET to your project's `pom.xml`:
 <dependency>
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.1.0</version>
+  <version>2.1.1</version>
 </dependency>
 ```
 

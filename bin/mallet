@@ -19,7 +19,7 @@ shift
 help()
 {
 cat <<EOF
-Mallet 2.1.0 commands:
+Mallet 2.1.1 commands:
 
   import-dir         load the contents of a directory into mallet instances (one per file)
   import-file        load a single file into mallet instances (one per line)

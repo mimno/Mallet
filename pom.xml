@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>cc.mallet</groupId>
   <artifactId>mallet</artifactId>
-  <version>2.1.0</version>
+  <version>2.1.1</version>
   <packaging>jar</packaging>
   <name>MAchine Learning for LanguagE Toolkit (MALLET)</name>
   <description>
@@ -135,35 +135,6 @@
             </executions>
         </plugin>
 
-      <!-- GPG signing for Maven Central -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.2.7</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Maven Central Portal Publishing -->
-      <plugin>
-        <groupId>org.sonatype.central</groupId>
-        <artifactId>central-publishing-maven-plugin</artifactId>
-        <version>0.6.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <publishingServerId>central</publishingServerId>
-          <autoPublish>true</autoPublish>
-          <waitUntil>published</waitUntil>
-        </configuration>
-      </plugin>
-
       <!-- Copy dependencies for bin/mallet script -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -278,6 +249,46 @@
         </repository>
       </distributionManagement>
     </profile>
+
+      <!-- Sign and publish to Maven Central. Not active by default: CI has no
+           GPG key, so binding these plugins unconditionally makes every
+           ordinary build fail at the sign step. Activate explicitly for a
+           real release: mvn clean deploy -P release -->
+      <profile>
+          <id>release</id>
+          <build>
+              <plugins>
+                  <!-- GPG signing for Maven Central -->
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-gpg-plugin</artifactId>
+                      <version>3.2.7</version>
+                      <executions>
+                          <execution>
+                              <id>sign-artifacts</id>
+                              <phase>verify</phase>
+                              <goals>
+                                  <goal>sign</goal>
+                              </goals>
+                          </execution>
+                      </executions>
+                  </plugin>
+
+                  <!-- Maven Central Portal Publishing -->
+                  <plugin>
+                      <groupId>org.sonatype.central</groupId>
+                      <artifactId>central-publishing-maven-plugin</artifactId>
+                      <version>0.6.0</version>
+                      <extensions>true</extensions>
+                      <configuration>
+                          <publishingServerId>central</publishingServerId>
+                          <autoPublish>true</autoPublish>
+                          <waitUntil>published</waitUntil>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
 
       <!-- Optional Error Prone profile -->
       <profile>
