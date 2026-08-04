@@ -225,16 +225,16 @@ public class WorkerCallable implements Callable<Integer> {
                     currentTypeTopicCounts[index] = (1 << topicBits) + topic;
                 }
                 else {
-                    int currentTypeTopicCount =
+                    int updatedCount =
                         ((currentValue + 1) << topicBits) + topic;
                     
                     // Now ensure that the array is still sorted by 
                     //  bubbling this value up.
-                    while (index > 0 && currentTypeTopicCount > currentTypeTopicCounts[index - 1]) {
+                    while (index > 0 && updatedCount > currentTypeTopicCounts[index - 1]) {
                         currentTypeTopicCounts[index] = currentTypeTopicCounts[index - 1];
                         index--;
                     }
-                    currentTypeTopicCounts[index] = currentTypeTopicCount;
+                    currentTypeTopicCounts[index] = updatedCount;
                 }
             }
         }
@@ -448,12 +448,12 @@ public class WorkerCallable implements Callable<Integer> {
                     //  look at this cell in the array again.
 
                     currentValue --;
-                    int currentTypeTopicCount;
+                    int updatedCount;
                     if (currentValue == 0) {
-                        currentTypeTopicCount = 0;
+                        updatedCount = 0;
                     }
                     else {
-                        currentTypeTopicCount =
+                        updatedCount =
                             (currentValue << topicBits) + oldTopic;
                     }
                     
@@ -462,11 +462,11 @@ public class WorkerCallable implements Callable<Integer> {
                     @Var
                     int subIndex = index;
                     while (subIndex < currentTypeTopicCounts.length - 1 && 
-                           currentTypeTopicCount < currentTypeTopicCounts[subIndex + 1]) {
+                           updatedCount < currentTypeTopicCounts[subIndex + 1]) {
                         currentTypeTopicCounts[subIndex] = currentTypeTopicCounts[subIndex + 1];
                         subIndex++;
                     }
-                    currentTypeTopicCounts[subIndex] = currentTypeTopicCount;
+                    currentTypeTopicCounts[subIndex] = updatedCount;
 
                     alreadyDecremented = true;
                 }
@@ -499,16 +499,16 @@ public class WorkerCallable implements Callable<Integer> {
                 newTopic = currentTypeTopicCounts[i] & topicMask;
                 currentValue = currentTypeTopicCounts[i] >> topicBits;
                 
-                int currentTypeTopicCount = ((currentValue + 1) << topicBits) + newTopic;
+                int updatedCount = ((currentValue + 1) << topicBits) + newTopic;
 
                 // Bubble the new value up, if necessary
                 
                 while (i > 0 &&
-                       currentTypeTopicCount > currentTypeTopicCounts[i - 1]) {
+                       updatedCount > currentTypeTopicCounts[i - 1]) {
                     currentTypeTopicCounts[i] = currentTypeTopicCounts[i - 1];
                     i--;
                 }
-                currentTypeTopicCounts[i] = currentTypeTopicCount;
+                currentTypeTopicCounts[i] = updatedCount;
 
             }
             else {
@@ -581,15 +581,15 @@ public class WorkerCallable implements Callable<Integer> {
                 }
                 else {
                     currentValue = currentTypeTopicCounts[index] >> topicBits;
-                    int currentTypeTopicCount = ((currentValue + 1) << topicBits) + newTopic;
+                    int updatedCount = ((currentValue + 1) << topicBits) + newTopic;
 
                     // Bubble the increased value left, if necessary
                     while (index > 0 &&
-                           currentTypeTopicCount > currentTypeTopicCounts[index - 1]) {
+                           updatedCount > currentTypeTopicCounts[index - 1]) {
                         currentTypeTopicCounts[index] = currentTypeTopicCounts[index - 1];
                         index--;
                     }
-                    currentTypeTopicCounts[index] = currentTypeTopicCount;
+                    currentTypeTopicCounts[index] = updatedCount;
                 }
 
             }
