@@ -77,19 +77,17 @@ public class MergeCallable implements Callable<String> {
                     }
                     currentCount = targetCounts[targetIndex] >> topicBits;
                     
-                    targetCounts[targetIndex] =
+                    int targetCount =
                         ((currentCount + count) << topicBits) + topic;
                     
                     // Now ensure that the array is still sorted by 
                     //  bubbling this value up.
                     while (targetIndex > 0 &&
-                           targetCounts[targetIndex] > targetCounts[targetIndex - 1]) {
-                        int temp = targetCounts[targetIndex];
+                           targetCount > targetCounts[targetIndex - 1]) {
                         targetCounts[targetIndex] = targetCounts[targetIndex - 1];
-                        targetCounts[targetIndex - 1] = temp;
-                        
                         targetIndex--;
                     }
+                    targetCounts[targetIndex] = targetCount;
                     
                     sourceIndex++;
                 }
