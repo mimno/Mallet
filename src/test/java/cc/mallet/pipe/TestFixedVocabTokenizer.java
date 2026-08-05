@@ -10,11 +10,11 @@ import cc.mallet.types.Instance;
 
 /**
  * Regression tests for the same code-point iteration bug covered by
- * {@link SimpleTokenizerTest}, applied to {@link FixedVocabTokenizer}, which has an
+ * {@link TestSimpleTokenizer}, applied to {@link FixedVocabTokenizer}, which has an
  * identical (copy-pasted) tokenization loop -- see
  * https://github.com/mimno/Mallet/issues/219, correctness finding #2.
  */
-public class FixedVocabTokenizerTest {
+public class TestFixedVocabTokenizer {
 
     // U+1F622 CRYING FACE, encoded as a Java surrogate pair.
     private static final String CRYING_FACE = "😢";
@@ -39,7 +39,7 @@ public class FixedVocabTokenizerTest {
     }
 
     @Test
-    public void plainAsciiIsUnaffected() {
+    public void testPlainAsciiIsUnaffected() {
         String[] tokens = tokenize("alpha beta gamma delta epsilon",
             "alpha", "beta", "gamma", "delta", "epsilon");
         assertEquals(java.util.Arrays.asList("alpha", "beta", "gamma", "delta", "epsilon"),
@@ -47,7 +47,7 @@ public class FixedVocabTokenizerTest {
     }
 
     @Test
-    public void emojiInsideAWordNoLongerTruncatesTheRestOfTheWord() {
+    public void testEmojiInsideAWordNoLongerTruncatesTheRestOfTheWord() {
         // Only "epsilon" is in the fixed vocabulary, so this also verifies that after the
         // fix the fully-reassembled 7-letter token is what actually gets looked up --
         // the truncated 6-letter "epsilo" would silently fail the alphabet.contains() check

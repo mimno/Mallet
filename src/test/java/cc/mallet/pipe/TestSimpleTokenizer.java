@@ -24,7 +24,7 @@ import cc.mallet.types.Instance;
  * length, so the tokenizer silently loses characters from the *end* of the
  * document -- regardless of how far the offending character is from the end.
  */
-public class SimpleTokenizerTest {
+public class TestSimpleTokenizer {
 
     // U+1F622 CRYING FACE, encoded as a Java surrogate pair.
     private static final String CRYING_FACE = "😢";
@@ -41,13 +41,13 @@ public class SimpleTokenizerTest {
     }
 
     @Test
-    public void plainAsciiIsUnaffected() {
+    public void testPlainAsciiIsUnaffected() {
         ArrayList<String> tokens = tokenize("alpha beta gamma delta epsilon");
         assertEquals(java.util.Arrays.asList("alpha", "beta", "gamma", "delta", "epsilon"), tokens);
     }
 
     @Test
-    public void accentedBmpTextIsUnaffected() {
+    public void testAccentedBmpTextIsUnaffected() {
         // Sanity check: ordinary (non-supplementary) non-ASCII letters, which is the
         // overwhelmingly common case for real corpora, must not be affected by the fix.
         ArrayList<String> tokens = tokenize("café naïve");
@@ -55,7 +55,7 @@ public class SimpleTokenizerTest {
     }
 
     @Test
-    public void emojiInsideAWordNoLongerTruncatesTheRestOfTheWord() {
+    public void testEmojiInsideAWordNoLongerTruncatesTheRestOfTheWord() {
         // Reproduces the exact scenario from the issue: an emoji inside "epsilon" used to
         // drop the trailing "n", producing "epsilo".
         ArrayList<String> tokens = tokenize("alpha beta gamma delta epsilo" + CRYING_FACE + "n");
@@ -63,7 +63,7 @@ public class SimpleTokenizerTest {
     }
 
     @Test
-    public void twoSupplementaryCharactersInOneWordAreHandledCorrectly() {
+    public void testTwoSupplementaryCharactersInOneWordAreHandledCorrectly() {
         // Each supplementary character used to shorten the loop bound by one *more*
         // char, compounding the truncation ("epsil" instead of "epsilon" with two emoji).
         ArrayList<String> tokens = tokenize("alpha beta gamma delta epsi" + CRYING_FACE + CRYING_FACE + "lon");
@@ -71,7 +71,7 @@ public class SimpleTokenizerTest {
     }
 
     @Test
-    public void emojiEarlierInTheStringNoLongerTruncatesALaterWord() {
+    public void testEmojiEarlierInTheStringNoLongerTruncatesALaterWord() {
         // The bug is not confined to the word containing the emoji: because the loop bound
         // is a single count for the *whole* string, an emoji anywhere causes the *last*
         // word of the document to lose its final character(s), even though the emoji
@@ -81,7 +81,7 @@ public class SimpleTokenizerTest {
     }
 
     @Test
-    public void trailingSupplementaryCharacterDoesNotLoseAnyRealCharacters() {
+    public void testTrailingSupplementaryCharacterDoesNotLoseAnyRealCharacters() {
         // Boundary case: when the supplementary character truly is the last thing in the
         // document, there is nothing after it left to lose either before or after the fix.
         ArrayList<String> tokens = tokenize("trailing emoji at the very end " + CRYING_FACE);
