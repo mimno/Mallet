@@ -36,16 +36,22 @@ public class FixedVocabTokenizer extends Pipe implements Serializable {
 			int length = -1;
 			int numTokens = 0;
 
-			// Using code points instead of chars allows us
-			//  to support extended Unicode, and has no significant
-			//  efficiency costs.
-			
-			int totalCodePoints = Character.codePointCount(characters, 0, characters.length());
+			// Iterate by code point, not by char index. Character.codePointAt(CharSequence, int)
+			//  expects a *char* (UTF-16 code unit) index, not a code-point index. Advancing the
+			//  index by a fixed 1 each iteration -- while bounding the loop by codePointCount(),
+			//  as this used to do -- silently drops characters from the end of any string that
+			//  contains a supplementary-plane character (e.g. most emoji), and feeds the low
+			//  surrogate half through Character.getType() as if it were its own character.
+			//  Advancing by Character.charCount(codePoint) (1 for BMP, 2 for supplementary)
+			//  keeps the char index and the decoded code point in sync.
 
-			for (int i=0; i < totalCodePoints; i++) {
+			int stringLength = characters.length();
+			int charIndex = 0;
+
+			while (charIndex < stringLength) {
 				if (numTokens == tokenBuffer.length - 1) { System.err.println("Overflowed token buffer"); break; }
 
-				int codePoint = Character.codePointAt(characters, i);
+				int codePoint = Character.codePointAt(characters, charIndex);
 				int codePointType = Character.getType(codePoint);
 
 				if (codePointType == Character.LOWERCASE_LETTER ||
@@ -99,7 +105,8 @@ public class FixedVocabTokenizer extends Pipe implements Serializable {
 					// Character.MATH_SYMBOL
 					//System.out.println("type " + codePointType);
 				}
-					
+
+				charIndex += Character.charCount(codePoint);
 			}
 
 			if (length != -1) {
