@@ -302,6 +302,14 @@ public class TopicInferencer implements Serializable {
                                                        "\t" + cachedCoefficients[currentTopic]);
                                     index++;
                                 }
+
+                                // smoothingOnlyMass (used above to draw sample) and this walk are
+                                //  computed by different floating-point paths, so residual
+                                //  rounding error can leave sample > 0.0 past the last topic.
+                                //  The diagnostic above already fired; stop here instead of
+                                //  falling through to the out-of-bounds alpha[numTopics] read.
+                                newTopic = numTopics - 1;
+                                break;
                             }
 
                             sample -= alpha[newTopic] /

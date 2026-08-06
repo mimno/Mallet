@@ -350,7 +350,20 @@ public class WorkerCallable implements Callable<Integer> {
         @Var
         int changed = 0;
 
-        //    Iterate over the positions (words) in the document 
+        // Recompute the smoothing-only bucket exactly, once per document. It is otherwise
+        //  maintained only by the paired +=/-= updates below as tokens are resampled, and
+        //  floating-point drift in that running total compounds over a long run -- previously
+        //  it was recomputed exactly only once per call() (i.e. once per worker per iteration),
+        //  so drift could accumulate across every token of every document a worker processes
+        //  in an iteration. Recomputing here is O(numTopics), negligible next to the
+        //  O(numTopics * docLength) sampling work already done per document, and bounds the
+        //  drift to at most one document's worth.
+        smoothingOnlyMass = 0.0;
+        for (int topic = 0; topic < numTopics; topic++) {
+            smoothingOnlyMass += alpha[topic] * beta / (tokensPerTopic[topic] + betaSum);
+        }
+
+        //    Iterate over the positions (words) in the document
         for (int position = 0; position < docLength; position++) {
             type = tokenSequence.getIndexAtPosition(position);
             oldTopic = oneDocTopics[position];
@@ -543,12 +556,18 @@ public class WorkerCallable implements Callable<Integer> {
                     sample -= alpha[newTopic] /
                         (tokensPerTopic[newTopic] + betaSum);
 
-                    while (sample > 0.0) {
+                    // Bound the walk to a valid topic index. In exact arithmetic sample would
+                    //  always be consumed before newTopic reaches numTopics, but
+                    //  smoothingOnlyMass (used above to draw sample) and this per-topic walk
+                    //  are computed by different floating-point paths, so residual rounding
+                    //  error can otherwise leave sample > 0.0 past the last topic and read
+                    //  alpha[numTopics] out of bounds.
+                    while (sample > 0.0 && newTopic < numTopics - 1) {
                         newTopic++;
-                        sample -= alpha[newTopic] / 
+                        sample -= alpha[newTopic] /
                             (tokensPerTopic[newTopic] + betaSum);
                     }
-                    
+
                 }
 
                 // Move to the position for the new topic,
