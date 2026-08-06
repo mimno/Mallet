@@ -272,7 +272,13 @@ public class WorkerCallable implements Callable<Integer> {
             
             changed += sampleTopicsForOneDoc (tokenSequence, topicSequence, true);
         }
-        
+
+        // collectAlphaStatistics() arms this for exactly the call() that just ran. Without
+        //  resetting it here, once hyperparameter optimization starts collecting, every
+        //  subsequent call() also accumulates into docLengthCounts/topicDocCounts instead of
+        //  only every saveSampleInterval-th one, silently defeating the intended thinning.
+        shouldSaveState = false;
+
         if (shouldBuildLocalCounts) {
             buildLocalTypeTopicCounts();
         }
