@@ -28,6 +28,7 @@ import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.SplittableRandom;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -640,6 +641,25 @@ public class ParallelTopicModel implements Serializable {
         
     }
 
+    /**
+     *  Derives one worker seed per thread from a single base seed, deterministically: the
+     *  same baseSeed and numThreads always produce the same seeds, in the same order, so a
+     *  training run's reproducibility for a fixed --random-seed and --num-threads does not
+     *  depend on workers sharing a seed. A plain {@code baseSeed + thread} was considered and
+     *  rejected: java.util.Random's LCG has weak low-order bits, so seeds that are close
+     *  together do not reliably decorrelate over a short stream. SplittableRandom exists
+     *  specifically to mint well-mixed sub-seeds from one seed, so it is used here purely as
+     *  a seed generator, not as the sampler's RNG.
+     */
+    static int[] deriveWorkerSeeds(int baseSeed, int numThreads) {
+        SplittableRandom seedGenerator = new SplittableRandom(baseSeed);
+        int[] seeds = new int[numThreads];
+        for (int thread = 0; thread < numThreads; thread++) {
+            seeds[thread] = seedGenerator.nextInt();
+        }
+        return seeds;
+    }
+
     public void estimate () throws IOException {
 
         long startTime = System.currentTimeMillis();
@@ -652,29 +672,37 @@ public class ParallelTopicModel implements Serializable {
         int offset = 0;
 
         if (numThreads > 1) {
-        
+
+            // Every thread used to be seeded with the same randomSeed, so with a fixed seed
+            //  all workers drew an identical stream of uniforms; deriveWorkerSeeds gives each
+            //  one its own, still deterministically from randomSeed and numThreads alone, so a
+            //  run with a fixed --random-seed and --num-threads remains exactly reproducible.
+            //  (Only matters when randomSeed is set -- the unseeded branch below already draws
+            //  fresh entropy per thread.)
+            int[] workerSeeds = (randomSeed == -1) ? null : deriveWorkerSeeds(randomSeed, numThreads);
+
             for (int thread = 0; thread < numThreads; thread++) {
                 int[] callableTotals = new int[numTopics];
                 System.arraycopy(tokensPerTopic, 0, callableTotals, 0, numTopics);
-                
+
                 int[][] callableCounts = new int[numTypes][];
                 for (int type = 0; type < numTypes; type++) {
                     int[] counts = new int[typeTopicCounts[type].length];
                     System.arraycopy(typeTopicCounts[type], 0, counts, 0, counts.length);
                     callableCounts[type] = counts;
                 }
-                
+
                 // some docs may be missing at the end due to integer division
                 if (thread == numThreads - 1) {
                     docsPerThread = data.size() - offset;
                 }
-                
+
                 Randoms random;
                 if (randomSeed == -1) {
                     random = new Randoms();
                 }
                 else {
-                    random = new Randoms(randomSeed);
+                    random = new Randoms(workerSeeds[thread]);
                 }
 
                 callables[thread] = new WorkerCallable(numTopics,
