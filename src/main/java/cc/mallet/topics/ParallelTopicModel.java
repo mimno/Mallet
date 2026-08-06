@@ -644,6 +644,19 @@ public class ParallelTopicModel implements Serializable {
 
         long startTime = System.currentTimeMillis();
 
+        if (numThreads > data.size()) {
+            // docsPerThread = data.size() / numThreads below would be 0, so every thread but
+            //  the last would get zero documents while the last took the entire corpus --
+            //  correct, since the empty threads contribute all-zero counts to the merge, but
+            //  silently serialized and still paying for numThreads full copies of
+            //  typeTopicCounts.
+            int reducedThreads = Math.max(1, data.size());
+            logger.warning("numThreads (" + numThreads + ") is greater than the number of " +
+                           "documents (" + data.size() + "); using " + reducedThreads +
+                           " thread" + (reducedThreads == 1 ? "" : "s") + " instead.");
+            numThreads = reducedThreads;
+        }
+
         WorkerCallable[] callables = new WorkerCallable[numThreads];
 
         @Var
